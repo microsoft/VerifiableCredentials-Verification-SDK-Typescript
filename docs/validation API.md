@@ -7,6 +7,9 @@ We use the builder design pattern for the API. This allow us to feed in differen
 For MVP the first example is needed. The other examples can be supported by the current architecture.
 
 ## Example: Validate a SIOP request
+
+This will be used for the Validation endpoint.
+
 ```javascript
 // Create a validator with a custom resolver.
 const validator = await new ValidationBuilder()
@@ -27,8 +30,6 @@ console.log(`VCs claims: ${JSON.stringify(validationResult.claims.vcs[0].vc)}`);
 
 
 ## Example: Validate a Verifiable Credential
-
-This will be used for the Validation endpoint.
 
 ```javascript
 const vcValidator = new ValidationBuilder()
