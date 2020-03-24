@@ -24,38 +24,40 @@ console.log(`VCs claims: ${JSON.stringify(validationResult.claims.vcs[0].vc)}`);
 
 ## Example: Validate a Verifiable Credential
 
-const vcValidator = await new ValidationBuilder()
+
+const vcValidator = new ValidationBuilder()
                     .inputIs(TokenType.verifiableCredential)
                     .build();
-const validationResult = validator.validate(vc: string, expectedAudience: string, expectedIssuers: string[]);
+const validationResult = await validator.validate(vc: string, expectedAudience: string, expectedIssuers: string[]);
 
 
 ## Example: Validate a Verifiable Presentation
 
-const vpValidator = await new ValidationBuilder()
+const vpValidator = new ValidationBuilder()
                     .inputIs(TokenType.verifiablePresentation)
                     .build();
-const validationResult = validator.validate(vp: string, expectedAudience: string, expectedIssuer: string);
+const validationResult = await validator.validate(vp: string, expectedAudience: string, expectedIssuer: string);
 
 
 ## Example: Validate an id token
 
-const idTokenValidator = await new ValidationBuilder()
+const idTokenValidator = new ValidationBuilder()
                     .inputIs(TokenType.idToken)
+                    .usePublicKey(key)
                     .build();
-const validationResult = validator.validate(idToken: string, expectedAudience: string, expectedIssuers: string[]);
+const validationResult = await validator.validate(idToken: string, expectedAudience: string, expectedIssuers: string[]);
 
 
 ## Example: Validate a SIOP request with custom id token validator
 
-const idTokenValidator = await new ValidationBuilder()
+const idTokenValidator = new ValidationBuilder()
                     .inputIs(TokenType.idToken)
                     .build();
-const validationResult = validator.validate(idToken: string, expectedAudience: string, expectedIssuers: string[]);
+const validationResult = await validator.validate(idToken: string, expectedAudience: string, expectedIssuers: string[]);
 
-const validator = await new ValidationBuilder()
+const validator = new ValidationBuilder()
                     .useValidators([idTokenValidator])
                     .build();
-const validationResult = validator.validate(siop: string, expectedAudience: string, expectedIssuer: string);
+const validationResult = await validator.validate(siop: string, expectedAudience: string, expectedIssuer: string);
 
 
