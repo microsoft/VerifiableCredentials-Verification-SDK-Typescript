@@ -28,6 +28,8 @@ console.log(`VCs claims: ${JSON.stringify(validationResult.claims.vcs[0].vc)}`);
 
 ## Example: Validate a Verifiable Credential
 
+This will be used for the Validation endpoint.
+
 ```javascript
 const vcValidator = new ValidationBuilder()
                     .inputIs(TokenType.verifiableCredential)
