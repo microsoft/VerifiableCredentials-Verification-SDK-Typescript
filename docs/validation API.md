@@ -1,5 +1,5 @@
 # Validation API
-This document is a proposal for the validation API. The validation API is one of the major parts of the 
+This document is a proposal for the typescript validation API. The validation API is one of the major parts of the 
 Relying party SDK.
 
 We use the builder design pattern for the API. This allow us to feed in different options into the validation API.
