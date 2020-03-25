@@ -17,6 +17,7 @@
   "author": "",
   "license": "UNLICENSED",
   "devDependencies": {
+    "@types/node-fetch": "2.5.5",
     "@types/jasmine": "3.3.12",
     "@types/node": "12.0.0",
     "@types/typescript": "2.0.0",

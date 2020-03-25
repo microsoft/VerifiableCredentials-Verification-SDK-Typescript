@@ -6,7 +6,6 @@
 import { IDidResolver } from '../index';
 import { IKeyStore, IPayloadProtectionOptions, IPayloadProtection, CryptoFactory } from '@microsoft/crypto-sdk';
 
-
  /**
  * Interface to model the crypto options
  */
@@ -33,6 +32,23 @@ export interface ICryptoOptions {
 }
 
  /**
+ * Interface to model the fetch options
+ */
+export interface IHttpClientOptions {
+
+    /**
+     * The http client to use
+     */
+    client: any,
+
+    /**
+     * The http client options
+     */
+    options: any,
+}
+
+
+ /**
  * Interface to model the validator options
  */
 export default interface IValidatorOptions {
@@ -45,10 +61,10 @@ export default interface IValidatorOptions {
     /**
      * The http client to use
      */
-    fetch: any,
+    httpClient: IHttpClientOptions,
 
     /**
      * Get the crypto options
      */
-    cryptoOptions: ICryptoOptions
+    crypto: ICryptoOptions
 }

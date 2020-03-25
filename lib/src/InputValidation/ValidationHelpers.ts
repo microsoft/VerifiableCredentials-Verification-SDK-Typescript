@@ -9,46 +9,37 @@ import { IDidResolveResult } from '@decentralized-identity/did-common-typescript
 import VerifiableCredentialConstants from '../VerifiableCredential/VerifiableCredentialConstants';
 import ClaimToken, { TokenType } from '../VerifiableCredential/ClaimToken';
 import { ISiopValidationResponse } from './SiopValidationResponse';
-import { IdTokenValidation } from './IdTokenValidation';
-import ClaimBag from '../VerifiableCredential/ClaimBag';
 import ValidationOptions from '../Options/ValidationOptions';
 import { IdTokenValidationResponse } from './IdTokenValidationResponse';
-import { VerifiablePresentationValidation } from './VerifiablePresentationValidation';
 import { IValidatorOptions } from '../index';
-const DeepPropertyAccess = require('deep-property-access');
 
 /**
  * Helper Class for validation
  */
 export class ValidationHelpers {
 
-//#region validation delegates
-
-
-// Called by other delegates
-//#endregion
-/**
+  /**
  * Create new instance of <see @class ValidationHelpers>
- * @param validatorOptions The server manager
- * @param options Issuance options containing delegates
+ * @param validatorOptions The validator options
+ * @param validationOptions Issuance validationOptions containing delegates
  * @param inputDescription Describe the type of token for error messages
  */
-constructor (private validatorOptions: IValidatorOptions, private options: IValidationOptions, private inputDescription: string) {
+constructor (private validatorOptions: IValidatorOptions, private validationOptions: IValidationOptions, private inputDescription: string) {
 }
 
 /**
  * Get the token object from the token
  * @param validationResponse The response for the requestor
- * @param body The request body
+ * @param token The token to parse
  */
   public getTokenObject (validationResponse: IValidationResponse, token: string): IValidationResponse {
     let tokenPayload: Buffer;
     const  self: any = this;
     try {
-      validationResponse.didSignature = (self as ValidationOptions).validatorOptions.cryptoOptions.payloadProtectionProtocol.deserialize(
+      validationResponse.didSignature = (self as ValidationOptions).validatorOptions.crypto.payloadProtectionProtocol.deserialize(
         token, 
         ProtectionFormat.JwsCompactJson, 
-        (self as ValidationOptions).validatorOptions.cryptoOptions.cryptoOptions);
+        (self as ValidationOptions).validatorOptions.crypto.cryptoOptions);
       tokenPayload = validationResponse.didSignature.get(JoseConstants.tokenPayload);
       if (!validationResponse.didSignature || !tokenPayload) {
         return {
@@ -102,8 +93,8 @@ constructor (private validatorOptions: IValidatorOptions, private options: IVali
   
   /**
    * Resolve the DID and retrieve the public keys
-   * @param validatorOptions The server manager
-   * @param options Issuance options containing delegates
+   * @param validatorOptions The validator options
+   * @param validationOptions Issuance validationOptions containing delegates
    * @param validationResponse The response for the requestor
    */
   public async resolveDidAndGetKeys (validationResponse: IValidationResponse): Promise<IValidationResponse> {
@@ -240,11 +231,11 @@ constructor (private validatorOptions: IValidatorOptions, private options: IVali
       const signature = validationResponse.didSignature!.get(JoseConstants.tokenSignatures)[0];
       const kid = signature.protected.get(VerifiableCredentialConstants.TOKEN_KID);
       console.log(`Validate DID signature with kid '${kid}', key kid '${validationResponse.didSigningPublicKey?.kid}'`);
-      const validation = await (self as ValidationOptions).validatorOptions.cryptoOptions.payloadProtectionProtocol.verify(
+      const validation = await (self as ValidationOptions).validatorOptions.crypto.payloadProtectionProtocol.verify(
         [validationResponse.didSigningPublicKey], 
         validationResponse.didSignature!.get(JoseConstants.tokenPayload) as Buffer, 
         token, 
-        (self as ValidationOptions).validatorOptions.cryptoOptions.cryptoOptions);
+        (self as ValidationOptions).validatorOptions.crypto.cryptoOptions);
       if (!validation.result) {
         return validationResponse = {
             result: false,
@@ -273,9 +264,10 @@ constructor (private validatorOptions: IValidatorOptions, private options: IVali
 
     // Get the keys to validate the token
     let keys: any;
+    const httpClient = (self as ValidationOptions).validatorOptions.httpClient;
     try {
       if (token.type === TokenType.idToken) {
-        let response = await (self as ValidationOptions).validatorOptions.fetch.get(token.configuration, ServerTimingNames.Other);
+        let response = await httpClient.client(token.configuration, httpClient.options);
         if (!response.ok) {
           return {
               result: false,
@@ -292,7 +284,7 @@ constructor (private validatorOptions: IValidatorOptions, private options: IVali
               detailedError: `No reference to jwks found in token configuration`
             };
         }
-        response = await (self as ValidationOptions).validatorOptions.fetch.get(keysUrl, ServerTimingNames.Other);
+        response = await (self as ValidationOptions).validatorOptions.httpClient.client(keysUrl, httpClient.options);
         if (!response.ok) {
           return {
               result: false,
@@ -441,11 +433,11 @@ constructor (private validatorOptions: IValidatorOptions, private options: IVali
     try {
       // Get token and check signature
       validationResponse = (self as IValidationOptions).getTokenObjectDelegate(validationResponse, token.rawToken);
-      const validation = await (self as ValidationOptions).validatorOptions.cryptoOptions.payloadProtectionProtocol.verify(
+      const validation = await (self as ValidationOptions).validatorOptions.crypto.payloadProtectionProtocol.verify(
         [key],
         validationResponse.didSignature!.get(JoseConstants.tokenPayload) as Buffer, 
         validationResponse.didSignature as ICryptoToken,
-        (self as ValidationOptions).validatorOptions.cryptoOptions.cryptoOptions);
+        (self as ValidationOptions).validatorOptions.crypto.cryptoOptions);
       if (!validation.result) {
         return {
             result: false,

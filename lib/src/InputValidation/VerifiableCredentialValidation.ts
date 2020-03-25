@@ -57,17 +57,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       };
     }
 
-    // Populate the VC
-    const vc = new VerifiableCredential(this.options.validatorOptions);
-    try {
-      vc.populateFromObject(validationResponse.payloadObject.vc);
-    } catch (err) {
-      return validationResponse = {
-        result: false,
-        detailedError: `The verifiable credential could not be populated. Reason: ${err.message}`,
-        status: 403
-      }; 
-    }
+    // Populate the VC TODO
 
     // Check if the VC matches the schema TODO
 
