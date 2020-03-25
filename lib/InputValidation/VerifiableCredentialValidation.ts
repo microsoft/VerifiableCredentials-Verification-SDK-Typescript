@@ -5,6 +5,8 @@
 import { IValidationOptions } from '../Options/IValidationOptions';
 import { IVerifiableCredentialValidation, VerifiableCredentialValidationResponse } from './VerifiableCredentialValidationResponse';
 import { DidValidation } from './DidValidation';
+import VerifiableCredentialConstants from '../VerifiableCredential/VerifiableCredentialConstants';
+import { IExpected } from '../index';
 
 /**
  * Class for verifiable credential validation
@@ -14,26 +16,25 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
 /**
  * Create a new instance of @see <VerifiableCredentialValidation>
  * @param options Options to steer the validation process
+ * @param expected Expected properties of the verifiable credential
  */
-  constructor (private options: IValidationOptions) {
+  constructor (private options: IValidationOptions, private expected: IExpected) {
   }
  
   /**
    * Validate the verifiable credential
    * @param verifiableCredential The credential to validate as a signed token
-   * @param siopDid The did which presented the siop
    * @returns result is true if validation passes
    */
-  public async validate(verifiableCredential: string, siopDid: string): Promise<VerifiableCredentialValidationResponse> {
+  public async validate(verifiableCredential: string): Promise<VerifiableCredentialValidationResponse> {
     let validationResponse: VerifiableCredentialValidationResponse = {
       result: true,
       status: 200
     };
 
-    
     // Check the DID parts of the VC
-    const didValidation = new DidValidation(this.options);
-    validationResponse = await didValidation.validate(verifiableCredential, siopDid);
+    const didValidation = new DidValidation(this.options, this.expected);
+    validationResponse = await didValidation.validate(verifiableCredential);
     if (!validationResponse.result) {
       return validationResponse;
     }
@@ -49,17 +50,37 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
     }
 
     // Check if VC audience and SIOP DID are equal
-    if (validationResponse.payloadObject.aud !== siopDid) {
+    if (!validationResponse.payloadObject.aud || validationResponse.payloadObject.aud !== this.expected.audience) {
       return {
         result: false,
-        detailedError: `The DID used for the SIOP ${siopDid} is not equal to the audience of the verifiable credential ${validationResponse.payloadObject.aud}`,
+        detailedError: `The DID used for the SIOP '${this.expected.audience}' is not equal to the audience of the verifiable credential ${validationResponse.payloadObject.aud}`,
         status: 403
       };
     }
 
-    // Populate the VC TODO
-
-    // Check if the VC matches the schema TODO
+    // Check if the VC matches the schema
+    // Get the schema from the VC
+    if (this.expected.schemas) {
+      const context: string[] = validationResponse.payloadObject[VerifiableCredentialConstants.CLAIM_CONTEXT];
+      let schemaFound = false;
+      let schema: string = '';
+      for (let inx = 0 ; inx < context.length; inx++) {
+        if (this.expected.schemas.includes(context[inx])) {
+          schemaFound = true;
+          schema = context[inx];
+          break;
+        }
+      }
+  
+      // Check if the we found a matching schema.
+      if (!schemaFound) {
+        return validationResponse = {
+          result: false,
+          detailedError: `The verifiable credential with schema '${JSON.stringify(context)}' is not expected in '${JSON.stringify(this.expected.schemas)}`,
+          status: 403
+        };
+      }  
+    }
 
     // Check trusted issuers TODO
 

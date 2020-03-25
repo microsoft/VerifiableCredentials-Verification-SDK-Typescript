@@ -13,30 +13,27 @@ import VerifiableCredentialConstants from "../lib/VerifiableCredential/Verifiabl
 describe('DidValidation', () =>
 {
   let setup: TestSetup;
-  const originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
   beforeEach(async () => {
     setup = new TestSetup();
-    await setup.generateKeys();
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+    setup.fetchMock.reset();
   });
   
   afterEach(() => {
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+    setup.fetchMock.reset();
   });
   
   it('should test validate', async () => {
-    const [request, options, configuration] = await IssuanceHelpers.createRequest(setup, 'siop');   
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, 'siop');    
     
-    let validationResponse: IDidValidationResponse = {
-      status: 200,
-      result: true,
-      didKid: setup.defaulUserDidKid
-    };    
-    
-    const validationOptions = new ValidationOptions(setup.validatorOptions, 'siop'); 
-    
-    const validator = new DidValidation(validationOptions);
-    const response = await validator.validate(request.rawToken, setup.AUDIENCE, VerifiableCredentialConstants.TOKEN_SI_ISS);
+    const validator = new DidValidation(options, siop.expected);
+    let response = await validator.validate(request.rawToken);
     expect(response.result).toBeTruthy();
+    
+    // Negative cases
+    // Bad VC signature
+    response = await validator.validate(request.rawToken + 'a');
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual('The signature on the payload in the siop is invalid');
   });
 });

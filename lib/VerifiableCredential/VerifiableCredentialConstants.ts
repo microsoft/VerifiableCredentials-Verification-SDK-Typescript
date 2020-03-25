@@ -23,6 +23,11 @@ export default class VerifiableCredentialConstants {
   public static CLAIMSOURCES = '_claim_sources';
 
   /**
+   * Constant for  context
+   */
+  public static CLAIM_CONTEXT = '@context';
+
+  /**
    * Constant for default context
    */
   public static DEFAULT_VERIFIABLECREDENTIAL_CONTEXT = 'https://www.w3.org/2018/credentials/v1';

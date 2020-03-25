@@ -5,6 +5,7 @@
 import { IValidationOptions } from '../Options/IValidationOptions';
 import ClaimToken from '../VerifiableCredential/ClaimToken';
 import { IIdTokenValidation, IdTokenValidationResponse } from './IdTokenValidationResponse';
+import { IExpected } from '..';
 
 //#region delegate types
 
@@ -17,18 +18,17 @@ export class IdTokenValidation implements IIdTokenValidation {
 /**
  * Create a new instance of @see <IdTokenValidation>
  * @param options Options to steer the validation process
- * @param expectedIssuers Expected issuer list
+ * @param expected Expected properties of the id token
  */
-constructor (private options: IValidationOptions, private expectedIssuers: string[]) {
+constructor (private options: IValidationOptions, private expected: IExpected) {
 }
  
   /**
    * Validate the id token
    * @param idToken The presentation to validate as a signed token
-   * @param audience The expected audience for the token
    * @returns result is true if validation passes
    */
-  public async validate(idToken: ClaimToken, audience: string): Promise<IdTokenValidationResponse> {
+  public async validate(idToken: ClaimToken): Promise<IdTokenValidationResponse> {
     let validationResponse: IdTokenValidationResponse = {
       result: true,
       detailedError: '',
@@ -54,7 +54,7 @@ constructor (private options: IValidationOptions, private expectedIssuers: strin
     }
 
     // Check token scope (aud and iss)
-    validationResponse = await this.options.checkScopeValidityOnTokenDelegate(validationResponse, validationResponse.issuer as string, audience);
+    validationResponse = await this.options.checkScopeValidityOnTokenDelegate(validationResponse, this.expected);
     if (!validationResponse.result) {
       return validationResponse;
     }

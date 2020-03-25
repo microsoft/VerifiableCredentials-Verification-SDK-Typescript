@@ -7,6 +7,7 @@ import VerifiableCredentialConstants from '../VerifiableCredential/VerifiableCre
 import { ISiopValidation, ISiopValidationResponse } from './SiopValidationResponse';
 import { DidValidation } from './DidValidation';
 import { IValidationOptions } from '../Options/IValidationOptions';
+import { IExpected } from '..';
 
 /**
  * Class for siop validation
@@ -16,25 +17,25 @@ export class SiopValidation implements ISiopValidation {
 /**
  * Create a new instance of @see <SiopValidation>
  * @param options Options to steer the validation process
+ * @param expected Expected properties of the SIOP
  */
-  constructor (private options: IValidationOptions) {
-  }
+constructor (private options: IValidationOptions, private expected: IExpected) {
+}
 
   /**
    * Validate the input for a correct format and signature
-   * @param siop Authentication of requestor
-   * @param audience The expected audience in the token
+   * @param siop The SIOP token
    * @returns true if validation passes together with parsed objects
    */
-  public async validate (siop: string, audience: string): Promise<ISiopValidationResponse> {
+  public async validate (siop: string): Promise<ISiopValidationResponse> {
     let validationResponse: ISiopValidationResponse = {
       result: true,
       status: 200
     };
 
     // Check the DID parts of the siop
-    const didValidation = new DidValidation(this.options);
-    validationResponse = await didValidation.validate(siop, audience, VerifiableCredentialConstants.TOKEN_SI_ISS);
+    const didValidation = new DidValidation(this.options, this.expected);
+    validationResponse = await didValidation.validate(siop);
     if (!validationResponse.result) {
       return validationResponse;
     }

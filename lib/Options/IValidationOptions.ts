@@ -6,14 +6,14 @@ import ClaimToken from '../VerifiableCredential/ClaimToken';
 import { IValidationResponse } from '../InputValidation/IValidationResponse';
 import { ICryptoToken } from '@microsoft/crypto-sdk';
 import { ValidationHelpers } from '../InputValidation/ValidationHelpers';
-import { IValidatorOptions } from '../index';
+import { IValidatorOptions, IExpected } from '../index';
 import { ISiopValidationResponse } from '../InputValidation/SiopValidationResponse';
 
  export type GetTokenObject = (validationResponse: IValidationResponse, token: string) => IValidationResponse;
  export type ResolveDidAndGetKeys = (validationResponse: IValidationResponse) => Promise<IValidationResponse>;
  export type ValidateDidSignature = (validationResponse: IValidationResponse, token: ICryptoToken) => Promise<IValidationResponse>;
  export type CheckTimeValidityOnToken = (validationResponse: IValidationResponse, driftInSec?: number) => IValidationResponse;
- export type CheckScopeValidityOnToken = (validationResponse: IValidationResponse, issuer: string, audience: string) => IValidationResponse;
+ export type CheckScopeValidityOnToken = (validationResponse: IValidationResponse, expected: IExpected) => IValidationResponse;
  export type FetchKeyAndValidateSignatureOnIdToken = (validationResponse: IValidationResponse, token: ClaimToken) => Promise<IValidationResponse>;
  export type ValidateSignatureOnToken = (validationResponse: IValidationResponse, token: ClaimToken, key: any) => Promise<IValidationResponse>;
  export type GetTokensFromSiop = (validationResponse: IValidationResponse) => IValidationResponse;

@@ -6,6 +6,7 @@
 import { ICryptoToken } from '@microsoft/crypto-sdk';
 import { IDidValidation, IDidValidationResponse } from './DidValidationResponse';
 import { IValidationOptions } from '../Options/IValidationOptions';
+import { IExpected } from '..';
 
 /**
  * Class for input validation of a token signed with DID key
@@ -15,18 +16,17 @@ export class DidValidation implements IDidValidation {
 /**
  * Create a new instance of @see <DidValidation>
  * @param options Options to steer the validation process
+ * @param expectedSchema Expected schema of the verifiable credential
  */
-  constructor (private options: IValidationOptions) {
+  constructor (private options: IValidationOptions, private expected: IExpected) {
   }
 
   /**
    * Validate the token for a correct format and signature
    * @param token Token to validate
-   * @param audience The expected audience in the token
-   * @param issuer The expected issuer in the token
    * @returns true if validation passes together with parsed objects
    */
-  public async validate (token: string, audience: string, issuer?: string): Promise<IDidValidationResponse> {
+  public async validate (token: string): Promise<IDidValidationResponse> {
     let validationResponse: IDidValidationResponse = {
       result: true,
       status: 200
@@ -66,7 +66,7 @@ export class DidValidation implements IDidValidation {
    }
 
    // Check token scope (aud and iss)
-   validationResponse = await this.options.checkScopeValidityOnTokenDelegate(validationResponse, issuer || validationResponse.did as string, audience);
+   validationResponse = await this.options.checkScopeValidityOnTokenDelegate(validationResponse, this.expected);
    if (!validationResponse.result) {
      return validationResponse;
    }

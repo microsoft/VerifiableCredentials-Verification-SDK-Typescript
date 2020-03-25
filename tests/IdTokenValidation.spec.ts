@@ -6,6 +6,7 @@ import TestSetup from './TestSetup';
 import { IdTokenValidation } from '../lib/InputValidation/IdTokenValidation';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
+import { IExpected } from '../lib';
 
  describe('idTokenValidation', () => {
   let setup: TestSetup;
@@ -22,21 +23,25 @@ import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
   it('should test validate', async () => {
     
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, 'id token');   
-    const validator = new IdTokenValidation(options, []);
-    let response = await validator.validate(siop.idToken, setup.tokenAudience)
+    const expected = siop.expected.filter((token: IExpected) => token.type === TokenType.idToken)[0];
+
+    let validator = new IdTokenValidation(options, siop.expected);
+    let response = await validator.validate(siop.idToken)
     expect(response.result).toBeTruthy();
     
     // Negative cases
-    response = await validator.validate(siop.idToken, 'abcdef');
-    expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual('Wrong or missing aud property in id token. Expected abcdef');
 
     // Bad id token signature
-    response = await validator.validate(new ClaimToken(TokenType.idToken, siop.idToken.rawToken + 'a', siop.idToken.configuration), setup.defaultUserDid);
+    response = await validator.validate(new ClaimToken(TokenType.idToken, siop.idToken.rawToken + 'a', siop.idToken.configuration));
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The presented id token is has an invalid signature');
 
+    siop.expected.audience = 'abcdef';
+    validator = new IdTokenValidation(options, siop.expected);
+    response = await validator.validate(siop.idToken);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`Wrong or missing aud property in id token. Expected 'abcdef'`);
   });
  });

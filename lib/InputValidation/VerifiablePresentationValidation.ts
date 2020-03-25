@@ -7,6 +7,7 @@ import { IValidationOptions } from '../Options/IValidationOptions';
 import ClaimToken, { TokenType } from '../VerifiableCredential/ClaimToken';
 import { VerifiableCredentialValidation } from './VerifiableCredentialValidation';
 import { DidValidation } from './DidValidation';
+import { IExpected } from '../index';
 
 /**
  * Class for verifiable presentation validation
@@ -16,18 +17,18 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
 /**
  * Create a new instance of @see <VerifiablePresentationValidation>
  * @param options Options to steer the validation process
+ * @param expected Expected properties of the verifiable presentation
  */
-  constructor (private options: IValidationOptions) {
-  }
+constructor (private options: IValidationOptions, private expected: IExpected) {
+}
  
   /**
    * Validate the verifiable presentation
    * @param verifiablePresentationToken The presentation to validate as a signed token
    * @param siopDid The did which presented the siop
-   * @param audience The expected audience for the token
    * @returns result is true if validation passes
    */
-  public async validate(verifiablePresentationToken: ClaimToken, siopDid: string, audience: string): Promise<VerifiablePresentationValidationResponse> {
+  public async validate(verifiablePresentationToken: ClaimToken, siopDid: string): Promise<VerifiablePresentationValidationResponse> {
     let validationResponse: VerifiablePresentationValidationResponse = {
       result: true,
       detailedError: '',
@@ -35,8 +36,8 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
     };
     
     // Check the DID parts of the VP
-    const didValidation = new DidValidation(this.options);
-    validationResponse = await didValidation.validate(verifiablePresentationToken.rawToken, audience);
+    const didValidation = new DidValidation(this.options, this.expected);
+    validationResponse = await didValidation.validate(verifiablePresentationToken.rawToken);
     if (!validationResponse.result) {
       return validationResponse;
     }
@@ -89,9 +90,9 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
     }
 
     // Validate the VCs
-    const validator = new VerifiableCredentialValidation(this.options);
+    const validator = new VerifiableCredentialValidation(this.options, {} as IExpected);
     for (let inx = 0; inx < verifiableCredentials.length; inx++) {
-      validationResponse = await validator.validate(verifiableCredentials[inx], validationResponse.did as string);
+      validationResponse = await validator.validate(verifiableCredentials[inx]);
       if (!validationResponse.result) {
         return validationResponse;
       }

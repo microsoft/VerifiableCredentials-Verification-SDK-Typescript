@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 // tslint:disable-next-line:max-line-length
-import { JoseConstants, IKeyStore, KeyStoreFactory, SubtleCryptoNode, CryptoFactoryManager, KeyUseFactory, KeyTypeFactory, CryptoFactory, JoseProtocol, SubtleCrypto } from '@microsoft/crypto-sdk';
+import { JoseConstants, IKeyStore, KeyStoreFactory, SubtleCryptoNode, CryptoFactoryManager, CryptoFactory, JoseProtocol, SubtleCrypto } from '@microsoft/crypto-sdk';
 import { TSMap } from 'typescript-map';
 import { IssuanceHelpers } from './IssuanceHelpers';
-import { HttpResolver, IValidatorOptions, CryptoOptions } from '../lib/index';
+import { ManagedHttpResolver, IValidatorOptions, CryptoOptions } from '../lib/index';
 
 /**
  * Class that creates resources needed for unit tests
@@ -26,7 +26,7 @@ export default class TestSetup {
   /**
    * TestSetup environment
    */
-  public resolver = new HttpResolver('https://example.com');
+  public resolver = new ManagedHttpResolver('https://example.com');
   
   /**
    * Resolver url
@@ -96,8 +96,9 @@ export default class TestSetup {
   */
   public validatorOptions: IValidatorOptions = {
       resolver: this.resolver,
+      
       httpClient: {
-        client: this.fetchMock,
+        client: fetch,
         options: {}
       },
       crypto: {
@@ -165,7 +166,7 @@ export default class TestSetup {
 
       // generate the keys
       const [didJwkPrivate, didJwkPublic] = await IssuanceHelpers.generateSigningKey(this, didKid); 
-      const [didDocument, jwkPrivate, jwkPublic, httpClient] = await IssuanceHelpers.resolverMock(this, this.defaultUserDid, didJwkPrivate, didJwkPublic);
+      const [didDocument, jwkPrivate, jwkPublic] = await IssuanceHelpers.resolverMock(this, this.defaultUserDid, didJwkPrivate, didJwkPublic);
       await this.keyStore.save(kid, jwkPrivate);
     }
   }

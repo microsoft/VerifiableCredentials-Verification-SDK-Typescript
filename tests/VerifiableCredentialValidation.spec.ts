@@ -5,6 +5,8 @@
 import TestSetup from './TestSetup';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import { VerifiableCredentialValidation } from '../lib/InputValidation/VerifiableCredentialValidation';
+import { IExpected, TokenType } from '../lib';
+import { IdTokenValidation } from '../lib/InputValidation/IdTokenValidation';
 
  describe('VerifiableCredentialValidation', () => {
   let setup: TestSetup;
@@ -18,22 +20,28 @@ import { VerifiableCredentialValidation } from '../lib/InputValidation/Verifiabl
     jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
   });
 
-  it('should test validate', async () => {
+  fit('should test validate', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, 'vc');   
-    const validator = new VerifiableCredentialValidation(options);
-    let response = await validator.validate(siop.vc.rawToken, setup.defaultUserDid);
+    const expected = siop.expected.filter((token: IExpected) => token.type === TokenType.verifiableCredential)[0];
+
+    let validator = new VerifiableCredentialValidation(options, expected);
+    let response = await validator.validate(siop.vc.rawToken);
     expect(response.result).toBeTruthy();
 
     // Negative cases
-    response = await validator.validate(siop.vc.rawToken, 'abcdef');
-    expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual('Wrong or missing aud property in vc. Expected abcdef');
 
     // Bad VC signature
-    response = await validator.validate(siop.vc.rawToken + 'a', setup.defaultUserDid);
+    response = await validator.validate(siop.vc.rawToken + 'a');
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The signature on the payload in the vc is invalid');
+
+    // bad audience
+    siop.expected.audience = 'abcdef';
+    validator = new VerifiableCredentialValidation(options, siop.expected);
+    response = await validator.validate(siop.vc.rawToken);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual('Wrong or missing aud property in vc. Expected abcdef');
  });
 });

@@ -7,9 +7,8 @@ import TestSetup from './TestSetup';
 import { DidDocument } from '@decentralized-identity/did-common-typescript';
 import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
 import base64url from "base64url";
-import { ValidationOptions } from '../lib/index';
+import { ValidationOptions, IExpected } from '../lib/index';
 import VerifiableCredentialConstants from '../lib/VerifiableCredential/VerifiableCredentialConstants';
-const fetchMock = require('fetch-mock');
 
 export class IssuanceHelpers {
   /**
@@ -130,21 +129,20 @@ export class IssuanceHelpers {
   }
 
   // Generate a signing keys and set the configuration mock
-  public static async generateSigningKeyAndSetConfigurationMock(setup: TestSetup, kid: string): Promise<[any, any, string, any]> {
+  public static async generateSigningKeyAndSetConfigurationMock(setup: TestSetup, kid: string): Promise<[any, any, string]> {
     // setup http mock
     const configuration = setup.defaultIdTokenConfiguration;
     const jwks = setup.defaultIdTokenJwksConfiguration;
 
-    const mockHttpClient = setup.fetchMock;
     setup.fetchMock.get(configuration, {"jwks_uri": "${jwks}", "issuer": "${setup.tokenIssuer}"}, {overwriteRoutes: true});
     const [jwkPrivate, jwkPublic] = await IssuanceHelpers.generateSigningKey(setup, kid);
 
     setup.fetchMock.get(jwks, {"keys": [`${JSON.stringify(jwkPublic)}`]}, {overwriteRoutes: true});
-    return [jwkPrivate, jwkPublic, configuration, mockHttpClient];
+    return [jwkPrivate, jwkPublic, configuration];
   }
 
   // Set resolver mock
-  public static async resolverMock(setup: TestSetup, did: string, jwkPrivate?: any, jwkPublic?: any): Promise<[DidDocument, any, any, any]> {
+  public static async resolverMock(setup: TestSetup, did: string, jwkPrivate?: any, jwkPublic?: any): Promise<[DidDocument, any, any]> {
     // setup http mock
     if (!jwkPrivate && !jwkPublic) {
       [jwkPrivate, jwkPublic] = await IssuanceHelpers.generateSigningKey(setup, 'did:example:test');
@@ -161,14 +159,11 @@ export class IssuanceHelpers {
           publicKeyJwk: jwkPublic
         }]
       })};
-      
     (didDocument.document as any)['@context'] = 'https://w3id.org/did/v1';
     
     // Resolver mock
-    fetchMock.get(`${setup.resolverUrl}/${did}`, didDocument, {overwriteRoutes: true});
-
-    const mockHttpClient = setup.fetchMock;
-    return [didDocument.document, jwkPrivate, jwkPublic, mockHttpClient];
+    setup.fetchMock.mock(`${setup.resolverUrl}/${did}`, didDocument, {status: 200});
+    return [didDocument.document, jwkPrivate, jwkPublic];
   } 
 
   // Sign a token
@@ -185,11 +180,10 @@ export class IssuanceHelpers {
   }
   
   public static async createRequest(setup: TestSetup, tokenDescription: string): Promise<[ClaimToken, ValidationOptions, any]> {
-    fetchMock.reset();
     const options = new ValidationOptions(setup.validatorOptions, tokenDescription);
     const [didJwkPrivate, didJwkPublic] = await IssuanceHelpers.generateSigningKey(setup, setup.defaulUserDidKid); 
     const [tokenJwkPrivate, tokenJwkPublic, tokenConfiguration] = await IssuanceHelpers.generateSigningKeyAndSetConfigurationMock(setup, setup.defaulIssuerDidKid); 
-    const [didDocument, jwkPrivate2, jwkPublic2, httpClient] = await IssuanceHelpers.resolverMock(setup, setup.defaultUserDid, didJwkPrivate, didJwkPublic);
+    const [didDocument, jwkPrivate2, jwkPublic2] = await IssuanceHelpers.resolverMock(setup, setup.defaultUserDid, didJwkPrivate, didJwkPublic);
     
     const idTokenPayload = {
       upn: 'jules@pulpfiction.com',
@@ -243,6 +237,11 @@ export class IssuanceHelpers {
       claimNames,
       claimSources
      );
+     const expected: IExpected[] = [
+      { type: TokenType.idToken, issuers: [setup.defaultIssuerDid], audience: setup.defaultUserDid },
+      { type: TokenType.verifiableCredential, issuers: [setup.defaultIssuerDid], audience: setup.defaultUserDid }
+    ];
+
      const siopRequest = {
       didJwkPrivate,
       didJwkPublic,
@@ -250,11 +249,11 @@ export class IssuanceHelpers {
       schema,
       claimNames,
       claimSources,
-      httpClient,
       tokenConfiguration,
       idToken,
       vp,
-      vc
+      vc,
+      expected
     }
      return [request, options, siopRequest];
   }

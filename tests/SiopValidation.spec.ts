@@ -24,7 +24,7 @@ describe('SiopValidation', () =>
   });
   
   it('should test validate', async () => {
-    const [request, options, configuration] = await IssuanceHelpers.createRequest(setup, 'siop');   
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, 'siop');   
     
     let validationResponse: ISiopValidationResponse = {
       status: 200,
@@ -34,8 +34,8 @@ describe('SiopValidation', () =>
     
     const validationOptions = new ValidationOptions(setup.validatorOptions, 'siop'); 
 
-    const validator = new SiopValidation(validationOptions);
-    const response = await validator.validate(request.rawToken, setup.AUDIENCE);
+    const validator = new SiopValidation(validationOptions, siop.expected);
+    const response = await validator.validate(request.rawToken);
     expect(response.result).toBeTruthy();
   });
   

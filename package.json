@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc --p tsconfig.json",
     "start": "set JSON_CONFIGURATION=./config.json&& node dist/src/start.js",
-    "test": "nyc jasmine-ts --config=node_modules/ad-did-services-common/tests/jasmine.json",
+    "test": "nyc jasmine-ts --config=./tests/jasmine.json",
     "lint": "tslint --fix --project . --config node_modules/ad-did-services-common/tslint.json"
   },
   "repository": {
@@ -17,9 +17,9 @@
   "author": "",
   "license": "UNLICENSED",
   "devDependencies": {
-    "@types/node-fetch": "2.5.5",
     "@types/jasmine": "3.3.12",
     "@types/node": "12.0.0",
+    "@types/node-fetch": "2.5.5",
     "@types/typescript": "2.0.0",
     "@types/uuid": "3.4.4",
     "fetch-mock": "^7.7.3",
@@ -27,7 +27,6 @@
     "jasmine-reporters": "2.3.2",
     "jasmine-spec-reporter": "4.2.1",
     "jasmine-ts": "0.3.0",
-    "node-fetch": "^2.6.0",
     "nyc": "15.0.0",
     "source-map-support": "0.5.12",
     "ts-node": "8.1.0",
@@ -40,6 +39,8 @@
     "@microsoft/crypto-sdk": "1.0.3",
     "base64url": "3.0.1",
     "deep-property-access": "1.0.1",
+    "es6-promise": "^4.2.8",
+    "isomorphic-fetch": "2.2.1",
     "typescript-map": "0.0.7",
     "uuid": "7.0.1"
   },

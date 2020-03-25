@@ -11,7 +11,7 @@ import ClaimToken, { TokenType } from '../VerifiableCredential/ClaimToken';
 import { ISiopValidationResponse } from './SiopValidationResponse';
 import ValidationOptions from '../Options/ValidationOptions';
 import { IdTokenValidationResponse } from './IdTokenValidationResponse';
-import { IValidatorOptions } from '../index';
+import { IValidatorOptions, IExpected } from '../index';
 
 /**
  * Helper Class for validation
@@ -193,26 +193,25 @@ constructor (private validatorOptions: IValidatorOptions, private validationOpti
  /**
    * Check the scope validity of the token such as iss and aud
    * @param validationResponse The response for the requestor
-   * @param issuer The expected issuer of the token
-   * @param audience The expected audience for the token
+   * @param expectedSchema Expected schema of the verifiable credential
    */
-  public checkScopeValidityOnToken (validationResponse: IValidationResponse, issuer: string, audience: string): IValidationResponse {
+  public checkScopeValidityOnToken (validationResponse: IValidationResponse, expected: IExpected): IValidationResponse {
     const  self: any = this;
 
     // check iss value
-    if (validationResponse.payloadObject.iss !== issuer) {
+    if (!expected.issuers.includes(validationResponse.payloadObject.iss)) {
       return validationResponse = {
           result: false,
-          detailedError: `Wrong or missing iss property in ${(self as ValidationOptions).inputDescription}. Expected ${issuer}`,
+          detailedError: `Wrong or missing iss property in ${(self as ValidationOptions).inputDescription}. Expected '${JSON.stringify(expected.issuers)}'`,
           status: 403
           };
     }
     
     // check aud value
-    if (validationResponse.payloadObject.aud !== audience) {
+    if (validationResponse.payloadObject.aud !== expected.audience) {
       return validationResponse = {
           result: false,
-          detailedError: `Wrong or missing aud property in ${(self as ValidationOptions).inputDescription}. Expected ${audience}`,
+          detailedError: `Wrong or missing aud property in ${(self as ValidationOptions).inputDescription}. Expected '${expected.audience}'`,
           status: 403
           };
     }

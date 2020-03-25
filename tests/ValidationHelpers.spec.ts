@@ -6,7 +6,7 @@ import TestSetup from './TestSetup';
 import { IValidationResponse } from '../lib/InputValidation/IValidationResponse';
 import base64url from 'base64url';
 import { ICryptoToken } from '@microsoft/crypto-sdk';
-import { ValidationOptions } from '../lib/index';
+import { ValidationOptions, IExpected } from '../lib/index';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import { ValidationHelpers } from '../lib/InputValidation/ValidationHelpers';
 import ClaimBag from '../lib/VerifiableCredential/ClaimBag';
@@ -88,9 +88,7 @@ import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
     validationResponse.didKid = setup.defaulUserDidKid;
 
     // No did document
-    const fetchMock = require('fetch-mock');
-    fetchMock.reset();
-    fetchMock.get(setup.resolverUrl, {}, {overwriteRoutes: true});
+    setup.fetchMock.get(setup.resolverUrl, {}, {overwriteRoutes: true});
     response = await options.resolveDidAndGetKeysDelegate(validationResponse);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
@@ -221,20 +219,20 @@ import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
       aud: audience
     }
 
-    let response = options.checkScopeValidityOnTokenDelegate(validationResponse, issuer, audience);
+    let response = options.checkScopeValidityOnTokenDelegate(validationResponse, {} as IExpected);
     expect(response.result).toBeTruthy();
     expect(response.status).toEqual(200);
 
     // Negative cases
     validationResponse.payloadObject.iss = undefined;
-    response = options.checkScopeValidityOnTokenDelegate(validationResponse, issuer, audience);
+    response = options.checkScopeValidityOnTokenDelegate(validationResponse, {} as IExpected);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('Wrong or missing iss property in vc. Expected iss');
     validationResponse.payloadObject.iss = issuer;
 
     validationResponse.payloadObject.aud = undefined;
-    response = options.checkScopeValidityOnTokenDelegate(validationResponse, issuer, audience);
+    response = options.checkScopeValidityOnTokenDelegate(validationResponse, {} as IExpected);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('Wrong or missing aud property in vc. Expected aud');
