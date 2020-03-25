@@ -39,7 +39,7 @@ constructor (private validatorOptions: IValidatorOptions, private validationOpti
       validationResponse.didSignature = (self as ValidationOptions).validatorOptions.crypto.payloadProtectionProtocol.deserialize(
         token, 
         ProtectionFormat.JwsCompactJson, 
-        (self as ValidationOptions).validatorOptions.crypto.cryptoOptions);
+        (self as ValidationOptions).validatorOptions.crypto.payloadProtectionOptions);
       tokenPayload = validationResponse.didSignature.get(JoseConstants.tokenPayload);
       if (!validationResponse.didSignature || !tokenPayload) {
         return {
@@ -235,7 +235,7 @@ constructor (private validatorOptions: IValidatorOptions, private validationOpti
         [validationResponse.didSigningPublicKey], 
         validationResponse.didSignature!.get(JoseConstants.tokenPayload) as Buffer, 
         token, 
-        (self as ValidationOptions).validatorOptions.crypto.cryptoOptions);
+        (self as ValidationOptions).validatorOptions.crypto.payloadProtectionOptions);
       if (!validation.result) {
         return validationResponse = {
             result: false,
@@ -437,7 +437,7 @@ constructor (private validatorOptions: IValidatorOptions, private validationOpti
         [key],
         validationResponse.didSignature!.get(JoseConstants.tokenPayload) as Buffer, 
         validationResponse.didSignature as ICryptoToken,
-        (self as ValidationOptions).validatorOptions.crypto.cryptoOptions);
+        (self as ValidationOptions).validatorOptions.crypto.payloadProtectionOptions);
       if (!validation.result) {
         return {
             result: false,

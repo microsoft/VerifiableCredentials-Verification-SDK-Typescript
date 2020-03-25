@@ -3,35 +3,9 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IDidResolver } from '../index';
-import { IKeyStore, IPayloadProtectionOptions, IPayloadProtection, CryptoFactory } from '@microsoft/crypto-sdk';
+import { IDidResolver, ICryptoOptions } from '../index';
 
- /**
- * Interface to model the crypto options
- */
-export interface ICryptoOptions {
-  /**
-   * Get the key store
-   */
-  keyStore: IKeyStore;
-
-  /**
-   * Get the subtle crypto object
-   */
-  cryptoFactory: CryptoFactory;
-
-  /** 
-   * The payload protection protocol
-  */
-  payloadProtectionProtocol: IPayloadProtection;
-
-  /**
-   * Get the default crypto options
-   */
-  cryptoOptions: IPayloadProtectionOptions;
-}
-
- /**
+/**
  * Interface to model the fetch options
  */
 export interface IHttpClientOptions {
