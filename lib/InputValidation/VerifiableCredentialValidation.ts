@@ -60,8 +60,8 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
 
     // Check if the VC matches the schema
     // Get the schema from the VC
-    if (this.expected.schemas) {
-      const context: string[] = validationResponse.payloadObject[VerifiableCredentialConstants.CLAIM_CONTEXT];
+    if (this.expected.schemas && this.expected.schemas.length > 0) {
+      const context: string[] = validationResponse.payloadObject.vc[VerifiableCredentialConstants.CLAIM_CONTEXT];
       let schemaFound = false;
       let schema: string = '';
       for (let inx = 0 ; inx < context.length; inx++) {

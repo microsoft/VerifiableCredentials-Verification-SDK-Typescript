@@ -6,8 +6,28 @@
 import { TokenType } from '../index';
 
 export default interface IExpected {
+  /**
+   * The token type
+   */
   type: TokenType,
+
+  /**
+   * Expected issuers for the token type
+   */
   issuers: string[],
-  audience: string,
-  schemas?: string[]
+
+  /**
+   * Expected audience for the token type
+   */
+  audience?: string,
+
+  /**
+   * Verifiable credentials will use schema to define their type
+   */
+  schemas?: string[],
+  
+  /**
+   * Id tokens will use configurations to find the public key
+   */
+  configurations?: string[]
 }

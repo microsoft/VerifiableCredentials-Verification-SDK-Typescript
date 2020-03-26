@@ -7,7 +7,8 @@ import TestSetup from './TestSetup';
 import { DidDocument } from '@decentralized-identity/did-common-typescript';
 import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
 import base64url from "base64url";
-import { ValidationOptions, IExpected } from '../lib/index';
+import ValidationOptions from '../lib/Options/ValidationOptions';
+import { IExpected } from '../lib/index';
 import VerifiableCredentialConstants from '../lib/VerifiableCredential/VerifiableCredentialConstants';
 
 export class IssuanceHelpers {
@@ -57,7 +58,7 @@ export class IssuanceHelpers {
       "vc": {
         "@context": [
           "https://www.w3.org/2018/credentials/v1",
-          "test schema"
+          "https://portableidentitycards.azure-api.net/42b39d9d-0cdd-4ae0-b251-b7b39a561f91/api/portable/v1.0/contracts/test/schema"
         ],
         "type": [
           "VerifiableCredential"
@@ -132,12 +133,11 @@ export class IssuanceHelpers {
   public static async generateSigningKeyAndSetConfigurationMock(setup: TestSetup, kid: string): Promise<[any, any, string]> {
     // setup http mock
     const configuration = setup.defaultIdTokenConfiguration;
-    const jwks = setup.defaultIdTokenJwksConfiguration;
-
-    setup.fetchMock.get(configuration, {"jwks_uri": "${jwks}", "issuer": "${setup.tokenIssuer}"}, {overwriteRoutes: true});
+    const jwks = setup.defaultIdTokenJwksConfiguration
+    setup.fetchMock.get(configuration, {"jwks_uri":  `${jwks}`, "issuer": `${setup.tokenIssuer}`}, {overwriteRoutes: true});
     const [jwkPrivate, jwkPublic] = await IssuanceHelpers.generateSigningKey(setup, kid);
 
-    setup.fetchMock.get(jwks, {"keys": [`${JSON.stringify(jwkPublic)}`]}, {overwriteRoutes: true});
+    setup.fetchMock.get(jwks, `{"keys": [${JSON.stringify(jwkPublic)}]}`, {overwriteRoutes: true});
     return [jwkPrivate, jwkPublic, configuration];
   }
 
@@ -238,8 +238,9 @@ export class IssuanceHelpers {
       claimSources
      );
      const expected: IExpected[] = [
-      { type: TokenType.idToken, issuers: [setup.defaultIssuerDid], audience: setup.defaultUserDid },
-      { type: TokenType.verifiableCredential, issuers: [setup.defaultIssuerDid], audience: setup.defaultUserDid }
+      { type: TokenType.idToken, issuers: [setup.tokenIssuer], audience: setup.AUDIENCE, configurations: [setup.defaultIdTokenConfiguration] },
+      { type: TokenType.siop, issuers: ['https://self-issued.me'], audience: setup.AUDIENCE },
+      { type: TokenType.verifiableCredential, issuers: [setup.defaultIssuerDid], audience: setup.defaultUserDid, schemas: [schema] }
     ];
 
      const siopRequest = {

@@ -76,4 +76,9 @@ export default class VerifiableCredentialConstants {
    * Constant for self issued issuer
    */
   public static TOKEN_SI_ISS = 'https://self-issued.me';
+
+  /**
+   * Default resolver url
+   */
+  public static UNIVERSAL_RESOLVER_URL = 'https://beta.discover.did.microsoft.com';
 }

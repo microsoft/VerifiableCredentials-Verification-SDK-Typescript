@@ -6,6 +6,7 @@ import { IValidationOptions } from '../Options/IValidationOptions';
 import ClaimToken from '../VerifiableCredential/ClaimToken';
 import { IIdTokenValidation, IdTokenValidationResponse } from './IdTokenValidationResponse';
 import { IExpected } from '..';
+import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants';
 
 //#region delegate types
 
@@ -42,8 +43,23 @@ constructor (private options: IValidationOptions, private expected: IExpected) {
     }
     
     // Validate token signature
-    validationResponse = await this.options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, idToken);
-    if (!validationResponse.result) {
+    if (!this.expected.configurations) {
+      return {
+        result: false,
+        status: 500,
+        detailedError: `Expected should have configurations set`
+      };
+    }
+
+    let idTokenValidated = false
+    for (let inx = 0; inx < this.expected.configurations.length; inx ++) {
+      validationResponse = await this.options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, new ClaimToken(idToken.type, idToken.rawToken, this.expected.configurations[inx]));
+      if (validationResponse.result) {
+        idTokenValidated = true;
+        break;
+      }
+    }
+    if (!idTokenValidated) {
       return validationResponse;
     }
 

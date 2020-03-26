@@ -7,7 +7,8 @@
 import { JoseConstants, IKeyStore, KeyStoreFactory, SubtleCryptoNode, CryptoFactoryManager, CryptoFactory, JoseProtocol, SubtleCrypto } from '@microsoft/crypto-sdk';
 import { TSMap } from 'typescript-map';
 import { IssuanceHelpers } from './IssuanceHelpers';
-import { ManagedHttpResolver, IValidatorOptions, CryptoOptions } from '../lib/index';
+import { ManagedHttpResolver, CryptoOptions } from '../lib/index';
+import IValidatorOptions from '../lib/Options/IValidatorOptions';
 
 /**
  * Class that creates resources needed for unit tests
@@ -36,7 +37,7 @@ export default class TestSetup {
   /**
    * Constant for default id token configuration
    */
-  public defaultIdTokenConfiguration = 'http://example/';
+  public defaultIdTokenConfiguration = 'http://example/configuration';
     
   /**
    * Constant for default id token jwks configuration
@@ -71,7 +72,7 @@ export default class TestSetup {
   /**
    * Constant for token issuer url
    */
-  public tokenIssuer = 'https://example.com';
+  public tokenIssuer = 'https://example.com/issuer';
   
   /**
    * TestSetup crypto properties
@@ -98,7 +99,6 @@ export default class TestSetup {
       resolver: this.resolver,
       
       httpClient: {
-        client: fetch,
         options: {}
       },
       crypto: {

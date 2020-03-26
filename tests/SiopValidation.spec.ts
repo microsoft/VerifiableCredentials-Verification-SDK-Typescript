@@ -6,7 +6,7 @@
 import { ISiopValidationResponse } from "../lib/InputValidation/SiopValidationResponse";
 import { SiopValidation } from "../lib/InputValidation/SiopValidation";
 import TestSetup from './TestSetup';
-import { ValidationOptions } from "../lib/index";
+import ValidationOptions from '../lib/Options/ValidationOptions';
 import { IssuanceHelpers } from "./IssuanceHelpers";
 
 describe('SiopValidation', () =>

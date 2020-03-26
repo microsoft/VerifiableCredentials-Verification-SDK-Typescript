@@ -20,6 +20,11 @@ export enum TokenType {
   idToken = 'idToken',
 
   /**
+   * Token is SIOP token
+   */
+  siop = 'siop',
+
+  /**
    * Token is verifiable presentation
    */
   verifiablePresentation = 'verifiablePresentation',

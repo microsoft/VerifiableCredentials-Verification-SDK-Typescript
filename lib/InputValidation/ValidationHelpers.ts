@@ -10,8 +10,11 @@ import VerifiableCredentialConstants from '../VerifiableCredential/VerifiableCre
 import ClaimToken, { TokenType } from '../VerifiableCredential/ClaimToken';
 import { ISiopValidationResponse } from './SiopValidationResponse';
 import ValidationOptions from '../Options/ValidationOptions';
+import IValidatorOptions from '../Options/IValidatorOptions';
 import { IdTokenValidationResponse } from './IdTokenValidationResponse';
-import { IValidatorOptions, IExpected } from '../index';
+import { IExpected } from '../index';
+require('es6-promise').polyfill();
+require('isomorphic-fetch');
 
 /**
  * Helper Class for validation
@@ -31,6 +34,11 @@ constructor (private validatorOptions: IValidatorOptions, private validationOpti
  * Get the token object from the token
  * @param validationResponse The response for the requestor
  * @param token The token to parse
+ * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
+ * @returns validationResponse.didSignature The deserialized token
+ * @returns validationResponse.didKid The kid used to sign the token
+ * @returns validationResponse.did The DID used to sign the token
+ * @returns validationResponse.payloadObject The parsed payload
  */
   public getTokenObject (validationResponse: IValidationResponse, token: string): IValidationResponse {
     let tokenPayload: Buffer;
@@ -40,7 +48,7 @@ constructor (private validatorOptions: IValidatorOptions, private validationOpti
         token, 
         ProtectionFormat.JwsCompactJson, 
         (self as ValidationOptions).validatorOptions.crypto.payloadProtectionOptions);
-      tokenPayload = validationResponse.didSignature.get(JoseConstants.tokenPayload);
+      tokenPayload = validationResponse.didSignature!.get(JoseConstants.tokenPayload);
       if (!validationResponse.didSignature || !tokenPayload) {
         return {
           result: false,
@@ -96,6 +104,9 @@ constructor (private validatorOptions: IValidatorOptions, private validationOpti
    * @param validatorOptions The validator options
    * @param validationOptions Issuance validationOptions containing delegates
    * @param validationResponse The response for the requestor
+   * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
+   * @returns validationResponse.didDocument The DID document
+   * @returns validationResponse.didSigningPublicKey The public key to validate the token signature
    */
   public async resolveDidAndGetKeys (validationResponse: IValidationResponse): Promise<IValidationResponse> {
     const  self: any = this;
@@ -150,6 +161,7 @@ constructor (private validatorOptions: IValidatorOptions, private validationOpti
    * Check the time validity of the token
    * @param validationResponse The response for the requestor
    * @param driftInSec Drift used to extend time checks. Covers for clock drifts.
+   * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
    */
   public checkTimeValidityOnToken (validationResponse: IValidationResponse, driftInSec: number = 0): IValidationResponse {
     const  self: any = this;
@@ -194,6 +206,7 @@ constructor (private validatorOptions: IValidatorOptions, private validationOpti
    * Check the scope validity of the token such as iss and aud
    * @param validationResponse The response for the requestor
    * @param expectedSchema Expected schema of the verifiable credential
+   * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
    */
   public checkScopeValidityOnToken (validationResponse: IValidationResponse, expected: IExpected): IValidationResponse {
     const  self: any = this;
@@ -208,7 +221,7 @@ constructor (private validatorOptions: IValidatorOptions, private validationOpti
     }
     
     // check aud value
-    if (validationResponse.payloadObject.aud !== expected.audience) {
+    if (expected.audience && validationResponse.payloadObject.aud !== expected.audience) {
       return validationResponse = {
           result: false,
           detailedError: `Wrong or missing aud property in ${(self as ValidationOptions).inputDescription}. Expected '${expected.audience}'`,
@@ -222,6 +235,7 @@ constructor (private validatorOptions: IValidatorOptions, private validationOpti
    * Validate the DID signature on the token
    * @param validationResponse The response for the requestor
    * @param token Token to validate
+   * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
    */
   public async validateDidSignature (validationResponse: IValidationResponse, token: ICryptoToken): Promise<IValidationResponse> {
     const  self: any = this;
@@ -257,16 +271,17 @@ constructor (private validatorOptions: IValidatorOptions, private validationOpti
   /**
    * Validate the signature on a token. Fetch validation key
    * @param validationResponse The response for the requestor
+   * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
+   * @returns validationResponse.issuer The issuer found in the configuration. Should match the issuer in the token.
    */
   public async fetchKeyAndValidateSignatureOnIdToken (validationResponse: IValidationResponse, token: ClaimToken): Promise<IValidationResponse> {
     const  self: any = this;
 
     // Get the keys to validate the token
     let keys: any;
-    const httpClient = (self as ValidationOptions).validatorOptions.httpClient;
     try {
       if (token.type === TokenType.idToken) {
-        let response = await httpClient.client(token.configuration, httpClient.options);
+        let response = await fetch(token.configuration);
         if (!response.ok) {
           return {
               result: false,
@@ -283,7 +298,7 @@ constructor (private validatorOptions: IValidatorOptions, private validationOpti
               detailedError: `No reference to jwks found in token configuration`
             };
         }
-        response = await (self as ValidationOptions).validatorOptions.httpClient.client(keysUrl, httpClient.options);
+        response = await fetch(keysUrl);
         if (!response.ok) {
           return {
               result: false,
@@ -372,6 +387,8 @@ constructor (private validatorOptions: IValidatorOptions, private validationOpti
   /**
    * Decode the tokens from the SIOP request
    * @param validationResponse The response for the requestor
+   * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
+   * @returns validationResponse.inputTokens List of tokens found in the SIOP
    */
   public getTokensFromSiop (validationResponse: IValidationResponse): IValidationResponse {
     const  self: any = this;
@@ -407,16 +424,6 @@ constructor (private validatorOptions: IValidatorOptions, private validationOpti
         };
       }
     }
-    return validationResponse;
-  }
-
-  /**
-   * Get the claim bag based in tokens from the SIOP request
-   * @param validationResponse The response for the requestor
-   */
-  public async getClaimBag (validationResponse: ISiopValidationResponse): Promise<ISiopValidationResponse> {
-    const  self: any = this;
-    validationResponse = (self as ValidationOptions).getTokensFromSiopDelegate(validationResponse);
     return validationResponse;
   }
 

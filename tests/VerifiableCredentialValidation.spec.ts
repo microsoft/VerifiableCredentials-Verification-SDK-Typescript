@@ -10,17 +10,15 @@ import { IdTokenValidation } from '../lib/InputValidation/IdTokenValidation';
 
  describe('VerifiableCredentialValidation', () => {
   let setup: TestSetup;
-  const originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
   beforeEach(async () => {
     setup = new TestSetup();
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
   });
   
   afterEach(() => {
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+    setup.fetchMock.reset();
   });
 
-  fit('should test validate', async () => {
+  it('should test validate', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, 'vc');   
     const expected = siop.expected.filter((token: IExpected) => token.type === TokenType.verifiableCredential)[0];
 
@@ -37,11 +35,11 @@ import { IdTokenValidation } from '../lib/InputValidation/IdTokenValidation';
     expect(response.detailedError).toEqual('The signature on the payload in the vc is invalid');
 
     // bad audience
-    siop.expected.audience = 'abcdef';
-    validator = new VerifiableCredentialValidation(options, siop.expected);
+    expected.audience = 'abcdef';
+    validator = new VerifiableCredentialValidation(options, expected);
     response = await validator.validate(siop.vc.rawToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual('Wrong or missing aud property in vc. Expected abcdef');
+    expect(response.detailedError).toEqual(`Wrong or missing aud property in vc. Expected 'abcdef'`);
  });
 });

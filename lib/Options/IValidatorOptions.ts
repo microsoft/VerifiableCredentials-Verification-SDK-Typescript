@@ -11,11 +11,6 @@ import { IDidResolver, ICryptoOptions } from '../index';
 export interface IHttpClientOptions {
 
     /**
-     * The http client to use
-     */
-    client: any,
-
-    /**
      * The http client options
      */
     options: any,

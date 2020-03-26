@@ -5,14 +5,17 @@
 
 export { DidDocument, IDidDocument, IDidDocumentPublicKey, IDidDocumentServiceDescriptor, IDidResolver, IDidResolveResult } from '@decentralized-identity/did-common-typescript';
 
-import IValidatorOptions from './Options/IValidatorOptions';
-import ValidationOptions from './Options/ValidationOptions';
 import IExpected from './Options/IExpected';
 import CryptoOptions, { ICryptoOptions } from './Options/CryptoOptions';
-export { IValidatorOptions, ValidationOptions, ICryptoOptions, CryptoOptions, IExpected };
+export { ICryptoOptions, CryptoOptions, IExpected };
 
-import ManagedHttpResolver from './resolver/ManagedHttpResolver';
+import ManagedHttpResolver from './Resolver/ManagedHttpResolver';
 export { ManagedHttpResolver };
 
 import ClaimToken, { TokenType } from './VerifiableCredential/ClaimToken';
 export { TokenType, ClaimToken };
+
+import TokenValidator from './Api/TokenValidator';
+import Validator from './Api/Validator';
+import ValidatorBuilder from './Api/ValidatorBuilder';
+export { TokenValidator, Validator, ValidatorBuilder };

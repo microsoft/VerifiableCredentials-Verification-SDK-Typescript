@@ -4,7 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import TestSetup from './TestSetup';
-import { ValidationOptions } from "../lib/index";
+import ValidationOptions from '../lib/Options/ValidationOptions';
+import { IExpected, TokenType } from "../lib/index";
 import { IssuanceHelpers } from "./IssuanceHelpers";
 import { IDidValidationResponse } from "../lib/InputValidation/DidValidationResponse";
 import { DidValidation } from "../lib/InputValidation/DidValidation";
@@ -24,8 +25,9 @@ describe('DidValidation', () =>
   
   it('should test validate', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, 'siop');    
-    
-    const validator = new DidValidation(options, siop.expected);
+    const expected = siop.expected.filter((token: IExpected) => token.type === TokenType.siop)[0];
+
+    const validator = new DidValidation(options, expected);
     let response = await validator.validate(request.rawToken);
     expect(response.result).toBeTruthy();
     

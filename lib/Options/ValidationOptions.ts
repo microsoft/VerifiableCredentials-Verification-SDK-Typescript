@@ -2,9 +2,10 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { FetchKeyAndValidateSignatureOnIdToken, IValidationOptions, CheckTimeValidityOnToken, ResolveDidAndGetKeys, GetTokenObject, ValidateDidSignature, CheckScopeValidityOnToken, ValidateSignatureOnToken, GetTokensFromSiop, GetClaimBag } from './IValidationOptions';
+import { FetchKeyAndValidateSignatureOnIdToken, IValidationOptions, CheckTimeValidityOnToken, ResolveDidAndGetKeys, GetTokenObject, ValidateDidSignature, CheckScopeValidityOnToken, ValidateSignatureOnToken, GetTokensFromSiop } from './IValidationOptions';
 import { ValidationHelpers } from '../InputValidation/ValidationHelpers';
-import { IValidatorOptions } from '../index';
+import IValidatorOptions from './IValidatorOptions';
+
 /**
  *Interface to model validation options
  */
@@ -25,7 +26,6 @@ constructor (public validatorOptions: IValidatorOptions, public inputDescription
   this.fetchKeyAndValidateSignatureOnIdTokenDelegate = this.validationHelpers.fetchKeyAndValidateSignatureOnIdToken;
   this.validateSignatureOnTokenDelegate = this.validationHelpers.validateSignatureOnToken;
   this.getTokensFromSiopDelegate = this.validationHelpers.getTokensFromSiop;
-  this.getClaimBagDelegate = this.validationHelpers.getClaimBag;
 }
 
 /**
@@ -72,9 +72,4 @@ public getTokenObjectDelegate: GetTokenObject;
    * Retrieve tokens from SIOP
    */
   public getTokensFromSiopDelegate: GetTokensFromSiop;
-
-  /**
-   * Get the claim bag based in tokens from the request
-   */
-  public getClaimBagDelegate: GetClaimBag; 
 }

@@ -25,7 +25,7 @@ import { IExpected } from '../lib';
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, 'id token');   
     const expected = siop.expected.filter((token: IExpected) => token.type === TokenType.idToken)[0];
 
-    let validator = new IdTokenValidation(options, siop.expected);
+    let validator = new IdTokenValidation(options, expected);
     let response = await validator.validate(siop.idToken)
     expect(response.result).toBeTruthy();
     
@@ -37,8 +37,8 @@ import { IExpected } from '../lib';
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The presented id token is has an invalid signature');
 
-    siop.expected.audience = 'abcdef';
-    validator = new IdTokenValidation(options, siop.expected);
+    expected.audience = 'abcdef';
+    validator = new IdTokenValidation(options, expected);
     response = await validator.validate(siop.idToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);

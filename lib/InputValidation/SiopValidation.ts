@@ -41,7 +41,7 @@ constructor (private options: IValidationOptions, private expected: IExpected) {
     }
 
     // Get input for the requested VC
-    validationResponse = await this.options.getClaimBagDelegate(validationResponse);
+    validationResponse = await this.options.getTokensFromSiopDelegate(validationResponse);
     if (!validationResponse.result) {
       return validationResponse;
     }

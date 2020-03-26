@@ -6,7 +6,8 @@ import ClaimToken from '../VerifiableCredential/ClaimToken';
 import { IValidationResponse } from '../InputValidation/IValidationResponse';
 import { ICryptoToken } from '@microsoft/crypto-sdk';
 import { ValidationHelpers } from '../InputValidation/ValidationHelpers';
-import { IValidatorOptions, IExpected } from '../index';
+import IValidatorOptions from '../Options/IValidatorOptions';
+import { IExpected } from '../index';
 import { ISiopValidationResponse } from '../InputValidation/SiopValidationResponse';
 
  export type GetTokenObject = (validationResponse: IValidationResponse, token: string) => IValidationResponse;
@@ -17,7 +18,6 @@ import { ISiopValidationResponse } from '../InputValidation/SiopValidationRespon
  export type FetchKeyAndValidateSignatureOnIdToken = (validationResponse: IValidationResponse, token: ClaimToken) => Promise<IValidationResponse>;
  export type ValidateSignatureOnToken = (validationResponse: IValidationResponse, token: ClaimToken, key: any) => Promise<IValidationResponse>;
  export type GetTokensFromSiop = (validationResponse: IValidationResponse) => IValidationResponse;
- export type GetClaimBag = (validationResponse: ISiopValidationResponse) => Promise<ISiopValidationResponse>;
 
  /**
  *Interface to model validation options
@@ -73,9 +73,4 @@ validationHelpers: ValidationHelpers;
    * Retrieve tokens from SIOP
    */
   getTokensFromSiopDelegate: GetTokensFromSiop,
-
-  /**
-   * Get the claim bag based in tokens from the request
-   */
-  getClaimBagDelegate: GetClaimBag
 }
