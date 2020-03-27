@@ -6,21 +6,18 @@
 import { TokenType, IExpected, ITokenValidator, ClaimToken } from '../index';
 import { IValidationResponse } from '../InputValidation/IValidationResponse';
 import ValidationOptions from '../Options/ValidationOptions';
-import { VerifiablePresentationValidation } from '../InputValidation/VerifiablePresentationValidation';
 import IValidatorOptions from '../Options/IValidatorOptions';
-import { VerifiableCredentialValidation } from '../InputValidation/VerifiableCredentialValidation';
-import { IdTokenValidation } from '../InputValidation/IdTokenValidation';
-import { IValidationOptions } from '../Options/IValidationOptions';
+import { SelfIssuedValidation } from '../InputValidation/SelfIssuedValidation';
 import ValidationQueue from '../InputValidation/ValidationQueue';
 import ValidationQueueItem from '../InputValidation/ValidationQueueItem';
 
 /**
  * Class to validate a token
  */
-export default class VerifiableCredentialTokenValidator implements ITokenValidator {
+export default class SelfIssuedTokenValidator implements ITokenValidator {
 
   /**
-   * Create new instance of <see @class VerifiableCredentialTokenValidator>
+   * Create new instance of <see @class SelfIssuedTokenValidator>
    * @param validatorOption The options used during validation
    * @param expected values to find in the token to validate
    */
@@ -32,21 +29,19 @@ export default class VerifiableCredentialTokenValidator implements ITokenValidat
    * Validate the token
    * @param queue with tokens to validate
    * @param queueItem under validation
-   * @param validatorOption The options used during validation
-   * @param expected values to find in the token to validate
    */
   public async validate(_queue: ValidationQueue, queueItem:ValidationQueueItem): Promise<IValidationResponse> { 
-    const options = new ValidationOptions(this.validatorOption, 'verifiable credential');
-    const validator = new VerifiableCredentialValidation(options, this.expected);
+    const options = new ValidationOptions(this.validatorOption, 'self issued');
+    const validator = new SelfIssuedValidation(options, this.expected);
     const validationResult = await validator.validate(queueItem.token);
-    return validationResult as IValidationResponse; 
+    return validationResult as IValidationResponse;    
   }
- 
+  
   /**
    * Gets the type of token to validate
    */
   public get isType(): TokenType {
-    return TokenType.verifiableCredential;
+    return TokenType.selfIssued;
   }
 }
 

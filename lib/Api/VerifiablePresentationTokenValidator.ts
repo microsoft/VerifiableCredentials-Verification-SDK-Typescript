@@ -20,7 +20,7 @@ import ValidationQueueItem from '../InputValidation/ValidationQueueItem';
 export default class VerifiablePresentationTokenValidator implements ITokenValidator {
 
   /**
-   * Create new instance of <see @class TokenValidator>
+   * Create new instance of <see @class VerifiablePresentationTokenValidator>
    * @param validatorOption The options used during validation
    * @param expected values to find in the token to validate
    */

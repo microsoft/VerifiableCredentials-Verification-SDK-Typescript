@@ -67,6 +67,14 @@ export default class Validator {
           options = new ValidationOptions(validatorOption, 'verifiable presentation');
           response = await validator.validate(queue, queueItem!);
           break;
+        case TokenType.siop: 
+          options = new ValidationOptions(validatorOption, 'siop');
+          response = await validator.validate(queue, queueItem!);
+          break;
+        case TokenType.selfIssued: 
+          options = new ValidationOptions(validatorOption, 'self issued');
+          response = await validator.validate(queue, queueItem!);
+          break;
         default:
           return new Promise((_, reject) => {
             reject(`${claimToken.type} is not supported`);
@@ -88,7 +96,7 @@ export default class Validator {
     };
 
     // Deserialize id token token
-    validationResponse = validationOptions.getTokenObjectDelegate(validationResponse, token);
+    validationResponse = validationOptions.getSelfIssuedTokenObjectDelegate(validationResponse, token);
     if (!validationResponse.result) {
       return [validationResponse, {} as ClaimToken];
     }
@@ -100,13 +108,16 @@ export default class Validator {
     if (validationResponse.payloadObject!.vp) {
       return [validationResponse, new ClaimToken(TokenType.verifiablePresentation, token, '')];
     }
-    const signature = validationResponse.didSignature?.get(JoseConstants.tokenSignatures)[0];
-    const header = signature.protected;
-    if (header.has('alg') && header.get('alg') !== 'none') {
-      return [validationResponse, new ClaimToken(TokenType.idToken, token, '')];
-    } else {
+    if (validationResponse.payloadObject!.claims) {
+      return [validationResponse, new ClaimToken(TokenType.siop, token, '')];
+    }
+    // Check for signature
+    validationResponse = validationOptions.getTokenObjectDelegate(validationResponse, token);
+    if (!validationResponse.result && validationResponse.status === 403) {
       return [validationResponse, new ClaimToken(TokenType.selfIssued, token, '')];
     }
+    
+    return [validationResponse, new ClaimToken(TokenType.idToken, token, '')];
   }
 
   private setValidatorOptions(): IValidatorOptions {

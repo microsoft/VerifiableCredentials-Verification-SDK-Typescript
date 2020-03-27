@@ -8,11 +8,12 @@ import { ICryptoToken, JoseConstants, ProtectionFormat } from '@microsoft/crypto
 import { IDidResolveResult } from '@decentralized-identity/did-common-typescript';
 import VerifiableCredentialConstants from '../VerifiableCredential/VerifiableCredentialConstants';
 import ClaimToken, { TokenType } from '../VerifiableCredential/ClaimToken';
-import { ISiopValidationResponse } from './SiopValidationResponse';
 import ValidationOptions from '../Options/ValidationOptions';
 import IValidatorOptions from '../Options/IValidatorOptions';
 import { IdTokenValidationResponse } from './IdTokenValidationResponse';
 import { IExpected } from '../index';
+import base64url from "base64url";
+
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
 
@@ -31,6 +32,30 @@ constructor (private validatorOptions: IValidatorOptions, private validationOpti
 }
 
 /**
+ * Get the token object from the self issued token
+ * @param validationResponse The response for the requestor
+ * @param token The token to parse
+ * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
+ * @returns validationResponse.payloadObject The parsed payload
+ */
+public getSelfIssuedTokenObject (validationResponse: IValidationResponse, token: string): IValidationResponse {
+    // Deserialize the token
+    try {
+      const split = token.split('.');
+      validationResponse.payloadObject = JSON.parse(base64url.decode(split[1]));
+    } catch (err) {
+      console.error(err);
+      return {
+        result: false,
+        detailedError: `The self issued token could not be deserialized`,
+        status: 400
+      };
+    }
+    
+   return validationResponse;
+}
+
+/**
  * Get the token object from the token
  * @param validationResponse The response for the requestor
  * @param token The token to parse
@@ -40,65 +65,65 @@ constructor (private validatorOptions: IValidatorOptions, private validationOpti
  * @returns validationResponse.did The DID used to sign the token
  * @returns validationResponse.payloadObject The parsed payload
  */
-  public getTokenObject (validationResponse: IValidationResponse, token: string): IValidationResponse {
-    let tokenPayload: Buffer;
-    const  self: any = this;
-    try {
-      validationResponse.didSignature = (self as ValidationOptions).validatorOptions.crypto.payloadProtectionProtocol.deserialize(
-        token, 
-        ProtectionFormat.JwsCompactJson, 
-        (self as ValidationOptions).validatorOptions.crypto.payloadProtectionOptions);
-      tokenPayload = validationResponse.didSignature!.get(JoseConstants.tokenPayload);
-      if (!validationResponse.didSignature || !tokenPayload) {
-        return {
-          result: false,
-          detailedError: `The signature in the ${(self as ValidationOptions).inputDescription} has an invalid format`,
-          status: 403
-        };
-      }
+public getTokenObject (validationResponse: IValidationResponse, token: string): IValidationResponse {
+  let tokenPayload: Buffer;
+  const  self: any = this;
+  try {
+    validationResponse.didSignature = (self as ValidationOptions).validatorOptions.crypto.payloadProtectionProtocol.deserialize(
+      token, 
+      ProtectionFormat.JwsCompactJson, 
+      (self as ValidationOptions).validatorOptions.crypto.payloadProtectionOptions);
+    tokenPayload = validationResponse.didSignature!.get(JoseConstants.tokenPayload);
+    if (!validationResponse.didSignature || !tokenPayload) {
+      return {
+        result: false,
+        detailedError: `The signature in the ${(self as ValidationOptions).inputDescription} has an invalid format`,
+        status: 403
+      };
+    }
 
-      const signature = validationResponse.didSignature.get(JoseConstants.tokenSignatures)[0];
-      const header = signature.protected;
-      const kid = header.get(JoseConstants.Kid);
-      validationResponse.didKid = kid;
-      if (!validationResponse.didKid) {
-        return {
-          result: false,
-          detailedError: `The protected header in the ${(self as ValidationOptions).inputDescription} does not contain the kid`,
-          status: 403
-        };
-      }
-      // Get did from kid
-      const parts = kid.split('#');
-      if (parts.length <= 1 ) {
-        return {
-          result: false,
-          detailedError: `The kid in the ${(self as ValidationOptions).inputDescription} does not contain the did. Required format for kid is <did>#kid`,
-          status: 403
-        };
-      } 
-      validationResponse.did = parts[0];
-    } catch (err) {
-      console.error(err);
+    const signature = validationResponse.didSignature.get(JoseConstants.tokenSignatures)[0];
+    const header = signature.protected;
+    const kid = header.get(JoseConstants.Kid);
+    validationResponse.didKid = kid;
+    if (!validationResponse.didKid) {
       return {
         result: false,
-        detailedError: `The ${(self as ValidationOptions).inputDescription} could not be deserialized`,
-        status: 400
+        detailedError: `The protected header in the ${(self as ValidationOptions).inputDescription} does not contain the kid`,
+        status: 403
       };
     }
-    try {
-      validationResponse.payloadObject = JSON.parse(tokenPayload!.toString());
-    } catch (err) {
-      console.error(err);
+    // Get did from kid
+    const parts = kid.split('#');
+    if (parts.length <= 1 ) {
       return {
         result: false,
-        detailedError: `The payload in the ${(self as ValidationOptions).inputDescription} is no valid JSON`,
-        status: 400
+        detailedError: `The kid in the ${(self as ValidationOptions).inputDescription} does not contain the did. Required format for kid is <did>#kid`,
+        status: 403
       };
-    }
-    return validationResponse;  
+    } 
+    validationResponse.did = parts[0];
+  } catch (err) {
+    console.error(err);
+    return {
+      result: false,
+      detailedError: `The ${(self as ValidationOptions).inputDescription} could not be deserialized`,
+      status: 400
+    };
   }
-  
+  try {
+    validationResponse.payloadObject = JSON.parse(tokenPayload!.toString());
+  } catch (err) {
+    console.error(err);
+    return {
+      result: false,
+      detailedError: `The payload in the ${(self as ValidationOptions).inputDescription} is no valid JSON`,
+      status: 400
+    };
+  }
+  return validationResponse;  
+}
+
   /**
    * Resolve the DID and retrieve the public keys
    * @param validatorOptions The validator options
@@ -212,7 +237,7 @@ constructor (private validatorOptions: IValidatorOptions, private validationOpti
     const  self: any = this;
 
     // check iss value
-    if (!expected.issuers.includes(validationResponse.payloadObject.iss)) {
+    if (!expected.issuers!.includes(validationResponse.payloadObject.iss)) {
       return validationResponse = {
           result: false,
           detailedError: `Wrong or missing iss property in ${(self as ValidationOptions).inputDescription}. Expected '${JSON.stringify(expected.issuers)}'`,

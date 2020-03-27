@@ -14,7 +14,7 @@ export default interface IExpected {
   /**
    * Expected issuers for the token type
    */
-  issuers: string[],
+  issuers?: string[],
 
   /**
    * Expected audience for the token type

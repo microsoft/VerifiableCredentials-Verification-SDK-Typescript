@@ -36,13 +36,13 @@ export class IssuanceHelpers {
    * Create a verifiable credentiaL
    * @param claims Credential claims
    */
-  public static createSelfIssuedToken(claims: {[claim: string]: string}): string {
+  public static createSelfIssuedToken(claims: {[claim: string]: string}): ClaimToken {
     const header = base64url.encode(JSON.stringify({
       alg: "none",
       typ: 'JWT'
     }));
     const body = base64url.encode(JSON.stringify(claims));
-    return `${header}.${body}`;
+    return new ClaimToken(TokenType.selfIssued, `${header}.${body}`,'');
 }
 
   /**
@@ -217,9 +217,9 @@ export class IssuanceHelpers {
       tokenJwkPublic);
 
     const vp = await IssuanceHelpers.createVp(setup, [vc], didJwkPrivate);
-
+    const si = IssuanceHelpers.createSelfIssuedToken({name: 'jules',  birthDate:  new Date().toString()});
     const claimSources: {[claim: string]: any} =    { 
-      selfIssued: { JWT: IssuanceHelpers.createSelfIssuedToken({name: 'jules',  birthDate:  new Date().toString()})},
+      selfIssued: { JWT: si.rawToken},
       vp: { JWT: vp.rawToken }
     };
     claimSources[tokenConfiguration] = {JWT: idToken.rawToken};
@@ -243,6 +243,7 @@ export class IssuanceHelpers {
       claimSources
      );
      const expected: IExpected[] = [
+      { type: TokenType.selfIssued },
       { type: TokenType.idToken, issuers: [setup.tokenIssuer], audience: setup.AUDIENCE, configurations: [setup.defaultIdTokenConfiguration] },
       { type: TokenType.siop, issuers: ['https://self-issued.me'], audience: setup.AUDIENCE },
       { type: TokenType.verifiablePresentation, issuers: [setup.defaultUserDid] , audience: setup.AUDIENCE },
@@ -260,6 +261,7 @@ export class IssuanceHelpers {
       idToken,
       vp,
       vc,
+      si,
       expected
     }
      return [request, options, siopRequest];
