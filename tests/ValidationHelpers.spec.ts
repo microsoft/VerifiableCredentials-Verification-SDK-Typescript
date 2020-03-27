@@ -23,6 +23,7 @@ import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
   
   afterEach(() => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+    setup.fetchMock.reset();
   });
 
   it('should test getTokenObject', async () => {

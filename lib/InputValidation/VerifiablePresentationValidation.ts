@@ -4,8 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { VerifiablePresentationValidationResponse, IVerifiablePresentationValidation } from './VerifiablePresentationValidationResponse';
 import { IValidationOptions } from '../Options/IValidationOptions';
-import ClaimToken, { TokenType } from '../VerifiableCredential/ClaimToken';
-import { VerifiableCredentialValidation } from './VerifiableCredentialValidation';
+import ClaimToken from '../VerifiableCredential/ClaimToken';
 import { DidValidation } from './DidValidation';
 import { IExpected } from '../index';
 
@@ -14,13 +13,13 @@ import { IExpected } from '../index';
  */
 export class VerifiablePresentationValidation implements IVerifiablePresentationValidation {
 
-/**
- * Create a new instance of @see <VerifiablePresentationValidation>
- * @param options Options to steer the validation process
- * @param expected Expected properties of the verifiable presentation
- */
-constructor (private options: IValidationOptions, private expected: IExpected) {
-}
+  /**
+   * Create a new instance of @see <VerifiablePresentationValidation>
+   * @param options Options to steer the validation process
+   * @param expected Expected properties of the verifiable presentation
+   */
+  constructor (private options: IValidationOptions, private expected: IExpected) {
+  }
  
   /**
    * Validate the verifiable presentation
@@ -28,7 +27,7 @@ constructor (private options: IValidationOptions, private expected: IExpected) {
    * @param siopDid The did which presented the siop
    * @returns result is true if validation passes
    */
-  public async validate(verifiablePresentationToken: ClaimToken, siopDid?: string): Promise<VerifiablePresentationValidationResponse> {
+  public async validate(verifiablePresentationToken: string, siopDid?: string): Promise<VerifiablePresentationValidationResponse> {
     let validationResponse: VerifiablePresentationValidationResponse = {
       result: true,
       detailedError: '',
@@ -37,10 +36,13 @@ constructor (private options: IValidationOptions, private expected: IExpected) {
     
     // Check the DID parts of the VP
     const didValidation = new DidValidation(this.options, this.expected);
-    validationResponse = await didValidation.validate(verifiablePresentationToken.rawToken);
+    validationResponse = await didValidation.validate(verifiablePresentationToken);
     if (!validationResponse.result) {
       return validationResponse;
     }
+
+    // Set list of tokens to validate
+    validationResponse.tokensToValidate = validationResponse.payloadObject.vp!.verifiableCredential;
 
     // Check if VP and SIOP DID are equal
     if (siopDid && validationResponse.did !== siopDid) {
@@ -51,20 +53,6 @@ constructor (private options: IValidationOptions, private expected: IExpected) {
       };
     }
 
-    // Check presented VCs
-    validationResponse = await this.validateVerifiableCredentials(validationResponse);
-    if (!validationResponse.result) {
-      return validationResponse;
-    }
-
-    return validationResponse;
-  }
-
-  /**
-   * Validate the list of VCs
-   * @param validationResponse The response for the requestor
-   */
-  private async validateVerifiableCredentials(validationResponse: VerifiablePresentationValidationResponse): Promise<VerifiablePresentationValidationResponse> {
     if (!validationResponse.payloadObject && !validationResponse.payloadObject.vp) {
       return {
         result: false,
@@ -72,6 +60,7 @@ constructor (private options: IValidationOptions, private expected: IExpected) {
         detailedError: `Missing in vp in presentation`
       };
     }
+
     if (!validationResponse.payloadObject.vp['@context']) {
       return {
         result: false,
@@ -79,6 +68,7 @@ constructor (private options: IValidationOptions, private expected: IExpected) {
         detailedError: `Missing in @context in vp`
       };
     }
+
     const verifiableCredentials: string[] = validationResponse.payloadObject.vp.verifiableCredential;
     if (!verifiableCredentials) {
       return {
@@ -88,23 +78,6 @@ constructor (private options: IValidationOptions, private expected: IExpected) {
       };
     }
 
-    // Validate the VCs
-    const validator = new VerifiableCredentialValidation(this.options, this.expected);
-    for (let inx = 0; inx < verifiableCredentials.length; inx++) {
-      validationResponse = await validator.validate(verifiableCredentials[inx]);
-      if (!validationResponse.result) {
-        return validationResponse;
-      }
-
-      // Update list of validated tokens
-      const claimToken = new ClaimToken(TokenType.verifiableCredential, verifiableCredentials[inx], '');
-      if (validationResponse.inputTokens) {
-        validationResponse.inputTokens.push(claimToken);
-      } else {
-        validationResponse.inputTokens = [claimToken];
-      } 
-    }
-    
     return validationResponse;
   }
 }

@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { IValidationOptions } from '../Options/IValidationOptions';
-import ClaimToken from '../VerifiableCredential/ClaimToken';
+import ClaimToken, { TokenType } from '../VerifiableCredential/ClaimToken';
 import { IIdTokenValidation, IdTokenValidationResponse } from './IdTokenValidationResponse';
 import { IExpected } from '..';
 import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants';
@@ -29,7 +29,7 @@ constructor (private options: IValidationOptions, private expected: IExpected) {
    * @param idToken The presentation to validate as a signed token
    * @returns result is true if validation passes
    */
-  public async validate(idToken: ClaimToken): Promise<IdTokenValidationResponse> {
+  public async validate(idToken: string): Promise<IdTokenValidationResponse> {
     let validationResponse: IdTokenValidationResponse = {
       result: true,
       detailedError: '',
@@ -37,7 +37,7 @@ constructor (private options: IValidationOptions, private expected: IExpected) {
     };
 
     // Deserialize id token token
-    validationResponse = this.options.getTokenObjectDelegate(validationResponse, idToken.rawToken);
+    validationResponse = this.options.getTokenObjectDelegate(validationResponse, idToken);
     if (!validationResponse.result) {
       return validationResponse;
     }
@@ -53,7 +53,7 @@ constructor (private options: IValidationOptions, private expected: IExpected) {
 
     let idTokenValidated = false
     for (let inx = 0; inx < this.expected.configurations.length; inx ++) {
-      validationResponse = await this.options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, new ClaimToken(idToken.type, idToken.rawToken, this.expected.configurations[inx]));
+      validationResponse = await this.options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, new ClaimToken(TokenType.idToken, idToken, this.expected.configurations[inx]));
       if (validationResponse.result) {
         idTokenValidated = true;
         break;

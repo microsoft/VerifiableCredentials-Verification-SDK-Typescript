@@ -135,9 +135,11 @@ export class IssuanceHelpers {
     const configuration = setup.defaultIdTokenConfiguration;
     const jwks = setup.defaultIdTokenJwksConfiguration
     setup.fetchMock.get(configuration, {"jwks_uri":  `${jwks}`, "issuer": `${setup.tokenIssuer}`}, {overwriteRoutes: true});
+    console.log(`Set mock for ${configuration}`);
     const [jwkPrivate, jwkPublic] = await IssuanceHelpers.generateSigningKey(setup, kid);
 
     setup.fetchMock.get(jwks, `{"keys": [${JSON.stringify(jwkPublic)}]}`, {overwriteRoutes: true});
+    console.log(`Set mock for ${jwks}`);
     return [jwkPrivate, jwkPublic, configuration];
   }
 
@@ -162,7 +164,10 @@ export class IssuanceHelpers {
     (didDocument.document as any)['@context'] = 'https://w3id.org/did/v1';
     
     // Resolver mock
-    setup.fetchMock.mock(`${setup.resolverUrl}/${did}`, didDocument, {status: 200});
+    const resolverUrl = `${setup.resolverUrl}/${did}`;
+    setup.fetchMock.get(resolverUrl, didDocument);
+    console.log(`Set mock for ${resolverUrl}`);
+
     return [didDocument.document, jwkPrivate, jwkPublic];
   } 
 

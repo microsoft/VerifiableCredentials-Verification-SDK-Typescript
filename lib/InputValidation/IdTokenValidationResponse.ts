@@ -26,5 +26,5 @@ export interface IIdTokenValidation {
    * @param audience The expected audience for the token
    * @returns true if validation passes
    */
-  validate(idToken: ClaimToken, audience: string): Promise<IValidationResponse>;
+  validate(idToken: string): Promise<IValidationResponse>;
 }

@@ -64,4 +64,9 @@ export interface IValidationResponse {
    * Tokens provided in the siop request
    */
   inputTokens?: ClaimToken[];
+
+  /**
+   * List of tokens that still need to be validated
+   */
+  tokensToValidate?: string[];
 }

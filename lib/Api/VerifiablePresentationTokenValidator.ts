@@ -11,6 +11,8 @@ import IValidatorOptions from '../Options/IValidatorOptions';
 import { VerifiableCredentialValidation } from '../InputValidation/VerifiableCredentialValidation';
 import { IdTokenValidation } from '../InputValidation/IdTokenValidation';
 import { IValidationOptions } from '../Options/IValidationOptions';
+import ValidationQueue from '../InputValidation/ValidationQueue';
+import ValidationQueueItem from '../InputValidation/ValidationQueueItem';
 
 /**
  * Class to validate a token
@@ -19,23 +21,27 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
 
   /**
    * Create new instance of <see @class TokenValidator>
-   * @param tokenType The type to validate
+   * @param validatorOption The options used during validation
+   * @param expected values to find in the token to validate
    */
-  constructor () {
+  constructor (private validatorOption: IValidatorOptions, private expected: IExpected) {
   }
-
 
   /**
    * Validate the token
-   * @param validatorOption The options used during validation
-   * @param token to validate
-   * @param expected values to find in the token to validate
+   * @param queue with tokens to validate
+   * @param queueItem under validation
    */
-  public async validate(validatorOption: IValidatorOptions, token: ClaimToken, expected: IExpected): Promise<IValidationResponse> { 
-    const options = new ValidationOptions(validatorOption, 'verifiable presentation');
-    const validator = new VerifiablePresentationValidation(options, expected);
-    const validationResult = await validator.validate(token);
-    return validationResult as IValidationResponse;
+  public async validate(queue: ValidationQueue, queueItem: ValidationQueueItem): Promise<IValidationResponse> { 
+    const options = new ValidationOptions(this.validatorOption, 'verifiable presentation');
+    const validator = new VerifiablePresentationValidation(options, this.expected);
+    queueItem.setResult(await validator.validate(queueItem.token));
+    if (queueItem.validationResponse.tokensToValidate) {
+      for (let inx=0; inx < queueItem.validationResponse.tokensToValidate.length; inx++) {
+        queue.addToken(queueItem.validationResponse.tokensToValidate[inx]);
+      }
+    }
+    return queueItem.validationResponse as IValidationResponse;
   }
   
   /**

@@ -8,6 +8,8 @@ import { IValidationResponse } from '../InputValidation/IValidationResponse';
 import ValidationOptions from '../Options/ValidationOptions';
 import IValidatorOptions from '../Options/IValidatorOptions';
 import { IdTokenValidation } from '../InputValidation/IdTokenValidation';
+import ValidationQueue from '../InputValidation/ValidationQueue';
+import ValidationQueueItem from '../InputValidation/ValidationQueueItem';
 
 /**
  * Class to validate a token
@@ -16,22 +18,22 @@ export default class IdTokenTokenValidator implements ITokenValidator {
 
   /**
    * Create new instance of <see @class TokenValidator>
-   * @param tokenType The type to valildate
+   * @param validatorOption The options used during validation
+   * @param expected values to find in the token to validate
    */
-  constructor () {
+  constructor (private validatorOption: IValidatorOptions, private expected: IExpected) {
   }
 
 
   /**
    * Validate the token
-   * @param validatorOption The options used during validation
-   * @param token to validate
-   * @param expected values to find in the token to validate
+   * @param queue with tokens to validate
+   * @param queueItem under validation
    */
-  public async validate(validatorOption: IValidatorOptions, token: ClaimToken, expected: IExpected): Promise<IValidationResponse> { 
-    const options = new ValidationOptions(validatorOption, 'id token');
-    const validator = new IdTokenValidation(options, expected);
-    const validationResult = await validator.validate(token);
+  public async validate(_queue: ValidationQueue, queueItem:ValidationQueueItem): Promise<IValidationResponse> { 
+    const options = new ValidationOptions(this.validatorOption, 'id token');
+    const validator = new IdTokenValidation(options, this.expected);
+    const validationResult = await validator.validate(queueItem.token);
     return validationResult as IValidationResponse;    
   }
   

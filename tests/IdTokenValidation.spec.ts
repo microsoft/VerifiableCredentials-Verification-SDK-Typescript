@@ -26,20 +26,20 @@ import { IExpected } from '../lib';
     const expected = siop.expected.filter((token: IExpected) => token.type === TokenType.idToken)[0];
 
     let validator = new IdTokenValidation(options, expected);
-    let response = await validator.validate(siop.idToken)
+    let response = await validator.validate(siop.idToken.rawToken)
     expect(response.result).toBeTruthy();
     
     // Negative cases
 
     // Bad id token signature
-    response = await validator.validate(new ClaimToken(TokenType.idToken, siop.idToken.rawToken + 'a', siop.idToken.configuration));
+    response = await validator.validate(siop.idToken.rawToken + 'a');
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The presented id token is has an invalid signature');
 
     expected.audience = 'abcdef';
     validator = new IdTokenValidation(options, expected);
-    response = await validator.validate(siop.idToken);
+    response = await validator.validate(siop.idToken.rawToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Wrong or missing aud property in id token. Expected 'abcdef'`);

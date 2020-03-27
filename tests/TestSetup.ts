@@ -27,12 +27,17 @@ export default class TestSetup {
   /**
    * Resolver url
    */
+  public universalResolverUrl = `https://beta.discover.did.microsoft.com`;
+
+  /**
+   * Resolver url
+   */
   public resolverUrl = `https://beta.discover.did.microsoft.com/1.0/identifiers`;
 
   /**
    * TestSetup environment
    */
-  public resolver = new ManagedHttpResolver(this.resolverUrl);
+  public resolver = new ManagedHttpResolver(this.universalResolverUrl);
   
   /**
    * Constant for default id token configuration

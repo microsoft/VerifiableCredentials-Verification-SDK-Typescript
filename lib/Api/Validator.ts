@@ -5,14 +5,11 @@
 
 import { ClaimToken, IExpected, IDidResolver, CryptoOptions, ITokenValidator } from '../index';
 import { TokenType } from '../VerifiableCredential/ClaimToken';
-import { IdTokenValidation } from '../InputValidation/IdTokenValidation';
 import ValidationOptions from '../Options/ValidationOptions';
-import { IValidationOptions } from '../Options/IValidationOptions';
 import IValidatorOptions from '../Options/IValidatorOptions';
 import { KeyStoreInMemory, CryptoFactoryManager, CryptoFactoryNode, SubtleCryptoNode, JoseProtocol, JoseConstants } from '@microsoft/crypto-sdk';
 import { IValidationResponse } from '../InputValidation/IValidationResponse';
-import { VerifiableCredentialValidation } from '../InputValidation/VerifiableCredentialValidation';
-import { VerifiablePresentationValidation } from '../InputValidation/VerifiablePresentationValidation';
+import ValidationQueue from '../InputValidation/ValidationQueue';
 
 /**
  * Class model the token validator
@@ -38,32 +35,50 @@ export default class Validator {
     return this._tokenValidators;
   }
 
-  public async validate(token: string, expected: IExpected): Promise<IValidationResponse> {
+  public async validate(token: string): Promise<IValidationResponse> {
     const validatorOption: IValidatorOptions = this.setValidatorOptions();
     let options = new ValidationOptions(validatorOption, '');
-    const [validationResponse, claimToken] = Validator.getTokenType(options, token);
-    const validator = this.tokenValidators[claimToken.type];
-    if (!validator) {
-      return new Promise((_, reject) => {
-        reject(`${claimToken.type} does not has a ITokenValidator`);
-      });
-    }
-
-    switch (claimToken.type) {
-      case TokenType.idToken: 
-        options = new ValidationOptions(validatorOption, 'id token');
-        return validator.validate(validatorOption, claimToken, expected);
-      case TokenType.verifiableCredential: 
-        options = new ValidationOptions(validatorOption, 'verifiable credential');
-        return validator.validate(validatorOption, claimToken, expected);
-      case TokenType.verifiablePresentation: 
-        options = new ValidationOptions(validatorOption, 'verifiable presentation');
-        return validator.validate(validatorOption, claimToken, expected);
-      default:
+    let validationResponse: IValidationResponse = {
+      result: true,
+      status: 200,
+    };
+    const queue = new ValidationQueue();
+    queue.addToken(token);
+    let queueItem = queue.getNextToken();
+    do {
+      let [response, claimToken] = Validator.getTokenType(options, queueItem!.token);
+      const validator = this.tokenValidators[claimToken.type];
+      if (!validator) {
         return new Promise((_, reject) => {
-          reject(`${claimToken.type} is not supported`);
+          reject(`${claimToken.type} does not has a TokenValidator`);
         });
-    }
+      }
+  
+      switch (claimToken.type) {
+        case TokenType.idToken: 
+          options = new ValidationOptions(validatorOption, 'id token');
+          response = await validator.validate(queue, queueItem!);
+          break;
+        case TokenType.verifiableCredential: 
+          options = new ValidationOptions(validatorOption, 'verifiable credential');
+          response = await validator.validate(queue, queueItem!);
+          break;
+        case TokenType.verifiablePresentation: 
+          options = new ValidationOptions(validatorOption, 'verifiable presentation');
+          response = await validator.validate(queue, queueItem!);
+          break;
+        default:
+          return new Promise((_, reject) => {
+            reject(`${claimToken.type} is not supported`);
+          });
+      }
+      // Save result
+      queueItem!.setResult(response);
+
+      // Get next token to validate
+      queueItem = queue.getNextToken();
+    } while(queueItem);
+    return queue.getResult();
   }
   
   private static getTokenType(validationOptions: ValidationOptions, token: string): [IValidationResponse, ClaimToken] {

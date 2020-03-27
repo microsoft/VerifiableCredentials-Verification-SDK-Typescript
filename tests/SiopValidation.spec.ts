@@ -12,15 +12,12 @@ import { IssuanceHelpers } from "./IssuanceHelpers";
 describe('SiopValidation', () =>
 {
   let setup: TestSetup;
-  const originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
   beforeEach(async () => {
     setup = new TestSetup();
-    await setup.generateKeys();
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
   });
   
   afterEach(() => {
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+    setup.fetchMock.reset();
   });
   
   it('should test validate', async () => {

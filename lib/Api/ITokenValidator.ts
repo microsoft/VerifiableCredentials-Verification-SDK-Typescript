@@ -6,6 +6,8 @@
 import { TokenType, IExpected, ClaimToken } from '../index';
 import { IValidationResponse } from '../InputValidation/IValidationResponse';
 import IValidatorOptions from '../Options/IValidatorOptions';
+import ValidationQueue from '../InputValidation/ValidationQueue';
+import ValidationQueueItem from '../InputValidation/ValidationQueueItem';
 
 /**
  * Interface to validate a token
@@ -18,10 +20,9 @@ export default interface ITokenValidator {
   
   /**
    * Validate the token
-   * @param validatorOption The options used during validation
-   * @param token to validate
-   * @param expected values to find in the token to validate
+   * @param queue with tokens to validate
+   * @param queueItem under validation
    */
-  validate(validatorOption: IValidatorOptions, token: ClaimToken, expected: IExpected): Promise<IValidationResponse>;
+  validate(queue: ValidationQueue, queueItem: ValidationQueueItem): Promise<IValidationResponse>;
 }
 
