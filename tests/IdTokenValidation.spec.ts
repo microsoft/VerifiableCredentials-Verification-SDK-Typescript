@@ -18,6 +18,7 @@ import { IExpected } from '../lib';
   
   afterEach(() => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+    setup.fetchMock.reset();
   });
 
   it('should test validate', async () => {

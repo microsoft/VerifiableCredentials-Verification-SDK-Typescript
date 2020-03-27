@@ -388,7 +388,7 @@ constructor (private validatorOptions: IValidatorOptions, private validationOpti
    * Decode the tokens from the SIOP request
    * @param validationResponse The response for the requestor
    * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
-   * @returns validationResponse.inputTokens List of tokens found in the SIOP
+   * @returns validationResponse.tokensToValidate List of tokens found in the SIOP
    */
   public getTokensFromSiop (validationResponse: IValidationResponse): IValidationResponse {
     const  self: any = this;
@@ -414,7 +414,7 @@ constructor (private validatorOptions: IValidatorOptions, private validationOpti
 
       // Decode tokens
       try {
-        validationResponse.inputTokens = ClaimToken.getClaimTokensFromClaimSources(claimSources, claimNames);
+        validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromClaimSources(claimSources, claimNames).map((token) => token.rawToken);
       } catch (err) {
         console.error(err);
         return {
