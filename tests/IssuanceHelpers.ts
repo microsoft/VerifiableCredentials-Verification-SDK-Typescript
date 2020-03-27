@@ -240,6 +240,7 @@ export class IssuanceHelpers {
      const expected: IExpected[] = [
       { type: TokenType.idToken, issuers: [setup.tokenIssuer], audience: setup.AUDIENCE, configurations: [setup.defaultIdTokenConfiguration] },
       { type: TokenType.siop, issuers: ['https://self-issued.me'], audience: setup.AUDIENCE },
+      { type: TokenType.verifiablePresentation, issuers: [setup.defaultUserDid] , audience: setup.AUDIENCE },
       { type: TokenType.verifiableCredential, issuers: [setup.defaultIssuerDid], audience: setup.defaultUserDid, schemas: [schema] }
     ];
 

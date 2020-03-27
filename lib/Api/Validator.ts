@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TokenValidator, ClaimToken, IExpected, IDidResolver, CryptoOptions } from '../index';
+import { ClaimToken, IExpected, IDidResolver, CryptoOptions, ITokenValidator } from '../index';
 import { TokenType } from '../VerifiableCredential/ClaimToken';
 import { IdTokenValidation } from '../InputValidation/IdTokenValidation';
 import ValidationOptions from '../Options/ValidationOptions';
@@ -11,6 +11,8 @@ import { IValidationOptions } from '../Options/IValidationOptions';
 import IValidatorOptions from '../Options/IValidatorOptions';
 import { KeyStoreInMemory, CryptoFactoryManager, CryptoFactoryNode, SubtleCryptoNode, JoseProtocol, JoseConstants } from '@microsoft/crypto-sdk';
 import { IValidationResponse } from '../InputValidation/IValidationResponse';
+import { VerifiableCredentialValidation } from '../InputValidation/VerifiableCredentialValidation';
+import { VerifiablePresentationValidation } from '../InputValidation/VerifiablePresentationValidation';
 
 /**
  * Class model the token validator
@@ -18,7 +20,7 @@ import { IValidationResponse } from '../InputValidation/IValidationResponse';
 export default class Validator {
 
   constructor(
-    private _tokenValidators: { [type: string]: TokenValidator },
+    private _tokenValidators: { [type: string]: ITokenValidator },
     private _resolver: IDidResolver) {
   } 
 
@@ -32,7 +34,7 @@ export default class Validator {
   /**
    * Gets the token validators
    */
-  public get tokenValidators(): { [type: string]: TokenValidator } {
+  public get tokenValidators(): { [type: string]: ITokenValidator } {
     return this._tokenValidators;
   }
 
@@ -40,17 +42,30 @@ export default class Validator {
     const validatorOption: IValidatorOptions = this.setValidatorOptions();
     let options = new ValidationOptions(validatorOption, '');
     const [validationResponse, claimToken] = Validator.getTokenType(options, token);
+    const validator = this.tokenValidators[claimToken.type];
+    if (!validator) {
+      return new Promise((_, reject) => {
+        reject(`${claimToken.type} does not has a ITokenValidator`);
+      });
+    }
+
     switch (claimToken.type) {
       case TokenType.idToken: 
         options = new ValidationOptions(validatorOption, 'id token');
-        return this.idTokenValidate(validatorOption, claimToken, expected);
+        return validator.validate(validatorOption, claimToken, expected);
+      case TokenType.verifiableCredential: 
+        options = new ValidationOptions(validatorOption, 'verifiable credential');
+        return validator.validate(validatorOption, claimToken, expected);
+      case TokenType.verifiablePresentation: 
+        options = new ValidationOptions(validatorOption, 'verifiable presentation');
+        return validator.validate(validatorOption, claimToken, expected);
       default:
         return new Promise((_, reject) => {
           reject(`${claimToken.type} is not supported`);
         });
     }
   }
-
+  
   private static getTokenType(validationOptions: ValidationOptions, token: string): [IValidationResponse, ClaimToken] {
     let validationResponse: IValidationResponse = {
       result: true,
@@ -77,13 +92,6 @@ export default class Validator {
     } else {
       return [validationResponse, new ClaimToken(TokenType.selfIssued, token, '')];
     }
-  }
-
-  private async idTokenValidate(validatorOption: IValidatorOptions, token: ClaimToken, expected: IExpected): Promise<IValidationResponse> {
-    const options = new ValidationOptions(validatorOption, 'id token');
-    const validator = new IdTokenValidation(options, expected);
-    const validationResult = await validator.validate(token);
-    return validationResult as IValidationResponse;
   }
 
   private setValidatorOptions(): IValidatorOptions {

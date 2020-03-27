@@ -15,7 +15,10 @@ export { ManagedHttpResolver };
 import ClaimToken, { TokenType } from './VerifiableCredential/ClaimToken';
 export { TokenType, ClaimToken };
 
-import TokenValidator from './Api/TokenValidator';
+import ITokenValidator from './Api/ITokenValidator';
+import IdTokenTokenValidator from './Api/IdTokenTokenValidator';
+import VerifiableCredentialTokenValidator from './Api/VerifiableCredentialTokenValidator';
+import VerifiablePresentationTokenValidator from './Api/VerifiablePresentationTokenValidator';
 import Validator from './Api/Validator';
 import ValidatorBuilder from './Api/ValidatorBuilder';
-export { TokenValidator, Validator, ValidatorBuilder };
+export { VerifiablePresentationTokenValidator, VerifiableCredentialTokenValidator, IdTokenTokenValidator, Validator, ValidatorBuilder, ITokenValidator };

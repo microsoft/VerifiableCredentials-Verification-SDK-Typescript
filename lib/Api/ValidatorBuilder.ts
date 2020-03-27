@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TokenValidator, Validator, IDidResolver, ManagedHttpResolver } from '../index';
+import { ITokenValidator, Validator, IDidResolver, ManagedHttpResolver } from '../index';
 import VerifiableCredentialConstants from '../VerifiableCredential/VerifiableCredentialConstants';
 
 /**
  * Class to build a token validator
  */
 export default class ValidatorBuilder {
-  private _tokenValidators: { [type: string]: TokenValidator } = {};
+  private _tokenValidators: { [type: string]: ITokenValidator } = {};
   private _resolver: IDidResolver  = new ManagedHttpResolver(VerifiableCredentialConstants.UNIVERSAL_RESOLVER_URL);
 
   /**
@@ -25,14 +25,14 @@ export default class ValidatorBuilder {
    * @param validator The token validator
    * @returns The validator builder
    */
-  public useValidators(validators: TokenValidator[] | TokenValidator): ValidatorBuilder {
-    const validatorArray = validators as TokenValidator[];
+  public useValidators(validators: ITokenValidator[] | ITokenValidator): ValidatorBuilder {
+    const validatorArray = validators as ITokenValidator[];
     if (validatorArray.length) {
       for (let inx=0; inx < validatorArray.length; inx++) {
         this._tokenValidators[validatorArray[inx].isType] = validatorArray[inx]; 
       }
     } else {
-      this._tokenValidators[(validators as TokenValidator).isType] = (validators as TokenValidator); 
+      this._tokenValidators[(validators as ITokenValidator).isType] = (validators as ITokenValidator); 
     }
 
     return this;
@@ -41,7 +41,7 @@ export default class ValidatorBuilder {
   /**
    * Gets the token validators
    */
-  public get tokenValidators(): { [type: string]: TokenValidator } {
+  public get tokenValidators(): { [type: string]: ITokenValidator } {
     return this._tokenValidators;
   }
 

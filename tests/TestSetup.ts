@@ -25,15 +25,15 @@ export default class TestSetup {
   public fetchMock = require('fetch-mock');
 
   /**
-   * TestSetup environment
-   */
-  public resolver = new ManagedHttpResolver('https://example.com');
-  
-  /**
    * Resolver url
    */
-  public resolverUrl = `https://example.com/1.0/identifiers`;
+  public resolverUrl = `https://beta.discover.did.microsoft.com/1.0/identifiers`;
 
+  /**
+   * TestSetup environment
+   */
+  public resolver = new ManagedHttpResolver(this.resolverUrl);
+  
   /**
    * Constant for default id token configuration
    */

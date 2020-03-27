@@ -28,7 +28,7 @@ constructor (private options: IValidationOptions, private expected: IExpected) {
    * @param siopDid The did which presented the siop
    * @returns result is true if validation passes
    */
-  public async validate(verifiablePresentationToken: ClaimToken, siopDid: string): Promise<VerifiablePresentationValidationResponse> {
+  public async validate(verifiablePresentationToken: ClaimToken, siopDid?: string): Promise<VerifiablePresentationValidationResponse> {
     let validationResponse: VerifiablePresentationValidationResponse = {
       result: true,
       detailedError: '',
@@ -43,7 +43,7 @@ constructor (private options: IValidationOptions, private expected: IExpected) {
     }
 
     // Check if VP and SIOP DID are equal
-    if (validationResponse.did !== siopDid) {
+    if (siopDid && validationResponse.did !== siopDid) {
       return {
         result: false,
         detailedError: `The DID used for the SIOP ${siopDid} is not equal to the DID used for the verifiable presentation ${validationResponse.did}`,
@@ -63,7 +63,6 @@ constructor (private options: IValidationOptions, private expected: IExpected) {
   /**
    * Validate the list of VCs
    * @param validationResponse The response for the requestor
-   * @param siopDid Expected audience
    */
   private async validateVerifiableCredentials(validationResponse: VerifiablePresentationValidationResponse): Promise<VerifiablePresentationValidationResponse> {
     if (!validationResponse.payloadObject && !validationResponse.payloadObject.vp) {
@@ -90,7 +89,7 @@ constructor (private options: IValidationOptions, private expected: IExpected) {
     }
 
     // Validate the VCs
-    const validator = new VerifiableCredentialValidation(this.options, {} as IExpected);
+    const validator = new VerifiableCredentialValidation(this.options, this.expected);
     for (let inx = 0; inx < verifiableCredentials.length; inx++) {
       validationResponse = await validator.validate(verifiableCredentials[inx]);
       if (!validationResponse.result) {
