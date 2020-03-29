@@ -1,0 +1,6 @@
+{
+  "editor.detectIndentation": false,
+  "editor.tabSize": 2,
+  "git.ignoreLimitWarning": true,
+  "tslint.configFile": "node_modules/ad-did-services-common/tslint.json",
+}

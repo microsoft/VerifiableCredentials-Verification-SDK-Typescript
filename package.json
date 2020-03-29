@@ -1,0 +1,64 @@
+{
+  "name": "portableidentity-relyingpartysdk-typescript",
+  "version": "0.1.0",
+  "description": "Typescript SDK for Portable Identity",
+  "main": "dist/lib/index.js",
+  "scripts": {
+    "build": "tsc --p tsconfig.json",
+    "start": "set JSON_CONFIGURATION=./config.json&& node dist/src/start.js",
+    "test": "nyc jasmine-ts --config=./tests/jasmine.json",
+    "lint": "tslint --fix --project . --config node_modules/ad-did-services-common/tslint.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/PortableIdentity-RelyingPartySDK-Typescript"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "@types/jasmine": "3.3.12",
+    "@types/node": "12.0.0",
+    "@types/node-fetch": "2.5.5",
+    "@types/typescript": "2.0.0",
+    "@types/uuid": "3.4.4",
+    "fetch-mock": "^7.7.3",
+    "jasmine": "3.4.0",
+    "jasmine-reporters": "2.3.2",
+    "jasmine-spec-reporter": "4.2.1",
+    "jasmine-ts": "0.3.0",
+    "nyc": "15.0.0",
+    "source-map-support": "0.5.12",
+    "ts-node": "8.1.0",
+    "tslint": "5.16.0",
+    "tslint-config-standard": "8.0.1",
+    "typescript": "3.8.2"
+  },
+  "dependencies": {
+    "@decentralized-identity/did-common-typescript": "0.1.19",
+    "@microsoft/crypto-sdk": "1.0.3",
+    "base64url": "3.0.1",
+    "deep-property-access": "1.0.1",
+    "es6-promise": "^4.2.8",
+    "isomorphic-fetch": "2.2.1",
+    "typescript-map": "0.0.7",
+    "uuid": "7.0.1"
+  },
+  "nyc": {
+    "extension": [
+      ".ts",
+      ".tsx"
+    ],
+    "include": [
+      "lib/**"
+    ],
+    "reporter": [
+      "text",
+      "cobertura",
+      "html"
+    ]
+  },
+  "files": [
+    "dist/**.*"
+  ]
+}
