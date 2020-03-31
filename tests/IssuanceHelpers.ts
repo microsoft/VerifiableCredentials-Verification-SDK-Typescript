@@ -184,7 +184,7 @@ export class IssuanceHelpers {
     return claimToken;
   }
   
-  public static async createRequest(setup: TestSetup, tokenDescription: string): Promise<[ClaimToken, ValidationOptions, any]> {
+  public static async createRequest(setup: TestSetup, tokenDescription: TokenType): Promise<[ClaimToken, ValidationOptions, any]> {
     const options = new ValidationOptions(setup.validatorOptions, tokenDescription);
     const [didJwkPrivate, didJwkPublic] = await IssuanceHelpers.generateSigningKey(setup, setup.defaulUserDidKid); 
     const [tokenJwkPrivate, tokenJwkPublic, tokenConfiguration] = await IssuanceHelpers.generateSigningKeyAndSetConfigurationMock(setup, setup.defaulIssuerDidKid); 

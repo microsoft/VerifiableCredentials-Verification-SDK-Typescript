@@ -24,7 +24,7 @@ describe('DidValidation', () =>
   });
   
   it('should test validate', async () => {
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, 'siop');    
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.siop);    
     const expected = siop.expected.filter((token: IExpected) => token.type === TokenType.siop)[0];
 
     const validator = new DidValidation(options, expected);

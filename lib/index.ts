@@ -21,4 +21,8 @@ import VerifiableCredentialTokenValidator from './Api/VerifiableCredentialTokenV
 import VerifiablePresentationTokenValidator from './Api/VerifiablePresentationTokenValidator';
 import Validator from './Api/Validator';
 import ValidatorBuilder from './Api/ValidatorBuilder';
-export { VerifiablePresentationTokenValidator, VerifiableCredentialTokenValidator, IdTokenTokenValidator, Validator, ValidatorBuilder, ITokenValidator };
+import SelfIssuedTokenValidator from './Api/SelfIssuedTokenValidator';
+import SiopTokenValidator from './Api/SiopTokenValidator';
+import IValidatorOptions from './Options/IValidatorOptions';
+import ValidationOptions from './Options/ValidationOptions';
+export { ValidationOptions, IValidatorOptions, SelfIssuedTokenValidator, SiopTokenValidator, VerifiablePresentationTokenValidator, VerifiableCredentialTokenValidator, IdTokenTokenValidator, Validator, ValidatorBuilder, ITokenValidator };

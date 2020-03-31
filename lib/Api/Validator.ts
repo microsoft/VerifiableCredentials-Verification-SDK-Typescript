@@ -37,7 +37,7 @@ export default class Validator {
 
   public async validate(token: string): Promise<IValidationResponse> {
     const validatorOption: IValidatorOptions = this.setValidatorOptions();
-    let options = new ValidationOptions(validatorOption, '');
+    let options = new ValidationOptions(validatorOption, TokenType.siop);
     let validationResponse: IValidationResponse = {
       result: true,
       status: 200,
@@ -56,23 +56,23 @@ export default class Validator {
   
       switch (claimToken.type) {
         case TokenType.idToken: 
-          options = new ValidationOptions(validatorOption, 'id token');
+          options = new ValidationOptions(validatorOption, claimToken.type);
           response = await validator.validate(queue, queueItem!);
           break;
         case TokenType.verifiableCredential: 
-          options = new ValidationOptions(validatorOption, 'verifiable credential');
+          options = new ValidationOptions(validatorOption, claimToken.type);
           response = await validator.validate(queue, queueItem!);
           break;
         case TokenType.verifiablePresentation: 
-          options = new ValidationOptions(validatorOption, 'verifiable presentation');
+          options = new ValidationOptions(validatorOption, claimToken.type);
           response = await validator.validate(queue, queueItem!);
           break;
         case TokenType.siop: 
-          options = new ValidationOptions(validatorOption, 'siop');
+          options = new ValidationOptions(validatorOption, claimToken.type);
           response = await validator.validate(queue, queueItem!);
           break;
         case TokenType.selfIssued: 
-          options = new ValidationOptions(validatorOption, 'self issued');
+          options = new ValidationOptions(validatorOption, claimToken.type);
           response = await validator.validate(queue, queueItem!);
           break;
         default:

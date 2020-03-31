@@ -15,7 +15,7 @@ describe('Validator', () => {
   });
 
   it ('should validate id token', async () => {
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, 'id token');   
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.idToken);   
     const expected: IExpected = siop.expected.filter((token: IExpected) => token.type === TokenType.idToken)[0];
 
     let tokenValidator = new IdTokenTokenValidator(setup.validatorOptions, expected);
@@ -39,7 +39,7 @@ describe('Validator', () => {
   });
 
   it ('should validate verifiable credentials', async () => {
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, 'verifiable credential');   
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential);   
     const expected = siop.expected.filter((token: IExpected) => token.type === TokenType.verifiableCredential)[0];
 
     const tokenValidator = new VerifiableCredentialTokenValidator(setup.validatorOptions, expected);
@@ -53,7 +53,7 @@ describe('Validator', () => {
   });
 
   it ('should validate verifiable presentations', async () => {
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, 'verifiable presentation');   
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentation);   
     const vpExpected = siop.expected.filter((token: IExpected) => token.type === TokenType.verifiablePresentation)[0];
     const vcExpected = siop.expected.filter((token: IExpected) => token.type === TokenType.verifiableCredential)[0];
 
@@ -98,7 +98,7 @@ describe('Validator', () => {
   });
   
   it ('should validate siop', async () => {
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, 'verifiable presentation');   
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentation);   
     const siopExpected = siop.expected.filter((token: IExpected) => token.type === TokenType.siop)[0];
     const vpExpected = siop.expected.filter((token: IExpected) => token.type === TokenType.verifiablePresentation)[0];
     const vcExpected = siop.expected.filter((token: IExpected) => token.type === TokenType.verifiableCredential)[0];

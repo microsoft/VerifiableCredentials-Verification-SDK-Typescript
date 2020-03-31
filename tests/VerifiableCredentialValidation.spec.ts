@@ -19,7 +19,7 @@ import { IdTokenValidation } from '../lib/InputValidation/IdTokenValidation';
   });
 
   it('should test validate', async () => {
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, 'vc');   
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential);   
     const expected = siop.expected.filter((token: IExpected) => token.type === TokenType.verifiableCredential)[0];
 
     let validator = new VerifiableCredentialValidation(options, expected);

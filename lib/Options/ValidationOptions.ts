@@ -5,6 +5,7 @@
 import { FetchKeyAndValidateSignatureOnIdToken, IValidationOptions, CheckTimeValidityOnToken, ResolveDidAndGetKeys, GetTokenObject, ValidateDidSignature, CheckScopeValidityOnToken, ValidateSignatureOnToken, GetTokensFromSiop } from './IValidationOptions';
 import { ValidationHelpers } from '../InputValidation/ValidationHelpers';
 import IValidatorOptions from './IValidatorOptions';
+import { TokenType } from '../index';
 
 /**
  *Interface to model validation options
@@ -16,8 +17,8 @@ export default class ValidationOptions implements IValidationOptions {
  * @param validatorOptions The validator options
  * @param inputDescription Describe the type of token for error messages
  */
-constructor (public validatorOptions: IValidatorOptions, public inputDescription: string) {
-  this.validationHelpers = new ValidationHelpers(validatorOptions, this, inputDescription);
+constructor (public validatorOptions: IValidatorOptions, public expectedInput: TokenType) {
+  this.validationHelpers = new ValidationHelpers(validatorOptions, this, expectedInput);
   this.getSelfIssuedTokenObjectDelegate = this.validationHelpers.getSelfIssuedTokenObject;
   this.getTokenObjectDelegate = this.validationHelpers.getTokenObject;
     

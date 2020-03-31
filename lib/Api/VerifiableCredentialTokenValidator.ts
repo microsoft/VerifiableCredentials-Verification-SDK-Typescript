@@ -36,7 +36,7 @@ export default class VerifiableCredentialTokenValidator implements ITokenValidat
    * @param expected values to find in the token to validate
    */
   public async validate(_queue: ValidationQueue, queueItem:ValidationQueueItem): Promise<IValidationResponse> { 
-    const options = new ValidationOptions(this.validatorOption, 'verifiable credential');
+    const options = new ValidationOptions(this.validatorOption, TokenType.verifiableCredential);
     const validator = new VerifiableCredentialValidation(options, this.expected);
     const validationResult = await validator.validate(queueItem.token);
     return validationResult as IValidationResponse; 

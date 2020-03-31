@@ -22,7 +22,7 @@ import { IExpected } from '../lib';
   });
 
   it('should test validate', async () => {
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, 'vp');   
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentation);   
     const expected = siop.expected.filter((token: IExpected) => token.type === TokenType.verifiablePresentation)[0];
 
     let validator = new VerifiablePresentationValidation(options, expected);

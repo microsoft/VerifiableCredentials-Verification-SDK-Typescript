@@ -22,7 +22,7 @@ describe('SiopValidation', () =>
   });
   
   it('should test validate', async () => {
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, 'siop');   
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.siop);   
     const expected: IExpected = siop.expected.filter((token: IExpected) => token.type === TokenType.siop)[0];
 
     let validationResponse: ISiopValidationResponse = {
@@ -31,7 +31,7 @@ describe('SiopValidation', () =>
       didKid: setup.defaulUserDidKid
     };    
     
-    const validationOptions = new ValidationOptions(setup.validatorOptions, 'siop'); 
+    const validationOptions = new ValidationOptions(setup.validatorOptions, TokenType.siop); 
 
     const validator = new SiopValidation(validationOptions, expected);
     const response = await validator.validate(request.rawToken);

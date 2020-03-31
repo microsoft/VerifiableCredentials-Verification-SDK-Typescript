@@ -22,7 +22,7 @@ import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
   });
 
   it('should test getTokenObject', async () => {
-    let [request, options, siopRequest] = await IssuanceHelpers.createRequest(setup, 'vc');
+    let [request, options, siopRequest] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential);
     const validationResponse: IValidationResponse = {
       status: 200,
       result: true
@@ -56,7 +56,7 @@ import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
   });
 
   it('should test resolveDid', async () => {
-    let [request, options, siopRequest] = await IssuanceHelpers.createRequest(setup, 'vc');
+    let [request, options, siopRequest] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential);
     const validationResponse: IValidationResponse = {
       status: 200,
       result: true,
@@ -92,7 +92,7 @@ import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
   });
 
   it('should not resolve resolveDid', async () => {
-    let [request, options, siopRequest] = await IssuanceHelpers.createRequest(setup, 'vc');
+    let [request, options, siopRequest] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential);
     const validationResponse: IValidationResponse = {
       status: 200,
       result: true
@@ -105,7 +105,7 @@ import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
   });
 
   it('should test validateDidSignatureDelegate', async () => {
-    let [request, options, siopRequest] = await IssuanceHelpers.createRequest(setup, 'vc');
+    let [request, options, siopRequest] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential);
     let validationResponse: IValidationResponse = {
       status: 200,
       result: true,
@@ -150,7 +150,7 @@ import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
   });
   
   it('should test checkTimeValidityOnTokenDelegate', () => {
-    const options = new ValidationOptions(setup.validatorOptions, 'vc');
+    const options = new ValidationOptions(setup.validatorOptions, TokenType.verifiableCredential);
 
     // Set the payload
     const validationResponse: IValidationResponse = {
@@ -200,7 +200,7 @@ import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
     expect(response.detailedError?.startsWith('The presented vc is not valid')).toBeTruthy();
   });
   it('should test checkScopeValidityOnTokenDelegate', () => {
-    const options = new ValidationOptions(setup.validatorOptions, 'vc');
+    const options = new ValidationOptions(setup.validatorOptions, TokenType.verifiableCredential);
 
     const validationResponse: IValidationResponse = {
       status: 200,
@@ -237,7 +237,7 @@ import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
     });
     
   it('should test fetchKeyAndValidateSignatureOnIdTokenDelegate', async () => {
-      const options = new ValidationOptions(setup.validatorOptions, 'id token');
+      const options = new ValidationOptions(setup.validatorOptions, TokenType.idToken);
       const validationResponse: IValidationResponse = {
         status: 200,
         result: true
