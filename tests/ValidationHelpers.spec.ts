@@ -37,7 +37,7 @@ import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
     response = options.getTokenObjectDelegate(validationResponse, splitToken[0]);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(400);    
-    expect(response.detailedError).toEqual('The vc could not be deserialized');
+    expect(response.detailedError).toEqual('The verifiableCredential could not be deserialized');
 
     // missing kid
     const header: any = JSON.parse(base64url.decode(splitToken[0]));
@@ -45,14 +45,14 @@ import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
     response = options.getTokenObjectDelegate(validationResponse, `${base64url.encode(JSON.stringify(header))}.${splitToken[1]}.${splitToken[2]}`);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);    
-    expect(response.detailedError).toEqual('The protected header in the vc does not contain the kid');
+    expect(response.detailedError).toEqual('The protected header in the verifiableCredential does not contain the kid');
 
     // malformed kid
     header.kid = 'xxxx';
     response = options.getTokenObjectDelegate(validationResponse, `${base64url.encode(JSON.stringify(header))}.${splitToken[1]}.${splitToken[2]}`);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);    
-    expect(response.detailedError).toEqual('The kid in the vc does not contain the did. Required format for kid is <did>#kid');
+    expect(response.detailedError).toEqual('The kid in the verifiableCredential does not contain the did. Required format for kid is <did>#kid');
   });
 
   it('should test resolveDid', async () => {
@@ -124,7 +124,7 @@ import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
     response = await options.validateDidSignatureDelegate(validationResponse, validationResponse.didSignature as ICryptoToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403); 
-    expect(response.detailedError).toEqual('The signature on the payload in the vc is invalid');
+    expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredential is invalid');
 
     // No signature
     const splitToken = request.rawToken.split('.');
@@ -132,7 +132,7 @@ import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
     response = await options.validateDidSignatureDelegate(validationResponse, validationResponse.didSignature as ICryptoToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403); 
-    expect(response.detailedError).toEqual('The signature on the payload in the vc is invalid');
+    expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredential is invalid');
 
     // no header
     validationResponse = options.getTokenObjectDelegate(validationResponse, `.${splitToken[1]}.${splitToken[2]}`);    
@@ -173,7 +173,7 @@ import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
     response = options.checkTimeValidityOnTokenDelegate(validationResponse, 5);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError?.startsWith('The presented vc is expired')).toBeTruthy();
+    expect(response.detailedError?.startsWith('The presented verifiableCredential is expired')).toBeTruthy();
 
     // Add nbf
     let nbf = new Date().getTime() / 1000;
@@ -185,7 +185,7 @@ import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
     response = options.checkTimeValidityOnTokenDelegate(validationResponse, 5);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError?.startsWith('The presented vc is not yet valid')).toBeTruthy();
+    expect(response.detailedError?.startsWith('The presented verifiableCredential is not yet valid')).toBeTruthy();
 
     // Add iat
     let iat = new Date().getTime() / 1000;
@@ -197,7 +197,7 @@ import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
     response = options.checkTimeValidityOnTokenDelegate(validationResponse, 5);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError?.startsWith('The presented vc is not valid')).toBeTruthy();
+    expect(response.detailedError?.startsWith('The presented verifiableCredential is not valid')).toBeTruthy();
   });
   it('should test checkScopeValidityOnTokenDelegate', () => {
     const options = new ValidationOptions(setup.validatorOptions, TokenType.verifiableCredential);
@@ -225,14 +225,14 @@ import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
     response = options.checkScopeValidityOnTokenDelegate(validationResponse, {type: TokenType.idToken, issuers: [issuer], audience: audience} as IExpected);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Wrong or missing iss property in vc. Expected '["iss"]'`);
+    expect(response.detailedError).toEqual(`Wrong or missing iss property in verifiableCredential. Expected '["iss"]'`);
     validationResponse.payloadObject.iss = issuer;
 
     validationResponse.payloadObject.aud = 'xxx';
     response = options.checkScopeValidityOnTokenDelegate(validationResponse, {type: TokenType.idToken, issuers: [issuer], audience: audience} as IExpected);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Wrong or missing aud property in vc. Expected 'aud'`);
+    expect(response.detailedError).toEqual(`Wrong or missing aud property in verifiableCredential. Expected 'aud'`);
     validationResponse.payloadObject.aud = audience;
     });
     

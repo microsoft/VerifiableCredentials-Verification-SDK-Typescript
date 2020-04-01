@@ -36,13 +36,13 @@ import { IExpected } from '../lib';
     response = await validator.validate(siop.idToken.rawToken + 'a');
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual('The presented id token is has an invalid signature');
+    expect(response.detailedError).toEqual('The presented idToken is has an invalid signature');
 
     expected.audience = 'abcdef';
     validator = new IdTokenValidation(options, expected);
     response = await validator.validate(siop.idToken.rawToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Wrong or missing aud property in id token. Expected 'abcdef'`);
+    expect(response.detailedError).toEqual(`Wrong or missing aud property in idToken. Expected 'abcdef'`);
   });
  });

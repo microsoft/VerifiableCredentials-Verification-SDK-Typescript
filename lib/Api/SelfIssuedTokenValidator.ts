@@ -33,7 +33,7 @@ export default class SelfIssuedTokenValidator implements ITokenValidator {
   public async validate(_queue: ValidationQueue, queueItem:ValidationQueueItem): Promise<IValidationResponse> { 
     const options = new ValidationOptions(this.validatorOption, TokenType.selfIssued);
     const validator = new SelfIssuedValidation(options, this.expected);
-    const validationResult = await validator.validate(queueItem.token);
+    const validationResult = await validator.validate(queueItem.tokenToValidate);
     return validationResult as IValidationResponse;    
   }
   

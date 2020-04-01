@@ -35,7 +35,7 @@ describe('Validator', () => {
   
     result = await validator.validate(siop.idToken.rawToken);
     expect(result.result).toBeFalsy();
-    expect(result.detailedError).toEqual(`Wrong or missing iss property in id token. Expected '["xxx"]'`);
+    expect(result.detailedError).toEqual(`Wrong or missing iss property in idToken. Expected '["xxx"]'`);
   });
 
   it ('should validate verifiable credentials', async () => {
@@ -83,7 +83,7 @@ describe('Validator', () => {
     // Check validator
     queue = new ValidationQueue();
     queue.addToken(siop.vp.rawToken);
-    result = await validator.validate(queue.getNextToken()!.token);
+    result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeTruthy();
     expect(result.tokensToValidate).toBeUndefined();
 
@@ -94,7 +94,7 @@ describe('Validator', () => {
       .build();
     queue = new ValidationQueue();
     queue.addToken(siop.vp.rawToken);
-    expectAsync(validator.validate(queue.getNextToken()!.token)).toBeRejectedWith('verifiableCredential does not has a TokenValidator');
+    expectAsync(validator.validate(queue.getNextToken()!.tokenToValidate)).toBeRejectedWith('verifiableCredential does not has a TokenValidator');
   });
   
   it ('should validate siop', async () => {
@@ -134,9 +134,15 @@ describe('Validator', () => {
       
     queue = new ValidationQueue();
     queue.addToken(request.rawToken);
-    result = await validator.validate(queue.getNextToken()!.token);
+    result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeTruthy();
+    expect(result.status).toEqual(200);
+    expect(result.detailedError).toBeUndefined();
     expect(result.tokensToValidate).toBeUndefined();
+    expect(result.validationResult?.did).toEqual(setup.defaultUserDid);
+    expect(result.validationResult?.idTokens![0].upn).toEqual('jules@pulpfiction.com');
+    expect(result.validationResult?.selfIssued.name).toEqual('jules');
+    expect(result.validationResult?.verifiableCredentials![0].vc.credentialSubject.givenName).toEqual('Jules');
 
     // Negative cases
     

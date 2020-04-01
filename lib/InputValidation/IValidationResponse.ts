@@ -5,6 +5,7 @@
 import { ICryptoToken } from '@microsoft/crypto-sdk';
 import { DidDocument } from '@decentralized-identity/did-common-typescript';
 import ClaimToken from '../VerifiableCredential/ClaimToken';
+import IValidationResult from '../Api/ValidationResult';
 
 
 //#endregion
@@ -64,4 +65,9 @@ export interface IValidationResponse {
    * List of tokens that still need to be validated
    */
   tokensToValidate?: string[];
+
+  /**
+   * All claims found in input tokens
+   */
+  validationResult?: IValidationResult;
 }

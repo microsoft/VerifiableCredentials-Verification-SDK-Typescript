@@ -25,9 +25,10 @@ export enum ValidationStatus {
 
 export default class ValidationQueueItem {
   private _validationResult: IValidationResponse;
+  private _validatedToken: ClaimToken | undefined;
   private validationStatus: ValidationStatus = ValidationStatus.todo;
 
-  constructor(private _token: string) {
+  constructor(private _tokenToValidate: string) {
     // Set defaults for validation result
     this._validationResult = {
       result: false,
@@ -40,8 +41,9 @@ export default class ValidationQueueItem {
    * Keep track of the result of the validation
    * @param result of the validation
    */
-  public setResult(result: IValidationResponse) {
+  public setResult(result: IValidationResponse, token: ClaimToken) {
     this._validationResult = result;
+    this._validatedToken = token;
     this.validationStatus = ValidationStatus.validated;
   }
 
@@ -55,8 +57,15 @@ export default class ValidationQueueItem {
   /**
    * Token to validate
    */
-  public get token(): string {
-    return this._token;
+  public get tokenToValidate(): string {
+    return this._tokenToValidate;
+  }
+
+  /**
+   * Validated token
+   */
+  public get validatedToken(): ClaimToken | undefined {
+    return this._validatedToken;
   }
 
   /**

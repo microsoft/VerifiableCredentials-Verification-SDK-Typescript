@@ -32,7 +32,7 @@ import { IdTokenValidation } from '../lib/InputValidation/IdTokenValidation';
     response = await validator.validate(siop.vc.rawToken + 'a');
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual('The signature on the payload in the vc is invalid');
+    expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredential is invalid');
 
     // bad audience
     expected.audience = 'abcdef';
@@ -40,6 +40,6 @@ import { IdTokenValidation } from '../lib/InputValidation/IdTokenValidation';
     response = await validator.validate(siop.vc.rawToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Wrong or missing aud property in vc. Expected 'abcdef'`);
+    expect(response.detailedError).toEqual(`Wrong or missing aud property in verifiableCredential. Expected 'abcdef'`);
  });
 });

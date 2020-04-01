@@ -39,6 +39,6 @@ import { IExpected } from '../lib';
     response = await validator.validate(siop.vp.rawToken + 'a', setup.defaultUserDid);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual('The signature on the payload in the vp is invalid');
+    expect(response.detailedError).toEqual('The signature on the payload in the verifiablePresentation is invalid');
   });
  });
