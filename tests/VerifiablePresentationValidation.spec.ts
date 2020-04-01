@@ -25,18 +25,19 @@ import { IExpected } from '../lib';
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentation);   
     const expected = siop.expected.filter((token: IExpected) => token.type === TokenType.verifiablePresentation)[0];
 
-    let validator = new VerifiablePresentationValidation(options, expected);
-    let response = await validator.validate(siop.vp.rawToken, setup.defaultUserDid);
+    let validator = new VerifiablePresentationValidation(options, expected, setup.defaultUserDid);
+    let response = await validator.validate(siop.vp.rawToken);
     expect(response.result).toBeTruthy();
 
     // Negative cases
-    response = await validator.validate(siop.vp.rawToken, 'abcdef');
+    validator = new VerifiablePresentationValidation(options, expected, 'abcdef');    
+    response = await validator.validate(siop.vp.rawToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The DID used for the SIOP abcdef is not equal to the DID used for the verifiable presentation did:test:user');
 
     // Bad VP signature
-    response = await validator.validate(siop.vp.rawToken + 'a', setup.defaultUserDid);
+    response = await validator.validate(siop.vp.rawToken + 'a');
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The signature on the payload in the verifiablePresentation is invalid');

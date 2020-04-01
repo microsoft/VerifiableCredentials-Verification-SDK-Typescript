@@ -35,17 +35,16 @@ describe('Validator', () => {
   
     result = await validator.validate(siop.idToken.rawToken);
     expect(result.result).toBeFalsy();
-    expect(result.detailedError).toEqual(`Wrong or missing iss property in idToken. Expected '["xxx"]'`);
+    expect(result.detailedError).toEqual(`Could not fetch token configuration`);
   });
 
-  it ('should validate verifiable credentials', async () => {
+  fit ('should validate verifiable credentials', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential);   
     const expected = siop.expected.filter((token: IExpected) => token.type === TokenType.verifiableCredential)[0];
 
     const tokenValidator = new VerifiableCredentialTokenValidator(setup.validatorOptions, expected);
     const validator = new ValidatorBuilder()
       .useValidators(tokenValidator)
-     // TODO .expectedIssuers(['a', 'b'])
       .build();
   
     const result = await validator.validate(siop.vc.rawToken);
@@ -70,14 +69,14 @@ describe('Validator', () => {
     // Check VP validator
     let queue = new ValidationQueue();
     queue.addToken(siop.vp.rawToken);
-    let result = await vpValidator.validate(queue, queue.getNextToken()!);
+    let result = await vpValidator.validate(queue, queue.getNextToken()!, setup.defaultUserDid);
     expect(result.result).toBeTruthy();
     expect(result.tokensToValidate![0]).toEqual(siop.vc.rawToken);
 
     // Check VC validator
     queue = new ValidationQueue();
     queue.addToken(siop.vc.rawToken);
-    result = await vcValidator.validate(queue, queue.getNextToken()!);
+    result = await vcValidator.validate(queue, queue.getNextToken()!, setup.defaultUserDid);
     expect(result.result).toBeTruthy();
 
     // Check validator

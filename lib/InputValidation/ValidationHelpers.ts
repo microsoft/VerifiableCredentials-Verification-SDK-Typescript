@@ -237,7 +237,17 @@ public getTokenObject (validationResponse: IValidationResponse, token: string): 
     const  self: any = this;
 
     // check iss value
-    if (!expected.issuers!.includes(validationResponse.payloadObject.iss)) {
+    if ((validationResponse as IdTokenValidationResponse).issuer) {
+      // For id tokens we need to check whether the issuer in configuration matches the iss in the payload
+      // The issuer property is set during the fetching of the configuration on it is already checked that this configuration matches the public key of the token signature
+      if (validationResponse.payloadObject.iss !== (validationResponse as IdTokenValidationResponse).issuer) {
+        return validationResponse = {
+            result: false,
+            detailedError: `The issuer found in the configuration of the id token ${(validationResponse as IdTokenValidationResponse).issuer} does not match the iss property ${validationResponse.payloadObject.iss}`,
+            status: 403
+            };
+      }     
+    } else if (expected.issuers && !expected.issuers!.includes(validationResponse.payloadObject.iss)) {
       return validationResponse = {
           result: false,
           detailedError: `Wrong or missing iss property in ${(self as ValidationOptions).expectedInput}. Expected '${JSON.stringify(expected.issuers)}'`,

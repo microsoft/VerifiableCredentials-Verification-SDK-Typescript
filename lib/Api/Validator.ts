@@ -10,7 +10,7 @@ import IValidatorOptions from '../Options/IValidatorOptions';
 import { KeyStoreInMemory, CryptoFactoryManager, CryptoFactoryNode, SubtleCryptoNode, JoseProtocol, JoseConstants } from '@microsoft/crypto-sdk';
 import { IValidationResponse } from '../InputValidation/IValidationResponse';
 import ValidationQueue from '../InputValidation/ValidationQueue';
-import IValidationResult from './ValidationResult';
+import IValidationResult from './IValidationResult';
 import { throws } from 'assert';
 
 /**
@@ -45,7 +45,7 @@ export default class Validator {
       status: 200,
     };
     let claimToken: ClaimToken;
-
+    let siopDid: string | undefined;
     const queue = new ValidationQueue();
     queue.addToken(token);
     let queueItem = queue.getNextToken();
@@ -65,15 +65,16 @@ export default class Validator {
           break;
         case TokenType.verifiableCredential: 
           options = new ValidationOptions(validatorOption, claimToken.type);
-          response = await validator.validate(queue, queueItem!);
+          response = await validator.validate(queue, queueItem!, siopDid!);
           break;
         case TokenType.verifiablePresentation: 
           options = new ValidationOptions(validatorOption, claimToken.type);
-          response = await validator.validate(queue, queueItem!);
+          response = await validator.validate(queue, queueItem!, siopDid!);
           break;
         case TokenType.siop: 
           options = new ValidationOptions(validatorOption, claimToken.type);
           response = await validator.validate(queue, queueItem!);
+          siopDid = response.did;
           break;
         case TokenType.selfIssued: 
           options = new ValidationOptions(validatorOption, claimToken.type);

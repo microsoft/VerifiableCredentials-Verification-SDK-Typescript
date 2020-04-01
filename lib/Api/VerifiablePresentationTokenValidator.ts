@@ -31,10 +31,11 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
    * Validate the token
    * @param queue with tokens to validate
    * @param queueItem under validation
+   * @param siopDid needs to be equal to audience of VP
    */
-  public async validate(queue: ValidationQueue, queueItem: ValidationQueueItem): Promise<IValidationResponse> { 
+  public async validate(queue: ValidationQueue, queueItem: ValidationQueueItem, siopDid: string): Promise<IValidationResponse> { 
     const options = new ValidationOptions(this.validatorOption, TokenType.verifiablePresentation);
-    const validator = new VerifiablePresentationValidation(options, this.expected);
+    const validator = new VerifiablePresentationValidation(options, this.expected, siopDid);
     const validationResult = await validator.validate(queueItem.tokenToValidate);
 
     if (validationResult.tokensToValidate) {

@@ -12,7 +12,7 @@ export default interface IExpected {
   type: TokenType,
 
   /**
-   * Expected issuers for the token type
+   * Expected issuers for the token type. Configuration url for id tokens.
    */
   issuers?: string[],
 
@@ -26,8 +26,4 @@ export default interface IExpected {
    */
   schemas?: string[],
   
-  /**
-   * Id tokens will use configurations to find the public key
-   */
-  configurations?: string[]
 }

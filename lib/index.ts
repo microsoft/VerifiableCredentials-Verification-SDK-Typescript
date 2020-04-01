@@ -20,10 +20,11 @@ import IdTokenTokenValidator from './Api/IdTokenTokenValidator';
 import VerifiableCredentialTokenValidator from './Api/VerifiableCredentialTokenValidator';
 import VerifiablePresentationTokenValidator from './Api/VerifiablePresentationTokenValidator';
 import Validator from './Api/Validator';
+import IValidationResult from './Api/IValidationResult';
 import ValidatorBuilder from './Api/ValidatorBuilder';
 import SelfIssuedTokenValidator from './Api/SelfIssuedTokenValidator';
 import SiopTokenValidator from './Api/SiopTokenValidator';
-export { SelfIssuedTokenValidator, SiopTokenValidator, VerifiablePresentationTokenValidator, VerifiableCredentialTokenValidator, IdTokenTokenValidator, Validator, ValidatorBuilder, ITokenValidator };
+export { IValidationResult, SelfIssuedTokenValidator, SiopTokenValidator, VerifiablePresentationTokenValidator, VerifiableCredentialTokenValidator, IdTokenTokenValidator, Validator, ValidatorBuilder, ITokenValidator };
 
 import { IValidationOptions } from './Options/IValidationOptions';
 import IValidatorOptions from './Options/IValidatorOptions';

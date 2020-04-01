@@ -17,8 +17,9 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
    * Create a new instance of @see <VerifiablePresentationValidation>
    * @param options Options to steer the validation process
    * @param expected Expected properties of the verifiable presentation
+   * @param siopDid needs to be equal to audience of VC
    */
-  constructor (private options: IValidationOptions, private expected: IExpected) {
+  constructor (private options: IValidationOptions, private expected: IExpected, private siopDid: string) {
   }
  
   /**
@@ -27,7 +28,7 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
    * @param siopDid The did which presented the siop
    * @returns result is true if validation passes
    */
-  public async validate(verifiablePresentationToken: string, siopDid?: string): Promise<VerifiablePresentationValidationResponse> {
+  public async validate(verifiablePresentationToken: string): Promise<VerifiablePresentationValidationResponse> {
     let validationResponse: VerifiablePresentationValidationResponse = {
       result: true,
       detailedError: '',
@@ -45,10 +46,10 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
     validationResponse.tokensToValidate = validationResponse.payloadObject.vp!.verifiableCredential;
 
     // Check if VP and SIOP DID are equal
-    if (siopDid && validationResponse.did !== siopDid) {
+    if (this.siopDid && validationResponse.did !== this.siopDid) {
       return {
         result: false,
-        detailedError: `The DID used for the SIOP ${siopDid} is not equal to the DID used for the verifiable presentation ${validationResponse.did}`,
+        detailedError: `The DID used for the SIOP ${this.siopDid} is not equal to the DID used for the verifiable presentation ${validationResponse.did}`,
         status: 403
       };
     }
