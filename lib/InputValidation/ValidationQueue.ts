@@ -22,6 +22,14 @@ export default class ValidationQueue {
   }
 
   /**
+   * Gets the queue
+   * @param token to add to queue
+   */
+  public get items(): ValidationQueueItem[] {
+    return this.queue;
+  }
+
+  /**
    * Get next token to validate from the queue
    */
   public getNextToken(): ValidationQueueItem | undefined {

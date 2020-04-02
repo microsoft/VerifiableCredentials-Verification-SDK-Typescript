@@ -184,7 +184,7 @@ export class IssuanceHelpers {
     return claimToken;
   }
   
-  public static async createRequest(setup: TestSetup, tokenDescription: string): Promise<[ClaimToken, ValidationOptions, any]> {
+  public static async createRequest(setup: TestSetup, tokenDescription: TokenType): Promise<[ClaimToken, ValidationOptions, any]> {
     const options = new ValidationOptions(setup.validatorOptions, tokenDescription);
     const [didJwkPrivate, didJwkPublic] = await IssuanceHelpers.generateSigningKey(setup, setup.defaulUserDidKid); 
     const [tokenJwkPrivate, tokenJwkPublic, tokenConfiguration] = await IssuanceHelpers.generateSigningKeyAndSetConfigurationMock(setup, setup.defaulIssuerDidKid); 
@@ -244,7 +244,7 @@ export class IssuanceHelpers {
      );
      const expected: IExpected[] = [
       { type: TokenType.selfIssued },
-      { type: TokenType.idToken, issuers: [setup.tokenIssuer], audience: setup.AUDIENCE, configurations: [setup.defaultIdTokenConfiguration] },
+      { type: TokenType.idToken, issuers: [setup.defaultIdTokenConfiguration], audience: setup.AUDIENCE },
       { type: TokenType.siop, issuers: ['https://self-issued.me'], audience: setup.AUDIENCE },
       { type: TokenType.verifiablePresentation, issuers: [setup.defaultUserDid] , audience: setup.AUDIENCE },
       { type: TokenType.verifiableCredential, issuers: [setup.defaultIssuerDid], audience: setup.defaultUserDid, schemas: [schema] }

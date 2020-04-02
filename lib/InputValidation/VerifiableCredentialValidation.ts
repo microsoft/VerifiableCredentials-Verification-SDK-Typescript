@@ -17,8 +17,9 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
  * Create a new instance of @see <VerifiableCredentialValidation>
  * @param options Options to steer the validation process
  * @param expected Expected properties of the verifiable credential
+ * @param siopDid needs to be equal to audience of VC
  */
-  constructor (private options: IValidationOptions, private expected: IExpected) {
+  constructor (private options: IValidationOptions, private expected: IExpected, private siopDid: string) {
   }
  
   /**
@@ -50,10 +51,10 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
     }
 
     // Check if VC audience and SIOP DID are equal
-    if (!validationResponse.payloadObject.aud || validationResponse.payloadObject.aud !== this.expected.audience) {
+    if (this.siopDid && validationResponse.payloadObject.aud !== this.siopDid) {
       return {
         result: false,
-        detailedError: `The DID used for the SIOP '${this.expected.audience}' is not equal to the audience of the verifiable credential ${validationResponse.payloadObject.aud}`,
+        detailedError: `The DID used for the SIOP '${this.siopDid}' is not equal to the audience of the verifiable credential ${validationResponse.payloadObject.aud}`,
         status: 403
       };
     }

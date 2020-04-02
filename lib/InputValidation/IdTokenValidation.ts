@@ -43,17 +43,17 @@ constructor (private options: IValidationOptions, private expected: IExpected) {
     }
     
     // Validate token signature
-    if (!this.expected.configurations) {
+    if (!this.expected.issuers) {
       return {
         result: false,
         status: 500,
-        detailedError: `Expected should have configurations set`
+        detailedError: `Expected should have configuration issuers set`
       };
     }
 
     let idTokenValidated = false
-    for (let inx = 0; inx < this.expected.configurations.length; inx ++) {
-      validationResponse = await this.options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, new ClaimToken(TokenType.idToken, idToken, this.expected.configurations[inx]));
+    for (let inx = 0; inx < this.expected.issuers.length; inx ++) {
+      validationResponse = await this.options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, new ClaimToken(TokenType.idToken, idToken, this.expected.issuers[inx]));
       if (validationResponse.result) {
         idTokenValidated = true;
         break;

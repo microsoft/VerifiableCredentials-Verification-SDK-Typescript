@@ -19,10 +19,10 @@ import { IdTokenValidation } from '../lib/InputValidation/IdTokenValidation';
   });
 
   it('should test validate', async () => {
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, 'vc');   
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential);   
     const expected = siop.expected.filter((token: IExpected) => token.type === TokenType.verifiableCredential)[0];
 
-    let validator = new VerifiableCredentialValidation(options, expected);
+    let validator = new VerifiableCredentialValidation(options, expected, setup.defaultUserDid);
     let response = await validator.validate(siop.vc.rawToken);
     expect(response.result).toBeTruthy();
 
@@ -32,14 +32,14 @@ import { IdTokenValidation } from '../lib/InputValidation/IdTokenValidation';
     response = await validator.validate(siop.vc.rawToken + 'a');
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual('The signature on the payload in the vc is invalid');
+    expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredential is invalid');
 
     // bad audience
     expected.audience = 'abcdef';
-    validator = new VerifiableCredentialValidation(options, expected);
+    validator = new VerifiableCredentialValidation(options, expected, setup.defaultUserDid);
     response = await validator.validate(siop.vc.rawToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Wrong or missing aud property in vc. Expected 'abcdef'`);
+    expect(response.detailedError).toEqual(`Wrong or missing aud property in verifiableCredential. Expected 'abcdef'`);
  });
 });

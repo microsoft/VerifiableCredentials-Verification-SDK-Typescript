@@ -28,7 +28,7 @@ export class ValidationHelpers {
  * @param validationOptions Issuance validationOptions containing delegates
  * @param inputDescription Describe the type of token for error messages
  */
-constructor (private validatorOptions: IValidatorOptions, private validationOptions: IValidationOptions, private inputDescription: string) {
+constructor (private validatorOptions: IValidatorOptions, private validationOptions: IValidationOptions, private inputDescription: TokenType) {
 }
 
 /**
@@ -77,7 +77,7 @@ public getTokenObject (validationResponse: IValidationResponse, token: string): 
     if (!validationResponse.didSignature || !tokenPayload) {
       return {
         result: false,
-        detailedError: `The signature in the ${(self as ValidationOptions).inputDescription} has an invalid format`,
+        detailedError: `The signature in the ${(self as ValidationOptions).expectedInput} has an invalid format`,
         status: 403
       };
     }
@@ -89,7 +89,7 @@ public getTokenObject (validationResponse: IValidationResponse, token: string): 
     if (!validationResponse.didKid) {
       return {
         result: false,
-        detailedError: `The protected header in the ${(self as ValidationOptions).inputDescription} does not contain the kid`,
+        detailedError: `The protected header in the ${(self as ValidationOptions).expectedInput} does not contain the kid`,
         status: 403
       };
     }
@@ -98,7 +98,7 @@ public getTokenObject (validationResponse: IValidationResponse, token: string): 
     if (parts.length <= 1 ) {
       return {
         result: false,
-        detailedError: `The kid in the ${(self as ValidationOptions).inputDescription} does not contain the did. Required format for kid is <did>#kid`,
+        detailedError: `The kid in the ${(self as ValidationOptions).expectedInput} does not contain the did. Required format for kid is <did>#kid`,
         status: 403
       };
     } 
@@ -107,7 +107,7 @@ public getTokenObject (validationResponse: IValidationResponse, token: string): 
     console.error(err);
     return {
       result: false,
-      detailedError: `The ${(self as ValidationOptions).inputDescription} could not be deserialized`,
+      detailedError: `The ${(self as ValidationOptions).expectedInput} could not be deserialized`,
       status: 400
     };
   }
@@ -117,7 +117,7 @@ public getTokenObject (validationResponse: IValidationResponse, token: string): 
     console.error(err);
     return {
       result: false,
-      detailedError: `The payload in the ${(self as ValidationOptions).inputDescription} is no valid JSON`,
+      detailedError: `The payload in the ${(self as ValidationOptions).expectedInput} is no valid JSON`,
       status: 400
     };
   }
@@ -197,7 +197,7 @@ public getTokenObject (validationResponse: IValidationResponse, token: string): 
       if (exp < current) {
         return {
           result: false,
-          detailedError: `The presented ${(self as ValidationOptions).inputDescription} is expired ${exp}`,
+          detailedError: `The presented ${(self as ValidationOptions).expectedInput} is expired ${exp}`,
           status: 403
         };
       }
@@ -208,7 +208,7 @@ public getTokenObject (validationResponse: IValidationResponse, token: string): 
       if (nbf > current) {
         return {
           result: false,
-          detailedError: `The presented ${(self as ValidationOptions).inputDescription} is not yet valid ${nbf}`,
+          detailedError: `The presented ${(self as ValidationOptions).expectedInput} is not yet valid ${nbf}`,
           status: 403
         };
       }
@@ -219,7 +219,7 @@ public getTokenObject (validationResponse: IValidationResponse, token: string): 
       if (iat > current) {
         return {
           result: false,
-          detailedError: `The presented ${(self as ValidationOptions).inputDescription} is not valid ${iat}`,
+          detailedError: `The presented ${(self as ValidationOptions).expectedInput} is not valid ${iat}`,
           status: 403
         };
       }
@@ -237,10 +237,20 @@ public getTokenObject (validationResponse: IValidationResponse, token: string): 
     const  self: any = this;
 
     // check iss value
-    if (!expected.issuers!.includes(validationResponse.payloadObject.iss)) {
+    if ((validationResponse as IdTokenValidationResponse).issuer) {
+      // For id tokens we need to check whether the issuer in configuration matches the iss in the payload
+      // The issuer property is set during the fetching of the configuration on it is already checked that this configuration matches the public key of the token signature
+      if (validationResponse.payloadObject.iss !== (validationResponse as IdTokenValidationResponse).issuer) {
+        return validationResponse = {
+            result: false,
+            detailedError: `The issuer found in the configuration of the id token ${(validationResponse as IdTokenValidationResponse).issuer} does not match the iss property ${validationResponse.payloadObject.iss}`,
+            status: 403
+            };
+      }     
+    } else if (expected.issuers && !expected.issuers!.includes(validationResponse.payloadObject.iss)) {
       return validationResponse = {
           result: false,
-          detailedError: `Wrong or missing iss property in ${(self as ValidationOptions).inputDescription}. Expected '${JSON.stringify(expected.issuers)}'`,
+          detailedError: `Wrong or missing iss property in ${(self as ValidationOptions).expectedInput}. Expected '${JSON.stringify(expected.issuers)}'`,
           status: 403
           };
     }
@@ -249,7 +259,7 @@ public getTokenObject (validationResponse: IValidationResponse, token: string): 
     if (expected.audience && validationResponse.payloadObject.aud !== expected.audience) {
       return validationResponse = {
           result: false,
-          detailedError: `Wrong or missing aud property in ${(self as ValidationOptions).inputDescription}. Expected '${expected.audience}'`,
+          detailedError: `Wrong or missing aud property in ${(self as ValidationOptions).expectedInput}. Expected '${expected.audience}'`,
           status: 403
           };
     }
@@ -277,7 +287,7 @@ public getTokenObject (validationResponse: IValidationResponse, token: string): 
       if (!validation.result) {
         return validationResponse = {
             result: false,
-            detailedError: `The signature on the payload in the ${(self as ValidationOptions).inputDescription} is invalid`,
+            detailedError: `The signature on the payload in the ${(self as ValidationOptions).expectedInput} is invalid`,
             status: 403
           };
       }
@@ -472,7 +482,7 @@ public getTokenObject (validationResponse: IValidationResponse, token: string): 
       if (!validation.result) {
         return {
             result: false,
-            detailedError: `The presented ${(self as ValidationOptions).inputDescription} is has an invalid signature`,
+            detailedError: `The presented ${(self as ValidationOptions).expectedInput} is has an invalid signature`,
             status: 403
           };
       }

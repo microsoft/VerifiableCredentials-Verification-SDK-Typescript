@@ -10,6 +10,8 @@ import IValidatorOptions from '../Options/IValidatorOptions';
 import { KeyStoreInMemory, CryptoFactoryManager, CryptoFactoryNode, SubtleCryptoNode, JoseProtocol, JoseConstants } from '@microsoft/crypto-sdk';
 import { IValidationResponse } from '../InputValidation/IValidationResponse';
 import ValidationQueue from '../InputValidation/ValidationQueue';
+import IValidationResult from './IValidationResult';
+import { throws } from 'assert';
 
 /**
  * Class model the token validator
@@ -37,16 +39,18 @@ export default class Validator {
 
   public async validate(token: string): Promise<IValidationResponse> {
     const validatorOption: IValidatorOptions = this.setValidatorOptions();
-    let options = new ValidationOptions(validatorOption, '');
-    let validationResponse: IValidationResponse = {
+    let options = new ValidationOptions(validatorOption, TokenType.siop);
+    let response: IValidationResponse = {
       result: true,
       status: 200,
     };
+    let claimToken: ClaimToken;
+    let siopDid: string | undefined;
     const queue = new ValidationQueue();
     queue.addToken(token);
     let queueItem = queue.getNextToken();
     do {
-      let [response, claimToken] = Validator.getTokenType(options, queueItem!.token);
+      [response, claimToken] = Validator.getTokenType(options, queueItem!.tokenToValidate);
       const validator = this.tokenValidators[claimToken.type];
       if (!validator) {
         return new Promise((_, reject) => {
@@ -56,23 +60,24 @@ export default class Validator {
   
       switch (claimToken.type) {
         case TokenType.idToken: 
-          options = new ValidationOptions(validatorOption, 'id token');
+          options = new ValidationOptions(validatorOption, claimToken.type);
           response = await validator.validate(queue, queueItem!);
           break;
         case TokenType.verifiableCredential: 
-          options = new ValidationOptions(validatorOption, 'verifiable credential');
-          response = await validator.validate(queue, queueItem!);
+          options = new ValidationOptions(validatorOption, claimToken.type);
+          response = await validator.validate(queue, queueItem!, siopDid!);
           break;
         case TokenType.verifiablePresentation: 
-          options = new ValidationOptions(validatorOption, 'verifiable presentation');
-          response = await validator.validate(queue, queueItem!);
+          options = new ValidationOptions(validatorOption, claimToken.type);
+          response = await validator.validate(queue, queueItem!, siopDid!);
           break;
         case TokenType.siop: 
-          options = new ValidationOptions(validatorOption, 'siop');
+          options = new ValidationOptions(validatorOption, claimToken.type);
           response = await validator.validate(queue, queueItem!);
+          siopDid = response.did;
           break;
         case TokenType.selfIssued: 
-          options = new ValidationOptions(validatorOption, 'self issued');
+          options = new ValidationOptions(validatorOption, claimToken.type);
           response = await validator.validate(queue, queueItem!);
           break;
         default:
@@ -81,14 +86,65 @@ export default class Validator {
           });
       }
       // Save result
-      queueItem!.setResult(response);
+      queueItem!.setResult(response, claimToken);
 
       // Get next token to validate
       queueItem = queue.getNextToken();
     } while(queueItem);
-    return queue.getResult();
+
+    // Set output
+    response =queue.getResult();
+    if (response.result) {
+      // set claims
+      response = {
+        result: true,
+        status: 200,
+        validationResult: this.setValidationResult(queue)
+      }
   }
-  
+    return response;
+  }
+
+  private setValidationResult(queue: ValidationQueue): IValidationResult {
+    // get user DID from SIOP or VC
+    let did = queue.items.filter((item) => item.validatedToken?.type === TokenType.siop).map((siop) => {
+      return siop.validationResponse.did;
+    })[0];
+    if (!did) {
+      did = queue.items.filter((item) => item.validatedToken?.type === TokenType.verifiableCredential).map((vc) => {
+        return vc.validatedToken?.decodedToken.aud;
+      })[0];
+    }
+
+    // get id tokens
+    const idTokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.idToken).map((idToken) => {
+      return idToken.validatedToken?.decodedToken;
+    });
+
+    // get verifiable credentials
+    const vcs = queue.items.filter((item) => item.validatedToken?.type === TokenType.verifiableCredential).map((vc) => {
+      return vc.validatedToken?.decodedToken;
+    });
+
+    // get self issued
+    const si = queue.items.filter((item) => item.validatedToken?.type === TokenType.selfIssued).map((si) => {
+      return si.validatedToken?.decodedToken;
+    })[0];
+
+    const validationResult: IValidationResult = {
+      did: did ? did : '',
+      verifiableCredentials: vcs,
+      idTokens: idTokens,
+      selfIssued: si
+    }
+    return validationResult;
+  }
+
+  /**
+   * Check the token type based on the payload
+   * @param validationOptions The options
+   * @param token to check for type
+   */
   private static getTokenType(validationOptions: ValidationOptions, token: string): [IValidationResponse, ClaimToken] {
     let validationResponse: IValidationResponse = {
       result: true,
@@ -120,6 +176,9 @@ export default class Validator {
     return [validationResponse, new ClaimToken(TokenType.idToken, token, '')];
   }
 
+  /**
+   * Set the validator options
+   */
   private setValidatorOptions(): IValidatorOptions {
     const keyStore = new KeyStoreInMemory();
     const cryptoFactory = new CryptoFactoryNode(keyStore, SubtleCryptoNode.getSubtleCrypto());

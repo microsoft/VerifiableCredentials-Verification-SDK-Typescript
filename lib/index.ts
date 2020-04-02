@@ -20,5 +20,24 @@ import IdTokenTokenValidator from './Api/IdTokenTokenValidator';
 import VerifiableCredentialTokenValidator from './Api/VerifiableCredentialTokenValidator';
 import VerifiablePresentationTokenValidator from './Api/VerifiablePresentationTokenValidator';
 import Validator from './Api/Validator';
+import IValidationResult from './Api/IValidationResult';
 import ValidatorBuilder from './Api/ValidatorBuilder';
-export { VerifiablePresentationTokenValidator, VerifiableCredentialTokenValidator, IdTokenTokenValidator, Validator, ValidatorBuilder, ITokenValidator };
+import SelfIssuedTokenValidator from './Api/SelfIssuedTokenValidator';
+import SiopTokenValidator from './Api/SiopTokenValidator';
+export { IValidationResult, SelfIssuedTokenValidator, SiopTokenValidator, VerifiablePresentationTokenValidator, VerifiableCredentialTokenValidator, IdTokenTokenValidator, Validator, ValidatorBuilder, ITokenValidator };
+
+import { IValidationOptions } from './Options/IValidationOptions';
+import IValidatorOptions from './Options/IValidatorOptions';
+import ValidationOptions from './Options/ValidationOptions';
+export { ValidationOptions, IValidationOptions, IValidatorOptions };
+
+import TestSetup from '../tests/TestSetup';
+import { IssuanceHelpers } from '../tests/IssuanceHelpers';
+export { TestSetup, IssuanceHelpers  }
+
+import { IdTokenValidationResponse } from './InputValidation/IdTokenValidationResponse';
+import { IValidationResponse } from './InputValidation/IValidationResponse';
+import { ISiopValidationResponse } from './InputValidation/SiopValidationResponse';
+import { IdTokenValidation } from './InputValidation/IdTokenValidation';
+import { VerifiablePresentationValidation } from './InputValidation/VerifiablePresentationValidation';
+export { IValidationResponse, IdTokenValidationResponse, ISiopValidationResponse, IdTokenValidation, VerifiablePresentationValidation };
