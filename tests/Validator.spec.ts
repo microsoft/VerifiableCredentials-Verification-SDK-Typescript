@@ -38,7 +38,7 @@ describe('Validator', () => {
     expect(result.detailedError).toEqual(`Could not fetch token configuration`);
   });
 
-  fit ('should validate verifiable credentials', async () => {
+  it ('should validate verifiable credentials', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential);   
     const expected = siop.expected.filter((token: IExpected) => token.type === TokenType.verifiableCredential)[0];
 
