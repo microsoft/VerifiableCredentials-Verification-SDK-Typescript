@@ -64,7 +64,7 @@ export interface IValidationResponse {
   /**
    * List of tokens that still need to be validated
    */
-  tokensToValidate?: string[];
+  tokensToValidate?: { [key: string]: ClaimToken };
 
   /**
    * All claims found in input tokens

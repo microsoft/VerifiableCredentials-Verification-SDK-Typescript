@@ -10,17 +10,7 @@ export default class VerifiableCredentialConstants {
   /**
    * Constant for claims
    */
-  public static CLAIMS = 'claims';
-
-  /**
-   * Constant for claim names
-   */
-  public static CLAIMNAMES = '_claim_names';
-
-  /**
-   * Constant for claim sources
-   */
-  public static CLAIMSOURCES = '_claim_sources';
+  public static ATTESTATIONS = 'attestations';
 
   /**
    * Constant for  context

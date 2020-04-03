@@ -15,15 +15,12 @@ export class IssuanceHelpers {
   /**
    * Create siop request
    */
-  public static async createSiopRequest(setup: TestSetup, key: any, didDocument: DidDocument, schema: string, nonce: string, claimNames: {[claim: string]: string}, claimSources: any /*, aud?: string, iat?: number, exp?: number*/): Promise<ClaimToken> {
+  public static async createSiopRequest(setup: TestSetup, key: any, didDocument: DidDocument, contract: string, nonce: string, attestations: any): Promise<ClaimToken> {
     const siop = {
       did: didDocument.id,
       nonce,
-      schema,
-      claims: {
-        _claim_names: claimNames,
-        _claim_sources: claimSources
-      },
+      contract,
+      attestations,
       iss: 'https://self-issued.me',
       aud: setup.AUDIENCE
     }
@@ -147,7 +144,7 @@ export class IssuanceHelpers {
   public static async resolverMock(setup: TestSetup, did: string, jwkPrivate?: any, jwkPublic?: any): Promise<[DidDocument, any, any]> {
     // setup http mock
     if (!jwkPrivate && !jwkPublic) {
-      [jwkPrivate, jwkPublic] = await IssuanceHelpers.generateSigningKey(setup, 'did:example:test');
+      [jwkPrivate, jwkPublic] = await IssuanceHelpers.generateSigningKey(setup, `${did}#signing`);
     }
 
     const didDocument = {
@@ -218,45 +215,38 @@ export class IssuanceHelpers {
 
     const vp = await IssuanceHelpers.createVp(setup, [vc], didJwkPrivate);
     const si = IssuanceHelpers.createSelfIssuedToken({name: 'jules',  birthDate:  new Date().toString()});
-    const claimSources: {[claim: string]: any} =    { 
-      selfIssued: { JWT: si.rawToken},
-      vp: { JWT: vp.rawToken }
+    const attestations: {[claim: string]: any} =    { 
+      selfIssued: si.rawToken,
+      idTokens: {},
+      presentations: {}
     };
-    claimSources[tokenConfiguration] = {JWT: idToken.rawToken};
-    
-    const claimNames: {[key: string]: string} = {
-      name: tokenConfiguration,
-      birthDate: 'selfIssued',
-      upn: tokenConfiguration
-    };
-    claimNames[`${vcConfiguration}#vc.credentialSubject.givenName`] = 'vp';
-    claimNames[`${vcConfiguration}#vc.credentialSubject.familyName`] = 'vp';
-    const schema = 'https://portableidentitycards.azure-api.net/42b39d9d-0cdd-4ae0-b251-b7b39a561f91/api/portable/v1.0/contracts/test/schema';
+    attestations.idTokens[setup.defaultIdTokenConfiguration] = idToken.rawToken;
+    attestations.presentations['VerifiableCredential'] = vp.rawToken;
+
+    const contract = 'https://portableidentitycards.azure-api.net/42b39d9d-0cdd-4ae0-b251-b7b39a561f91/api/portable/v1.0/contracts/test/schema';
    
     const request = await IssuanceHelpers.createSiopRequest(
       setup,
       didJwkPrivate,
       didDocument, 
-      schema, 
+      contract, 
       '', 
-      claimNames,
-      claimSources
+      attestations
      );
      const expected: IExpected[] = [
       { type: TokenType.selfIssued },
       { type: TokenType.idToken, issuers: [setup.defaultIdTokenConfiguration], audience: setup.AUDIENCE },
       { type: TokenType.siop, issuers: ['https://self-issued.me'], audience: setup.AUDIENCE },
       { type: TokenType.verifiablePresentation, issuers: [setup.defaultUserDid] , audience: setup.AUDIENCE },
-      { type: TokenType.verifiableCredential, issuers: [setup.defaultIssuerDid], audience: setup.defaultUserDid, schemas: [schema] }
+      { type: TokenType.verifiableCredential, issuers: [setup.defaultIssuerDid], audience: setup.defaultUserDid, schemas: [contract] }
     ];
 
      const siopRequest = {
       didJwkPrivate,
       didJwkPublic,
       didDocument,
-      schema,
-      claimNames,
-      claimSources,
+      contract,
+      attestations,
       tokenConfiguration,
       idToken,
       vp,

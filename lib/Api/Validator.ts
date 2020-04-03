@@ -151,13 +151,16 @@ export default class Validator {
       status: 200
     };
 
-    // Deserialize id token token
+    // Deserialize the token
     validationResponse = validationOptions.getSelfIssuedTokenObjectDelegate(validationResponse, token);
     if (!validationResponse.result) {
       return [validationResponse, {} as ClaimToken];
     }
 
     // Check type of token
+    if (validationResponse.payloadObject!.attestations && validationResponse.payloadObject!.contract) {
+      return [validationResponse, new ClaimToken(TokenType.siop, token, '')];
+    }
     if (validationResponse.payloadObject!.vc) {
       return [validationResponse, new ClaimToken(TokenType.verifiableCredential, token, '')];
     }
