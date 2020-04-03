@@ -70,8 +70,8 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
       };
     }
 
-    const verifiableCredentials: string[] = validationResponse.payloadObject.vp.verifiableCredential;
-    if (!verifiableCredentials) {
+    validationResponse.tokensToValidate = this.setVcTokens(validationResponse.payloadObject.vp.verifiableCredential);
+    if (!validationResponse.tokensToValidate) {
       return {
         result: false,
         status: 403,
@@ -80,5 +80,14 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
     }
 
     return validationResponse;
+  }
+
+  private setVcTokens(vc: string[]) {
+    const decodedToken: {[key: string]: ClaimToken } = {};
+    for (let token in vc) {
+      const claimToken = ClaimToken.getTokenType(vc[token]);
+      decodedToken[claimToken.decodedToken.jti] = claimToken;
+    }
+    return decodedToken;
   }
 }

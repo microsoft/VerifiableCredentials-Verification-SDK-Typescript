@@ -427,29 +427,11 @@ public getTokenObject (validationResponse: IValidationResponse, token: string): 
    */
   public getTokensFromSiop (validationResponse: IValidationResponse): IValidationResponse {
     const  self: any = this;
-    const claims = validationResponse.payloadObject[VerifiableCredentialConstants.CLAIMS];
-    if (claims) {
-      const claimSources = claims[VerifiableCredentialConstants.CLAIMSOURCES];
-      if (!claimSources) {
-        return {
-          result: false,
-          status: 403,
-          detailedError: `${VerifiableCredentialConstants.CLAIMSOURCES} is missing from ${VerifiableCredentialConstants.CLAIMS}`
-        };
-      }
-
-      const claimNames = claims[VerifiableCredentialConstants.CLAIMNAMES];
-      if (!claimNames) {
-        return {
-          result: false,
-          status: 403,
-          detailedError: `${VerifiableCredentialConstants.CLAIMNAMES} is missing from ${VerifiableCredentialConstants.CLAIMS}`
-        };
-      }
-
+    const attestations = validationResponse.payloadObject[VerifiableCredentialConstants.ATTESTATIONS];
+    if (attestations) {
       // Decode tokens
       try {
-        validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromClaimSources(claimSources, claimNames).map((token) => token.rawToken);
+        validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromAttestations(attestations);
       } catch (err) {
         console.error(err);
         return {
@@ -459,6 +441,7 @@ public getTokenObject (validationResponse: IValidationResponse, token: string): 
         };
       }
     }
+
     return validationResponse;
   }
 

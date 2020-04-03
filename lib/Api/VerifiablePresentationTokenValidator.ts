@@ -8,9 +8,6 @@ import { IValidationResponse } from '../InputValidation/IValidationResponse';
 import ValidationOptions from '../Options/ValidationOptions';
 import { VerifiablePresentationValidation } from '../InputValidation/VerifiablePresentationValidation';
 import IValidatorOptions from '../Options/IValidatorOptions';
-import { VerifiableCredentialValidation } from '../InputValidation/VerifiableCredentialValidation';
-import { IdTokenValidation } from '../InputValidation/IdTokenValidation';
-import { IValidationOptions } from '../Options/IValidationOptions';
 import ValidationQueue from '../InputValidation/ValidationQueue';
 import ValidationQueueItem from '../InputValidation/ValidationQueueItem';
 
@@ -39,8 +36,8 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
     const validationResult = await validator.validate(queueItem.tokenToValidate);
 
     if (validationResult.tokensToValidate) {
-      for (let inx=0; inx < validationResult.tokensToValidate.length; inx++) {
-        queue.addToken(validationResult.tokensToValidate[inx]);
+      for (let key in validationResult.tokensToValidate) {
+        queue.addToken(validationResult.tokensToValidate[key].rawToken);
       }
     }
     return validationResult;

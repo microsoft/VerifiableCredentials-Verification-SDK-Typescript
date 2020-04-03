@@ -71,7 +71,7 @@ describe('Validator', () => {
     queue.addToken(siop.vp.rawToken);
     let result = await vpValidator.validate(queue, queue.getNextToken()!, setup.defaultUserDid);
     expect(result.result).toBeTruthy();
-    expect(result.tokensToValidate![0]).toEqual(siop.vc.rawToken);
+    expect(result.tokensToValidate![`urn:pic:80a509d2-99d4-4d6c-86a7-7b2636944080`].rawToken).toEqual(siop.vc.rawToken);
 
     // Check VC validator
     queue = new ValidationQueue();
@@ -84,7 +84,7 @@ describe('Validator', () => {
     queue.addToken(siop.vp.rawToken);
     result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeTruthy();
-    expect(result.tokensToValidate).toBeUndefined();
+    expect(result.validationResult?.verifiableCredentials![0]).toBeDefined();
 
     // Negative cases
     // Test validator with missing VC validator
@@ -122,9 +122,9 @@ describe('Validator', () => {
     queue.addToken(request.rawToken);
     let result = await siopValidator.validate(queue, queue.getNextToken()!);
     expect(result.result).toBeTruthy();
-    expect(result.tokensToValidate![1]).toEqual(siop.vp.rawToken);
-    expect(result.tokensToValidate![2]).toEqual(siop.idToken.rawToken);
-    expect(result.tokensToValidate![0]).toEqual(siop.si.rawToken);
+    expect(result.tokensToValidate!['VerifiableCredential'].rawToken).toEqual(siop.vp.rawToken);
+    expect(result.tokensToValidate![`${setup.defaultIdTokenConfiguration}`].rawToken).toEqual(siop.idToken.rawToken);
+    expect(result.tokensToValidate!['selfIssued'].rawToken).toEqual(siop.si.rawToken);
 
     // Check validator
     let validator = new ValidatorBuilder()

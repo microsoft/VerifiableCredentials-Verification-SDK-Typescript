@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import base64url from 'base64url';
 import VerifiableCredentialConstants from './VerifiableCredentialConstants';
+import { ValidationOptions } from '../index';
 
 /**
  * Enum for define the token type
@@ -114,6 +115,14 @@ export default class ClaimToken {
   }
 
   /**
+   * Test if token name is a reference to a VC.
+   * @param tokenName Name to test for VC
+   */
+  public static isVc(tokenName: string): boolean {
+    return tokenName.includes(VerifiableCredentialConstants.CLAIMS_VERIFIABLECREDENTIAL);
+  }
+
+  /**
    * Decode the token
    * @param type Claim type
    * @param values Claim value
@@ -128,73 +137,83 @@ export default class ClaimToken {
     this._decodedToken = JSON.parse(base64url.decode(parts[1]));
   }
 
+/**
+ * Get the token object from the self issued token
+ * @param token The token to parse
+ * @returns The payload object
+ */
+private static getTokenPayload (token: string): any {
+  // Deserialize the token
+  const split = token.split('.');
+  return JSON.parse(base64url.decode(split[1]));
+}
+
+/**
+ * Get the token object from the self issued token
+ * @param token The token to parse
+ * @returns The payload object
+ */
+private static tokenSignature (token: string): string | undefined {
+  // Split the token
+  const split = token.split('.');
+  return split[2];
+}
+
   /**
-  * ClaimSources and ClaimNames contain the tokens and VCs in the input.
-  * This algorithm will convert the input to a CalimToken
-  * @param sourceName Index in claimSources
-  * @param claimSources Collection of claimSources
-  * @param claimNames Collection of claimNames
+   * Check the token type based on the payload
+   * @param token to check for type
+   */
+  public static getTokenType( token: string): ClaimToken {
+    // Deserialize the token
+    const payload = ClaimToken.getTokenPayload(token);
+
+    // Check type of token
+    if (payload.attestations && payload.contract) {
+      return new ClaimToken(TokenType.siop, token, '');
+    }
+    if (payload.vc) {
+      return new ClaimToken(TokenType.verifiableCredential, token, '');
+    }
+    if (payload.vp) {
+      return new ClaimToken(TokenType.verifiablePresentation, token, '');
+    }
+    // Check for signature
+    if (ClaimToken.tokenSignature(token)) {
+      return new ClaimToken(TokenType.idToken, token, '');
+    }
+      
+    return new ClaimToken(TokenType.selfIssued, token, '');
+  }
+
+  /**
+  * Attestations contain the tokens and VCs in the input.
+  * This algorithm will convert the attestations to a ClaimToken
+  * @param attestations All presented claims
   */
-  public static getClaimTokensFromClaimSources(claimSources: {[key: string]: { JWT: string }}, claimNames: { [key: string]: string }): ClaimToken[]  { 
-    const decodedTokens: ClaimToken[] = [];
-    let allTokensFromSource = Object.getOwnPropertyNames(claimSources);
-    for (let inx = 0; inx < allTokensFromSource.length; inx++) {
-      const claimToken = ClaimToken.fromClaimSource(allTokensFromSource[inx], claimSources, claimNames);
-      claimToken.decode();
-      decodedTokens.push(claimToken);
+  public static getClaimTokensFromAttestations(attestations: {[key: string]: string}): {[key: string]: ClaimToken }  { 
+    const decodedTokens: {[key: string]: ClaimToken } = {};
+
+    for (let key in attestations) {
+      const token: any = attestations[key];
+      if (typeof token === 'string') {
+        decodedTokens[VerifiableCredentialConstants.CLAIMS_SELFISSUED] = new ClaimToken(TokenType.selfIssued, token, '');
+      } else {
+        for (let tokenKey in token) {
+          const claimToken = ClaimToken.getTokenType(token[tokenKey]);
+          decodedTokens[tokenKey] = claimToken;  
+        }
+      }
     };
     return decodedTokens;
   }
 
   /**
-   * Test if token name is a reference to a VC.
-   * @param tokenName Name to test for VC
-   */
-  public static isVc(tokenName: string): boolean {
-    return tokenName.includes(VerifiableCredentialConstants.CLAIMS_VERIFIABLECREDENTIAL);
-  }
-
-  /**
-  * ClaimSources and ClaimNames contain the tokens and VCs in the input.
-  * This algorithm will convert the input to a CalimToken
-  * @param sourceName Index in claimSources
-  * @param claimSources Collection of claimSources
-  * @param claimNames Collection of claimNames
+  * Attestations contain the tokens and VCs in the input.
+  * This algorithm will convert the attestations to a ClaimToken
+  * @param attestation The attestation
   */
- private static fromClaimSource(sourceName: string, claimSources: {[key: string]: { JWT: string }}, claimNames: { [key: string]: string }): ClaimToken  { 
-  const claimSource = claimSources[sourceName];
-
-  let allNameProperties = Object.getOwnPropertyNames(claimNames);
-  for (let inx = 0; inx < allNameProperties.length; inx++) {
-    const nameToTest = allNameProperties[inx];
-    const claimNameValue = claimNames[nameToTest];
-    console.log(`sourcename ${sourceName}, name ${nameToTest} , name value ${claimNameValue}, transform ${ClaimToken.getConfigurationFromSourceName(claimNameValue)}`);
-    if (claimNameValue === sourceName) {
-      // Get the token type. For VCs the nameToTest has the clue. All the rest is in claimNames[nameToTest].
-      if (ClaimToken.isVc(nameToTest)) {
-        return new ClaimToken(TokenType.verifiablePresentation, claimSource.JWT, ClaimToken.getConfigurationFromSourceName(nameToTest));
-      }
-
-      let claimToken = new ClaimToken(claimNames[nameToTest], '', '');
-      switch (claimToken.type) {
-        case TokenType.selfIssued:
-          return new ClaimToken(TokenType.selfIssued, claimSource.JWT, VerifiableCredentialConstants.CLAIMS_SELFISSUED);
-        case TokenType.idToken:
-          return new ClaimToken(TokenType.idToken, claimSource.JWT, claimNameValue);
-        default:
-          throw new Error(`Unexpected token type ${claimToken.type}`); 
-        }  
-    } 
+  private static fromAttestation(attestation: string): ClaimToken  { 
+    const token = ClaimToken.getTokenType(attestation);
+    return token;
   }
-  throw new Error(`Could not create ClaimToken for ${sourceName}`); 
-}
-
-  private static getConfigurationFromSourceName(configuration: string) {
-    if (!configuration.includes(VerifiableCredentialConstants.CLAIMS_VERIFIABLECREDENTIAL)) {
-      return configuration;
-    }
-    
-    const split = configuration.split(VerifiableCredentialConstants.CLAIMS_VERIFIABLECREDENTIAL);
-    return split[0];
-  }  
 }
