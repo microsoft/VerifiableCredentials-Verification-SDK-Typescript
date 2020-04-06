@@ -258,11 +258,11 @@ export class ValidationHelpers {
       };
     }
 
-    // check aud value
-    if (expected.audience && validationResponse.payloadObject.aud !== expected.audience) {
+    // check sub value
+    if (expected.audience && validationResponse.payloadObject.sub !== expected.audience) {
       return validationResponse = {
         result: false,
-        detailedError: `Wrong or missing aud property in ${(self as ValidationOptions).expectedInput}. Expected '${expected.audience}'`,
+        detailedError: `Wrong or missing sub property in ${(self as ValidationOptions).expectedInput}. Expected '${expected.audience}'`,
         status: 403
       };
     }
