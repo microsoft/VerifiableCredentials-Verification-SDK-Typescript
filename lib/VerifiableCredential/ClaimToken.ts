@@ -153,10 +153,10 @@ private static getTokenPayload (token: string): any {
  * @param token The token to parse
  * @returns The payload object
  */
-private static tokenSignature (token: string): string | undefined {
+private static tokenSignature (token: string): boolean {
   // Split the token
   const split = token.split('.');
-  return split[2];
+  return split[2] !== undefined && split[2].trim() !== '';
 }
 
   /**

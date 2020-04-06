@@ -127,11 +127,12 @@ export class IssuanceHelpers {
   }
 
   // Generate a signing keys and set the configuration mock
-  public static async generateSigningKeyAndSetConfigurationMock(setup: TestSetup, kid: string): Promise<[any, any, string]> {
+  public static async generateSigningKeyAndSetConfigurationMock(setup: TestSetup, kid: string, configuration?: string, issuer?: string): Promise<[any, any, string]> {
     // setup http mock
-    const configuration = setup.defaultIdTokenConfiguration;
+    configuration = configuration || setup.defaultIdTokenConfiguration;
+    issuer = issuer || setup.tokenIssuer;
     const jwks = setup.defaultIdTokenJwksConfiguration
-    setup.fetchMock.get(configuration, {"jwks_uri":  `${jwks}`, "issuer": `${setup.tokenIssuer}`}, {overwriteRoutes: true});
+    setup.fetchMock.get(configuration, {"jwks_uri":  `${jwks}`, "issuer": `${issuer}`}, {overwriteRoutes: true});
     console.log(`Set mock for ${configuration}`);
     const [jwkPrivate, jwkPublic] = await IssuanceHelpers.generateSigningKey(setup, kid);
 
@@ -162,7 +163,7 @@ export class IssuanceHelpers {
     
     // Resolver mock
     const resolverUrl = `${setup.resolverUrl}/${did}`;
-    setup.fetchMock.get(resolverUrl, didDocument);
+    setup.fetchMock.get(resolverUrl, didDocument, {overwriteRoutes: true});
     console.log(`Set mock for ${resolverUrl}`);
 
     return [didDocument.document, jwkPrivate, jwkPublic];

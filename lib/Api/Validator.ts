@@ -145,38 +145,14 @@ export default class Validator {
    * @param validationOptions The options
    * @param token to check for type
    */
-  private static getTokenType(validationOptions: ValidationOptions, token: string): [IValidationResponse, ClaimToken] {
+  private static getTokenType(_validationOptions: ValidationOptions, token: string): [IValidationResponse, ClaimToken] {
     let validationResponse: IValidationResponse = {
       result: true,
       status: 200
     };
 
-    // Deserialize the token
-    validationResponse = validationOptions.getSelfIssuedTokenObjectDelegate(validationResponse, token);
-    if (!validationResponse.result) {
-      return [validationResponse, {} as ClaimToken];
-    }
-
-    // Check type of token
-    if (validationResponse.payloadObject!.attestations && validationResponse.payloadObject!.contract) {
-      return [validationResponse, new ClaimToken(TokenType.siop, token, '')];
-    }
-    if (validationResponse.payloadObject!.vc) {
-      return [validationResponse, new ClaimToken(TokenType.verifiableCredential, token, '')];
-    }
-    if (validationResponse.payloadObject!.vp) {
-      return [validationResponse, new ClaimToken(TokenType.verifiablePresentation, token, '')];
-    }
-    if (validationResponse.payloadObject!.claims) {
-      return [validationResponse, new ClaimToken(TokenType.siop, token, '')];
-    }
-    // Check for signature
-    validationResponse = validationOptions.getTokenObjectDelegate(validationResponse, token);
-    if (!validationResponse.result && validationResponse.status === 403) {
-      return [validationResponse, new ClaimToken(TokenType.selfIssued, token, '')];
-    }
-    
-    return [validationResponse, new ClaimToken(TokenType.idToken, token, '')];
+    const claimToken = ClaimToken.getTokenType(token);
+    return [validationResponse, claimToken];
   }
 
   /**

@@ -41,20 +41,20 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
     }
 
     // Get issuer from verifiable credential payload
-    validationResponse.did = validationResponse.payloadObject.issuer;
+    validationResponse.did = validationResponse.payloadObject.iss;
     if (!validationResponse.did) {
       return validationResponse = {
           result: false,
-          detailedError: 'The verifiable credential does not contain the issuer property',
+          detailedError: 'The verifiable credential does not contain the iss property',
           status: 403
       };
     }
 
     // Check if VC audience and SIOP DID are equal
-    if (this.siopDid && validationResponse.payloadObject.aud !== this.siopDid) {
+    if (this.siopDid && validationResponse.payloadObject.sub !== this.siopDid) {
       return {
         result: false,
-        detailedError: `The DID used for the SIOP '${this.siopDid}' is not equal to the audience of the verifiable credential ${validationResponse.payloadObject.aud}`,
+        detailedError: `The DID used for the SIOP '${this.siopDid}' is not equal to the subject of the verifiable credential ${validationResponse.payloadObject.sub}`,
         status: 403
       };
     }
