@@ -233,7 +233,7 @@ export class ValidationHelpers {
   /**
     * Check the scope validity of the token such as iss and aud
     * @param validationResponse The response for the requestor
-    * @param expectedSchema Expected schema of the verifiable credential
+    * @param expected Expected output of the verifiable credential
     * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
     */
   public checkScopeValidityOnToken(validationResponse: IValidationResponse, expected: IExpected): IValidationResponse {
@@ -258,11 +258,11 @@ export class ValidationHelpers {
       };
     }
 
-    // check aud value
-    if (expected.audience && validationResponse.payloadObject.aud !== expected.audience) {
+    // check sub value
+    if (expected.audience && validationResponse.payloadObject.sub !== expected.audience) {
       return validationResponse = {
         result: false,
-        detailedError: `Wrong or missing aud property in ${(self as ValidationOptions).expectedInput}. Expected '${expected.audience}'`,
+        detailedError: `Wrong or missing sub property in ${(self as ValidationOptions).expectedInput}. Expected '${expected.audience}'`,
         status: 403
       };
     }

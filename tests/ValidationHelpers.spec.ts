@@ -208,12 +208,12 @@ import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
     };
 
     const issuer = 'iss';
-    const audience = 'aud'
+    const audience = 'sub'
 
     // Set the payload
     validationResponse.payloadObject = {
       iss: issuer,
-      aud: audience
+      sub: audience
     }
 
     let response = options.checkScopeValidityOnTokenDelegate(validationResponse, {type: TokenType.idToken, issuers: [issuer], audience: audience} as IExpected);
@@ -228,12 +228,12 @@ import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
     expect(response.detailedError).toEqual(`Wrong or missing iss property in verifiableCredential. Expected '["iss"]'`);
     validationResponse.payloadObject.iss = issuer;
 
-    validationResponse.payloadObject.aud = 'xxx';
+    validationResponse.payloadObject.sub = 'xxx';
     response = options.checkScopeValidityOnTokenDelegate(validationResponse, {type: TokenType.idToken, issuers: [issuer], audience: audience} as IExpected);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Wrong or missing aud property in verifiableCredential. Expected 'aud'`);
-    validationResponse.payloadObject.aud = audience;
+    expect(response.detailedError).toEqual(`Wrong or missing sub property in verifiableCredential. Expected 'sub'`);
+    validationResponse.payloadObject.sub = audience;
     });
     
   it('should test fetchKeyAndValidateSignatureOnIdTokenDelegate', async () => {

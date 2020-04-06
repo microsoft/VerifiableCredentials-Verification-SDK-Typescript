@@ -68,20 +68,20 @@ describe('Validator', () => {
 
     // Check VP validator
     let queue = new ValidationQueue();
-    queue.addToken(siop.vp.rawToken);
+    queue.addToken('vp', siop.vp.rawToken);
     let result = await vpValidator.validate(queue, queue.getNextToken()!, setup.defaultUserDid);
     expect(result.result).toBeTruthy();
-    expect(result.tokensToValidate![`urn:pic:80a509d2-99d4-4d6c-86a7-7b2636944080`].rawToken).toEqual(siop.vc.rawToken);
+    expect(result.tokensToValidate![`vp`].rawToken).toEqual(siop.vc.rawToken);
 
     // Check VC validator
     queue = new ValidationQueue();
-    queue.addToken(siop.vc.rawToken);
+    queue.addToken('vc', siop.vc.rawToken);
     result = await vcValidator.validate(queue, queue.getNextToken()!, setup.defaultUserDid);
     expect(result.result).toBeTruthy();
 
     // Check validator
     queue = new ValidationQueue();
-    queue.addToken(siop.vp.rawToken);
+    queue.addToken('vp', siop.vp.rawToken);
     result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeTruthy();
     expect(result.validationResult?.verifiableCredentials![0]).toBeDefined();
@@ -92,7 +92,7 @@ describe('Validator', () => {
       .useValidators(vpValidator)
       .build();
     queue = new ValidationQueue();
-    queue.addToken(siop.vp.rawToken);
+    queue.addToken('vp', siop.vp.rawToken);
     expectAsync(validator.validate(queue.getNextToken()!.tokenToValidate)).toBeRejectedWith('verifiableCredential does not has a TokenValidator');
   });
   
@@ -119,7 +119,7 @@ describe('Validator', () => {
 
     // Check siop validator
     let queue = new ValidationQueue();
-    queue.addToken(request.rawToken);
+    queue.addToken('siop', request.rawToken);
     let result = await siopValidator.validate(queue, queue.getNextToken()!);
     expect(result.result).toBeTruthy();
     expect(result.tokensToValidate!['VerifiableCredential'].rawToken).toEqual(siop.vp.rawToken);
@@ -132,7 +132,7 @@ describe('Validator', () => {
       .build();
       
     queue = new ValidationQueue();
-    queue.addToken(request.rawToken);
+    queue.addToken('siop', request.rawToken);
     result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeTruthy();
     expect(result.status).toEqual(200);

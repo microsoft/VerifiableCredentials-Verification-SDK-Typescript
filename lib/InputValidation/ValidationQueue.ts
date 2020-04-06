@@ -17,8 +17,8 @@ export default class ValidationQueue {
    * Add token to validation queue
    * @param token to add to queue
    */
-  public addToken(token: string) {
-    this.queue.push(new ValidationQueueItem(token));
+  public addToken(id: string, token: string) {
+    this.queue.push(new ValidationQueueItem(id, token));
   }
 
   /**

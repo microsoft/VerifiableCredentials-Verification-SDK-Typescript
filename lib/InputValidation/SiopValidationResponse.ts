@@ -9,9 +9,9 @@ import { IValidationResponse } from "./IValidationResponse";
 export interface ISiopValidationResponse extends IValidationResponse {
 
   /**
-   * The schema
+   * The contract
    */
-  schema?: string;
+  contract?: string;
 
   /**
    * Claim in the request and rule file

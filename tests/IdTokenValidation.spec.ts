@@ -43,6 +43,6 @@ import { IExpected } from '../lib';
     response = await validator.validate(siop.idToken.rawToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Wrong or missing aud property in idToken. Expected 'abcdef'`);
+    expect(response.detailedError).toEqual(`Wrong or missing sub property in idToken. Expected 'abcdef'`);
   });
  });
