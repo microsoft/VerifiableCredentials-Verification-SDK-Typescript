@@ -35,7 +35,7 @@ export default class SiopTokenValidator implements ITokenValidator {
     const validationResult = await validator.validate(queueItem.tokenToValidate);
     if (validationResult.tokensToValidate) {
       for (let key in validationResult.tokensToValidate) {
-        queue.addToken(validationResult.tokensToValidate[key].rawToken);
+        queue.addToken(key, validationResult.tokensToValidate[key].rawToken);
       }
     }
     return validationResult as IValidationResponse;

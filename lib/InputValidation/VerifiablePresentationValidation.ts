@@ -19,7 +19,7 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
    * @param expected Expected properties of the verifiable presentation
    * @param siopDid needs to be equal to audience of VC
    */
-  constructor (private options: IValidationOptions, private expected: IExpected, private siopDid: string) {
+  constructor (private options: IValidationOptions, private expected: IExpected, private siopDid: string, private id: string) {
   }
  
   /**
@@ -86,7 +86,7 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
     const decodedToken: {[key: string]: ClaimToken } = {};
     for (let token in vc) {
       const claimToken = ClaimToken.getTokenType(vc[token]);
-      decodedToken[claimToken.decodedToken.jti] = claimToken;
+      decodedToken[this.id] = claimToken;
     }
     return decodedToken;
   }

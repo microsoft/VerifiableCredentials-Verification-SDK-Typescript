@@ -25,12 +25,12 @@ import { IExpected } from '../lib';
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentation);   
     const expected = siop.expected.filter((token: IExpected) => token.type === TokenType.verifiablePresentation)[0];
 
-    let validator = new VerifiablePresentationValidation(options, expected, setup.defaultUserDid);
+    let validator = new VerifiablePresentationValidation(options, expected, setup.defaultUserDid, 'id');
     let response = await validator.validate(siop.vp.rawToken);
     expect(response.result).toBeTruthy();
 
     // Negative cases
-    validator = new VerifiablePresentationValidation(options, expected, 'abcdef');    
+    validator = new VerifiablePresentationValidation(options, expected, 'abcdef', 'id');    
     response = await validator.validate(siop.vp.rawToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);

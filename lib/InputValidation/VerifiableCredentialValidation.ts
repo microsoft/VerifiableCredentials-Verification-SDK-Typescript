@@ -51,33 +51,33 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
     }
 
     // Check if VC audience and SIOP DID are equal
-    if (this.siopDid && validationResponse.payloadObject.sub !== this.siopDid) {
+    if (this.siopDid && validationResponse.payloadObject.aud !== this.siopDid) {
       return {
         result: false,
-        detailedError: `The DID used for the SIOP '${this.siopDid}' is not equal to the subject of the verifiable credential ${validationResponse.payloadObject.sub}`,
+        detailedError: `The DID used for the SIOP '${this.siopDid}' is not equal to the subject of the verifiable credential ${validationResponse.payloadObject.aud}`,
         status: 403
       };
     }
 
-    // Check if the VC matches the schema
-    // Get the schema from the VC
-    if (this.expected.schemas && this.expected.schemas.length > 0) {
+    // Check if the VC matches the contract
+    // Get the contract from the VC
+    if (this.expected.contracts && this.expected.contracts.length > 0) {
       const context: string[] = validationResponse.payloadObject.vc[VerifiableCredentialConstants.CLAIM_CONTEXT];
-      let schemaFound = false;
-      let schema: string = '';
+      let contractFound = false;
+      let contract: string = '';
       for (let inx = 0 ; inx < context.length; inx++) {
-        if (this.expected.schemas.includes(context[inx])) {
-          schemaFound = true;
-          schema = context[inx];
+        if (this.expected.contracts.includes(context[inx])) {
+          contractFound = true;
+          contract = context[inx];
           break;
         }
       }
   
       // Check if the we found a matching schema.
-      if (!schemaFound) {
+      if (!contractFound) {
         return validationResponse = {
           result: false,
-          detailedError: `The verifiable credential with schema '${JSON.stringify(context)}' is not expected in '${JSON.stringify(this.expected.schemas)}`,
+          detailedError: `The verifiable credential with schema '${JSON.stringify(context)}' is not expected in '${JSON.stringify(this.expected.contracts)}`,
           status: 403
         };
       }  

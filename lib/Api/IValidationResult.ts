@@ -12,12 +12,12 @@ export default interface IValidationResult {
   /**
    * Claims found in the input verifiable credentials
    */
-  verifiableCredentials?: any[],
+  verifiableCredentials?: { [id: string]: any },
 
   /**
    * Claims found in the input id tokens
    */
-  idTokens?: any[],
+  idTokens?: { [id: string]: any },
 
   /**
    * Claims found in the input self issued token

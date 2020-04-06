@@ -22,8 +22,8 @@ export default interface IExpected {
   audience?: string,
 
   /**
-   * Verifiable credentials will use schema to define their type
+   * Verifiable credentials will use contracts to define their type
    */
-  schemas?: string[],
+  contracts?: string[],
   
 }

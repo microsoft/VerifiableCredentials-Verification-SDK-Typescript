@@ -233,7 +233,7 @@ export class ValidationHelpers {
   /**
     * Check the scope validity of the token such as iss and aud
     * @param validationResponse The response for the requestor
-    * @param expectedSchema Expected schema of the verifiable credential
+    * @param expected Expected output of the verifiable credential
     * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
     */
   public checkScopeValidityOnToken(validationResponse: IValidationResponse, expected: IExpected): IValidationResponse {

@@ -12,6 +12,7 @@ import { IValidationResponse } from '../InputValidation/IValidationResponse';
 import ValidationQueue from '../InputValidation/ValidationQueue';
 import IValidationResult from './IValidationResult';
 import { throws } from 'assert';
+import ValidationQueueItem from '../InputValidation/ValidationQueueItem';
 
 /**
  * Class model the token validator
@@ -47,7 +48,7 @@ export default class Validator {
     let claimToken: ClaimToken;
     let siopDid: string | undefined;
     const queue = new ValidationQueue();
-    queue.addToken(token);
+    queue.addToken('siop', token);
     let queueItem = queue.getNextToken();
     do {
       [response, claimToken] = Validator.getTokenType(options, queueItem!.tokenToValidate);
@@ -118,18 +119,20 @@ export default class Validator {
 
     // Set the contract
     const contract = queue.items.filter((item) => item.validatedToken?.type === TokenType.siop).map((siop) => {
-      return (siop.validationResponse as ISiopValidationResponse).contract;
+      return (siop.validationResponse as ISiopValidationResponse).payloadObject.contract;
     })[0];
 
     // get id tokens
-    const idTokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.idToken).map((idToken) => {
-      return idToken.validatedToken?.decodedToken;
-    });
+    const idTokens: {[id: string]: any} = {};
+    for (let inx = 0, tokens=queue.items.filter((item) => item.validatedToken?.type === TokenType.idToken) ; inx < tokens.length; inx++) {
+      idTokens[tokens[inx].id] = tokens[inx].validatedToken?.decodedToken;
+    }
 
     // get verifiable credentials
-    const vcs = queue.items.filter((item) => item.validatedToken?.type === TokenType.verifiableCredential).map((vc) => {
-      return vc.validatedToken?.decodedToken;
-    });
+    const vcs: {[id: string]: any} = {};
+    for (let inx = 0, tokens=queue.items.filter((item) => item.validatedToken?.type === TokenType.verifiableCredential) ; inx < tokens.length; inx++) {
+      vcs[tokens[inx].id] = tokens[inx].validatedToken?.decodedToken;
+    }
 
     // get self issued
     const si = queue.items.filter((item) => item.validatedToken?.type === TokenType.selfIssued).map((si) => {
