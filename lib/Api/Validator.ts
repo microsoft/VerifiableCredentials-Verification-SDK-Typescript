@@ -47,7 +47,7 @@ export default class Validator {
     let claimToken: ClaimToken;
     let siopDid: string | undefined;
     const queue = new ValidationQueue();
-    queue.addToken(token);
+    queue.addToken('siop', token);
     let queueItem = queue.getNextToken();
     do {
       [response, claimToken] = Validator.getTokenType(options, queueItem!.tokenToValidate);
@@ -118,7 +118,7 @@ export default class Validator {
 
     // Set the contract
     const contract = queue.items.filter((item) => item.validatedToken?.type === TokenType.siop).map((siop) => {
-      return (siop.validationResponse as ISiopValidationResponse).contract;
+      return (siop.validationResponse as ISiopValidationResponse).payloadObject.contract;
     })[0];
 
     // get id tokens

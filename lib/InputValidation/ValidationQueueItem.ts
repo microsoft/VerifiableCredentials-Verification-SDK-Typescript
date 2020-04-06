@@ -28,7 +28,7 @@ export default class ValidationQueueItem {
   private _validatedToken: ClaimToken | undefined;
   private validationStatus: ValidationStatus = ValidationStatus.todo;
 
-  constructor(private _tokenToValidate: string) {
+  constructor(private _id: string, private _tokenToValidate: string) {
     // Set defaults for validation result
     this._validationResult = {
       result: false,
@@ -50,8 +50,15 @@ export default class ValidationQueueItem {
   /**
    * Gets the validation response
    */
-  public get validationResponse() {
+   public get validationResponse() {
     return this._validationResult;
+  }
+
+  /**
+   * Gets the token id
+   */
+   public get id() {
+    return this._id;
   }
 
   /**
