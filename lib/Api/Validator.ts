@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ClaimToken, IExpected, IDidResolver, CryptoOptions, ITokenValidator } from '../index';
+import { ClaimToken, IExpected, IDidResolver, CryptoOptions, ITokenValidator, ISiopValidationResponse } from '../index';
 import { TokenType } from '../VerifiableCredential/ClaimToken';
 import ValidationOptions from '../Options/ValidationOptions';
 import IValidatorOptions from '../Options/IValidatorOptions';
@@ -116,6 +116,11 @@ export default class Validator {
       })[0];
     }
 
+    // Set the contract
+    const contract = queue.items.filter((item) => item.validatedToken?.type === TokenType.siop).map((siop) => {
+      return (siop.validationResponse as ISiopValidationResponse).contract;
+    })[0];
+
     // get id tokens
     const idTokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.idToken).map((idToken) => {
       return idToken.validatedToken?.decodedToken;
@@ -133,6 +138,7 @@ export default class Validator {
 
     const validationResult: IValidationResult = {
       did: did ? did : '',
+      contract: contract ? contract : '',
       verifiableCredentials: vcs,
       idTokens: idTokens,
       selfIssued: si

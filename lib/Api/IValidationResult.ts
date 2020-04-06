@@ -5,6 +5,11 @@ export default interface IValidationResult {
   did: string,
 
   /**
+   * Gets the contract of the requestor
+   */
+  contract: string,
+
+  /**
    * Claims found in the input verifiable credentials
    */
   verifiableCredentials?: any[],
