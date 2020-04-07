@@ -94,10 +94,6 @@ export class ValidationHelpers {
         };
       }
 
-      // DEMO-TODO short circuit validation for demo
-      validationResponse.payloadObject = JSON.parse(tokenPayload!.toString());
-      return validationResponse;
-
       // Get did from kid
       const parts = kid.split('#');
       if (parts.length <= 1) {
@@ -110,6 +106,11 @@ export class ValidationHelpers {
       validationResponse.did = parts[0];
     } catch (err) {
       console.error(err);
+
+      // DEMO-TODO short circuit validation for demo
+      validationResponse.payloadObject = JSON.parse(tokenPayload!.toString());
+      return validationResponse;
+
       return {
         result: false,
         detailedError: `The ${(self as ValidationOptions).expectedInput} could not be deserialized`,
