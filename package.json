@@ -1,6 +1,6 @@
 {
   "name": "portableidentity-relyingpartysdk-typescript",
-  "version": "0.5.6",
+  "version": "0.5.7",
   "description": "Typescript SDK for Portable Identity",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
