@@ -13,6 +13,7 @@ import { ISiopValidationResponse } from '../InputValidation/SiopValidationRespon
  export type GetTokenObject = (validationResponse: IValidationResponse, token: string) => IValidationResponse;
  export type ResolveDidAndGetKeys = (validationResponse: IValidationResponse) => Promise<IValidationResponse>;
  export type ValidateDidSignature = (validationResponse: IValidationResponse, token: ICryptoToken) => Promise<IValidationResponse>;
+ export type CheckTimeValidityOnIdToken = (validationResponse: IValidationResponse, driftInSec?: number) => IValidationResponse;
  export type CheckTimeValidityOnToken = (validationResponse: IValidationResponse, driftInSec?: number) => IValidationResponse;
  export type CheckScopeValidityOnToken = (validationResponse: IValidationResponse, expected: IExpected) => IValidationResponse;
  export type FetchKeyAndValidateSignatureOnIdToken = (validationResponse: IValidationResponse, token: ClaimToken) => Promise<IValidationResponse>;
@@ -62,6 +63,11 @@ getTokenObjectDelegate: GetTokenObject;
    * Check the scope validity of the token
    */
   checkScopeValidityOnTokenDelegate: CheckScopeValidityOnToken,
+
+  /**
+   * Check the scope validity of the token
+   */
+  checkScopeValidityOnIdTokenDelegate: CheckScopeValidityOnToken,
 
   /**
    * Delegate for getting a key and validate the signature on the token
