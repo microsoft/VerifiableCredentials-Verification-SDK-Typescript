@@ -258,6 +258,7 @@ export class ValidationHelpers {
       };
     }
 
+    /* TODO DISABLED UNTIL WE CAN FIX, THE SAME CHECK CAN'T BE USED FOR VP AND SIOP RESPONSE
     // check sub value
     if (expected.audience && validationResponse.payloadObject.sub !== expected.audience) {
       return validationResponse = {
@@ -266,6 +267,8 @@ export class ValidationHelpers {
         status: 403
       };
     }
+    */
+   
     return validationResponse;
   }
 
