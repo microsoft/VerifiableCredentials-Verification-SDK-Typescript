@@ -6,7 +6,7 @@
 import { ICryptoToken } from '@microsoft/crypto-sdk';
 import { IDidValidation, IDidValidationResponse } from './DidValidationResponse';
 import { IValidationOptions } from '../Options/IValidationOptions';
-import { IExpected } from '..';
+import { IExpected, ValidationOptions } from '..';
 
 /**
  * Class for input validation of a token signed with DID key
@@ -38,6 +38,16 @@ export class DidValidation implements IDidValidation {
       return validationResponse;
     }
 
+     // Get did from kid
+     const parts = validationResponse.didKid!.split('#');
+     if (parts.length <= 1) {
+       return {
+         result: false,
+         detailedError: `The kid in does not contain the did. Required format for kid is <did>#kid`,
+         status: 403
+       };
+     }
+     validationResponse.did = parts[0];
     // Get DID from the payload
     if (!validationResponse.did) {
       return validationResponse = {
