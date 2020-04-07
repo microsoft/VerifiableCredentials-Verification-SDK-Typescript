@@ -93,6 +93,11 @@ export class ValidationHelpers {
           status: 403
         };
       }
+
+      // DEMO-TODO short circuit validation for demo
+      validationResponse.payloadObject = JSON.parse(tokenPayload!.toString());
+      return validationResponse;
+
       // Get did from kid
       const parts = kid.split('#');
       if (parts.length <= 1) {
@@ -258,7 +263,7 @@ export class ValidationHelpers {
       };
     }
 
-    /* TODO DISABLED UNTIL WE CAN FIX, THE SAME CHECK CAN'T BE USED FOR VP AND SIOP RESPONSE
+    /* DEMO-TODO DISABLED UNTIL WE CAN FIX, THE SAME CHECK CAN'T BE USED FOR VP AND SIOP RESPONSE
     // check sub value
     if (expected.audience && validationResponse.payloadObject.sub !== expected.audience) {
       return validationResponse = {
