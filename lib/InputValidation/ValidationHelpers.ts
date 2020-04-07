@@ -93,16 +93,6 @@ export class ValidationHelpers {
           status: 403
         };
       }
-      // Get did from kid
-      const parts = kid.split('#');
-      if (parts.length <= 1) {
-        return {
-          result: false,
-          detailedError: `The kid in the ${(self as ValidationOptions).expectedInput} does not contain the did. Required format for kid is <did>#kid`,
-          status: 403
-        };
-      }
-      validationResponse.did = parts[0];
     } catch (err) {
       console.error(err);
       return {
