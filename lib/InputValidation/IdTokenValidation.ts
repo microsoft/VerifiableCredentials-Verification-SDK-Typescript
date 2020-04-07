@@ -64,11 +64,12 @@ constructor (private options: IValidationOptions, private expected: IExpected) {
     }
 
     // Check token time validity
+    /* TODO
     validationResponse = await this.options.checkTimeValidityOnTokenDelegate(validationResponse);
     if (!validationResponse.result) {
       return validationResponse;
     }
-
+    */
     // Check token scope (aud and iss)
     validationResponse = await this.options.checkScopeValidityOnIdTokenDelegate(validationResponse, this.expected);
     if (!validationResponse.result) {

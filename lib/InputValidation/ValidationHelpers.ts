@@ -180,22 +180,22 @@ export class ValidationHelpers {
    */
   public checkTimeValidityOnToken(validationResponse: IValidationResponse, driftInSec: number = 0): IValidationResponse {
     const self: any = this;
-    const current = new Date();
+    const current = Date.now()/1000;
     if (validationResponse.payloadObject.exp) {
       // initialize in utc time
-      const exp = new Date(1000 * (validationResponse.payloadObject.exp + driftInSec));
+      const exp =  (validationResponse.payloadObject.exp + driftInSec);
 
       if (exp < current) {
         return {
           result: false,
-          detailedError: `The presented ${(self as ValidationOptions).expectedInput} is expired ${exp}`,
+          detailedError: `The presented ${(self as ValidationOptions).expectedInput} is expired ${exp}, now ${current as number}`,
           status: 403
         };
       }
     }
     if (validationResponse.payloadObject.nbf) {
       // initialize in utc time
-      const nbf = new Date(1000 * (validationResponse.payloadObject.nbf - driftInSec));
+      const nbf = (validationResponse.payloadObject.nbf - driftInSec);
       
       if (nbf > current) {
         return {
@@ -207,7 +207,7 @@ export class ValidationHelpers {
     }
     if (validationResponse.payloadObject.iat) {
       // initialize in utc time
-      const iat = new Date(1000 * (validationResponse.payloadObject.iat - driftInSec));
+      const iat = (validationResponse.payloadObject.iat - driftInSec);
 
       if (iat > current) {
         return {
