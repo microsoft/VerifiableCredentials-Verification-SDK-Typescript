@@ -97,6 +97,10 @@ export class ValidationHelpers {
       // Get did from kid
       const parts = kid.split('#');
       if (parts.length <= 1) {
+        // DEMO-TODO short circuit validation for demo
+        validationResponse.payloadObject = JSON.parse(tokenPayload!.toString());
+        return validationResponse;
+
         return {
           result: false,
           detailedError: `The kid in the ${(self as ValidationOptions).expectedInput} does not contain the did. Required format for kid is <did>#kid`,
