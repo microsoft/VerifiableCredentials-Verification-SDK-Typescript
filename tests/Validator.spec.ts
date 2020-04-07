@@ -84,7 +84,7 @@ describe('Validator', () => {
     queue.addToken('vp', siop.vp.rawToken);
     result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeTruthy();
-    expect(result.validationResult?.verifiableCredentials![0]).toBeDefined();
+    expect(result.validationResult?.verifiableCredentials).toBeDefined();
 
     // Negative cases
     // Test validator with missing VC validator
@@ -139,9 +139,14 @@ describe('Validator', () => {
     expect(result.detailedError).toBeUndefined();
     expect(result.tokensToValidate).toBeUndefined();
     expect(result.validationResult?.did).toEqual(setup.defaultUserDid);
-    expect(result.validationResult?.idTokens![0].upn).toEqual('jules@pulpfiction.com');
+    expect(result.validationResult?.idTokens).toBeDefined();
+    for (let idtoken in result.validationResult?.idTokens) {
+      expect(result.validationResult?.idTokens[idtoken].upn).toEqual('jules@pulpfiction.com');
+    }
+    expect(result.validationResult?.selfIssued).toBeDefined();
     expect(result.validationResult?.selfIssued.name).toEqual('jules');
-    expect(result.validationResult?.verifiableCredentials![0].vc.credentialSubject.givenName).toEqual('Jules');
+    expect(result.validationResult?.verifiableCredentials).toBeDefined();
+    expect(result.validationResult?.verifiableCredentials!['VerifiableCredential'].vc.credentialSubject.givenName).toEqual('Jules');
 
     // Negative cases
     

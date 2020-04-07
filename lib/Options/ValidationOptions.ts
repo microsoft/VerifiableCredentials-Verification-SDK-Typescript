@@ -26,6 +26,7 @@ constructor (public validatorOptions: IValidatorOptions, public expectedInput: T
   this.validateDidSignatureDelegate = this.validationHelpers.validateDidSignature;
   this.checkTimeValidityOnTokenDelegate = this.validationHelpers.checkTimeValidityOnToken;
   this.checkScopeValidityOnTokenDelegate = this.validationHelpers.checkScopeValidityOnToken;
+  this.checkScopeValidityOnIdTokenDelegate = this.validationHelpers.checkScopeValidityOnIdToken;
   this.fetchKeyAndValidateSignatureOnIdTokenDelegate = this.validationHelpers.fetchKeyAndValidateSignatureOnIdToken;
   this.validateSignatureOnTokenDelegate = this.validationHelpers.validateSignatureOnToken;
   this.getTokensFromSiopDelegate = this.validationHelpers.getTokensFromSiop;
@@ -65,6 +66,11 @@ public getTokenObjectDelegate: GetTokenObject;
    * Check the scope validity of the token
    */
   public checkScopeValidityOnTokenDelegate: CheckScopeValidityOnToken;
+
+  /**
+   * Check the scope validity of the token
+   */
+  public checkScopeValidityOnIdTokenDelegate: CheckScopeValidityOnToken;
 
   /**
    * Delegate for getting a key and validate the signature on the token

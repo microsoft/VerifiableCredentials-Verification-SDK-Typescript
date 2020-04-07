@@ -236,7 +236,7 @@ export class ValidationHelpers {
     * @param expected Expected output of the verifiable credential
     * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
     */
-  public checkScopeValidityOnToken(validationResponse: IValidationResponse, expected: IExpected): IValidationResponse {
+   public checkScopeValidityOnIdToken(validationResponse: IValidationResponse, expected: IExpected): IValidationResponse {
     const self: any = this;
 
     // check iss value
@@ -257,12 +257,53 @@ export class ValidationHelpers {
         status: 403
       };
     }
-
+    // TODO change validation check
+    return validationResponse;
+    
     // check sub value
     if (expected.audience && validationResponse.payloadObject.sub !== expected.audience) {
       return validationResponse = {
         result: false,
         detailedError: `Wrong or missing sub property in ${(self as ValidationOptions).expectedInput}. Expected '${expected.audience}'`,
+        status: 403
+      };
+    }
+    return validationResponse;
+  }
+
+  /**
+    * Check the scope validity of the token such as iss and aud
+    * @param validationResponse The response for the requestor
+    * @param expected Expected output of the verifiable credential
+    * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
+    */
+   public checkScopeValidityOnToken(validationResponse: IValidationResponse, expected: IExpected): IValidationResponse {
+    const self: any = this;
+
+    // check iss value
+    if ((validationResponse as IdTokenValidationResponse).issuer) {
+      // For id tokens we need to check whether the issuer in configuration matches the iss in the payload
+      // The issuer property is set during the fetching of the configuration on it is already checked that this configuration matches the public key of the token signature
+      if (validationResponse.payloadObject.iss !== (validationResponse as IdTokenValidationResponse).issuer) {
+        return validationResponse = {
+          result: false,
+          detailedError: `The issuer found in the configuration of the id token ${(validationResponse as IdTokenValidationResponse).issuer} does not match the iss property ${validationResponse.payloadObject.iss}`,
+          status: 403
+        };
+      }
+    } else if (expected.issuers && !expected.issuers!.includes(validationResponse.payloadObject.iss)) {
+      return validationResponse = {
+        result: false,
+        detailedError: `Wrong or missing iss property in ${(self as ValidationOptions).expectedInput}. Expected '${JSON.stringify(expected.issuers)}'`,
+        status: 403
+      };
+    }
+    
+    // check sub value
+    if (expected.audience && validationResponse.payloadObject.aud !== expected.audience) {
+      return validationResponse = {
+        result: false,
+        detailedError: `Wrong or missing aud property in ${(self as ValidationOptions).expectedInput}. Expected '${expected.audience}'`,
         status: 403
       };
     }

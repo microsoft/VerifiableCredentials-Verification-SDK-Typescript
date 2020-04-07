@@ -22,7 +22,7 @@ export class IssuanceHelpers {
       contract,
       attestations,
       iss: 'https://self-issued.me',
-      sub: setup.AUDIENCE
+      aud: setup.AUDIENCE
     }
 
     const claimToken = await IssuanceHelpers.signAToken(setup, JSON.stringify(siop), '', key);
@@ -65,7 +65,7 @@ export class IssuanceHelpers {
       },
       issuer: `${setup.defaultIssuerDid}`,
       iss: `${setup.defaultIssuerDid}`,
-      sub: `${setup.defaultUserDid}`
+      aud: `${setup.defaultUserDid}`
     };
     vcTemplate.vc.credentialSubject = credentialSubject;
     return IssuanceHelpers.signAToken(setup, JSON.stringify(vcTemplate), configuration, jwkPrivate);
@@ -89,7 +89,7 @@ export class IssuanceHelpers {
         "verifiableCredential": []        
       },
       iss: `${setup.defaultUserDid}`,
-      sub: setup.AUDIENCE
+      aud: setup.AUDIENCE
     };
     for (let inx=0; inx < vcs.length; inx++) {
       (vpTemplate.vp.verifiableCredential as string[]).push(vcs[inx].rawToken);
@@ -192,7 +192,7 @@ export class IssuanceHelpers {
       upn: 'jules@pulpfiction.com',
       name: 'Jules Winnfield',
       iss: setup.tokenIssuer,
-      sub: setup.tokenAudience
+      aud: setup.tokenAudience
     };
 
     const idToken = await IssuanceHelpers.signAToken(

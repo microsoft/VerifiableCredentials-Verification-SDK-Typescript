@@ -70,7 +70,7 @@ constructor (private options: IValidationOptions, private expected: IExpected) {
     }
 
     // Check token scope (aud and iss)
-    validationResponse = await this.options.checkScopeValidityOnTokenDelegate(validationResponse, this.expected);
+    validationResponse = await this.options.checkScopeValidityOnIdTokenDelegate(validationResponse, this.expected);
     if (!validationResponse.result) {
       return validationResponse;
     }
