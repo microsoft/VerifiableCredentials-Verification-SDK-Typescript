@@ -2,28 +2,23 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import { IExpected } from '..';
 import { IValidationOptions } from '../Options/IValidationOptions';
 import ClaimToken, { TokenType } from '../VerifiableCredential/ClaimToken';
-import { IIdTokenValidation, IdTokenValidationResponse } from './IdTokenValidationResponse';
-import { IExpected } from '..';
-import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants';
-
-//#region delegate types
-
-//#endregion
+import { IdTokenValidationResponse, IIdTokenValidation } from './IdTokenValidationResponse';
 
 /**
  * Class for id token validation
  */
 export class IdTokenValidation implements IIdTokenValidation {
-/**
- * Create a new instance of @see <IdTokenValidation>
- * @param options Options to steer the validation process
- * @param expected Expected properties of the id token
- */
-constructor (private options: IValidationOptions, private expected: IExpected) {
-}
- 
+  /**
+   * Create a new instance of @see <IdTokenValidation>
+   * @param options Options to steer the validation process
+   * @param expected Expected properties of the id token
+   */
+  constructor(private options: IValidationOptions, private expected: IExpected) {
+  }
+
   /**
    * Validate the id token
    * @param idToken The presentation to validate as a signed token
@@ -41,7 +36,7 @@ constructor (private options: IValidationOptions, private expected: IExpected) {
     if (!validationResponse.result) {
       return validationResponse;
     }
-    
+
     // Validate token signature
     if (!this.expected.issuers) {
       return {
@@ -52,7 +47,7 @@ constructor (private options: IValidationOptions, private expected: IExpected) {
     }
 
     let idTokenValidated = false
-    for (let inx = 0; inx < this.expected.issuers.length; inx ++) {
+    for (let inx = 0; inx < this.expected.issuers.length; inx++) {
       validationResponse = await this.options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, new ClaimToken(TokenType.idToken, idToken, this.expected.issuers[inx]));
       if (validationResponse.result) {
         idTokenValidated = true;
@@ -64,23 +59,18 @@ constructor (private options: IValidationOptions, private expected: IExpected) {
     }
 
     // Check token time validity
-    /* TODO
     validationResponse = await this.options.checkTimeValidityOnTokenDelegate(validationResponse);
     if (!validationResponse.result) {
       return validationResponse;
     }
-    */
+
     // Check token scope (aud and iss)
     validationResponse = await this.options.checkScopeValidityOnIdTokenDelegate(validationResponse, this.expected);
     if (!validationResponse.result) {
       return validationResponse;
     }
 
-    // Check if the id token matches the expected issuers TODO
-
-
     return validationResponse;
   }
 
-  
 }

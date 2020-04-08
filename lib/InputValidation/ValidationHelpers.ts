@@ -180,7 +180,7 @@ export class ValidationHelpers {
    */
   public checkTimeValidityOnToken(validationResponse: IValidationResponse, driftInSec: number = 0): IValidationResponse {
     const self: any = this;
-    const current = Date.now()/1000;
+    const current = Math.trunc(Date.now()/1000);
     if (validationResponse.payloadObject.exp) {
       // initialize in utc time
       const exp =  (validationResponse.payloadObject.exp + driftInSec);
