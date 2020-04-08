@@ -2,17 +2,17 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { IValidationResponse } from './IValidationResponse';
-import { IValidationOptions } from '../Options/IValidationOptions';
-import { ICryptoToken, JoseConstants, ProtectionFormat } from '@microsoft/crypto-sdk';
 import { IDidResolveResult } from '@decentralized-identity/did-common-typescript';
-import VerifiableCredentialConstants from '../VerifiableCredential/VerifiableCredentialConstants';
-import ClaimToken, { TokenType } from '../VerifiableCredential/ClaimToken';
-import ValidationOptions from '../Options/ValidationOptions';
-import IValidatorOptions from '../Options/IValidatorOptions';
-import { IdTokenValidationResponse } from './IdTokenValidationResponse';
-import { IExpected } from '../index';
+import { ICryptoToken, JoseConstants, ProtectionFormat } from '@microsoft/crypto-sdk';
 import base64url from "base64url";
+import { IExpected } from '../index';
+import { IValidationOptions } from '../Options/IValidationOptions';
+import IValidatorOptions from '../Options/IValidatorOptions';
+import ValidationOptions from '../Options/ValidationOptions';
+import ClaimToken, { TokenType } from '../VerifiableCredential/ClaimToken';
+import VerifiableCredentialConstants from '../VerifiableCredential/VerifiableCredentialConstants';
+import { IdTokenValidationResponse } from './IdTokenValidationResponse';
+import { IValidationResponse } from './IValidationResponse';
 
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
@@ -180,7 +180,7 @@ export class ValidationHelpers {
    */
   public checkTimeValidityOnToken(validationResponse: IValidationResponse, driftInSec: number = 0): IValidationResponse {
     const self: any = this;
-    const current = Math.trunc(Date.now()/1000);
+    const current = Math.trunc(Date.now()/1000);    
     if (validationResponse.payloadObject.exp) {
       // initialize in utc time
       const exp =  (validationResponse.payloadObject.exp + driftInSec);
@@ -271,29 +271,35 @@ export class ValidationHelpers {
     const self: any = this;
 
     // check iss value
-    if ((validationResponse as IdTokenValidationResponse).issuer) {
-      // For id tokens we need to check whether the issuer in configuration matches the iss in the payload
-      // The issuer property is set during the fetching of the configuration on it is already checked that this configuration matches the public key of the token signature
-      if (validationResponse.payloadObject.iss !== (validationResponse as IdTokenValidationResponse).issuer) {
-        return validationResponse = {
-          result: false,
-          detailedError: `The issuer found in the configuration of the id token ${(validationResponse as IdTokenValidationResponse).issuer} does not match the iss property ${validationResponse.payloadObject.iss}`,
-          status: 403
-        };
-      }
-    } else if (expected.issuers && !expected.issuers!.includes(validationResponse.payloadObject.iss)) {
+    if (!validationResponse.payloadObject.iss) {
       return validationResponse = {
         result: false,
-        detailedError: `Wrong or missing iss property in ${(self as ValidationOptions).expectedInput}. Expected '${JSON.stringify(expected.issuers)}'`,
+        detailedError: `Missing iss property in ${(self as ValidationOptions).expectedInput}. Expected '${JSON.stringify(expected.issuers)}'`,
+        status: 403
+      };
+    }
+
+   if (expected.issuers && !expected.issuers!.includes(validationResponse.payloadObject.iss)) {
+      return validationResponse = {
+        result: false,
+        detailedError: `Wrong iss property in ${(self as ValidationOptions).expectedInput}. Expected '${JSON.stringify(expected.issuers)}'`,
         status: 403
       };
     }
     
-    // check sub value
+    // check aud value
+    if (!validationResponse.payloadObject.aud) {
+      return validationResponse = {
+        result: false,
+        detailedError: `Missing aud property in ${(self as ValidationOptions).expectedInput}. Expected '${expected.audience}'`,
+        status: 403
+      };
+    }
+
     if (expected.audience && validationResponse.payloadObject.aud !== expected.audience) {
       return validationResponse = {
         result: false,
-        detailedError: `Wrong or missing aud property in ${(self as ValidationOptions).expectedInput}. Expected '${expected.audience}'`,
+        detailedError: `Wrong aud property in ${(self as ValidationOptions).expectedInput}. Expected '${expected.audience}'`,
         status: 403
       };
     }

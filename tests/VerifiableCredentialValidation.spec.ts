@@ -40,6 +40,6 @@ import { IdTokenValidation } from '../lib/InputValidation/IdTokenValidation';
     response = await validator.validate(siop.vc.rawToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Wrong or missing aud property in verifiableCredential. Expected 'abcdef'`);
+    expect(response.detailedError).toEqual(`Wrong aud property in verifiableCredential. Expected 'abcdef'`);
  });
 });

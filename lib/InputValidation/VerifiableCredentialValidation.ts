@@ -42,13 +42,6 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
 
     // Get issuer from verifiable credential payload
     validationResponse.did = validationResponse.payloadObject.iss;
-    if (!validationResponse.did) {
-      return validationResponse = {
-          result: false,
-          detailedError: 'The verifiable credential does not contain the iss property',
-          status: 403
-      };
-    }
 
     // Check if VC audience and SIOP DID are equal
     if (this.siopDid && validationResponse.payloadObject.aud !== this.siopDid) {
@@ -73,17 +66,15 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
         }
       }
   
-      // Check if the we found a matching schema.
+      // Check if the we found a matching contract.
       if (!contractFound) {
         return validationResponse = {
           result: false,
-          detailedError: `The verifiable credential with schema '${JSON.stringify(context)}' is not expected in '${JSON.stringify(this.expected.contracts)}`,
+          detailedError: `The verifiable credential with contract '${JSON.stringify(context)}' is not expected in '${JSON.stringify(this.expected.contracts)}`,
           status: 403
         };
       }  
     }
-
-    // Check trusted issuers TODO
 
     // TODO Validate status
 
