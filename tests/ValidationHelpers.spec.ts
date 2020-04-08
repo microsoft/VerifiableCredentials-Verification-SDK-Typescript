@@ -46,15 +46,6 @@ import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);    
     expect(response.detailedError).toEqual('The protected header in the verifiableCredential does not contain the kid');
-
-    // malformed kid
-    // TODO 
-    return;
-    header.kid = 'xxxx';
-    response = options.getTokenObjectDelegate(validationResponse, `${base64url.encode(JSON.stringify(header))}.${splitToken[1]}.${splitToken[2]}`);
-    expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);    
-    expect(response.detailedError).toEqual('The kid in the verifiableCredential does not contain the did. Required format for kid is <did>#kid');
   });
 
   it('should test resolveDid', async () => {
@@ -227,14 +218,28 @@ import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
     response = options.checkScopeValidityOnTokenDelegate(validationResponse, {type: TokenType.idToken, issuers: [issuer], audience: audience} as IExpected);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Wrong or missing iss property in verifiableCredential. Expected '["iss"]'`);
+    expect(response.detailedError).toEqual(`Missing iss property in verifiableCredential. Expected '["iss"]'`);
     validationResponse.payloadObject.iss = issuer;
+
+    validationResponse.payloadObject.iss = 'abc';
+    response = options.checkScopeValidityOnTokenDelegate(validationResponse, {type: TokenType.idToken, issuers: [issuer], audience: audience} as IExpected);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`Wrong iss property in verifiableCredential. Expected '["iss"]'`);
+    validationResponse.payloadObject.iss = issuer;
+
+    validationResponse.payloadObject.aud = undefined;
+    response = options.checkScopeValidityOnTokenDelegate(validationResponse, {type: TokenType.idToken, issuers: [issuer], audience: audience} as IExpected);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`Missing aud property in verifiableCredential. Expected 'aud'`);
+    validationResponse.payloadObject.aud = audience;
 
     validationResponse.payloadObject.aud = 'xxx';
     response = options.checkScopeValidityOnTokenDelegate(validationResponse, {type: TokenType.idToken, issuers: [issuer], audience: audience} as IExpected);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Wrong or missing aud property in verifiableCredential. Expected 'aud'`);
+    expect(response.detailedError).toEqual(`Wrong aud property in verifiableCredential. Expected 'aud'`);
     validationResponse.payloadObject.aud = audience;
     });
     

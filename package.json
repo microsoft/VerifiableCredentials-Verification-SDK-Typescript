@@ -1,6 +1,6 @@
 {
   "name": "portableidentity-relyingpartysdk-typescript",
-  "version": "0.5.12",
+  "version": "0.5.14",
   "description": "Typescript SDK for Portable Identity",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -29,7 +29,7 @@
     "jasmine-spec-reporter": "4.2.1",
     "jasmine-ts": "0.3.0",
     "node-fetch": "2.6.0",
-    "nyc": "15.0.1",
+    "nyc": "13.0.1",
     "source-map-support": "0.5.12",
     "ts-node": "8.1.0",
     "tslint": "5.16.0",
@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@decentralized-identity/did-common-typescript": "0.1.19",
-    "@microsoft/crypto-sdk": "^1.0.7",
+    "@microsoft/crypto-sdk": "1.0.8",
     "base64url": "3.0.1",
     "deep-property-access": "1.0.1",
     "es6-promise": "^4.2.8",
