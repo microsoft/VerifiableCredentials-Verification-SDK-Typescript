@@ -63,7 +63,6 @@ export class IssuanceHelpers {
         "credentialSubject": {
         },
       },
-      issuer: `${setup.defaultIssuerDid}`,
       iss: `${setup.defaultIssuerDid}`,
       sub: `${setup.defaultUserDid}`
     };
@@ -239,7 +238,7 @@ export class IssuanceHelpers {
       { type: TokenType.idToken, issuers: [setup.defaultIdTokenConfiguration], audience: setup.AUDIENCE },
       { type: TokenType.siop, issuers: ['https://self-issued.me'], audience: setup.AUDIENCE },
       { type: TokenType.verifiablePresentation, issuers: [setup.defaultUserDid] , audience: setup.AUDIENCE },
-      { type: TokenType.verifiableCredential, issuers: [setup.defaultIssuerDid], audience: setup.defaultUserDid, contracts: [contract] }
+      { type: TokenType.verifiableCredential, issuers: [setup.defaultIssuerDid], subject: setup.defaultUserDid, contracts: [contract] }
     ];
 
      const siopRequest = {
