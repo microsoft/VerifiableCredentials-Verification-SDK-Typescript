@@ -1,3 +1,4 @@
+import { TSMap } from "typescript-map";
 import { TokenType, ValidatorBuilder, IExpected, IdTokenTokenValidator, VerifiableCredentialTokenValidator, VerifiablePresentationTokenValidator } from '../lib/index';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import TestSetup from './TestSetup';
@@ -42,7 +43,11 @@ describe('Validator', () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential);   
     const expected = siop.expected.filter((token: IExpected) => token.type === TokenType.verifiableCredential)[0];
 
-    const tokenValidator = new VerifiableCredentialTokenValidator(setup.validatorOptions, expected);
+    // siop is always the id of the first element being validated
+    const map = new TSMap<string, IExpected>();
+    map.set('siop', expected);
+
+    const tokenValidator = new VerifiableCredentialTokenValidator(setup.validatorOptions, map);
     const validator = new ValidatorBuilder()
       .useValidators(tokenValidator)
       .build();
@@ -51,13 +56,17 @@ describe('Validator', () => {
     expect(result.result).toBeTruthy();
   });
 
-  it ('should validate verifiable presentations', async () => {
+  fit ('should validate verifiable presentations', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentation);   
     const vpExpected = siop.expected.filter((token: IExpected) => token.type === TokenType.verifiablePresentation)[0];
     const vcExpected = siop.expected.filter((token: IExpected) => token.type === TokenType.verifiableCredential)[0];
-
+    
+    // the map gets its key from the created request
+    const map = new TSMap<string, IExpected>();
+    map.set(Object.keys(siop.attestations.presentations)[0], vcExpected);
+    
     const vpValidator = new VerifiablePresentationTokenValidator(setup.validatorOptions, vpExpected);
-    const vcValidator = new VerifiableCredentialTokenValidator(setup.validatorOptions, vcExpected);
+    const vcValidator = new VerifiableCredentialTokenValidator(setup.validatorOptions, map);
     let validator = new ValidatorBuilder()
       .useValidators([vcValidator, vpValidator])
       .build();

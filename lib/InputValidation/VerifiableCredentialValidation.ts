@@ -43,8 +43,8 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
     // Get issuer from verifiable credential payload
     validationResponse.did = validationResponse.payloadObject.iss;
 
-    // Check if VC audience and SIOP DID are equal
-    if (this.siopDid && validationResponse.payloadObject.aud !== this.siopDid) {
+    // Check if VC subject and SIOP DID are equal
+    if (this.siopDid && validationResponse.payloadObject.sub !== this.siopDid) {
       return {
         result: false,
         detailedError: `The DID used for the SIOP '${this.siopDid}' is not equal to the subject of the verifiable credential ${validationResponse.payloadObject.aud}`,
