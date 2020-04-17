@@ -65,7 +65,7 @@ export class IssuanceHelpers {
       },
       issuer: `${setup.defaultIssuerDid}`,
       iss: `${setup.defaultIssuerDid}`,
-      aud: `${setup.defaultUserDid}`
+      sub: `${setup.defaultUserDid}`
     };
     vcTemplate.vc.credentialSubject = credentialSubject;
     return IssuanceHelpers.signAToken(setup, JSON.stringify(vcTemplate), configuration, jwkPrivate);
