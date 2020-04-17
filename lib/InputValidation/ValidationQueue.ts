@@ -21,6 +21,10 @@ export default class ValidationQueue {
     this.queue.push(new ValidationQueueItem(id, token));
   }
 
+  public enqueue(node: ValidationQueueItem){
+    this.queue.push(node);
+  }
+
   /**
    * Gets the queue
    * @param token to add to queue

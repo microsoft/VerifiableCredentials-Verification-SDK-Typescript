@@ -28,7 +28,7 @@ export default class ValidationQueueItem {
   private _validatedToken: ClaimToken | undefined;
   private validationStatus: ValidationStatus = ValidationStatus.todo;
 
-  constructor(private _id: string, private _tokenToValidate: string) {
+  constructor(private _id: string, private _tokenToValidate: string, private _claimToken?: ClaimToken) {
     // Set defaults for validation result
     this._validationResult = {
       result: false,
@@ -94,5 +94,12 @@ export default class ValidationQueueItem {
    */
   public get isUnderValidation(): boolean {
     return this.validationStatus === ValidationStatus.underValidation;
+  }
+
+  /**
+   * A ClaimToken may have already been created elsewhere, get that reference
+   */
+  public get claimToken(): ClaimToken | undefined{
+    return this._claimToken;
   }
 }

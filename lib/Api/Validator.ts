@@ -51,7 +51,7 @@ export default class Validator {
     queue.addToken('siop', token);
     let queueItem = queue.getNextToken();
     do {
-      [response, claimToken] = Validator.getTokenType(options, queueItem!.tokenToValidate);
+      [response, claimToken] = Validator.getTokenType(options, queueItem!);
       const validator = this.tokenValidators[claimToken.type];
       if (!validator) {
         return new Promise((_, reject) => {
@@ -154,15 +154,15 @@ export default class Validator {
    * @param validationOptions The options
    * @param token to check for type
    */
-  private static getTokenType(_validationOptions: ValidationOptions, token: string): [IValidationResponse, ClaimToken] {
+  private static getTokenType(_validationOptions: ValidationOptions, queueItem: ValidationQueueItem): [IValidationResponse, ClaimToken] {
     let validationResponse: IValidationResponse = {
       result: true,
       status: 200
     };
 
-    const claimToken = ClaimToken.getTokenType(token);
+    const claimToken = queueItem.claimToken ?? ClaimToken.getTokenType(queueItem.tokenToValidate);
     return [validationResponse, claimToken];
-  }
+    }
 
   /**
    * Set the validator options
