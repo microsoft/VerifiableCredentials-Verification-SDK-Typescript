@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 import base64url from 'base64url';
 import VerifiableCredentialConstants from './VerifiableCredentialConstants';
-import { ValidationOptions } from '../index';
 
 /**
  * Enum for define the token type
@@ -36,15 +35,15 @@ export enum TokenType {
   verifiableCredential = 'verifiableCredential'
 }
 
- /**
-  * Model for the claim token in compact format
-  */
+/**
+ * Model for the claim token in compact format
+ */
 export default class ClaimToken {
   private _configuration: string = '';
   private _rawToken: string = '';
   private _type: TokenType;
   private _decodedToken: { [key: string]: any } = {};
-  private _tokenHeader: { [key: string]: any } = {};
+  private _tokenHeader: { [key: string]: any } = {};  
 
   /**
    * Token type
@@ -88,14 +87,14 @@ export default class ClaimToken {
   public get decodedToken(): { [key: string]: any } {
     return this._decodedToken;
   }
-  
+
   /**
    * Create a new instance of <see @ClaimToken>
    * @param typeName Name of the token in _claimNames
    * @param token The raw token
    * @param configuration The configuration endpoint
    */
-  constructor(typeName: string, token: string, configuration: string) {
+  constructor(typeName: string, token: any, configuration: string) {
     const tokentypeValues: string[] = Object.values(TokenType);
     if (tokentypeValues.includes(typeName)) {
       this._type = typeName as TokenType;
@@ -107,11 +106,15 @@ export default class ClaimToken {
       this._type = TokenType.idToken;
     }
 
-    this._rawToken = token;
-    this._configuration = configuration;
-    if (this._rawToken) {
+    if( typeof token === 'string'){
+      this._rawToken = token as string;
       this.decode();
     }
+    else{
+      this._decodedToken = token;
+    }
+
+    this._configuration = configuration;
   }
 
   /**
@@ -127,43 +130,43 @@ export default class ClaimToken {
    * @param type Claim type
    * @param values Claim value
    */
-  private decode(): void {  
+  private decode(): void {
     const parts = this.rawToken.split('.');
     if (parts.length < 2) {
-      throw new Error(`Cannot decode. Invalid input token`);      
+      throw new Error(`Cannot decode. Invalid input token`);
     }
 
     this._tokenHeader = JSON.parse(base64url.decode(parts[0]));
     this._decodedToken = JSON.parse(base64url.decode(parts[1]));
   }
 
-/**
- * Get the token object from the self issued token
- * @param token The token to parse
- * @returns The payload object
- */
-private static getTokenPayload (token: string): any {
-  // Deserialize the token
-  const split = token.split('.');
-  return JSON.parse(base64url.decode(split[1]));
-}
+  /**
+   * Get the token object from the self issued token
+   * @param token The token to parse
+   * @returns The payload object
+   */
+  private static getTokenPayload(token: string): any {
+    // Deserialize the token
+    const split = token.split('.');
+    return JSON.parse(base64url.decode(split[1]));
+  }
 
-/**
- * Get the token object from the self issued token
- * @param token The token to parse
- * @returns The payload object
- */
-private static tokenSignature (token: string): boolean {
-  // Split the token
-  const split = token.split('.');
-  return split[2] !== undefined && split[2].trim() !== '';
-}
+  /**
+   * Get the token object from the self issued token
+   * @param token The token to parse
+   * @returns The payload object
+   */
+  private static tokenSignature(token: string): boolean {
+    // Split the token
+    const split = token.split('.');
+    return split[2] !== undefined && split[2].trim() !== '';
+  }
 
   /**
    * Check the token type based on the payload
    * @param token to check for type
    */
-  public static getTokenType( token: string): ClaimToken {
+  public static getTokenType(token: string): ClaimToken {
     // Deserialize the token
     const payload = ClaimToken.getTokenPayload(token);
 
@@ -181,7 +184,7 @@ private static tokenSignature (token: string): boolean {
     if (ClaimToken.tokenSignature(token)) {
       return new ClaimToken(TokenType.idToken, token, '');
     }
-      
+
     return new ClaimToken(TokenType.selfIssued, token, '');
   }
 
@@ -190,17 +193,19 @@ private static tokenSignature (token: string): boolean {
   * This algorithm will convert the attestations to a ClaimToken
   * @param attestations All presented claims
   */
-  public static getClaimTokensFromAttestations(attestations: {[key: string]: string}): {[key: string]: ClaimToken }  { 
-    const decodedTokens: {[key: string]: ClaimToken } = {};
+  public static getClaimTokensFromAttestations(attestations: { [key: string]: string }): { [key: string]: ClaimToken } {
+    const decodedTokens: { [key: string]: ClaimToken } = {};
 
     for (let key in attestations) {
       const token: any = attestations[key];
-      if (typeof token === 'string') {
+
+      if (key === VerifiableCredentialConstants.CLAIMS_SELFISSUED) {
         decodedTokens[VerifiableCredentialConstants.CLAIMS_SELFISSUED] = new ClaimToken(TokenType.selfIssued, token, '');
-      } else {
+      }
+      else {
         for (let tokenKey in token) {
           const claimToken = ClaimToken.getTokenType(token[tokenKey]);
-          decodedTokens[tokenKey] = claimToken;  
+          decodedTokens[tokenKey] = claimToken;
         }
       }
     };
@@ -212,7 +217,7 @@ private static tokenSignature (token: string): boolean {
   * This algorithm will convert the attestations to a ClaimToken
   * @param attestation The attestation
   */
-  private static fromAttestation(attestation: string): ClaimToken  { 
+  private static fromAttestation(attestation: string): ClaimToken {
     const token = ClaimToken.getTokenType(attestation);
     return token;
   }
