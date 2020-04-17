@@ -47,7 +47,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
     if (this.siopDid && validationResponse.payloadObject.sub !== this.siopDid) {
       return {
         result: false,
-        detailedError: `The DID used for the SIOP '${this.siopDid}' is not equal to the subject of the verifiable credential ${validationResponse.payloadObject.aud}`,
+        detailedError: `The DID used for the SIOP '${this.siopDid}' is not equal to the subject of the verifiable credential ${validationResponse.payloadObject.sub}`,
         status: 403
       };
     }
