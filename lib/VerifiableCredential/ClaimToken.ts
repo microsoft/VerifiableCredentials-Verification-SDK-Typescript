@@ -99,7 +99,7 @@ export default class ClaimToken {
     if (tokentypeValues.includes(typeName)) {
       this._type = typeName as TokenType;
     } else if (typeName === VerifiableCredentialConstants.CLAIMS_SELFISSUED) {
-      this._type = TokenType.selfIssued
+      this._type = TokenType.selfIssued;
     } else if (ClaimToken.isVc(typeName)) {
       this._type = TokenType.verifiablePresentation;
     } else {
