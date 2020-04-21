@@ -22,7 +22,7 @@ export default class VerifiableCredentialTokenValidator implements ITokenValidat
    * @param validatorOption The options used during validation
    * @param expectedMap values to find in the token to validate
    */
-  constructor(private validatorOption: IValidatorOptions, private expectedMap: TSMap<string, IExpected>) {
+  constructor(private validatorOption: IValidatorOptions, private expectedMap: { [expected: string]: IExpected }) {
   }
 
 
@@ -36,7 +36,7 @@ export default class VerifiableCredentialTokenValidator implements ITokenValidat
     const options = new ValidationOptions(this.validatorOption, TokenType.verifiableCredential);
 
     // find the correct IExpected instance, if not mapped, it's a bad request
-    if (!this.expectedMap.has(queueItem.id)) {
+    if (!this.expectedMap[queueItem.id]) {
       const validationResponse: IValidationResponse = {
         result: false,
         status: 400,
@@ -46,7 +46,7 @@ export default class VerifiableCredentialTokenValidator implements ITokenValidat
       return validationResponse;
     }
 
-    const expected = this.expectedMap.get(queueItem.id);
+    const expected = this.expectedMap[queueItem.id];
     const validator = new VerifiableCredentialValidation(options, expected, siopDid);
     const validationResult = await validator.validate(queueItem.tokenToValidate);
     return validationResult as IValidationResponse;

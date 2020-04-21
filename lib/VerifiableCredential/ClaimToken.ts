@@ -94,7 +94,7 @@ export default class ClaimToken {
    * @param token The raw token
    * @param configuration The configuration endpoint
    */
-  constructor(typeName: string, token: any, configuration: string) {
+  constructor(typeName: string, token: string, configuration: string) {
     const tokentypeValues: string[] = Object.values(TokenType);
     if (tokentypeValues.includes(typeName)) {
       this._type = typeName as TokenType;
