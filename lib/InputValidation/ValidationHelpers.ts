@@ -288,21 +288,45 @@ export class ValidationHelpers {
     }
     
     // check aud value
-    if (!validationResponse.payloadObject.aud) {
-      return validationResponse = {
-        result: false,
-        detailedError: `Missing aud property in ${(self as ValidationOptions).expectedInput}. Expected '${expected.audience}'`,
-        status: 403
-      };
+    if(expected.audience)
+    {
+      if (!validationResponse.payloadObject.aud) {
+        return validationResponse = {
+          result: false,
+          detailedError: `Missing aud property in ${(self as ValidationOptions).expectedInput}. Expected '${expected.audience}'`,
+          status: 403
+        };
+      }
+  
+      if (validationResponse.payloadObject.aud !== expected.audience) {
+        return validationResponse = {
+          result: false,
+          detailedError: `Wrong aud property in ${(self as ValidationOptions).expectedInput}. Expected '${expected.audience}'`,
+          status: 403
+        };
+      }
     }
 
-    if (expected.audience && validationResponse.payloadObject.aud !== expected.audience) {
-      return validationResponse = {
-        result: false,
-        detailedError: `Wrong aud property in ${(self as ValidationOptions).expectedInput}. Expected '${expected.audience}'`,
-        status: 403
-      };
+    // check sub value
+    if(expected.subject)
+    {
+      if (!validationResponse.payloadObject.sub) {
+        return validationResponse = {
+          result: false,
+          detailedError: `Missing sub property in ${(self as ValidationOptions).expectedInput}. Expected '${expected.subject}'`,
+          status: 403
+        };
+      }
+  
+      if (validationResponse.payloadObject.sub !== expected.subject) {
+        return validationResponse = {
+          result: false,
+          detailedError: `Wrong sub property in ${(self as ValidationOptions).expectedInput}. Expected '${expected.subject}'`,
+          status: 403
+        };
+      }
     }
+
     return validationResponse;
   }
 

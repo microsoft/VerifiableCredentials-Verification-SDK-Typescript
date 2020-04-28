@@ -17,8 +17,17 @@ export default class ValidationQueue {
    * Add token to validation queue
    * @param token to add to queue
    */
-  public addToken(id: string, token: string) {
+  public enqueueToken(id: string, token: string) {
     this.queue.push(new ValidationQueueItem(id, token));
+  }
+
+  
+  /**
+   * Add token to validation queue
+   * @param node item to add to queue
+   */
+  public enqueueItem(node: ValidationQueueItem){
+    this.queue.push(node);
   }
 
   /**

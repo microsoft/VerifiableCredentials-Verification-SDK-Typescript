@@ -41,3 +41,6 @@ import { ISiopValidationResponse } from './InputValidation/SiopValidationRespons
 import { IdTokenValidation } from './InputValidation/IdTokenValidation';
 import { VerifiablePresentationValidation } from './InputValidation/VerifiablePresentationValidation';
 export { IValidationResponse, IdTokenValidationResponse, ISiopValidationResponse, IdTokenValidation, VerifiablePresentationValidation };
+
+import IRevocedCard from './Revocation/IRevokedCard';
+export { IRevocedCard };

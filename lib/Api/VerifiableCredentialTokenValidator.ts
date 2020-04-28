@@ -3,16 +3,14 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TokenType, IExpected, ITokenValidator, ClaimToken } from '../index';
+import { TSMap } from "typescript-map";
+import { IExpected, ITokenValidator, TokenType } from '../index';
 import { IValidationResponse } from '../InputValidation/IValidationResponse';
-import ValidationOptions from '../Options/ValidationOptions';
-import { VerifiablePresentationValidation } from '../InputValidation/VerifiablePresentationValidation';
-import IValidatorOptions from '../Options/IValidatorOptions';
-import { VerifiableCredentialValidation } from '../InputValidation/VerifiableCredentialValidation';
-import { IdTokenValidation } from '../InputValidation/IdTokenValidation';
-import { IValidationOptions } from '../Options/IValidationOptions';
 import ValidationQueue from '../InputValidation/ValidationQueue';
 import ValidationQueueItem from '../InputValidation/ValidationQueueItem';
+import { VerifiableCredentialValidation } from '../InputValidation/VerifiableCredentialValidation';
+import IValidatorOptions from '../Options/IValidatorOptions';
+import ValidationOptions from '../Options/ValidationOptions';
 
 /**
  * Class to validate a token
@@ -22,9 +20,9 @@ export default class VerifiableCredentialTokenValidator implements ITokenValidat
   /**
    * Create new instance of <see @class VerifiableCredentialTokenValidator>
    * @param validatorOption The options used during validation
-   * @param expected values to find in the token to validate
+   * @param expectedMap values to find in the token to validate
    */
-  constructor (private validatorOption: IValidatorOptions, private expected: IExpected) {
+  constructor(private validatorOption: IValidatorOptions, private expectedMap: { [expected: string]: IExpected }) {
   }
 
 
@@ -34,13 +32,26 @@ export default class VerifiableCredentialTokenValidator implements ITokenValidat
    * @param queueItem under validation
    * @param siopDid needs to be equal to audience of VC
    */
-  public async validate(_queue: ValidationQueue, queueItem:ValidationQueueItem, siopDid: string): Promise<IValidationResponse> { 
+  public async validate(_queue: ValidationQueue, queueItem: ValidationQueueItem, siopDid: string): Promise<IValidationResponse> {
     const options = new ValidationOptions(this.validatorOption, TokenType.verifiableCredential);
-    const validator = new VerifiableCredentialValidation(options, this.expected, siopDid);
+
+    // find the correct IExpected instance, if not mapped, it's a bad request
+    if (!this.expectedMap[queueItem.id]) {
+      const validationResponse: IValidationResponse = {
+        result: false,
+        status: 400,
+        detailedError: `Unexpected Verifiable Credential of type ${queueItem.id}`
+      };
+
+      return validationResponse;
+    }
+
+    const expected = this.expectedMap[queueItem.id];
+    const validator = new VerifiableCredentialValidation(options, expected, siopDid);
     const validationResult = await validator.validate(queueItem.tokenToValidate);
-    return validationResult as IValidationResponse; 
+    return validationResult as IValidationResponse;
   }
- 
+
   /**
    * Gets the type of token to validate
    */

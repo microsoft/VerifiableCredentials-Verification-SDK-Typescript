@@ -37,7 +37,7 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
 
     if (validationResult.tokensToValidate) {
       for (let key in validationResult.tokensToValidate) {
-        queue.addToken(key, validationResult.tokensToValidate[key].rawToken);
+        queue.enqueueToken(key, validationResult.tokensToValidate[key].rawToken);
       }
     }
     return validationResult;

@@ -28,6 +28,11 @@ export default interface IExpected {
   audience?: string ,
 
   /**
+   * Expected subject for the token type
+   */
+  subject?: string ,
+
+  /**
    * Verifiable credentials will use contracts to define their type
    */
   contracts?: string[],

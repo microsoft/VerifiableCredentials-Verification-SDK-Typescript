@@ -38,6 +38,10 @@ export default class Validator {
     return this._tokenValidators;
   }
 
+  /**
+   * The validation handler
+   * @param token to validate
+   */
   public async validate(token: string): Promise<IValidationResponse> {
     const validatorOption: IValidatorOptions = this.setValidatorOptions();
     let options = new ValidationOptions(validatorOption, TokenType.siop);
@@ -48,10 +52,10 @@ export default class Validator {
     let claimToken: ClaimToken;
     let siopDid: string | undefined;
     const queue = new ValidationQueue();
-    queue.addToken('siop', token);
+    queue.enqueueToken('siop', token);
     let queueItem = queue.getNextToken();
     do {
-      [response, claimToken] = Validator.getTokenType(options, queueItem!.tokenToValidate);
+      claimToken = Validator.getTokenType(queueItem!);
       const validator = this.tokenValidators[claimToken.type];
       if (!validator) {
         return new Promise((_, reject) => {
@@ -154,14 +158,9 @@ export default class Validator {
    * @param validationOptions The options
    * @param token to check for type
    */
-  private static getTokenType(_validationOptions: ValidationOptions, token: string): [IValidationResponse, ClaimToken] {
-    let validationResponse: IValidationResponse = {
-      result: true,
-      status: 200
-    };
-
-    const claimToken = ClaimToken.getTokenType(token);
-    return [validationResponse, claimToken];
+  private static getTokenType(queueItem: ValidationQueueItem): ClaimToken {
+    const claimToken = queueItem.claimToken ?? ClaimToken.getTokenType(queueItem.tokenToValidate);
+    return claimToken;
   }
 
   /**
