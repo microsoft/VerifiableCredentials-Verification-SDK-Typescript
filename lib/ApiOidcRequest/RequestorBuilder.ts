@@ -22,14 +22,14 @@ export default class RequestorBuilder {
   }
 
   /**
-   * Get the redirect uri for the request
+   * Get the client id for the request
    */
   public get clientId() {
     return this._clientId;
   }
   
   /**
-   * Get the client id for the request
+   * Get the redirect uri for the request
    */
   public get redirectUri() {
     return this._redirectUri;

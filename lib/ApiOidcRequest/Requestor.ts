@@ -23,8 +23,7 @@ export default class Requestor {
   }
 
   /**
-   * The validation handler
-   * @param token to validate
+   * Create the actual request
    */
   public async create(): Promise<IResponse> {
     return new Promise((resolve) => {
