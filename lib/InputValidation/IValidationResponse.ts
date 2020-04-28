@@ -4,8 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { ICryptoToken } from '@microsoft/crypto-sdk';
 import { DidDocument } from '@decentralized-identity/did-common-typescript';
-import ClaimToken from '../VerifiableCredential/ClaimToken';
-import IValidationResult from '../Api/IValidationResult';
+import { IValidationResult, ClaimToken } from '../index';
 
 
 //#endregion

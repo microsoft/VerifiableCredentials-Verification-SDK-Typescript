@@ -1,10 +1,8 @@
-import { TSMap } from "typescript-map";
 import { TokenType, ValidatorBuilder, IExpected, IdTokenTokenValidator, VerifiableCredentialTokenValidator, VerifiablePresentationTokenValidator } from '../lib/index';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import TestSetup from './TestSetup';
 import ValidationQueue from '../lib/InputValidation/ValidationQueue';
-import SelfIssuedTokenValidator from '../lib/Api/selfIssuedTokenValidator';
-import SiopTokenValidator from '../lib/Api/SiopTokenValidator';
+import { SiopTokenValidator, SelfIssuedTokenValidator } from '../lib/index';
 
 describe('Validator', () => {
   let setup: TestSetup;
