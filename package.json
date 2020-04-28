@@ -1,6 +1,6 @@
 {
   "name": "portableidentity-relyingpartysdk-typescript",
-  "version": "0.5.15",
+  "version": "0.5.20",
   "description": "Typescript SDK for Portable Identity",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@decentralized-identity/did-common-typescript": "0.1.19",
-    "@microsoft/crypto-sdk": "1.0.9",
+    "@microsoft/crypto-sdk": "1.0.10",
     "base64url": "3.0.1",
     "deep-property-access": "1.0.1",
     "es6-promise": "^4.2.8",
