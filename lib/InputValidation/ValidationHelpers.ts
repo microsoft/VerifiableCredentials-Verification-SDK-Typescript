@@ -175,16 +175,16 @@ export class ValidationHelpers {
   /**
    * Check the time validity of the token
    * @param validationResponse The response for the requestor
-   * @param clockSkewTolerance Drift used to extend time checks. Covers for clock drifts.
+   * @param clockSkewToleranceSeconds Drift used to extend time checks in seconds. Covers for clock drifts
    * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
    */
-  public checkTimeValidityOnToken(validationResponse: IValidationResponse, clockSkewTolerance: number = 300): IValidationResponse {
+  public checkTimeValidityOnToken(validationResponse: IValidationResponse, clockSkewToleranceSeconds: number = 300): IValidationResponse {
     const self: any = this;
     const current = Math.trunc(Date.now()/1000);    
     
     if (validationResponse.payloadObject.exp) {
       // initialize in utc time
-      const exp =  (validationResponse.payloadObject.exp + clockSkewTolerance);
+      const exp =  (validationResponse.payloadObject.exp + clockSkewToleranceSeconds);
 
       /**
        * The processing of the "exp" claim requires that the current date/time MUST be before the expiration date/time listed in the "exp" claim
@@ -199,7 +199,7 @@ export class ValidationHelpers {
     }
     if (validationResponse.payloadObject.nbf) {
       // initialize in utc time
-      const nbf = (validationResponse.payloadObject.nbf - clockSkewTolerance);
+      const nbf = (validationResponse.payloadObject.nbf - clockSkewToleranceSeconds);
       
       /**
        * JWT spec says: The processing of the "nbf" claim requires that the current date/time MUST be after or equal to the not-before date/time listed in the "nbf" claim
