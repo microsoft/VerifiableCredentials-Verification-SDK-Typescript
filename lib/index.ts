@@ -44,3 +44,9 @@ export { IValidationResponse, IdTokenValidationResponse, ISiopValidationResponse
 
 import IRevocedCard from './Revocation/IRevokedCard';
 export { IRevocedCard };
+
+import { IResponse } from './InputValidation/IValidationResponse';
+import RequestorBuilder from './ApiOidcRequest/RequestorBuilder';
+import Requestor from './ApiOidcRequest/Requestor';
+import { IssuanceAttestationsModel } from './ApiOidcRequest/IssuanceAttestationsModel';
+export { IssuanceAttestationsModel, IResponse, RequestorBuilder, Requestor };
