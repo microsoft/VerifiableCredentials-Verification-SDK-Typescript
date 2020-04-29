@@ -175,17 +175,21 @@ export class ValidationHelpers {
   /**
    * Check the time validity of the token
    * @param validationResponse The response for the requestor
-   * @param driftInSec Drift used to extend time checks. Covers for clock drifts.
+   * @param clockSkewTolerance Drift used to extend time checks. Covers for clock drifts.
    * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
    */
-  public checkTimeValidityOnToken(validationResponse: IValidationResponse, driftInSec: number = 0): IValidationResponse {
+  public checkTimeValidityOnToken(validationResponse: IValidationResponse, clockSkewTolerance: number = 300): IValidationResponse {
     const self: any = this;
     const current = Math.trunc(Date.now()/1000);    
+    
     if (validationResponse.payloadObject.exp) {
       // initialize in utc time
-      const exp =  (validationResponse.payloadObject.exp + driftInSec);
+      const exp =  (validationResponse.payloadObject.exp + clockSkewTolerance);
 
-      if (exp < current) {
+      /**
+       * The processing of the "exp" claim requires that the current date/time MUST be before the expiration date/time listed in the "exp" claim
+       */
+      if (current >= exp) {
         return {
           result: false,
           detailedError: `The presented ${(self as ValidationOptions).expectedInput} is expired ${exp}, now ${current as number}`,
@@ -195,9 +199,12 @@ export class ValidationHelpers {
     }
     if (validationResponse.payloadObject.nbf) {
       // initialize in utc time
-      const nbf = (validationResponse.payloadObject.nbf - driftInSec);
+      const nbf = (validationResponse.payloadObject.nbf - clockSkewTolerance);
       
-      if (nbf > current) {
+      /**
+       * JWT spec says: The processing of the "nbf" claim requires that the current date/time MUST be after or equal to the not-before date/time listed in the "nbf" claim
+       */
+      if (current < nbf) {
         return {
           result: false,
           detailedError: `The presented ${(self as ValidationOptions).expectedInput} is not yet valid ${nbf}`,
@@ -205,18 +212,7 @@ export class ValidationHelpers {
         };
       }
     }
-    if (validationResponse.payloadObject.iat) {
-      // initialize in utc time
-      const iat = (validationResponse.payloadObject.iat - driftInSec);
 
-      if (iat > current) {
-        return {
-          result: false,
-          detailedError: `The presented ${(self as ValidationOptions).expectedInput} is not valid ${iat}`,
-          status: 403
-        };
-      }
-    }
     return validationResponse;
   }
 
