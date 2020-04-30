@@ -15,15 +15,15 @@ export { ManagedHttpResolver };
 import ClaimToken, { TokenType } from './VerifiableCredential/ClaimToken';
 export { TokenType, ClaimToken };
 
-import ITokenValidator from './Api/ITokenValidator';
-import IdTokenTokenValidator from './Api/IdTokenTokenValidator';
-import VerifiableCredentialTokenValidator from './Api/VerifiableCredentialTokenValidator';
-import VerifiablePresentationTokenValidator from './Api/VerifiablePresentationTokenValidator';
-import Validator from './Api/Validator';
-import IValidationResult from './Api/IValidationResult';
-import ValidatorBuilder from './Api/ValidatorBuilder';
-import SelfIssuedTokenValidator from './Api/SelfIssuedTokenValidator';
-import SiopTokenValidator from './Api/SiopTokenValidator';
+import ITokenValidator from './ApiValidation/ITokenValidator';
+import IdTokenTokenValidator from './ApiValidation/IdTokenTokenValidator';
+import VerifiableCredentialTokenValidator from './ApiValidation/VerifiableCredentialTokenValidator';
+import VerifiablePresentationTokenValidator from './ApiValidation/VerifiablePresentationTokenValidator';
+import Validator from './ApiValidation/Validator';
+import IValidationResult from './ApiValidation/IValidationResult';
+import ValidatorBuilder from './ApiValidation/ValidatorBuilder';
+import SelfIssuedTokenValidator from './ApiValidation/SelfIssuedTokenValidator';
+import SiopTokenValidator from './ApiValidation/SiopTokenValidator';
 export { IValidationResult, SelfIssuedTokenValidator, SiopTokenValidator, VerifiablePresentationTokenValidator, VerifiableCredentialTokenValidator, IdTokenTokenValidator, Validator, ValidatorBuilder, ITokenValidator };
 
 import { IValidationOptions } from './Options/IValidationOptions';
@@ -44,3 +44,9 @@ export { IValidationResponse, IdTokenValidationResponse, ISiopValidationResponse
 
 import IRevocedCard from './Revocation/IRevokedCard';
 export { IRevocedCard };
+
+import { IResponse } from './InputValidation/IValidationResponse';
+import RequestorBuilder from './ApiOidcRequest/RequestorBuilder';
+import Requestor from './ApiOidcRequest/Requestor';
+import { IssuanceAttestationsModel } from './ApiOidcRequest/IssuanceAttestationsModel';
+export { IssuanceAttestationsModel, IResponse, RequestorBuilder, Requestor };

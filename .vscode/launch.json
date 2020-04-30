@@ -8,8 +8,8 @@
       "type": "node",
       "request": "launch",
       "name": "Jasmine - Current file",
-      "cwd": "${fileDirname}/..",
-      "program": "${fileDirname}/../node_modules/jasmine-ts/lib/index",
+      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/node_modules/jasmine-ts/lib/index",
       "args": [
         "${file}"
       ],
@@ -17,7 +17,7 @@
         "<node_internals>/**"
       ],
       "env": {
-        "JASMINE_CONFIG_PATH": "${fileDirname}/jasmine.json"
+        "JASMINE_CONFIG_PATH": "${workspaceFolder}/tests/jasmine.json"
       },
       "console": "internalConsole",
       "trace": true

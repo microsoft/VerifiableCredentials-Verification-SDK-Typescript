@@ -4,15 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 import { ICryptoToken } from '@microsoft/crypto-sdk';
 import { DidDocument } from '@decentralized-identity/did-common-typescript';
-import ClaimToken from '../VerifiableCredential/ClaimToken';
-import IValidationResult from '../Api/IValidationResult';
+import { IValidationResult, ClaimToken } from '../index';
 
-
-//#endregion
-
-export interface IValidationResponse {
+/**
+ * The response interface
+ */
+export interface IResponse {
   /**
-   * True if validation passed
+   * True if passed
    */
   result: boolean;
 
@@ -30,7 +29,9 @@ export interface IValidationResponse {
    * Additional error object
    */
   innerError?: any;
+}
 
+export interface IValidationResponse extends IResponse {
   /**
    * The signed token
    */
