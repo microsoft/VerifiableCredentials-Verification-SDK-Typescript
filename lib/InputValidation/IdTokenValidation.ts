@@ -48,6 +48,7 @@ export class IdTokenValidation implements IIdTokenValidation {
 
     let idTokenValidated = false
     for (let inx = 0; inx < this.expected.issuers.length; inx++) {
+      console.log(`Checking id token for configuration ${this.expected.issuers[inx]}`);
       validationResponse = await this.options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, new ClaimToken(TokenType.idToken, idToken, this.expected.issuers[inx]));
       if (validationResponse.result) {
         idTokenValidated = true;

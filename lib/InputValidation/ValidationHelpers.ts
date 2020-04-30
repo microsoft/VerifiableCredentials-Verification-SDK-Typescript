@@ -380,6 +380,7 @@ export class ValidationHelpers {
     let keys: any;
     try {
       if (token.type === TokenType.idToken) {
+        console.log(`Id token configuration token '${token.configuration}'`);
         let response = await fetch(token.configuration);
         if (!response.ok) {
           return {
@@ -397,6 +398,7 @@ export class ValidationHelpers {
             detailedError: `No reference to jwks found in token configuration`
           };
         }
+        console.log(`Fetch metadata from '${keysUrl}'`);
         response = await fetch(keysUrl);
         if (!response.ok) {
           return {
@@ -532,8 +534,10 @@ export class ValidationHelpers {
           detailedError: `The presented ${(self as ValidationOptions).expectedInput} is has an invalid signature`,
           status: 403
         };
-      }
+      } 
 
+      validationResponse.result = true;
+      validationResponse.detailedError = '';
       return validationResponse;
     } catch (err) {
       console.error(err);
