@@ -179,18 +179,6 @@ import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError?.startsWith('The presented verifiableCredential is not yet valid')).toBeTruthy();
-
-    // Add iat
-    let iat = new Date().getTime() / 1000;
-    validationResponse.payloadObject = JSON.parse(`{"jti": "abcdefg", "iat": ${iat}}`);
-    response = options.checkTimeValidityOnTokenDelegate(validationResponse, 5);
-    expect(response.result).toBeTruthy();
-    iat = (new Date().getTime() / 1000) + 10;
-    validationResponse.payloadObject = JSON.parse(`{"jti": "abcdefg", "iat": ${iat}}`);
-    response = options.checkTimeValidityOnTokenDelegate(validationResponse, 5);
-    expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
-    expect(response.detailedError?.startsWith('The presented verifiableCredential is not valid')).toBeTruthy();
   });
   it('should test checkScopeValidityOnTokenDelegate', () => {
     const options = new ValidationOptions(setup.validatorOptions, TokenType.verifiableCredential);
