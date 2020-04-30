@@ -22,7 +22,8 @@ export class IssuanceHelpers {
       contract,
       attestations,
       iss: 'https://self-issued.me',
-      aud: setup.AUDIENCE
+      aud: setup.AUDIENCE,
+      jti: 'test-jti'
     }
 
     const claimToken = await IssuanceHelpers.signAToken(setup, JSON.stringify(siop), '', key);
@@ -191,7 +192,7 @@ export class IssuanceHelpers {
       upn: 'jules@pulpfiction.com',
       name: 'Jules Winnfield',
       iss: setup.tokenIssuer,
-      aud: setup.tokenAudience
+      aud: setup.tokenAudience,
     };
 
     const idToken = await IssuanceHelpers.signAToken(

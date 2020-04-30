@@ -70,4 +70,9 @@ export interface IValidationResponse {
    * All claims found in input tokens
    */
   validationResult?: IValidationResult;
+
+  /**
+   * the Json Web Token Id of the incoming token
+   */
+  jti?: string;
 }

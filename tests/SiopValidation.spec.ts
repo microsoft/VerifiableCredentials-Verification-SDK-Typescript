@@ -36,6 +36,8 @@ describe('SiopValidation', () =>
     const validator = new SiopValidation(validationOptions, expected);
     const response = await validator.validate(request.rawToken);
     expect(response.result).toBeTruthy();
+    expect(response.jti).toBeDefined();
+    expect(response.jti).toEqual(request.decodedToken.jti);
   });
   
   it('should return status 200', async () => {
