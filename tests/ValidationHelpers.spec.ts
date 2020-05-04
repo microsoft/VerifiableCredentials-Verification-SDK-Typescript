@@ -334,6 +334,6 @@ import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
       response = await options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, idToken);
       expect(response.result).toBeFalsy();
       expect(response.status).toEqual(403);
-      expect(response.detailedError).toEqual(`Could not validate signature`);
+      expect(response.detailedError).toEqual(`Could not validate signature on id token`);
   });
 });
