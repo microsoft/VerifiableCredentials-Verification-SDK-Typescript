@@ -283,41 +283,35 @@ export class ValidationHelpers {
       };
     }
 
-    // check aud value
-      if (!validationResponse.payloadObject.aud) {
-        return validationResponse = {
-          result: false,
-          detailedError: `Missing aud property in verifiablePresentation. Expected '${expected.did}'`,
-          status: 403
-        };
-      }
+    return validationResponse;
+  }
 
-      if (expected.did && validationResponse.payloadObject.aud !== expected.did) {
-        return validationResponse = {
-          result: false,
-          detailedError: `Wrong aud property in ${(self as ValidationOptions).tokenType}. Expected DID of audience '${expected.did}'`,
-          status: 403
-        };
-      }
+  /**
+    * Check the scope validity of the verifiable credential token such as iss and aud
+    * @param validationResponse The response for the requestor
+    * @param expected Expected output of the verifiable credential
+    * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
+    */
+   public checkScopeValidityOnVcToken(validationResponse: IValidationResponse, expected: IExpected, siopDid: string): IValidationResponse {
+    const self: any = this;
+
+    // check iss value
+    if (expected.issuers && !expected.issuers!.includes(validationResponse.payloadObject.iss)) {
+      return <IValidationResponse>{
+        result: false,
+        detailedError: `Wrong or missing iss property in verifiableCredential. Expected '${JSON.stringify(expected.issuers)}'`,
+        status: 403
+      };
+    }
     
 
     // check sub value
-    if (expected.subject) {
-      if (!validationResponse.payloadObject.sub) {
-        return validationResponse = {
-          result: false,
-          detailedError: `Missing sub property in ${(self as ValidationOptions).tokenType}. Expected DID of audience '${expected.subject}'`,
-          status: 403
-        };
-      }
-
-      if (validationResponse.payloadObject.sub !== expected.subject) {
-        return validationResponse = {
-          result: false,
-          detailedError: `Wrong sub property in ${(self as ValidationOptions).tokenType}. Expected '${expected.subject}'`,
-          status: 403
-        };
-      }
+    if (validationResponse.payloadObject.sub !== siopDid) {
+      return <IValidationResponse>{
+        result: false,
+        detailedError: `Wrong sub property in verifiableCredential. Expected '${siopDid}'`,
+        status: 403
+      };
     }
 
     return validationResponse;
@@ -350,7 +344,6 @@ export class ValidationHelpers {
     }
 
     // check aud value
-    if (this.tokenType)
     if (expected.audience) {
       if (!validationResponse.payloadObject.aud) {
         return validationResponse = {

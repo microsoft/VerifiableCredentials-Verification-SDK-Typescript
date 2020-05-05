@@ -44,18 +44,9 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
     validationResponse.did = validationResponse.payloadObject.iss;
 
     // Check token scope (aud and iss)
-    validationResponse = await this.options.checkScopeValidityOnTokenDelegate(validationResponse, this.expected);
+    validationResponse = await this.options.checkScopeValidityOnVcTokenDelegate(validationResponse, this.expected, this.siopDid);
     if (!validationResponse.result) {
       return validationResponse;
-    }
-
-    // Check if VC subject and SIOP DID are equal
-    if (this.siopDid && validationResponse.payloadObject.sub !== this.siopDid) {
-      return {
-        result: false,
-        detailedError: `The DID used for the SIOP '${this.siopDid}' is not equal to the subject of the verifiable credential ${validationResponse.payloadObject.sub}`,
-        status: 403
-      };
     }
 
     // Check if the VC matches the contract
@@ -76,7 +67,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       if (!contractFound) {
         return validationResponse = {
           result: false,
-          detailedError: `The verifiable credential with contract '${JSON.stringify(context)}' is not expected in '${JSON.stringify(this.expected.contracts)}`,
+          detailedError: `The verifiable credential with contract '${JSON.stringify(context)}' is not expected in '${JSON.stringify(this.expected.contracts)}'`,
           status: 403
         };
       }

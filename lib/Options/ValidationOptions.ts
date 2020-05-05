@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { FetchKeyAndValidateSignatureOnIdToken, IValidationOptions, CheckTimeValidityOnToken, ResolveDidAndGetKeys, GetTokenObject, ValidateDidSignature, CheckScopeValidityOnToken, ValidateSignatureOnToken, GetTokensFromSiop } from './IValidationOptions';
+import { FetchKeyAndValidateSignatureOnIdToken, IValidationOptions, CheckTimeValidityOnToken, ResolveDidAndGetKeys, GetTokenObject, ValidateDidSignature, CheckScopeValidityOnToken, ValidateSignatureOnToken, GetTokensFromSiop, CheckScopeValidityOnVcToken } from './IValidationOptions';
 import { ValidationHelpers } from '../InputValidation/ValidationHelpers';
 import IValidatorOptions from './IValidatorOptions';
 import { TokenType } from '../index';
@@ -28,6 +28,7 @@ constructor (public validatorOptions: IValidatorOptions, public tokenType: Token
   this.checkScopeValidityOnTokenDelegate = this.validationHelpers.checkScopeValidityOnToken;
   this.checkScopeValidityOnIdTokenDelegate = this.validationHelpers.checkScopeValidityOnIdToken;
   this.checkScopeValidityOnVpTokenDelegate = this.validationHelpers.checkScopeValidityOnVpToken;
+  this.checkScopeValidityOnVcTokenDelegate = this.validationHelpers.checkScopeValidityOnVcToken;
   this.fetchKeyAndValidateSignatureOnIdTokenDelegate = this.validationHelpers.fetchKeyAndValidateSignatureOnIdToken;
   this.validateSignatureOnTokenDelegate = this.validationHelpers.validateSignatureOnToken;
   this.getTokensFromSiopDelegate = this.validationHelpers.getTokensFromSiop;
@@ -77,6 +78,11 @@ public getTokenObjectDelegate: GetTokenObject;
    * Check the scope validity of the verifiable presentation token
    */
   public checkScopeValidityOnVpTokenDelegate: CheckScopeValidityOnToken;
+
+  /**
+   * Check the scope validity of the verifiable credential token
+   */
+  public checkScopeValidityOnVcTokenDelegate: CheckScopeValidityOnVcToken;
 
   /**
    * Delegate for getting a key and validate the signature on the token

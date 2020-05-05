@@ -16,6 +16,7 @@ import { ISiopValidationResponse } from '../InputValidation/SiopValidationRespon
  export type CheckTimeValidityOnIdToken = (validationResponse: IValidationResponse, driftInSec?: number) => IValidationResponse;
  export type CheckTimeValidityOnToken = (validationResponse: IValidationResponse, driftInSec?: number) => IValidationResponse;
  export type CheckScopeValidityOnToken = (validationResponse: IValidationResponse, expected: IExpected) => IValidationResponse;
+ export type CheckScopeValidityOnVcToken = (validationResponse: IValidationResponse, expected: IExpected, siopDid: string) => IValidationResponse;
  export type FetchKeyAndValidateSignatureOnIdToken = (validationResponse: IValidationResponse, token: ClaimToken) => Promise<IValidationResponse>;
  export type ValidateSignatureOnToken = (validationResponse: IValidationResponse, token: ClaimToken, key: any) => Promise<IValidationResponse>;
  export type GetTokensFromSiop = (validationResponse: IValidationResponse) => IValidationResponse;
@@ -73,6 +74,11 @@ getTokenObjectDelegate: GetTokenObject;
    * Check the scope validity of the verifiable presentation token
    */
   checkScopeValidityOnVpTokenDelegate: CheckScopeValidityOnToken,
+
+  /**
+   * Check the scope validity of the verifiable credential token
+   */
+  checkScopeValidityOnVcTokenDelegate: CheckScopeValidityOnVcToken,
 
   /**
    * Delegate for getting a key and validate the signature on the token

@@ -251,6 +251,7 @@ export class IssuanceHelpers {
      const siopRequest = {
       didJwkPrivate,
       didJwkPublic,
+      tokenJwkPrivate,
       didDocument,
       contract,
       attestations,

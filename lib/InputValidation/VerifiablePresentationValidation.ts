@@ -82,7 +82,6 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
       };
     }
 
-
     validationResponse.tokensToValidate = this.setVcTokens(validationResponse.payloadObject.vp.verifiableCredential);
     if (!validationResponse.tokensToValidate) {
       return {

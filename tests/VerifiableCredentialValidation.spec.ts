@@ -18,7 +18,7 @@ import { IdTokenValidation } from '../lib/InputValidation/IdTokenValidation';
     setup.fetchMock.reset();
   });
 
-  it('should test validate', async () => {
+  fit('should test validate', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential);   
     const expected = siop.expected.filter((token: IExpected) => token.type === TokenType.verifiableCredential)[0];
 
@@ -34,12 +34,26 @@ import { IdTokenValidation } from '../lib/InputValidation/IdTokenValidation';
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredential is invalid');
 
-    // bad subject
-    expected.subject = 'abcdef';
+    // Missing iss
+    let payload: any = {
+    };
+    let token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
     validator = new VerifiableCredentialValidation(options, expected, setup.defaultUserDid);
-    response = await validator.validate(siop.vc.rawToken);
+    response = await validator.validate(token.rawToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Wrong sub property in verifiableCredential. Expected 'abcdef'`);
+    expect(response.detailedError).toEqual(`Wrong or missing iss property in verifiableCredential. Expected '["did:test:issuer"]'`);
+
+    // bad sub
+    payload = {
+      iss: 'did:test:issuer',
+      sub: 'test'
+    };
+
+    token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
+    response = await validator.validate(token.rawToken);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`Wrong sub property in verifiableCredential. Expected 'did:test:user'`);
  });
 });
