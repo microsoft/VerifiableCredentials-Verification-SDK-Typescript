@@ -1,6 +1,6 @@
 {
   "name": "portableidentity-relyingpartysdk-typescript",
-  "version": "0.5.25",
+  "version": "0.5.26",
   "description": "Typescript SDK for Portable Identity",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -29,7 +29,7 @@
     "jasmine-spec-reporter": "4.2.1",
     "jasmine-ts": "0.3.0",
     "node-fetch": "2.6.0",
-    "nyc": "13.0.1",
+    "nyc": "^15.0.1",
     "source-map-support": "0.5.12",
     "ts-node": "8.1.0",
     "tslint": "5.16.0",

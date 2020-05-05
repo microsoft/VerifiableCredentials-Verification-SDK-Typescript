@@ -180,11 +180,11 @@ export class ValidationHelpers {
    */
   public checkTimeValidityOnToken(validationResponse: IValidationResponse, clockSkewToleranceSeconds: number = 300): IValidationResponse {
     const self: any = this;
-    const current = Math.trunc(Date.now()/1000);    
-    
+    const current = Math.trunc(Date.now() / 1000);
+
     if (validationResponse.payloadObject.exp) {
       // initialize in utc time
-      const exp =  (validationResponse.payloadObject.exp + clockSkewToleranceSeconds);
+      const exp = (validationResponse.payloadObject.exp + clockSkewToleranceSeconds);
 
       /**
        * The processing of the "exp" claim requires that the current date/time MUST be before the expiration date/time listed in the "exp" claim
@@ -200,7 +200,7 @@ export class ValidationHelpers {
     if (validationResponse.payloadObject.nbf) {
       // initialize in utc time
       const nbf = (validationResponse.payloadObject.nbf - clockSkewToleranceSeconds);
-      
+
       /**
        * JWT spec says: The processing of the "nbf" claim requires that the current date/time MUST be after or equal to the not-before date/time listed in the "nbf" claim
        */
@@ -222,7 +222,7 @@ export class ValidationHelpers {
     * @param expected Expected output of the verifiable credential
     * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
     */
-   public checkScopeValidityOnIdToken(validationResponse: IValidationResponse, expected: IExpected): IValidationResponse {
+  public checkScopeValidityOnIdToken(validationResponse: IValidationResponse, expected: IExpected): IValidationResponse {
     const self: any = this;
 
     // check iss value
@@ -245,7 +245,7 @@ export class ValidationHelpers {
     }
     // TODO change validation check
     return validationResponse;
-    
+
     // check sub value
     if (expected.audience && validationResponse.payloadObject.sub !== expected.audience) {
       return validationResponse = {
@@ -263,7 +263,7 @@ export class ValidationHelpers {
     * @param expected Expected output of the verifiable credential
     * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
     */
-   public checkScopeValidityOnToken(validationResponse: IValidationResponse, expected: IExpected): IValidationResponse {
+  public checkScopeValidityOnToken(validationResponse: IValidationResponse, expected: IExpected): IValidationResponse {
     const self: any = this;
 
     // check iss value
@@ -275,17 +275,16 @@ export class ValidationHelpers {
       };
     }
 
-   if (expected.issuers && !expected.issuers!.includes(validationResponse.payloadObject.iss)) {
+    if (expected.issuers && !expected.issuers!.includes(validationResponse.payloadObject.iss)) {
       return validationResponse = {
         result: false,
         detailedError: `Wrong iss property in ${(self as ValidationOptions).expectedInput}. Expected '${JSON.stringify(expected.issuers)}'`,
         status: 403
       };
     }
-    
+
     // check aud value
-    if(expected.audience)
-    {
+    if (expected.audience) {
       if (!validationResponse.payloadObject.aud) {
         return validationResponse = {
           result: false,
@@ -293,7 +292,7 @@ export class ValidationHelpers {
           status: 403
         };
       }
-  
+
       if (validationResponse.payloadObject.aud !== expected.audience) {
         return validationResponse = {
           result: false,
@@ -304,8 +303,7 @@ export class ValidationHelpers {
     }
 
     // check sub value
-    if(expected.subject)
-    {
+    if (expected.subject) {
       if (!validationResponse.payloadObject.sub) {
         return validationResponse = {
           result: false,
@@ -313,7 +311,7 @@ export class ValidationHelpers {
           status: 403
         };
       }
-  
+
       if (validationResponse.payloadObject.sub !== expected.subject) {
         return validationResponse = {
           result: false,
@@ -470,13 +468,16 @@ export class ValidationHelpers {
           };
         }
       }
+
+      validationResponse.result = true;
+      validationResponse.detailedError = '';
       return validationResponse;
     } catch (err) {
       console.error(err);
       return {
         result: false,
         status: 403,
-        detailedError: `Could not validate signature`
+        detailedError: `Could not validate signature on id token`
       };
     }
   }
@@ -530,7 +531,7 @@ export class ValidationHelpers {
           detailedError: `The presented ${(self as ValidationOptions).expectedInput} is has an invalid signature`,
           status: 403
         };
-      } 
+      }
 
       validationResponse.result = true;
       validationResponse.detailedError = '';
