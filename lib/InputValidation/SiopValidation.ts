@@ -40,6 +40,16 @@ constructor (private options: IValidationOptions, private expected: IExpected) {
       return validationResponse;
     }
 
+    // check sub
+    if (validationResponse.payloadObject.sub  && validationResponse.payloadObject.sub !== validationResponse.did) {
+      return  {
+        result: false,
+        detailedError: `The sub property in the siop must be equal to ${validationResponse.did}`,
+        status: 403
+      };
+
+    }
+
     // Get input for the requested VC
     validationResponse = await this.options.getTokensFromSiopDelegate(validationResponse);
     if (!validationResponse.result) {

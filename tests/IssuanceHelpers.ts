@@ -15,9 +15,16 @@ export class IssuanceHelpers {
   /**
    * Create siop request
    */
-  public static async createSiopRequest(setup: TestSetup, key: any, didDocument: DidDocument, contract: string, nonce: string, attestations: any): Promise<ClaimToken> {
+  public static async createSiopRequestWithPayload(setup: TestSetup, siop: any, key: any): Promise<ClaimToken> {
+    const claimToken = await IssuanceHelpers.signAToken(setup, JSON.stringify(siop), '', key);
+    return claimToken;
+  }
+  
+  /**
+   * Create siop request
+   */
+  public static async createSiopRequest(setup: TestSetup, key: any, contract: string, nonce: string, attestations: any): Promise<ClaimToken> {
     const siop = {
-      did: didDocument.id,
       nonce,
       contract,
       attestations,
@@ -26,8 +33,7 @@ export class IssuanceHelpers {
       jti: 'test-jti'
     }
 
-    const claimToken = await IssuanceHelpers.signAToken(setup, JSON.stringify(siop), '', key);
-    return claimToken;
+    return IssuanceHelpers.createSiopRequestWithPayload(setup, siop, key);
   }
 
   /**
@@ -229,7 +235,6 @@ export class IssuanceHelpers {
     const request = await IssuanceHelpers.createSiopRequest(
       setup,
       didJwkPrivate,
-      didDocument, 
       contract, 
       '', 
       attestations

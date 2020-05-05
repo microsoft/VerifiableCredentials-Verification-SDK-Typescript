@@ -21,7 +21,7 @@ describe('SiopValidation', () =>
     setup.fetchMock.reset();
   });
   
-  it('should test validate', async () => {
+  fit('should test validate', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.siop);   
     const expected: IExpected = siop.expected.filter((token: IExpected) => token.type === TokenType.siop)[0];
 
@@ -34,10 +34,43 @@ describe('SiopValidation', () =>
     const validationOptions = new ValidationOptions(setup.validatorOptions, TokenType.siop); 
 
     const validator = new SiopValidation(validationOptions, expected);
-    const response = await validator.validate(request.rawToken);
+    let response = await validator.validate(request.rawToken);
     expect(response.result).toBeTruthy();
     expect(response.jti).toBeDefined();
     expect(response.jti).toEqual(request.decodedToken.jti);
+    
+    // Negative cases
+    // Bad iss
+    let payload: any = {
+      iss: 'test'
+    };
+    let siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
+    response = await validator.validate(siopRequest.rawToken);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`Wrong iss property in siop. Expected '["https://self-issued.me"]'`);
+
+    // Missing aud
+    payload = {
+      iss: 'https://self-issued.me'
+    };
+    siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
+    response = await validator.validate(siopRequest.rawToken);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`Missing aud property in siop. Expected 'https://portableidentitycards.azure-api.net/42b39d9d-0cdd-4ae0-b251-b7b39a561f91/api/portable/v1.0/card/issue'`);
+
+    // Wrong aud
+    payload = {
+      iss: 'https://self-issued.me',
+      aud: 'test'
+    };
+    siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
+    response = await validator.validate(siopRequest.rawToken);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`Wrong aud property in siop. Expected 'https://portableidentitycards.azure-api.net/42b39d9d-0cdd-4ae0-b251-b7b39a561f91/api/portable/v1.0/card/issue'`);
+
   });
   
   it('should return status 200', async () => {

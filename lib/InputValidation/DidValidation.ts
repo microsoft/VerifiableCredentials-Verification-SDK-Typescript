@@ -43,7 +43,7 @@ export class DidValidation implements IDidValidation {
      if (parts.length <= 1) {
        return {
          result: false,
-         detailedError: `The kid in does not contain the did. Required format for kid is <did>#kid`,
+         detailedError: `The kid in the protected header does not contain the DID. Required format for kid is <did>#kid`,
          status: 403
        };
      }
@@ -52,7 +52,7 @@ export class DidValidation implements IDidValidation {
     if (!validationResponse.did) {
       return validationResponse = {
           result: false,
-          detailedError: 'The input token does not contain the DID',
+          detailedError: 'The kid does not contain the DID',
           status: 403
         };
     }
