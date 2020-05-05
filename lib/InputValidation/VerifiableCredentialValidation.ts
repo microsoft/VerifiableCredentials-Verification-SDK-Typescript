@@ -13,15 +13,15 @@ import { IExpected } from '../index';
  */
 export class VerifiableCredentialValidation implements IVerifiableCredentialValidation {
 
-/**
- * Create a new instance of @see <VerifiableCredentialValidation>
- * @param options Options to steer the validation process
- * @param expected Expected properties of the verifiable credential
- * @param siopDid needs to be equal to audience of VC
- */
-  constructor (private options: IValidationOptions, private expected: IExpected, private siopDid: string) {
+  /**
+   * Create a new instance of @see <VerifiableCredentialValidation>
+   * @param options Options to steer the validation process
+   * @param expected Expected properties of the verifiable credential
+   * @param siopDid needs to be equal to audience of VC
+   */
+  constructor(private options: IValidationOptions, private expected: IExpected, private siopDid: string) {
   }
- 
+
   /**
    * Validate the verifiable credential
    * @param verifiableCredential The credential to validate as a signed token
@@ -43,6 +43,12 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
     // Get issuer from verifiable credential payload
     validationResponse.did = validationResponse.payloadObject.iss;
 
+    // Check token scope (aud and iss)
+    validationResponse = await this.options.checkScopeValidityOnTokenDelegate(validationResponse, this.expected);
+    if (!validationResponse.result) {
+      return validationResponse;
+    }
+
     // Check if VC subject and SIOP DID are equal
     if (this.siopDid && validationResponse.payloadObject.sub !== this.siopDid) {
       return {
@@ -58,14 +64,14 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       const context: string[] = validationResponse.payloadObject.vc[VerifiableCredentialConstants.CLAIM_CONTEXT];
       let contractFound = false;
       let contract: string = '';
-      for (let inx = 0 ; inx < context.length; inx++) {
+      for (let inx = 0; inx < context.length; inx++) {
         if (this.expected.contracts.includes(context[inx])) {
           contractFound = true;
           contract = context[inx];
           break;
         }
       }
-  
+
       // Check if the we found a matching contract.
       if (!contractFound) {
         return validationResponse = {
@@ -73,7 +79,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
           detailedError: `The verifiable credential with contract '${JSON.stringify(context)}' is not expected in '${JSON.stringify(this.expected.contracts)}`,
           status: 403
         };
-      }  
+      }
     }
 
     // TODO Validate status

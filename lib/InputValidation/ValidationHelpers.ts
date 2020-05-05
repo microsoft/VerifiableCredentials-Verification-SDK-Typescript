@@ -26,9 +26,9 @@ export class ValidationHelpers {
  * Create new instance of <see @class ValidationHelpers>
  * @param validatorOptions The validator options
  * @param validationOptions Issuance validationOptions containing delegates
- * @param inputDescription Describe the type of token for error messages
+ * @param tokenType Describe the type of token for error messages
  */
-  constructor(private validatorOptions: IValidatorOptions, private validationOptions: IValidationOptions, private inputDescription: TokenType) {
+  constructor(private validatorOptions: IValidatorOptions, private validationOptions: IValidationOptions, private tokenType: TokenType) {
   }
 
   /**
@@ -77,7 +77,7 @@ export class ValidationHelpers {
       if (!validationResponse.didSignature || !tokenPayload) {
         return {
           result: false,
-          detailedError: `The signature in the ${(self as ValidationOptions).expectedInput} has an invalid format`,
+          detailedError: `The signature in the ${(self as ValidationOptions).tokenType} has an invalid format`,
           status: 403
         };
       }
@@ -89,7 +89,7 @@ export class ValidationHelpers {
       if (!validationResponse.didKid) {
         return {
           result: false,
-          detailedError: `The protected header in the ${(self as ValidationOptions).expectedInput} does not contain the kid`,
+          detailedError: `The protected header in the ${(self as ValidationOptions).tokenType} does not contain the kid`,
           status: 403
         };
       }
@@ -97,7 +97,7 @@ export class ValidationHelpers {
       console.error(err);
       return {
         result: false,
-        detailedError: `The ${(self as ValidationOptions).expectedInput} could not be deserialized`,
+        detailedError: `The ${(self as ValidationOptions).tokenType} could not be deserialized`,
         status: 400
       };
     }
@@ -107,7 +107,7 @@ export class ValidationHelpers {
       console.error(err);
       return {
         result: false,
-        detailedError: `The payload in the ${(self as ValidationOptions).expectedInput} is no valid JSON`,
+        detailedError: `The payload in the ${(self as ValidationOptions).tokenType} is no valid JSON`,
         status: 400
       };
     }
@@ -192,7 +192,7 @@ export class ValidationHelpers {
       if (current >= exp) {
         return {
           result: false,
-          detailedError: `The presented ${(self as ValidationOptions).expectedInput} is expired ${exp}, now ${current as number}`,
+          detailedError: `The presented ${(self as ValidationOptions).tokenType} is expired ${exp}, now ${current as number}`,
           status: 403
         };
       }
@@ -207,7 +207,7 @@ export class ValidationHelpers {
       if (current < nbf) {
         return {
           result: false,
-          detailedError: `The presented ${(self as ValidationOptions).expectedInput} is not yet valid ${nbf}`,
+          detailedError: `The presented ${(self as ValidationOptions).tokenType} is not yet valid ${nbf}`,
           status: 403
         };
       }
@@ -239,7 +239,7 @@ export class ValidationHelpers {
     } else if (expected.issuers && !expected.issuers!.includes(validationResponse.payloadObject.iss)) {
       return validationResponse = {
         result: false,
-        detailedError: `Wrong or missing iss property in ${(self as ValidationOptions).expectedInput}. Expected '${JSON.stringify(expected.issuers)}'`,
+        detailedError: `Wrong or missing iss property in ${(self as ValidationOptions).tokenType}. Expected '${JSON.stringify(expected.issuers)}'`,
         status: 403
       };
     }
@@ -250,10 +250,76 @@ export class ValidationHelpers {
     if (expected.audience && validationResponse.payloadObject.sub !== expected.audience) {
       return validationResponse = {
         result: false,
-        detailedError: `Wrong or missing sub property in ${(self as ValidationOptions).expectedInput}. Expected '${expected.audience}'`,
+        detailedError: `Wrong or missing sub property in ${(self as ValidationOptions).tokenType}. Expected '${expected.audience}'`,
         status: 403
       };
     }
+    return validationResponse;
+  }
+
+  /**
+    * Check the scope validity of the verifiable presentation token such as iss and aud
+    * @param validationResponse The response for the requestor
+    * @param expected Expected output of the verifiable credential
+    * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
+    */
+   public checkScopeValidityOnVpToken(validationResponse: IValidationResponse, expected: IExpected): IValidationResponse {
+    const self: any = this;
+
+    // check iss value
+    if (!validationResponse.payloadObject.iss) {
+      return {
+        result: false,
+        detailedError: `Missing iss property in verifiablePresentation. Expected '${JSON.stringify(expected.issuers)}'`,
+        status: 403
+      };
+    }
+
+    if (validationResponse.payloadObject.iss !== validationResponse.did) {
+      return <IValidationResponse>{
+        result: false,
+        detailedError: `Wrong iss property in verifiablePresentation. Expected '${validationResponse.did}'`,
+        status: 403
+      };
+    }
+
+    // check aud value
+      if (!validationResponse.payloadObject.aud) {
+        return validationResponse = {
+          result: false,
+          detailedError: `Missing aud property in verifiablePresentation. Expected '${expected.did}'`,
+          status: 403
+        };
+      }
+
+      if (expected.did && validationResponse.payloadObject.aud !== expected.did) {
+        return validationResponse = {
+          result: false,
+          detailedError: `Wrong aud property in ${(self as ValidationOptions).tokenType}. Expected DID of audience '${expected.did}'`,
+          status: 403
+        };
+      }
+    
+
+    // check sub value
+    if (expected.subject) {
+      if (!validationResponse.payloadObject.sub) {
+        return validationResponse = {
+          result: false,
+          detailedError: `Missing sub property in ${(self as ValidationOptions).tokenType}. Expected DID of audience '${expected.subject}'`,
+          status: 403
+        };
+      }
+
+      if (validationResponse.payloadObject.sub !== expected.subject) {
+        return validationResponse = {
+          result: false,
+          detailedError: `Wrong sub property in ${(self as ValidationOptions).tokenType}. Expected '${expected.subject}'`,
+          status: 403
+        };
+      }
+    }
+
     return validationResponse;
   }
 
@@ -263,14 +329,14 @@ export class ValidationHelpers {
     * @param expected Expected output of the verifiable credential
     * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
     */
-  public checkScopeValidityOnToken(validationResponse: IValidationResponse, expected: IExpected): IValidationResponse {
+   public checkScopeValidityOnToken(validationResponse: IValidationResponse, expected: IExpected): IValidationResponse {
     const self: any = this;
 
     // check iss value
     if (!validationResponse.payloadObject.iss) {
       return validationResponse = {
         result: false,
-        detailedError: `Missing iss property in ${(self as ValidationOptions).expectedInput}. Expected '${JSON.stringify(expected.issuers)}'`,
+        detailedError: `Missing iss property in ${(self as ValidationOptions).tokenType}. Expected '${JSON.stringify(expected.issuers)}'`,
         status: 403
       };
     }
@@ -278,17 +344,18 @@ export class ValidationHelpers {
     if (expected.issuers && !expected.issuers!.includes(validationResponse.payloadObject.iss)) {
       return validationResponse = {
         result: false,
-        detailedError: `Wrong iss property in ${(self as ValidationOptions).expectedInput}. Expected '${JSON.stringify(expected.issuers)}'`,
+        detailedError: `Wrong iss property in ${(self as ValidationOptions).tokenType}. Expected '${JSON.stringify(expected.issuers)}'`,
         status: 403
       };
     }
 
     // check aud value
+    if (this.tokenType)
     if (expected.audience) {
       if (!validationResponse.payloadObject.aud) {
         return validationResponse = {
           result: false,
-          detailedError: `Missing aud property in ${(self as ValidationOptions).expectedInput}. Expected '${expected.audience}'`,
+          detailedError: `Missing aud property in ${(self as ValidationOptions).tokenType}. Expected '${expected.audience}'`,
           status: 403
         };
       }
@@ -296,7 +363,7 @@ export class ValidationHelpers {
       if (validationResponse.payloadObject.aud !== expected.audience) {
         return validationResponse = {
           result: false,
-          detailedError: `Wrong aud property in ${(self as ValidationOptions).expectedInput}. Expected '${expected.audience}'`,
+          detailedError: `Wrong aud property in ${(self as ValidationOptions).tokenType}. Expected '${expected.audience}'`,
           status: 403
         };
       }
@@ -307,7 +374,7 @@ export class ValidationHelpers {
       if (!validationResponse.payloadObject.sub) {
         return validationResponse = {
           result: false,
-          detailedError: `Missing sub property in ${(self as ValidationOptions).expectedInput}. Expected '${expected.subject}'`,
+          detailedError: `Missing sub property in ${(self as ValidationOptions).tokenType}. Expected '${expected.subject}'`,
           status: 403
         };
       }
@@ -315,7 +382,7 @@ export class ValidationHelpers {
       if (validationResponse.payloadObject.sub !== expected.subject) {
         return validationResponse = {
           result: false,
-          detailedError: `Wrong sub property in ${(self as ValidationOptions).expectedInput}. Expected '${expected.subject}'`,
+          detailedError: `Wrong sub property in ${(self as ValidationOptions).tokenType}. Expected '${expected.subject}'`,
           status: 403
         };
       }
@@ -345,7 +412,7 @@ export class ValidationHelpers {
       if (!validation.result) {
         return validationResponse = {
           result: false,
-          detailedError: `The signature on the payload in the ${(self as ValidationOptions).expectedInput} is invalid`,
+          detailedError: `The signature on the payload in the ${(self as ValidationOptions).tokenType} is invalid`,
           status: 403
         };
       }
@@ -528,7 +595,7 @@ export class ValidationHelpers {
       if (!validation.result) {
         return {
           result: false,
-          detailedError: `The presented ${(self as ValidationOptions).expectedInput} is has an invalid signature`,
+          detailedError: `The presented ${(self as ValidationOptions).tokenType} is has an invalid signature`,
           status: 403
         };
       }

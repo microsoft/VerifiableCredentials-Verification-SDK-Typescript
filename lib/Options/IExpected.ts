@@ -12,6 +12,11 @@ export type CheckTokenProperty = (property: any) => boolean;
 
 export default interface IExpected {
   /**
+   * The DID of the validator
+   */
+  did?: string,
+
+  /**
    * The token type
    */
   type: TokenType,

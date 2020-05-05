@@ -14,20 +14,20 @@ import { IExpected } from '..';
  */
 export class SiopValidation implements ISiopValidation {
 
-/**
- * Create a new instance of @see <SiopValidation>
- * @param options Options to steer the validation process
- * @param expected Expected properties of the SIOP
- */
-constructor (private options: IValidationOptions, private expected: IExpected) {
-}
+  /**
+   * Create a new instance of @see <SiopValidation>
+   * @param options Options to steer the validation process
+   * @param expected Expected properties of the SIOP
+   */
+  constructor(private options: IValidationOptions, private expected: IExpected) {
+  }
 
   /**
    * Validate the input for a correct format and signature
    * @param siop The SIOP token
    * @returns true if validation passes together with parsed objects
    */
-  public async validate (siop: string): Promise<ISiopValidationResponse> {
+  public async validate(siop: string): Promise<ISiopValidationResponse> {
     let validationResponse: ISiopValidationResponse = {
       result: true,
       status: 200
@@ -40,9 +40,15 @@ constructor (private options: IValidationOptions, private expected: IExpected) {
       return validationResponse;
     }
 
+    // Check token scope (aud and iss)
+    validationResponse = await this.options.checkScopeValidityOnTokenDelegate(validationResponse, this.expected);
+    if (!validationResponse.result) {
+      return validationResponse;
+    }
+
     // check sub
-    if (validationResponse.payloadObject.sub  && validationResponse.payloadObject.sub !== validationResponse.did) {
-      return  {
+    if (validationResponse.payloadObject.sub && validationResponse.payloadObject.sub !== validationResponse.did) {
+      return {
         result: false,
         detailedError: `The sub property in the siop must be equal to ${validationResponse.did}`,
         status: 403
@@ -55,7 +61,7 @@ constructor (private options: IValidationOptions, private expected: IExpected) {
     if (!validationResponse.result) {
       return validationResponse;
     }
-  
+
     console.log(`The SIOP signature is verified with DID ${validationResponse.did}`);
     return validationResponse;
   }

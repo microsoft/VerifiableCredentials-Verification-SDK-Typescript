@@ -15,10 +15,10 @@ export default class ValidationOptions implements IValidationOptions {
 /**
  * Create new instance of <see @class ValidationOptions>
  * @param validatorOptions The validator options
- * @param inputDescription Describe the type of token for error messages
+ * @param tokenType The type of token to validate
  */
-constructor (public validatorOptions: IValidatorOptions, public expectedInput: TokenType) {
-  this.validationHelpers = new ValidationHelpers(validatorOptions, this, expectedInput);
+constructor (public validatorOptions: IValidatorOptions, public tokenType: TokenType) {
+  this.validationHelpers = new ValidationHelpers(validatorOptions, this, tokenType);
   this.getSelfIssuedTokenObjectDelegate = this.validationHelpers.getSelfIssuedTokenObject;
   this.getTokenObjectDelegate = this.validationHelpers.getTokenObject;
     
@@ -27,6 +27,7 @@ constructor (public validatorOptions: IValidatorOptions, public expectedInput: T
   this.checkTimeValidityOnTokenDelegate = this.validationHelpers.checkTimeValidityOnToken;
   this.checkScopeValidityOnTokenDelegate = this.validationHelpers.checkScopeValidityOnToken;
   this.checkScopeValidityOnIdTokenDelegate = this.validationHelpers.checkScopeValidityOnIdToken;
+  this.checkScopeValidityOnVpTokenDelegate = this.validationHelpers.checkScopeValidityOnVpToken;
   this.fetchKeyAndValidateSignatureOnIdTokenDelegate = this.validationHelpers.fetchKeyAndValidateSignatureOnIdToken;
   this.validateSignatureOnTokenDelegate = this.validationHelpers.validateSignatureOnToken;
   this.getTokensFromSiopDelegate = this.validationHelpers.getTokensFromSiop;
@@ -71,6 +72,11 @@ public getTokenObjectDelegate: GetTokenObject;
    * Check the scope validity of the token
    */
   public checkScopeValidityOnIdTokenDelegate: CheckScopeValidityOnToken;
+
+  /**
+   * Check the scope validity of the verifiable presentation token
+   */
+  public checkScopeValidityOnVpTokenDelegate: CheckScopeValidityOnToken;
 
   /**
    * Delegate for getting a key and validate the signature on the token

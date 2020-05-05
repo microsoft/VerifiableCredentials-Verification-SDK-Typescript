@@ -95,8 +95,9 @@ export class IssuanceHelpers {
         "verifiableCredential": []        
       },
       iss: `${setup.defaultUserDid}`,
-      aud: setup.AUDIENCE
+      aud: `${setup.defaultIssuerDid}`,
     };
+
     for (let inx=0; inx < vcs.length; inx++) {
       (vpTemplate.vp.verifiableCredential as string[]).push(vcs[inx].rawToken);
     }
@@ -243,7 +244,7 @@ export class IssuanceHelpers {
       { type: TokenType.selfIssued },
       { type: TokenType.idToken, issuers: [setup.defaultIdTokenConfiguration], audience: setup.AUDIENCE },
       { type: TokenType.siop, issuers: ['https://self-issued.me'], audience: setup.AUDIENCE },
-      { type: TokenType.verifiablePresentation, issuers: [setup.defaultUserDid] , audience: setup.AUDIENCE },
+      { type: TokenType.verifiablePresentation, did: setup.defaultIssuerDid, issuers: [setup.defaultUserDid] , audience: setup.AUDIENCE },
       { type: TokenType.verifiableCredential, issuers: [setup.defaultIssuerDid], subject: setup.defaultUserDid, contracts: [contract] }
     ];
 

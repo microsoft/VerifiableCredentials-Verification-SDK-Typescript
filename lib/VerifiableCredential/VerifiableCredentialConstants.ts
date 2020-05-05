@@ -26,6 +26,11 @@ export default class VerifiableCredentialConstants {
    * Constant for default type
    */
   public static DEFAULT_VERIFIABLECREDENTIAL_TYPE = 'VerifiableCredential';
+
+  /**
+   * Constant for default type
+   */
+  public static DEFAULT_VERIFIABLEPRESENTATION_TYPE = 'VerifiablePresentation';
   
   /**
    * Constant for self issued claims

@@ -65,9 +65,14 @@ getTokenObjectDelegate: GetTokenObject;
   checkScopeValidityOnTokenDelegate: CheckScopeValidityOnToken,
 
   /**
-   * Check the scope validity of the token
+   * Check the scope validity of the id token
    */
   checkScopeValidityOnIdTokenDelegate: CheckScopeValidityOnToken,
+
+  /**
+   * Check the scope validity of the verifiable presentation token
+   */
+  checkScopeValidityOnVpTokenDelegate: CheckScopeValidityOnToken,
 
   /**
    * Delegate for getting a key and validate the signature on the token

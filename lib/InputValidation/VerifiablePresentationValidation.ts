@@ -7,6 +7,7 @@ import { IValidationOptions } from '../Options/IValidationOptions';
 import ClaimToken from '../VerifiableCredential/ClaimToken';
 import { DidValidation } from './DidValidation';
 import { IExpected } from '../index';
+import VerifiableCredentialConstants from '../VerifiableCredential/VerifiableCredentialConstants';
 
 /**
  * Class for verifiable presentation validation
@@ -42,8 +43,11 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
       return validationResponse;
     }
 
-    // Set list of tokens to validate
-    validationResponse.tokensToValidate = validationResponse.payloadObject.vp!.verifiableCredential;
+   // Check token scope (aud and iss)
+   validationResponse = await this.options.checkScopeValidityOnVpTokenDelegate(validationResponse, this.expected);
+   if (!validationResponse.result) {
+     return validationResponse;
+   }
 
     // Check if VP and SIOP DID are equal
     if (this.siopDid && validationResponse.did !== this.siopDid) {
@@ -54,11 +58,11 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
       };
     }
 
-    if (!validationResponse.payloadObject && !validationResponse.payloadObject.vp) {
+    if (!validationResponse.payloadObject.vp) {
       return {
         result: false,
         status: 403,
-        detailedError: `Missing in vp in presentation`
+        detailedError: `Missing vp in presentation`
       };
     }
 
@@ -66,16 +70,25 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
       return {
         result: false,
         status: 403,
-        detailedError: `Missing in @context in vp`
+        detailedError: `Missing @context in presentation`
       };
     }
+
+    if (!validationResponse.payloadObject.vp.type || validationResponse.payloadObject.vp.type[0] !== VerifiableCredentialConstants.DEFAULT_VERIFIABLEPRESENTATION_TYPE) {
+      return {
+        result: false,
+        status: 403,
+        detailedError: `Missing or wrong default type in @context of presentation. Should be ${VerifiableCredentialConstants.DEFAULT_VERIFIABLEPRESENTATION_TYPE}`
+      };
+    }
+
 
     validationResponse.tokensToValidate = this.setVcTokens(validationResponse.payloadObject.vp.verifiableCredential);
     if (!validationResponse.tokensToValidate) {
       return {
         result: false,
         status: 403,
-        detailedError: `Missing in verifiableCredential in vp`
+        detailedError: `Missing verifiableCredential in presentation`
       };
     }
 
@@ -83,6 +96,9 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
   }
 
   private setVcTokens(vc: string[]) {
+    if (!vc) {
+      return undefined;
+    }
     const decodedToken: {[key: string]: ClaimToken } = {};
     for (let token in vc) {
       const claimToken = ClaimToken.getTokenType(vc[token]);

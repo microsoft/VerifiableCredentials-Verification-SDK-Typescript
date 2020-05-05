@@ -75,12 +75,6 @@ export class DidValidation implements IDidValidation {
      return validationResponse;
    }
 
-   // Check token scope (aud and iss)
-   validationResponse = await this.options.checkScopeValidityOnTokenDelegate(validationResponse, this.expected);
-   if (!validationResponse.result) {
-     return validationResponse;
-   }
-
    // once the token is validated, we can trust the jti
    validationResponse.jti = validationResponse.payloadObject.jti;
 
