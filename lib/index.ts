@@ -48,5 +48,37 @@ export { IRevocedCard };
 import { IResponse } from './InputValidation/IValidationResponse';
 import RequestorBuilder from './ApiOidcRequest/RequestorBuilder';
 import Requestor from './ApiOidcRequest/Requestor';
-import { IssuanceAttestationsModel } from './ApiOidcRequest/IssuanceAttestationsModel';
-export { IssuanceAttestationsModel, IResponse, RequestorBuilder, Requestor };
+export { IResponse, RequestorBuilder, Requestor };
+
+import { BaseAttestationModel } from './rules-model/BaseAttestationModel';
+import { BaseIssuanceModel } from './rules-model/BaseIssuanceModel';
+import { IdTokenAttestationModel } from './rules-model/IdTokenAttestationModel';
+import { InputClaimModel } from './rules-model/InputClaimModel';
+import { InputModel } from './rules-model/InputModel';
+import { IssuanceAttestationsModel } from './rules-model/IssuanceAttestationsModel';
+import { RemoteKeyAuthorizationModel } from './rules-model/RemoteKeyAuthorizationModel';
+import { RemoteKeyModel } from './rules-model/RemoteKeyModel';
+import { RulesModel } from './rules-model/RulesModel';
+import { SelfIssuedAttestationModel } from './rules-model/SelfIssuedAttestationModel';
+import { TrustedIssuerModel } from './rules-model/TrustedIssuerModel';
+import { VerifiablePresentationAttestationModel } from './rules-model/VerifiablePresentationAttestationModel';
+import { RefreshConfigurationModel } from './rules-model/RefreshConfigurationModel';
+import { VerifiableCredentialModel } from './rules-model/VerifiableCredentialModel';
+import { TransformModel } from './rules-model/TransformModel';
+export {
+  TransformModel,
+  VerifiableCredentialModel,
+  RefreshConfigurationModel,
+  BaseAttestationModel,
+  BaseIssuanceModel,
+  IdTokenAttestationModel,
+  InputClaimModel,
+  InputModel,
+  IssuanceAttestationsModel,
+  RemoteKeyAuthorizationModel,
+  RemoteKeyModel,
+  RulesModel,
+  SelfIssuedAttestationModel,
+  TrustedIssuerModel,
+  VerifiablePresentationAttestationModel
+};
