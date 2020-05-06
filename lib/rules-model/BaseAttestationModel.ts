@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { InputClaimModel } from './InputClaimModel';
-import { TSMap } from 'typescript-map';
 
 /**
  * Base class for input attestations
@@ -19,7 +18,7 @@ export abstract class BaseAttestationModel {
    * @param required an array of InputClaimModel values
    */
   constructor(
-    public mapping?: TSMap<string, InputClaimModel>,
+    public mapping?: { [map: string]: InputClaimModel },
     public encrypted = false,
     public claims?: InputClaimModel[],
     public required = false
@@ -33,14 +32,14 @@ export abstract class BaseAttestationModel {
   populateFrom(input: any): void {
     this.encrypted = input.encrypted;
     this.claims = input.claims;
-    this.mapping = new TSMap<string, InputClaimModel>();
+    this.mapping = {};
     this.required = input.required;
 
     if (input.mapping) {
       for (let key of Object.keys(input.mapping)) {
         let claim = new InputClaimModel();
         claim.populateFrom(input.mapping[key]);
-        this.mapping.set(key, claim);
+        this.mapping[key] = claim;
       }
     }
   }
@@ -50,7 +49,10 @@ export abstract class BaseAttestationModel {
    */
   forInput(): BaseAttestationModel {
     const arr: InputClaimModel[] = [];
-    this.mapping?.forEach((value: InputClaimModel, _key?: string, _index?: number) => arr.push(value.forInput()));
+    for (let key in this.mapping) {
+      arr.push(this.mapping![key].forInput());
+    }
+
     return this.createForInput(arr);
   }
 

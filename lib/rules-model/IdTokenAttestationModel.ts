@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { BaseAttestationModel } from './BaseAttestationModel';
-import { TSMap } from 'typescript-map';
 import { InputClaimModel } from './InputClaimModel';
 
 /**
@@ -27,7 +26,7 @@ export class IdTokenAttestationModel extends BaseAttestationModel {
     public client_id?: string,
     // tslint:disable-next-line:variable-name
     public redirect_uri?: string,
-    mapping?: TSMap<string, InputClaimModel>, 
+    mapping?: { [map: string]: InputClaimModel }, 
     encrypted: boolean = false, 
     claims?: InputClaimModel[], 
     required: boolean = false) {

@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TSMap } from 'typescript-map';
 import { IdTokenAttestationModel, InputClaimModel, InputModel, IssuanceAttestationsModel, RefreshConfigurationModel, RemoteKeyAuthorizationModel, RemoteKeyModel, RulesModel, SelfIssuedAttestationModel, TransformModel, TrustedIssuerModel, VerifiableCredentialModel, VerifiablePresentationAttestationModel } from '../lib';
 
 describe('TenantSourceFactory', () => {
@@ -13,9 +12,9 @@ describe('TenantSourceFactory', () => {
     'issuer',
     new IssuanceAttestationsModel(
       new SelfIssuedAttestationModel(
-        new TSMap<string, InputClaimModel>([
-          ['alias', new InputClaimModel('name', 'string', false, true, new TransformModel('name', 'remote'))]
-        ]),
+        {
+          alias: new InputClaimModel('name', 'string', false, true, new TransformModel('name', 'remote'))
+        },
         false,
         undefined,
         true
@@ -33,23 +32,20 @@ describe('TenantSourceFactory', () => {
           [
             'contract'
           ],
-          new TSMap<string, InputClaimModel>(
-            [
-              ['givenName', new InputClaimModel('vc.credentialSubject.givenName')],
-              ['familyName', new InputClaimModel('vc.credentialSubject.familyName', 'string', true)]
-            ])
-        ),
+          {
+            givenName: new InputClaimModel('vc.credentialSubject.givenName'),
+            familyName: new InputClaimModel('vc.credentialSubject.familyName', 'string', true)
+          })
       ],
       [
         new IdTokenAttestationModel(
           'oidc config endpoint',
           'clientId',
           'redirect',
-          new TSMap<string, InputClaimModel>(
-            [
-              ['email', new InputClaimModel('upn', 'string', false, true)],
-              ['name', new InputClaimModel('name')]
-            ])
+          {
+            email: new InputClaimModel('upn', 'string', false, true),
+            name: new InputClaimModel('name')
+          }
         ),
       ]),
     86400,
@@ -109,15 +105,15 @@ describe('TenantSourceFactory', () => {
       // make sure mapping serializes
       const roundtripSelfIssued = <SelfIssuedAttestationModel>roundtrip.attestations?.selfIssued;
       const rulesSelfIssuedAttestation = <SelfIssuedAttestationModel>RULES.attestations?.selfIssued;
-      const roundtripSelfIssuedMapping = <TSMap<string, InputClaimModel>>roundtripSelfIssued.mapping;
+      const roundtripSelfIssuedMapping = <any>roundtripSelfIssued.mapping;
       expect(roundtripSelfIssued).toBeDefined();
       expect(roundtripSelfIssuedMapping).toBeDefined();
       expect(roundtripSelfIssued.required).toEqual(rulesSelfIssuedAttestation.required);
-      expect(roundtripSelfIssuedMapping.length).toEqual(<number>RULES.attestations?.selfIssued?.mapping?.length);
+      expect(Object.keys(roundtripSelfIssuedMapping).length).toEqual(Object.keys(<any>RULES.attestations?.selfIssued?.mapping).length);
 
       // analyze the contents of input claim
-      const roundtripAlias = <InputClaimModel>roundtrip.attestations?.selfIssued?.mapping?.get('alias');
-      const rulesAlias = <InputClaimModel>RULES.attestations?.selfIssued?.mapping?.get('alias');
+      const roundtripAlias = <InputClaimModel>roundtrip.attestations?.selfIssued?.mapping?.alias;
+      const rulesAlias = <InputClaimModel>RULES.attestations?.selfIssued?.mapping?.alias;
       expect(roundtripAlias).toBeDefined();
       expect(roundtripAlias.indexed).toBeTruthy();
 
@@ -129,12 +125,12 @@ describe('TenantSourceFactory', () => {
       const roundtripPresentations = <VerifiablePresentationAttestationModel[]>roundtrip.attestations?.presentations;
       expect(roundtripPresentations).toBeDefined();
       expect(roundtripPresentations.length).toEqual(1);
-      expect(roundtripPresentations[0].mapping?.length).toEqual(2);
+      expect(Object.keys(<any>roundtripPresentations[0].mapping).length).toEqual(2);
 
       const roundtripIdTokens = <IdTokenAttestationModel[]>roundtrip.attestations?.idTokens;
       expect(roundtripIdTokens).toBeDefined();
       expect(roundtripIdTokens.length).toEqual(1);
-      expect(roundtripIdTokens[0].mapping?.length).toEqual(2);
+      expect(Object.keys(<any>roundtripIdTokens[0].mapping).length).toEqual(2);
 
       // decryption keys
       const roundtripDecryptionKeys = <RemoteKeyModel[]>roundtrip.decryptionKeys;
@@ -190,10 +186,10 @@ describe('TenantSourceFactory', () => {
       const allMaps = [];
 
       // self issued claims
-      let rulesMap = <TSMap<string, InputClaimModel>>rulesSelfIssuedAttestation.mapping;
+      let rulesMap = <any>rulesSelfIssuedAttestation.mapping;
       let claims = <InputClaimModel[]>inputSelfIssuedAttestation.claims;
-      let inputMap = new TSMap<string, InputClaimModel>();
-      claims.map((value) => inputMap.set(<string>value.claim, value));
+      let inputMap:{[index: string]:any} = {} = {};
+      claims.map((value) => inputMap[value.claim!] = value);
       allMaps.push({ rules: rulesMap, input: inputMap });
 
       // idtokens
@@ -204,10 +200,10 @@ describe('TenantSourceFactory', () => {
       for (let i = 0; i < rulesIdTokens.length; i++) {
         expect(inputIdTokens[i].encrypted).toEqual(rulesIdTokens[i].encrypted);
 
-        rulesMap = <TSMap<string, InputClaimModel>>rulesIdTokens[i].mapping;
+        rulesMap = rulesIdTokens[i].mapping;
         claims = <InputClaimModel[]>inputIdTokens[i].claims;
-        inputMap = new TSMap<string, InputClaimModel>();
-        claims.map((value) => inputMap.set(<string>value.claim, value));
+        inputMap = {};
+        claims.map((value) => inputMap[value.claim!]= value);
         allMaps.push({ rules: rulesMap, input: inputMap });
       }
 
@@ -219,22 +215,23 @@ describe('TenantSourceFactory', () => {
       for (let i = 0; i < rulesPresentations.length; i++) {
         expect(inputPresentations[i].encrypted).toEqual(rulesPresentations[i].encrypted);
 
-        rulesMap = <TSMap<string, InputClaimModel>>rulesPresentations[i].mapping;
+        rulesMap = rulesPresentations[i].mapping;
         claims = <InputClaimModel[]>inputPresentations[i].claims;
-        inputMap = new TSMap<string, InputClaimModel>();
-        claims.map((value) => inputMap.set(<string>value.claim, value));
+        inputMap = {};
+        claims.map((value) => inputMap[value.claim!]= value);
         allMaps.push({ rules: rulesMap, input: inputMap });
       }
 
       // evaluate all rules/input pairs
       allMaps.forEach((mapsToCompare) => {
         // foreach value in rulesMap, it must exist in inputMap
-        mapsToCompare.rules.forEach((value: InputClaimModel, _key?: string, _index?: number) => {
+        Object.keys(mapsToCompare.rules).forEach((key: string) => {
+          let value = mapsToCompare.rules[key];
           let lookupKey = <string>value.claim;
-          expect(mapsToCompare.input.has(lookupKey)).toBeTruthy();
+          expect(mapsToCompare.input[lookupKey]).toBeDefined();
 
           // evaluate claim values
-          let inputClaim = mapsToCompare.input.get(lookupKey);
+          let inputClaim = mapsToCompare.input[lookupKey];
           expect(inputClaim).toBeDefined();
           expect(inputClaim.claim).toEqual(value.claim);
           expect(inputClaim.required).toEqual(value.required);

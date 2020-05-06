@@ -5,7 +5,6 @@
 
 import { TrustedIssuerModel } from './TrustedIssuerModel';
 import { BaseAttestationModel } from './BaseAttestationModel';
-import { TSMap } from 'typescript-map';
 import { InputClaimModel } from './InputClaimModel';
 
 /**
@@ -28,7 +27,7 @@ export class VerifiablePresentationAttestationModel extends BaseAttestationModel
     public issuers?: TrustedIssuerModel[], 
     public endorsers?: TrustedIssuerModel[], 
     public contracts?: string[],
-    mapping?: TSMap<string, InputClaimModel>, 
+    mapping?: { [map: string]: InputClaimModel}, 
     encrypted: boolean = false, 
     claims?: InputClaimModel[], 
     required: boolean = false) {

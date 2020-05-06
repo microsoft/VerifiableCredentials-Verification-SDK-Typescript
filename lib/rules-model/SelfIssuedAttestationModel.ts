@@ -5,7 +5,6 @@
 
 import { InputClaimModel } from './InputClaimModel';
 import { BaseAttestationModel } from './BaseAttestationModel';
-import { TSMap } from 'typescript-map';
 
 /**
  * Model for defining Self Issued claims
@@ -18,7 +17,7 @@ export class SelfIssuedAttestationModel extends BaseAttestationModel {
    * @param claims an array of InputClaimModel values
    * @param required a flag indicating whether the attestation is required
    */
-  constructor(mapping?: TSMap<string, InputClaimModel>, encrypted: boolean = false, claims?: InputClaimModel[], required: boolean = false) {
+  constructor(mapping?: { [map: string]: InputClaimModel }, encrypted: boolean = false, claims?: InputClaimModel[], required: boolean = false) {
     super(mapping, encrypted, claims, required);
   }
 
