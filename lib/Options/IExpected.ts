@@ -29,10 +29,10 @@ export interface IExpectedBase {
  */
 export interface IExpectedSiop extends IExpectedBase {
 
-  /**
-   * The token type
+ /**
+   * Expected audience for the token type
    */
-  type: TokenType,
+  audience?: string
 }
 
 /**
@@ -43,7 +43,7 @@ export interface IExpectedVerifiablePresentation extends IExpectedBase {
   /**
    * Expected audience DID for the token type
    */
-  didAdience?: string , 
+  didAdience?: string
 }
 
 /**
@@ -51,20 +51,14 @@ export interface IExpectedVerifiablePresentation extends IExpectedBase {
  */
 export interface IExpectedVerifiableCredential extends IExpectedBase {
   /**
-   * Expected issuers for the token type (iss). 
-   * Configuration url for id tokens. The actual issuer is found in the issuer property of the configuration data.
+   * Expected issuers for the different contracts.
    */
-  issuers?: string[],
+  contractIssuers?: { [contract: string]: string[]},
 
   /**
    * Expected audience for the token type
    */
   audience?: string , 
-
-  /**
-   * Verifiable credentials will use contracts to define their type
-   */
-  contracts?: string[],
 }
 
 /**
@@ -78,46 +72,12 @@ export interface IExpectedSelfIssued extends IExpectedBase {
  */
 export interface IExpectedIdToken extends IExpectedBase {
   /**
-   * Configuration url for id tokens. The actual issuer is found in the issuer property of the configuration data.
+   * Expected issuers configuration endpoint for the different contracts.
    */
-  configuration: string[],
+  configuration: { [contract: string]: string[]},
 
   /**
    * Expected audience for the token type
    */
   audience?: string
-}
-
-export default interface IExpected {
-  /**
-   * The DID of the validator
-   */
-  did?: string,
-
-  /**
-   * The token type
-   */
-  type: TokenType,
-
-  /**
-   * Expected issuers for the token type (iss). 
-   * Configuration url for id tokens. The actual issuer is found in the issuer property of the configuration data.
-   */
-  issuers?: string[],
-
-  /**
-   * Expected audience for the token type
-   */
-  audience?: string ,
-
-  /**
-   * Expected subject for the token type
-   */
-  subject?: string ,
-
-  /**
-   * Verifiable credentials will use contracts to define their type
-   */
-  contracts?: string[],
-  
 }

@@ -5,9 +5,11 @@
 
 export { DidDocument, IDidDocument, IDidDocumentPublicKey, IDidDocumentServiceDescriptor, IDidResolver, IDidResolveResult } from '@decentralized-identity/did-common-typescript';
 
-import IExpected from './Options/IExpected';
+import {IExpectedBase, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSelfIssued, IExpectedIdToken} from './Options/IExpected';
+export { IExpectedBase, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSelfIssued, IExpectedIdToken };
+
 import CryptoOptions, { ICryptoOptions } from './Options/CryptoOptions';
-export { ICryptoOptions, CryptoOptions, IExpected };
+export { ICryptoOptions, CryptoOptions };
 
 import ManagedHttpResolver from './Resolver/ManagedHttpResolver';
 export { ManagedHttpResolver };

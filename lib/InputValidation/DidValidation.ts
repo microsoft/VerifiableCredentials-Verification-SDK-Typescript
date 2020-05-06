@@ -6,7 +6,7 @@
 import { ICryptoToken } from '@microsoft/crypto-sdk';
 import { IDidValidation, IDidValidationResponse } from './DidValidationResponse';
 import { IValidationOptions } from '../Options/IValidationOptions';
-import { IExpected, ValidationOptions } from '..';
+import { ValidationOptions, IExpectedBase } from '../index';
 
 /**
  * Class for input validation of a token signed with DID key
@@ -18,7 +18,7 @@ export class DidValidation implements IDidValidation {
  * @param options Options to steer the validation process
  * @param expectedSchema Expected schema of the verifiable credential
  */
-  constructor (private options: IValidationOptions, private expected: IExpected) {
+  constructor (private options: IValidationOptions, private expected: IExpectedBase) {
   }
 
   /**

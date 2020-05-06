@@ -5,7 +5,7 @@
 import TestSetup from './TestSetup';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import { VerifiableCredentialValidation } from '../lib/InputValidation/VerifiableCredentialValidation';
-import { IExpected, TokenType } from '../lib';
+import { TokenType, IExpectedVerifiableCredential } from '../lib';
 import { IdTokenValidation } from '../lib/InputValidation/IdTokenValidation';
 
  describe('VerifiableCredentialValidation', () => {
@@ -20,16 +20,16 @@ import { IdTokenValidation } from '../lib/InputValidation/IdTokenValidation';
 
   fit('should test validate', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential);   
-    const expected = siop.expected.filter((token: IExpected) => token.type === TokenType.verifiableCredential)[0];
+    const expected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
 
-    let validator = new VerifiableCredentialValidation(options, expected, setup.defaultUserDid);
-    let response = await validator.validate(siop.vc.rawToken);
+    let validator = new VerifiableCredentialValidation(options, expected);
+    let response = await validator.validate(siop.vc.rawToken, setup.defaultUserDid, siop.contract);
     expect(response.result).toBeTruthy();
 
     // Negative cases
 
     // Bad VC signature
-    response = await validator.validate(siop.vc.rawToken + 'a');
+    response = await validator.validate(siop.vc.rawToken + 'a', setup.defaultUserDid, siop.contract);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredential is invalid');
@@ -38,8 +38,8 @@ import { IdTokenValidation } from '../lib/InputValidation/IdTokenValidation';
     let payload: any = {
     };
     let token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
-    validator = new VerifiableCredentialValidation(options, expected, setup.defaultUserDid);
-    response = await validator.validate(token.rawToken);
+    validator = new VerifiableCredentialValidation(options, expected);
+    response = await validator.validate(token.rawToken, setup.defaultUserDid, siop.contract);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Wrong or missing iss property in verifiableCredential. Expected '["did:test:issuer"]'`);
@@ -51,7 +51,7 @@ import { IdTokenValidation } from '../lib/InputValidation/IdTokenValidation';
     };
 
     token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
-    response = await validator.validate(token.rawToken);
+    response = await validator.validate(token.rawToken, setup.defaultUserDid, siop.contract);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Wrong sub property in verifiableCredential. Expected 'did:test:user'`);

@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TokenType, IExpected, ITokenValidator, ClaimToken } from '../index';
+import { TokenType, IExpectedIdToken, ITokenValidator, ClaimToken } from '../index';
 import { IValidationResponse } from '../InputValidation/IValidationResponse';
 import ValidationOptions from '../Options/ValidationOptions';
 import IValidatorOptions from '../Options/IValidatorOptions';
@@ -21,7 +21,7 @@ export default class IdTokenTokenValidator implements ITokenValidator {
    * @param validatorOption The options used during validation
    * @param expected values to find in the token to validate
    */
-  constructor (private validatorOption: IValidatorOptions, private expected: IExpected) {
+  constructor (private validatorOption: IValidatorOptions, private expected: IExpectedIdToken) {
   }
 
 
@@ -29,10 +29,12 @@ export default class IdTokenTokenValidator implements ITokenValidator {
    * Validate the token
    * @param queue with tokens to validate
    * @param queueItem under validation
+   * @param siopDid Some validators wil check if the siop DID corresponds with their audience
+   * @param siopContract Conract type asked during siop
    */
-  public async validate(_queue: ValidationQueue, queueItem:ValidationQueueItem): Promise<IValidationResponse> { 
+  public async validate(_queue: ValidationQueue, queueItem:ValidationQueueItem, _siopDid: string, siopContract: string): Promise<IValidationResponse> { 
     const options = new ValidationOptions(this.validatorOption, TokenType.idToken);
-    const validator = new IdTokenValidation(options, this.expected);
+    const validator = new IdTokenValidation(options, this.expected, siopContract);
     const validationResult = await validator.validate(queueItem.tokenToValidate);
     return validationResult as IValidationResponse;    
   }

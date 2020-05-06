@@ -6,7 +6,7 @@ import TestSetup from './TestSetup';
 import { VerifiablePresentationValidation } from '../lib/InputValidation/VerifiablePresentationValidation';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
-import { IExpected } from '../lib';
+import { IExpectedVerifiablePresentation } from '../lib';
 
 describe('VerifiablePresentationValidation', () => {
   let setup: TestSetup;
@@ -23,7 +23,7 @@ describe('VerifiablePresentationValidation', () => {
 
   it('should test validate', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentation);
-    const expected = siop.expected.filter((token: IExpected) => token.type === TokenType.verifiablePresentation)[0];
+    const expected = siop.expected.filter((token: IExpectedVerifiablePresentation) => token.type === TokenType.verifiablePresentation)[0];
 
     let validator = new VerifiablePresentationValidation(options, expected, setup.defaultUserDid, 'id');
     let response = await validator.validate(siop.vp.rawToken);

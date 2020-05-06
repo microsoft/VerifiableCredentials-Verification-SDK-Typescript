@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IExpected, ITokenValidator, TokenType } from '../index';
+import { IExpectedSelfIssued, ITokenValidator, TokenType } from '../index';
 import { IValidationResponse } from '../InputValidation/IValidationResponse';
 import ValidationQueue from '../InputValidation/ValidationQueue';
 import ValidationQueueItem from '../InputValidation/ValidationQueueItem';
@@ -20,7 +20,7 @@ export default class SelfIssuedTokenValidator implements ITokenValidator {
    * @param validatorOption The options used during validation
    * @param expected values to find in the token to validate
    */
-  constructor (private validatorOption: IValidatorOptions, private expected: IExpected) {
+  constructor (private validatorOption: IValidatorOptions, private expected: IExpectedSelfIssued) {
   }
 
 

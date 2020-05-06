@@ -6,8 +6,8 @@ import { VerifiablePresentationValidationResponse, IVerifiablePresentationValida
 import { IValidationOptions } from '../Options/IValidationOptions';
 import ClaimToken from '../VerifiableCredential/ClaimToken';
 import { DidValidation } from './DidValidation';
-import { IExpected } from '../index';
 import VerifiableCredentialConstants from '../VerifiableCredential/VerifiableCredentialConstants';
+import { IExpectedVerifiablePresentation } from '../index';
 
 /**
  * Class for verifiable presentation validation
@@ -20,7 +20,7 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
    * @param expected Expected properties of the verifiable presentation
    * @param siopDid needs to be equal to audience of VC
    */
-  constructor (private options: IValidationOptions, private expected: IExpected, private siopDid: string, private id: string) {
+  constructor (private options: IValidationOptions, private expected: IExpectedVerifiablePresentation, private siopDid: string, private id: string) {
   }
  
   /**
@@ -44,7 +44,7 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
     }
 
    // Check token scope (aud and iss)
-   validationResponse = await this.options.checkScopeValidityOnVpTokenDelegate(validationResponse, this.expected);
+   validationResponse = await this.options.checkScopeValidityOnVpTokenDelegate(validationResponse, this.expected, this.siopDid);
    if (!validationResponse.result) {
      return validationResponse;
    }

@@ -3,11 +3,10 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import VerifiableCredentialConstants from '../VerifiableCredential/VerifiableCredentialConstants';
 import { ISiopValidation, ISiopValidationResponse } from './SiopValidationResponse';
 import { DidValidation } from './DidValidation';
 import { IValidationOptions } from '../Options/IValidationOptions';
-import { IExpected } from '..';
+import { IExpectedSiop } from '../index';
 
 /**
  * Class for siop validation
@@ -19,7 +18,7 @@ export class SiopValidation implements ISiopValidation {
    * @param options Options to steer the validation process
    * @param expected Expected properties of the SIOP
    */
-  constructor(private options: IValidationOptions, private expected: IExpected) {
+  constructor(private options: IValidationOptions, private expected: IExpectedSiop) {
   }
 
   /**
@@ -41,19 +40,9 @@ export class SiopValidation implements ISiopValidation {
     }
 
     // Check token scope (aud and iss)
-    validationResponse = await this.options.checkScopeValidityOnTokenDelegate(validationResponse, this.expected);
+    validationResponse = await this.options.checkScopeValidityOnSiopTokenDelegate(validationResponse, this.expected);
     if (!validationResponse.result) {
       return validationResponse;
-    }
-
-    // check sub
-    if (validationResponse.payloadObject.sub && validationResponse.payloadObject.sub !== validationResponse.did) {
-      return {
-        result: false,
-        detailedError: `The sub property in the siop must be equal to ${validationResponse.did}`,
-        status: 403
-      };
-
     }
 
     // Get input for the requested VC

@@ -8,7 +8,7 @@ import { SiopValidation } from "../lib/InputValidation/SiopValidation";
 import TestSetup from './TestSetup';
 import ValidationOptions from '../lib/Options/ValidationOptions';
 import { IssuanceHelpers } from "./IssuanceHelpers";
-import { IExpected, TokenType } from "../lib/index";
+import { IExpectedSiop, TokenType } from "../lib/index";
 
 describe('SiopValidation', () =>
 {
@@ -23,7 +23,7 @@ describe('SiopValidation', () =>
   
   it('should test validate', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.siop);   
-    const expected: IExpected = siop.expected.filter((token: IExpected) => token.type === TokenType.siop)[0];
+    const expected: IExpectedSiop = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siop)[0];
 
     let validationResponse: ISiopValidationResponse = {
       status: 200,

@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ClaimToken, IExpected, IDidResolver, CryptoOptions, ITokenValidator } from '../index';
+import { ClaimToken } from '../index';
 import { IValidationResponse } from './IValidationResponse';
 
 export enum ValidationStatus {

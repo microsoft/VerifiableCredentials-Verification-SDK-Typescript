@@ -16,8 +16,9 @@ export interface IVerifiableCredentialValidation {
   /**
    * Validate the verifiable credential
    * @param verifiableCredential The credential to validate as a signed token
-   * @param siopDid The did which presented the siop
+   * @param siopDid needs to be equal to audience of VC
+   * @param siopContract Conract type asked during siop
    * @returns true if validation passes
    */
-  validate(verifiableCredential: string, siopDid: string): Promise<IValidationResponse>;
+  validate(verifiableCredential: string, siopDid: string, siopContract: string): Promise<IValidationResponse>;
 }

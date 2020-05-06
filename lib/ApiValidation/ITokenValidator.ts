@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TokenType, IExpected, ClaimToken } from '../index';
+import { TokenType } from '../index';
 import { IValidationResponse } from '../InputValidation/IValidationResponse';
 import ValidationQueue from '../InputValidation/ValidationQueue';
 import ValidationQueueItem from '../InputValidation/ValidationQueueItem';
@@ -21,8 +21,7 @@ export default interface ITokenValidator {
    * Validate the token
    * @param queue with tokens to validate
    * @param queueItem under validation
-   * @param siopDid Some validators wil check if the siop DID corresponds with their audience
    */
-  validate(queue: ValidationQueue, queueItem: ValidationQueueItem, siopDid?: string): Promise<IValidationResponse>;
+  validate(queue: ValidationQueue, queueItem: ValidationQueueItem, siopDid?: string, siopContract?: string): Promise<IValidationResponse>;
 }
 

@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { IExpected } from '..';
+import { IExpectedIdToken } from '../index';
 import { IValidationOptions } from '../Options/IValidationOptions';
 import ClaimToken, { TokenType } from '../VerifiableCredential/ClaimToken';
 import { IdTokenValidationResponse, IIdTokenValidation } from './IdTokenValidationResponse';
@@ -15,14 +15,15 @@ export class IdTokenValidation implements IIdTokenValidation {
    * Create a new instance of @see <IdTokenValidation>
    * @param options Options to steer the validation process
    * @param expected Expected properties of the id token
+   * @param siopContract Conract type asked during siop
    */
-  constructor(private options: IValidationOptions, private expected: IExpected) {
+  constructor(private options: IValidationOptions, private expected: IExpectedIdToken, private siopContract: string) {
   }
 
   /**
    * Validate the id token
    * @param idToken The presentation to validate as a signed token
-   * @returns result is true if validation passes
+   * @param siopDid needs to be equal to audience of VC
    */
   public async validate(idToken: string): Promise<IdTokenValidationResponse> {
     let validationResponse: IdTokenValidationResponse = {
@@ -38,18 +39,19 @@ export class IdTokenValidation implements IIdTokenValidation {
     }
 
     // Validate token signature
-    if (!this.expected.issuers) {
+    if (!this.expected.configuration || !this.expected.configuration[this.siopContract]) {
       return {
         result: false,
         status: 500,
-        detailedError: `Expected should have configuration issuers set`
+        detailedError: `Expected should have configuration issuers set for '${this.siopContract}'`
       };
     }
 
-    let idTokenValidated = false
-    for (let inx = 0; inx < this.expected.issuers.length; inx++) {
-      console.log(`Checking id token for configuration ${this.expected.issuers[inx]}`);
-      validationResponse = await this.options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, new ClaimToken(TokenType.idToken, idToken, this.expected.issuers[inx]));
+    const issuers = this.expected.configuration[this.siopContract];
+    let idTokenValidated = false;
+    for (let inx = 0; inx < issuers.length; inx++) {
+      console.log(`Checking id token for configuration ${issuers[inx]}`);
+      validationResponse = await this.options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, new ClaimToken(TokenType.idToken, idToken, issuers[inx]));
       if (validationResponse.result) {
         idTokenValidated = true;
         break;
@@ -66,7 +68,7 @@ export class IdTokenValidation implements IIdTokenValidation {
     }
 
     // Check token scope (aud and iss)
-    validationResponse = await this.options.checkScopeValidityOnIdTokenDelegate(validationResponse, this.expected);
+    validationResponse = await this.options.checkScopeValidityOnIdTokenDelegate(validationResponse, this.expected, this.siopContract);
     if (!validationResponse.result) {
       return validationResponse;
     }

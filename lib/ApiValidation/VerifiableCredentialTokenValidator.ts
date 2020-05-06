@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { TSMap } from "typescript-map";
-import { IExpected, ITokenValidator, TokenType } from '../index';
+import { IExpectedVerifiableCredential, ITokenValidator, TokenType } from '../index';
 import { IValidationResponse } from '../InputValidation/IValidationResponse';
 import ValidationQueue from '../InputValidation/ValidationQueue';
 import ValidationQueueItem from '../InputValidation/ValidationQueueItem';
@@ -22,7 +22,7 @@ export default class VerifiableCredentialTokenValidator implements ITokenValidat
    * @param validatorOption The options used during validation
    * @param expectedMap values to find in the token to validate
    */
-  constructor(private validatorOption: IValidatorOptions, private expectedMap: { [expected: string]: IExpected }) {
+  constructor(private validatorOption: IValidatorOptions, private expectedMap: { [expected: string]: IExpectedVerifiableCredential }) {
   }
 
 
@@ -31,8 +31,9 @@ export default class VerifiableCredentialTokenValidator implements ITokenValidat
    * @param queue with tokens to validate
    * @param queueItem under validation
    * @param siopDid needs to be equal to audience of VC
+   * @param siopContract Conract type asked during siop
    */
-  public async validate(_queue: ValidationQueue, queueItem: ValidationQueueItem, siopDid: string): Promise<IValidationResponse> {
+  public async validate(_queue: ValidationQueue, queueItem: ValidationQueueItem, siopDid: string, siopContract: string): Promise<IValidationResponse> {
     const options = new ValidationOptions(this.validatorOption, TokenType.verifiableCredential);
 
     // find the correct IExpected instance, if not mapped, it's a bad request
@@ -47,8 +48,8 @@ export default class VerifiableCredentialTokenValidator implements ITokenValidat
     }
 
     const expected = this.expectedMap[queueItem.id];
-    const validator = new VerifiableCredentialValidation(options, expected, siopDid);
-    const validationResult = await validator.validate(queueItem.tokenToValidate);
+    const validator = new VerifiableCredentialValidation(options, expected);
+    const validationResult = await validator.validate(queueItem.tokenToValidate, siopDid, siopContract);
     return validationResult as IValidationResponse;
   }
 

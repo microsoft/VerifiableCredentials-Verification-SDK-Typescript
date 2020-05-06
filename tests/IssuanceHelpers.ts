@@ -8,7 +8,7 @@ import { DidDocument } from '@decentralized-identity/did-common-typescript';
 import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
 import base64url from "base64url";
 import ValidationOptions from '../lib/Options/ValidationOptions';
-import { IExpected } from '../lib/index';
+import { IExpectedBase, IExpectedSelfIssued, IExpectedIdToken, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential } from '../lib/index';
 import VerifiableCredentialConstants from '../lib/VerifiableCredential/VerifiableCredentialConstants';
 
 export class IssuanceHelpers {
@@ -240,12 +240,17 @@ export class IssuanceHelpers {
       '', 
       attestations
      );
-     const expected: IExpected[] = [
-      { type: TokenType.selfIssued },
-      { type: TokenType.idToken, issuers: [setup.defaultIdTokenConfiguration], audience: setup.AUDIENCE },
-      { type: TokenType.siop, issuers: ['https://self-issued.me'], audience: setup.AUDIENCE },
-      { type: TokenType.verifiablePresentation, did: setup.defaultIssuerDid, issuers: [setup.defaultUserDid] , audience: setup.AUDIENCE },
-      { type: TokenType.verifiableCredential, issuers: [setup.defaultIssuerDid], subject: setup.defaultUserDid, contracts: [contract] }
+
+     const vcContractIssuers:{ [contract: string]: string[]}  = {};
+     vcContractIssuers[contract] = [setup.defaultIssuerDid];
+     const idTokenConfiguration:{ [contract: string]: string[]}  = {};
+     idTokenConfiguration[contract] = [setup.defaultIdTokenConfiguration];
+     const expected: IExpectedBase[] = [
+      <IExpectedSelfIssued>{ type: TokenType.selfIssued },
+      <IExpectedIdToken>{ type: TokenType.idToken, configuration: idTokenConfiguration, audience: setup.AUDIENCE },
+      <IExpectedSiop>{ type: TokenType.siop, audience: setup.AUDIENCE },
+      <IExpectedVerifiablePresentation>{ type: TokenType.verifiablePresentation, audienceDid: setup.defaultIssuerDid },
+      <IExpectedVerifiableCredential>{ type: TokenType.verifiableCredential, contractIssuers: vcContractIssuers }
     ];
 
      const siopRequest = {

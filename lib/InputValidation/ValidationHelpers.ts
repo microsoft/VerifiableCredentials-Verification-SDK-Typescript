@@ -5,7 +5,6 @@
 import { IDidResolveResult } from '@decentralized-identity/did-common-typescript';
 import { ICryptoToken, JoseConstants, ProtectionFormat } from '@microsoft/crypto-sdk';
 import base64url from "base64url";
-import { IExpected } from '../index';
 import { IValidationOptions } from '../Options/IValidationOptions';
 import IValidatorOptions from '../Options/IValidatorOptions';
 import ValidationOptions from '../Options/ValidationOptions';
@@ -13,6 +12,8 @@ import ClaimToken, { TokenType } from '../VerifiableCredential/ClaimToken';
 import VerifiableCredentialConstants from '../VerifiableCredential/VerifiableCredentialConstants';
 import { IdTokenValidationResponse } from './IdTokenValidationResponse';
 import { IValidationResponse } from './IValidationResponse';
+import { IExpectedIdToken, IExpectedVerifiablePresentation, IExpectedVerifiableCredential } from '..';
+import { IExpectedBase, IExpectedSiop } from '../Options/IExpected';
 
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
@@ -220,40 +221,55 @@ export class ValidationHelpers {
     * Check the scope validity of the token such as iss and aud
     * @param validationResponse The response for the requestor
     * @param expected Expected output of the verifiable credential
+   * @param siopContract Conract type asked during siop
     * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
     */
-  public checkScopeValidityOnIdToken(validationResponse: IValidationResponse, expected: IExpected): IValidationResponse {
+  public checkScopeValidityOnIdToken(validationResponse: IValidationResponse, expected: IExpectedIdToken, siopContract: string): IValidationResponse {
     const self: any = this;
 
     // check iss value
-    if ((validationResponse as IdTokenValidationResponse).issuer) {
-      // For id tokens we need to check whether the issuer in configuration matches the iss in the payload
-      // The issuer property is set during the fetching of the configuration on it is already checked that this configuration matches the public key of the token signature
-      if (validationResponse.payloadObject.iss !== (validationResponse as IdTokenValidationResponse).issuer) {
-        return validationResponse = {
-          result: false,
-          detailedError: `The issuer found in the configuration of the id token ${(validationResponse as IdTokenValidationResponse).issuer} does not match the iss property ${validationResponse.payloadObject.iss}`,
-          status: 403
-        };
-      }
-    } else if (expected.issuers && !expected.issuers!.includes(validationResponse.payloadObject.iss)) {
-      return validationResponse = {
+    const issuer = (validationResponse as IdTokenValidationResponse).issuer;
+    if (!issuer) {
+      return {
         result: false,
-        detailedError: `Wrong or missing iss property in ${(self as ValidationOptions).tokenType}. Expected '${JSON.stringify(expected.issuers)}'`,
+        detailedError: `The issuer in configuration was not found`,
         status: 403
       };
     }
-    // TODO change validation check
-    return validationResponse;
 
-    // check sub value
-    if (expected.audience && validationResponse.payloadObject.sub !== expected.audience) {
-      return validationResponse = {
+    if (expected.configuration && !expected.configuration[siopContract]) {
+      return {
         result: false,
-        detailedError: `Wrong or missing sub property in ${(self as ValidationOptions).tokenType}. Expected '${expected.audience}'`,
+        detailedError: `No issuers found in expected for ${siopContract}`,
         status: 403
       };
     }
+
+    const issuers = expected.configuration[siopContract];
+    if (!issuers.includes(issuer)) {
+      return validationResponse = {
+        result: false,
+        detailedError: `The issuer ${issuer} in idToken was not expected. Expected '${JSON.stringify(expected.configuration[siopContract])}'`,
+        status: 403
+      };
+    }
+
+    if (!validationResponse.payloadObject.iss) {
+      return {
+        result: false,
+        detailedError: `Missing iss property in idToken. Expected '${JSON.stringify(expected.configuration[siopContract])}'`,
+        status: 403
+      };
+    }
+
+    if (issuer !== validationResponse.payloadObject.iss) {
+      return {
+        result: false,
+        detailedError: `The issuer in configuration '${issuer}' does not correspond with the issuer in the payload ${validationResponse.payloadObject.iss}`,
+        status: 403
+      };
+    }
+
     return validationResponse;
   }
 
@@ -261,26 +277,46 @@ export class ValidationHelpers {
     * Check the scope validity of the verifiable presentation token such as iss and aud
     * @param validationResponse The response for the requestor
     * @param expected Expected output of the verifiable credential
+    * @param siopDid The DID which has been extablished during the SIOP validation
     * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
     */
-   public checkScopeValidityOnVpToken(validationResponse: IValidationResponse, expected: IExpected): IValidationResponse {
+  public checkScopeValidityOnVpToken(validationResponse: IValidationResponse, expected: IExpectedVerifiablePresentation, siopDid: string): IValidationResponse {
     const self: any = this;
 
     // check iss value
     if (!validationResponse.payloadObject.iss) {
       return {
         result: false,
-        detailedError: `Missing iss property in verifiablePresentation. Expected '${JSON.stringify(expected.issuers)}'`,
+        detailedError: `Missing iss property in verifiablePresentation. Expected '${siopDid}'`,
         status: 403
       };
     }
 
-    if (validationResponse.payloadObject.iss !== validationResponse.did) {
+    if (validationResponse.payloadObject.iss !== siopDid) {
       return <IValidationResponse>{
         result: false,
-        detailedError: `Wrong iss property in verifiablePresentation. Expected '${validationResponse.did}'`,
+        detailedError: `Wrong iss property in verifiablePresentation. Expected '${siopDid}'`,
         status: 403
       };
+    }
+
+    // check aud value
+    if (!validationResponse.payloadObject.iss) {
+      return {
+        result: false,
+        detailedError: `Missing aud property in verifiablePresentation. Expected DID of audience`,
+        status: 403
+      };
+    }
+
+    if (expected.didAdience) {
+      if (validationResponse.payloadObject.aud !== expected.didAdience) {
+        return {
+          result: false,
+          detailedError: `Wrong aud property in verifiablePresentation. Expected '${expected.didAdience}'`,
+          status: 403
+        };
+      }
     }
 
     return validationResponse;
@@ -290,30 +326,40 @@ export class ValidationHelpers {
     * Check the scope validity of the verifiable credential token such as iss and aud
     * @param validationResponse The response for the requestor
     * @param expected Expected output of the verifiable credential
+    * @param siopDid The DID which has been extablished during the SIOP validation
     * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
     */
-   public checkScopeValidityOnVcToken(validationResponse: IValidationResponse, expected: IExpected, siopDid: string): IValidationResponse {
+  public checkScopeValidityOnVcToken(validationResponse: IValidationResponse, expected: IExpectedVerifiableCredential, siopDid: string): IValidationResponse {
     const self: any = this;
 
     // check iss value
-    if (expected.issuers && !expected.issuers!.includes(validationResponse.payloadObject.iss)) {
-      return <IValidationResponse>{
+    if (!validationResponse.payloadObject.sub) {
+      return {
         result: false,
-        detailedError: `Wrong or missing iss property in verifiableCredential. Expected '${JSON.stringify(expected.issuers)}'`,
+        detailedError: `Missing sub property in verifiableCredential. Expected '${siopDid}'`,
         status: 403
       };
     }
-    
 
     // check sub value
     if (validationResponse.payloadObject.sub !== siopDid) {
-      return <IValidationResponse>{
+      return {
         result: false,
         detailedError: `Wrong sub property in verifiableCredential. Expected '${siopDid}'`,
         status: 403
       };
     }
 
+    if (expected.audience) {
+      if (validationResponse.payloadObject.aud !== expected.audience) {
+        return {
+          result: false,
+          detailedError: `Wrong aud property in verifiableCredential. Expected '${expected.audience}'`,
+          status: 403
+        };
+      }
+  
+    }
     return validationResponse;
   }
 
@@ -323,59 +369,49 @@ export class ValidationHelpers {
     * @param expected Expected output of the verifiable credential
     * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
     */
-   public checkScopeValidityOnToken(validationResponse: IValidationResponse, expected: IExpected): IValidationResponse {
+  public checkScopeValidityOnSiopToken(validationResponse: IValidationResponse, expected: IExpectedSiop): IValidationResponse {
     const self: any = this;
+
+    // check sub
+    if (validationResponse.payloadObject.sub && validationResponse.payloadObject.sub !== validationResponse.did) {
+      return {
+        result: false,
+        detailedError: `The sub property in the siop must be equal to ${validationResponse.did}`,
+        status: 403
+      };
+    }
 
     // check iss value
     if (!validationResponse.payloadObject.iss) {
       return validationResponse = {
         result: false,
-        detailedError: `Missing iss property in ${(self as ValidationOptions).tokenType}. Expected '${JSON.stringify(expected.issuers)}'`,
+        detailedError: `Missing iss property in siop. Expected '${validationResponse.did}'`,
         status: 403
       };
     }
 
-    if (expected.issuers && !expected.issuers!.includes(validationResponse.payloadObject.iss)) {
+    if (validationResponse.payloadObject.iss !== validationResponse.did) {
       return validationResponse = {
         result: false,
-        detailedError: `Wrong iss property in ${(self as ValidationOptions).tokenType}. Expected '${JSON.stringify(expected.issuers)}'`,
+        detailedError: `Missing iss property in siop. Expected '${validationResponse.did}'`,
         status: 403
       };
     }
 
     // check aud value
-    if (expected.audience) {
-      if (!validationResponse.payloadObject.aud) {
-        return validationResponse = {
-          result: false,
-          detailedError: `Missing aud property in ${(self as ValidationOptions).tokenType}. Expected '${expected.audience}'`,
-          status: 403
-        };
-      }
+    if (!validationResponse.payloadObject.aud) {
+      return validationResponse = {
+        result: false,
+        detailedError: `Missing aud property in siop`,
+        status: 403
+      };
+    }
 
+    if (expected.audience) {
       if (validationResponse.payloadObject.aud !== expected.audience) {
         return validationResponse = {
           result: false,
-          detailedError: `Wrong aud property in ${(self as ValidationOptions).tokenType}. Expected '${expected.audience}'`,
-          status: 403
-        };
-      }
-    }
-
-    // check sub value
-    if (expected.subject) {
-      if (!validationResponse.payloadObject.sub) {
-        return validationResponse = {
-          result: false,
-          detailedError: `Missing sub property in ${(self as ValidationOptions).tokenType}. Expected '${expected.subject}'`,
-          status: 403
-        };
-      }
-
-      if (validationResponse.payloadObject.sub !== expected.subject) {
-        return validationResponse = {
-          result: false,
-          detailedError: `Wrong sub property in ${(self as ValidationOptions).tokenType}. Expected '${expected.subject}'`,
+          detailedError: `wRONG AUD property in siop. Expected '${expected.audience}'`,
           status: 403
         };
       }

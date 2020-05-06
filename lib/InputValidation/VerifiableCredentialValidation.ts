@@ -5,8 +5,7 @@
 import { IValidationOptions } from '../Options/IValidationOptions';
 import { IVerifiableCredentialValidation, VerifiableCredentialValidationResponse } from './VerifiableCredentialValidationResponse';
 import { DidValidation } from './DidValidation';
-import VerifiableCredentialConstants from '../VerifiableCredential/VerifiableCredentialConstants';
-import { IExpected } from '../index';
+import { IExpectedVerifiableCredential } from '../index';
 
 /**
  * Class for verifiable credential validation
@@ -17,17 +16,18 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
    * Create a new instance of @see <VerifiableCredentialValidation>
    * @param options Options to steer the validation process
    * @param expected Expected properties of the verifiable credential
-   * @param siopDid needs to be equal to audience of VC
    */
-  constructor(private options: IValidationOptions, private expected: IExpected, private siopDid: string) {
+  constructor(private options: IValidationOptions, private expected: IExpectedVerifiableCredential) {
   }
 
   /**
    * Validate the verifiable credential
    * @param verifiableCredential The credential to validate as a signed token
+   * @param siopDid needs to be equal to audience of VC
+   * @param siopContract Conract type asked during siop
    * @returns result is true if validation passes
    */
-  public async validate(verifiableCredential: string): Promise<VerifiableCredentialValidationResponse> {
+  public async validate(verifiableCredential: string, siopDid: string, siopContract: string): Promise<VerifiableCredentialValidationResponse> {
     let validationResponse: VerifiableCredentialValidationResponse = {
       result: true,
       status: 200
@@ -44,30 +44,29 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
     validationResponse.did = validationResponse.payloadObject.iss;
 
     // Check token scope (aud and iss)
-    validationResponse = await this.options.checkScopeValidityOnVcTokenDelegate(validationResponse, this.expected, this.siopDid);
+    validationResponse = await this.options.checkScopeValidityOnVcTokenDelegate(validationResponse, this.expected, siopDid, siopContract);
     if (!validationResponse.result) {
       return validationResponse;
     }
 
-    // Check if the VC matches the contract
+    // Check if the VC matches the contract and its issuers
     // Get the contract from the VC
-    if (this.expected.contracts && this.expected.contracts.length > 0) {
-      const context: string[] = validationResponse.payloadObject.vc[VerifiableCredentialConstants.CLAIM_CONTEXT];
-      let contractFound = false;
-      let contract: string = '';
-      for (let inx = 0; inx < context.length; inx++) {
-        if (this.expected.contracts.includes(context[inx])) {
-          contractFound = true;
-          contract = context[inx];
-          break;
-        }
+    if (this.expected.contractIssuers) {
+      const contractIssuers = this.expected.contractIssuers[siopContract];
+      
+      // Check if the we found a matching contract.
+      if (!contractIssuers) {
+        return {
+          result: false,
+          detailedError: `The verifiable credential with contract '${siopContract}' is not expected in '${JSON.stringify(this.expected.contractIssuers)}'`,
+          status: 403
+        };
       }
 
-      // Check if the we found a matching contract.
-      if (!contractFound) {
-        return validationResponse = {
+      if (!contractIssuers.includes(validationResponse.payloadObject.iss)) {
+        return {
           result: false,
-          detailedError: `The verifiable credential with contract '${JSON.stringify(context)}' is not expected in '${JSON.stringify(this.expected.contracts)}'`,
+          detailedError: `The verifiable credential with contract '${siopContract}' is not from a trusted issuer '${JSON.stringify(this.expected.contractIssuers)}'`,
           status: 403
         };
       }
