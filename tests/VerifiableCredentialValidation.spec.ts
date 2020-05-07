@@ -18,7 +18,7 @@ import { IdTokenValidation } from '../lib/InputValidation/IdTokenValidation';
     setup.fetchMock.reset();
   });
 
-  fit('should test validate', async () => {
+  it('should test validate', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential);   
     const expected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
 
