@@ -35,177 +35,180 @@
       console.log(`validation error: ${validation.detailedError`});
     }
 
-# Sample create OIDC Request with crypto on the server
-// common method to get an attestations object
-const getAttestations = () => {
-  const attestations: IssuanceAttestationsModel = new IssuanceAttestationsModel(
-    new SelfIssuedAttestationModel(
-      {
-        alias: new InputClaimModel('name', 'string', false, true)
-      },
-      false,
-      undefined,
-      true
-    ),
-    [
-      new VerifiablePresentationAttestationModel(
-        'CredentialType',
-        [
-          new TrustedIssuerModel('trusted issuer 1'),
-          new TrustedIssuerModel('trusted issuer 2')
-        ],
-        [
-          new TrustedIssuerModel('endorser')
-        ],
-        [
-          'contract'
-        ],
+# Sample data for OIDC Request
+
+    // common method to get an attestations object
+    const getAttestations = () => {
+      const attestations: IssuanceAttestationsModel = new IssuanceAttestationsModel(
+      new SelfIssuedAttestationModel(
         {
-          givenName: new InputClaimModel('vc.credentialSubject.givenName'),
-          familyName: new InputClaimModel('vc.credentialSubject.familyName', 'string', true)
+          alias: new InputClaimModel('name', 'string', false, true)
         },
+        false,
+        undefined,
+        true
       ),
-    ],
-    [
-      new IdTokenAttestationModel(
-        'oidc config endpoint',
-        'clientId',
-        'redirect',
+      [
+        new VerifiablePresentationAttestationModel(
+          'CredentialType',
+          [
+            new TrustedIssuerModel('trusted issuer 1'),
+            new TrustedIssuerModel('trusted issuer 2')
+          ],
+          [
+            new TrustedIssuerModel('endorser')
+          ],
+          [
+            'contract'
+          ],
+          {
+            givenName: new InputClaimModel('vc.credentialSubject.givenName'),
+            familyName: new InputClaimModel('vc.credentialSubject.familyName', 'string', true)
+          },
+        ),
+      ],
+      [
+        new IdTokenAttestationModel(
+          'oidc config endpoint',
+          'clientId',
+          'redirect',
+          {
+            email: new InputClaimModel('upn', 'string', false, true),
+            name: new InputClaimModel('name')
+          }
+        )
+      ]);
+    return attestations;  
+    }
+
+# Sample create OIDC Request with crypto on the server
+
+    // Return crypto object for crypto on server operations
+    const getCryptoOnServer = async (did: string, keyReference: string) => {
+      const cryptoBuilder = new CryptoBuilder(did);
+      const crypto = cryptoBuilder.build();
+
+      // See https://github.com/diafygi/webcrypto-examples for examples how to use the W3C web Crypto stamdard
+      // Generate a key
+      const key = await crypto.builder.subtle.generateKey(
         {
-          email: new InputClaimModel('upn', 'string', false, true),
-          name: new InputClaimModel('name')
-        }
-      )
-    ]);
-  return attestations;
-}
+          name: 'ECDSA',
+          namedCurve: 'secp256k1',
+        },
+        true, //whether the key is extractable (i.e. can be used in exportKey)
+        ['sign', 'verify'] //can be any combination of 'sign' and 'verify'
+      );
+      const jwk: any = await crypto.builder.subtle.exportKey(
+        "jwk",
+        key //can be a publicKey or privateKey, as long as extractable was true
+      );
 
-// Return crypto object for crypto on server operations
-const getCryptoOnServer = async (did: string, keyReference: string) => {
-  const cryptoBuilder = new CryptoBuilder(did);
-  const crypto = cryptoBuilder.build();
+      // Store key
+      await crypto.builder.keyStore.save(keyReference, jwk);
+      return crypto;
+    };
 
-  // See https://github.com/diafygi/webcrypto-examples for examples how to use the W3C web Crypto stamdard
-  // Generate a key
-  const key = await crypto.builder.subtle.generateKey(
-    {
-      name: 'ECDSA',
-      namedCurve: 'secp256k1',
-    },
-    true, //whether the key is extractable (i.e. can be used in exportKey)
-    ['sign', 'verify'] //can be any combination of 'sign' and 'verify'
-  );
-  const jwk: any = await crypto.builder.subtle.exportKey(
-    "jwk",
-    key //can be a publicKey or privateKey, as long as extractable was true
-  );
+    // Create crypto running on server
+    const did = 'the relying party DID';
+    const keyReference = 'myKey';
 
-  // Store key
-  await crypto.builder.keyStore.save(keyReference, jwk);
-  return crypto;
-};
+    // Generate key and get crypto object
+    const crypto: Crypto = await getCryptoOnServer(did, keyReference);
 
-  // Create crypto running on server
-  const did = 'the relying party DID';
-  const keyReference = 'myKey';
+    // Get the required attestations. Tell the App which claims to expect
+    const attestations = getAttestations();
 
-  // Generate key and get crypto object
-  const crypto: Crypto = await getCryptoOnServer(did, keyReference);
-
-  // Get the required attestations. Tell the App which claims to expect
-  const attestations = getAttestations();
-
-  // OIDC request
-  const state = 'state to pass to App';
-  const nonce = 'nonce to pass to App'
-  const requestorBuilder = new RequestorBuilder(
-    crypto,
-    'Contoso - My Relying Party name',
-    ['Accessing Contoso'],
-    'https://www.contoso.com/',
-    'https://www.contoso.com/login',
-    'did:test:12345678',
-    ['https://www.contoso.com/tos'],
-    ['https://www.contoso.com/contoso.ico'],
-    attestations
-  )
+    // OIDC request
+    const state = 'state to pass to App';
+    const nonce = 'nonce to pass to App'
+    const requestorBuilder = new RequestorBuilder(
+      crypto,
+      'Contoso - My Relying Party name',
+      ['Accessing Contoso'],
+      'https://www.contoso.com/',
+      'https://www.contoso.com/login',
+      'did:test:12345678',
+      ['https://www.contoso.com/tos'],
+      ['https://www.contoso.com/contoso.ico'],
+      attestations
+    )
     // Add state which will be returned by the App
     .useState(state)
     // Add nonce to avoid replay attack
     .useNonce(nonce);
 
-  // Build the requestor
-  const requestor = requestorBuilder.build();
-  const request = requestor.create(keyReference)
-  const serializedRequest = JSON.stringify(request);
-  console.log(serializedRequest);
+    // Build the requestor
+    const requestor = requestorBuilder.build();
+    const request = requestor.create(keyReference)
+    const serializedRequest = JSON.stringify(request);
+    console.log(serializedRequest);
 
 # Sample create OIDC Request with crypto on Key Vault
-// Return crypto object for crypto on key vault
-const getCryptoOnKeyVault = async (did: string, keyReference: string) => {
-  const cryptoBuilder = new CryptoBuilder(did)
-    .useKeyVault(
-      'tenantGuid',
-      'kvClientId',
-      'kvClientSecret',
-      'keyVaultUri');
+  // Return crypto object for crypto on key vault
+  const getCryptoOnKeyVault = async (did: string, keyReference: string) => {
+    const cryptoBuilder = new CryptoBuilder(did)
+      .useKeyVault(
+        'tenantGuid',
+        'kvClientId',
+        'kvClientSecret',
+        'keyVaultUri');
 
-  const crypto = cryptoBuilder.build();
+    const crypto = cryptoBuilder.build();
 
-  // See https://github.com/diafygi/webcrypto-examples for examples how to use the W3C web Crypto stamdard
-  // Generate a key
-  const key = await crypto.builder.subtle.generateKey(
-    {
-      name: 'ECDSA',
-      namedCurve: 'secp256k1',
-    },
-    true, //whether the key is extractable (i.e. can be used in exportKey)
-    ['sign', 'verify'] //can be any combination of 'sign' and 'verify'
-  );
-  const jwk: any = await crypto.builder.subtle.exportKey(
-    "jwk",
-    key //can be a publicKey or privateKey, as long as extractable was true
-  );
+    // See https://github.com/diafygi/webcrypto-examples for examples how to use the W3C web Crypto stamdard
+    // Generate a key
+    const key = await crypto.builder.subtle.generateKey(
+      {
+        name: 'ECDSA',
+        namedCurve: 'secp256k1',
+      },
+      true, //whether the key is extractable (i.e. can be used in exportKey)
+      ['sign', 'verify'] //can be any combination of 'sign' and 'verify'
+    );
+    const jwk: any = await crypto.builder.subtle.exportKey(
+      "jwk",
+      key //can be a publicKey or privateKey, as long as extractable was true
+    );
 
-  // Store key
-  await crypto.builder.keyStore.save(keyReference, jwk);
-  return crypto;
-};
+    // Store key
+    await crypto.builder.keyStore.save(keyReference, jwk);
+    return crypto;
+  };
 
-  // Create crypto running in Key Vault
-  const did = 'the relying party DID';
+    // Create crypto running in Key Vault
+    const did = 'the relying party DID';
 
-  // Generate key and get crypto object
-  const keyReference = 'myKey';
-  const crypto: Crypto = await getCryptoOnKeyVault(did, keyReference);
+    // Generate key and get crypto object
+    const keyReference = 'myKey';
+    const crypto: Crypto = await getCryptoOnKeyVault(did, keyReference);
 
-  // Get the required attestations. Tell the App which claims to expect
-  const attestations = getAttestations();
+    // Get the required attestations. Tell the App which claims to expect
+    const attestations = getAttestations();
 
-  // OIDC request
-  const state = 'state to pass to App';
-  const nonce = 'nonce to pass to App'
-  const requestorBuilder = new RequestorBuilder(
-    crypto,
-    'Contoso - My Relying Party name',
-    ['Accessing Contoso'],
-    'https://www.contoso.com/',
-    'https://www.contoso.com/login',
-    'did:test:12345678',
-    ['https://www.contoso.com/tos'],
-    ['https://www.contoso.com/contoso.ico'],
-    attestations
-  )
+    // OIDC request
+    const state = 'state to pass to App';
+    const nonce = 'nonce to pass to App'
+    const requestorBuilder = new RequestorBuilder(
+      crypto,
+      'Contoso - My Relying Party name',
+      ['Accessing Contoso'],
+      'https://www.contoso.com/',
+      'https://www.contoso.com/login',
+      'did:test:12345678',
+      ['https://www.contoso.com/tos'],
+      ['https://www.contoso.com/contoso.ico'],
+      attestations
+    )
     // Add state which will be returned by the App
     .useState(state)
     // Add nonce to avoid replay attack
     .useNonce(nonce);
 
-  // Build the requestor
-  const requestor = requestorBuilder.build();
-  const request = requestor.create(keyReference)
-  const serializedRequest = JSON.stringify(request);
-  console.log(serializedRequest);
+    // Build the requestor
+    const requestor = requestorBuilder.build();
+    const request = requestor.create(keyReference)
+    const serializedRequest = JSON.stringify(request);
+    console.log(serializedRequest);
 
 
 # Contributing
