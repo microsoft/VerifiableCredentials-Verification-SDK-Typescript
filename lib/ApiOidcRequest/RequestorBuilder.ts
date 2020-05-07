@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Requestor, IssuanceAttestationsModel } from '../index';
+import { Requestor, IssuanceAttestationsModel, Crypto } from '../index';
 
 /**
  * Class to build an OIDC requestor
@@ -13,7 +13,19 @@ export default class RequestorBuilder {
   private _state: string | undefined;
   private _nonce: string | undefined;
 
+  /**
+   * Create a new instance of RequestorBuilder
+   * @param _clientName the name of the requestor (Relying Party)
+   * @param _clientPurpose the name of the requestor (Relying Party)
+   * @param _clientId the url where the request came from
+   * @param _redirectUri url to send response to
+   * @param _issuer DID of the requestor (Relying Party)
+   * @param _tosUri url pointing to terms and service user can open in a webview
+   * @param _logoUri url pointing to logo of the requestor (Relying Party)
+   * @param _attestation claims being asked for
+   */
   constructor(
+    private _crypto: Crypto,
     private _clientName: string,
     private _clientPurpose: string[],
     private _clientId: string,
@@ -24,19 +36,48 @@ export default class RequestorBuilder {
     private _attestation: IssuanceAttestationsModel
     ) {
   }
+//#region constructor properties
 
   /**
-   * Get the client name for the request
+   * Gets the crypto object
+   */
+  public get crypto() {
+    return this._crypto;
+  }
+
+  /**
+   * Get the name of the requestor (Relying Party)
    */
   public get clientName() {
     return this._clientName;
   }
 
   /**
-   * Get the client purpose for the request
+   * Get the requestor's purpose for the request
    */
   public get clientPurpose() {
     return this._clientPurpose;
+  }
+
+  /**
+   * Get the url where the request came from
+   */
+  public get clientId() {
+    return this._clientId;
+  }
+
+  /**
+   * Get the url to send response to
+   */
+  public get redirectUri() {
+    return this._redirectUri;
+  }
+
+  /**
+   * Get the DID of the requestor (Relying Party)t
+   */
+  public get issuer() {
+    return this._issuer;
   }
 
   /**
@@ -47,25 +88,19 @@ export default class RequestorBuilder {
   }
 
   /**
-   * Gets the claims being asked for
-   */
-  public get attestation() {
-    return this._attestation;
-  }
-
-  /**
-   * Gets the url pointing to logo of relying party
+   * Gets the url pointing to logo of the requestor (Relying Party)
    */
   public get logoUri() {
     return this._logoUri;
   }
 
   /**
-   * Get the client id for the request
+   * Gets the claims being asked for
    */
-  public get clientId() {
-    return this._clientId;
+  public get attestation() {
+    return this._attestation;
   }
+  //#endregion
   
  /**
    * Sets the vp expiry
@@ -82,20 +117,6 @@ export default class RequestorBuilder {
    */
   public get verifiablePresentationExpiry(): number | undefined {
     return this.vpExpirty;
-  }
-
-  /**
-   * Get the redirect uri for the request
-   */
-  public get redirectUri() {
-    return this._redirectUri;
-  }
-
-  /**
-   * Get the issuer for the request
-   */
-  public get issuer() {
-    return this._issuer;
   }
   
  /**

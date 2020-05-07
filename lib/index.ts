@@ -52,3 +52,9 @@ import RequestorBuilder from './ApiOidcRequest/RequestorBuilder';
 import Requestor from './ApiOidcRequest/Requestor';
 import { IssuanceAttestationsModel } from './ApiOidcRequest/IssuanceAttestationsModel';
 export { IssuanceAttestationsModel, IResponse, RequestorBuilder, Requestor };
+
+import Crypto from './ApiCrypto/Crypto';
+import CryptoBuilder from './ApiCrypto/CryptoBuilder';
+import { SubtleCrypto } from '@microsoft/crypto-sdk';
+export { Crypto, CryptoBuilder, SubtleCrypto };
+
