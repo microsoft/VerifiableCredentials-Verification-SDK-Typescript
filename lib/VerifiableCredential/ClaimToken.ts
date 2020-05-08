@@ -171,7 +171,7 @@ export default class ClaimToken {
     const payload = ClaimToken.getTokenPayload(token);
 
     // Check type of token
-    if (payload.attestations && payload.contract) {
+    if (payload.iss === VerifiableCredentialConstants.TOKEN_SI_ISS) {
       return new ClaimToken(TokenType.siop, token, '');
     }
     if (payload.vc) {
