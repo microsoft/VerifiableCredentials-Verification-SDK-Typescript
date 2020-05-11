@@ -78,7 +78,7 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
       return {
         result: false,
         status: 403,
-        detailedError: `Missing or wrong default type in @context of presentation. Should be ${VerifiableCredentialConstants.DEFAULT_VERIFIABLEPRESENTATION_TYPE}`
+        detailedError: `Missing or wrong default type in vp of presentation. Should be ${VerifiableCredentialConstants.DEFAULT_VERIFIABLEPRESENTATION_TYPE}`
       };
     }
 

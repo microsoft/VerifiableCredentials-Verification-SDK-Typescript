@@ -249,7 +249,7 @@ export class IssuanceHelpers {
       <IExpectedSelfIssued>{ type: TokenType.selfIssued },
       <IExpectedIdToken>{ type: TokenType.idToken, configuration: idTokenConfiguration, audience: setup.AUDIENCE },
       <IExpectedSiop>{ type: TokenType.siop, audience: setup.AUDIENCE },
-      <IExpectedVerifiablePresentation>{ type: TokenType.verifiablePresentation, audienceDid: setup.defaultIssuerDid },
+      <IExpectedVerifiablePresentation>{ type: TokenType.verifiablePresentation, didAdience: setup.defaultIssuerDid },
       <IExpectedVerifiableCredential>{ type: TokenType.verifiableCredential, contractIssuers: vcContractIssuers }
     ];
 

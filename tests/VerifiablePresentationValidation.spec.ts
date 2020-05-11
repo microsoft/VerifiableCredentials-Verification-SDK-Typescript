@@ -34,7 +34,7 @@ describe('VerifiablePresentationValidation', () => {
     response = await validator.validate(siop.vp.rawToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual('The DID used for the SIOP abcdef is not equal to the DID used for the verifiable presentation did:test:user');
+    expect(response.detailedError).toEqual(`Wrong iss property in verifiablePresentation. Expected 'abcdef'`);
 
     // Bad VP signature
     response = await validator.validate(siop.vp.rawToken + 'a');
@@ -50,11 +50,12 @@ describe('VerifiablePresentationValidation', () => {
     response = await validator.validate(siopRequest.rawToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Missing iss property in verifiablePresentation. Expected '["did:test:user"]'`);
+    expect(response.detailedError).toEqual(`Missing iss property in verifiablePresentation. Expected 'did:test:user'`);
 
     // Bad iss
      payload = {
-      iss: 'test'
+      iss: 'test',
+      vp: {}
     };
     siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
     response = await validator.validate(siopRequest.rawToken);
@@ -62,26 +63,72 @@ describe('VerifiablePresentationValidation', () => {
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Wrong iss property in verifiablePresentation. Expected 'did:test:user'`);
 
+
     // Missing aud
     payload = {
-      iss: 'did:test:user'
+      iss: 'did:test:user',
+      vp: {
+        type: ['VerifiablePresentation'],
+        verifiableCredential: {}
+      }
     };
+    payload.vp['@context'] = [];
     siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
     response = await validator.validate(siopRequest.rawToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Missing aud property in verifiablePresentation. Expected 'did:test:issuer'`);
+    expect(response.detailedError).toEqual(`Wrong aud property in verifiablePresentation. Expected 'did:test:issuer'`);
 
     // Wrong aud
     payload = {
       iss: 'did:test:user',
-      aud: 'test'
+      aud: 'test',
+      vp: {
+        type: ['VerifiablePresentation'],
+        verifiableCredential: {}
+      }
     };
     siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
     response = await validator.validate(siopRequest.rawToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Wrong aud property in verifiablePresentation. Expected DID of audience 'did:test:issuer'`);
+    expect(response.detailedError).toEqual(`Wrong aud property in verifiablePresentation. Expected 'did:test:issuer'`);
+
+    // Missing context
+    payload = {
+      iss: 'did:test:user',
+      aud: 'did:test:issuer',
+      vp: {
+      }
+    };
+    payload.vp['@context'] = [];
+    siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
+    response = await validator.validate(siopRequest.rawToken);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`Missing or wrong default type in vp of presentation. Should be VerifiablePresentation`);
+
+    payload.vp['@context'].type = ['VerifiablePresentation'];
+    siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
+    response = await validator.validate(siopRequest.rawToken);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`Missing or wrong default type in vp of presentation. Should be VerifiablePresentation`);
+
+    // Missing vc
+    payload = {
+      iss: 'did:test:user',
+      aud: 'did:test:issuer',
+      vp: {
+        type: ['VerifiablePresentation']
+      }
+    };
+    payload.vp['@context'] = [];
+    siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
+    response = await validator.validate(siopRequest.rawToken);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`Missing verifiableCredential in presentation`);
 
     // Missing vp
     payload = {
@@ -106,35 +153,6 @@ describe('VerifiablePresentationValidation', () => {
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Missing @context in presentation`);
 
-    // Missing type in context in vp
-    payload = {
-      iss: 'did:test:user',
-      aud: 'did:test:issuer',
-      vp: {}
-    };
-    payload.vp['@context'] = [];
-
-    siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
-    response = await validator.validate(siopRequest.rawToken);
-    expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Missing or wrong default type in @context of presentation. Should be VerifiablePresentation`);
-
-    // Missing vc in context in vp
-    payload = {
-      iss: 'did:test:user',
-      aud: 'did:test:issuer',
-      vp: {
-        type: ['VerifiablePresentation']
-      }
-    };
-    payload.vp['@context'] = [];
-
-    siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
-    response = await validator.validate(siopRequest.rawToken);
-    expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Missing verifiableCredential in presentation`);
 
   });
 });
