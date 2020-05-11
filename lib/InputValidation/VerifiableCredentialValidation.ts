@@ -6,6 +6,8 @@ import { IValidationOptions } from '../Options/IValidationOptions';
 import { IVerifiableCredentialValidation, VerifiableCredentialValidationResponse } from './VerifiableCredentialValidationResponse';
 import { DidValidation } from './DidValidation';
 import { IExpectedVerifiableCredential } from '../index';
+import VerifiableCredentialConstants from '../VerifiableCredential/VerifiableCredentialConstants';
+import { isContext } from 'vm';
 
 /**
  * Class for verifiable credential validation
@@ -32,7 +34,6 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       result: true,
       status: 200
     };
-
     // Check the DID parts of the VC
     const didValidation = new DidValidation(this.options, this.expected);
     validationResponse = await didValidation.validate(verifiableCredential);
@@ -42,6 +43,44 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
 
     // Get issuer from verifiable credential payload
     validationResponse.did = validationResponse.payloadObject.iss;
+
+    if (!validationResponse.payloadObject.vc) {
+      return {
+        result: false,
+        detailedError: `The verifiable credential does not has the vc property`,
+        status: 403
+      };
+    }
+
+    const context: string[] = validationResponse.payloadObject.vc[VerifiableCredentialConstants.CLAIM_CONTEXT];
+    if (!context) {
+      return {
+        result: false,
+        detailedError: `The verifiable credential vc property does not contain ${VerifiableCredentialConstants.CLAIM_CONTEXT}`,
+        status: 403
+      };
+    }
+
+    if (context.length < 2) {
+      return {
+        result: false,
+        detailedError: `The verifiable credential context should have two elements`,
+        status: 403
+      };
+    }
+
+    if (context[0] !== VerifiableCredentialConstants.DEFAULT_VERIFIABLECREDENTIAL_CONTEXT) {
+      return {
+        result: false,
+        detailedError: `The verifiable credential context first element should be ${VerifiableCredentialConstants.DEFAULT_VERIFIABLECREDENTIAL_CONTEXT}`,
+        status: 403
+      };
+    }
+
+    // get vc contract
+    siopContract = context[1];
+
+    // get contract
 
     // Check token scope (aud and iss)
     validationResponse = await this.options.checkScopeValidityOnVcTokenDelegate(validationResponse, this.expected, siopDid, siopContract);
@@ -76,4 +115,5 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
 
     return validationResponse;
   }
+
 }

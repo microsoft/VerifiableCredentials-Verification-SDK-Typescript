@@ -99,6 +99,14 @@ export class IdTokenValidation implements IIdTokenValidation {
       }
       issuers = <string[]>expected.configuration;
     } else {
+      if (!siopContract) {
+        return {
+          result: false,
+          status: 500,
+          detailedError: `The siopContract needs to be specified to validate the idTokens.`
+        };
+      }
+
       // check for issuers for the contract
       if (!(<{ [contract: string]: string[] }>expected.configuration)[siopContract]) {
         return {

@@ -34,7 +34,7 @@ import { IdTokenValidation } from '../lib/InputValidation/IdTokenValidation';
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredential is invalid');
 
-    // Missing iss
+    // Missing vc
     let payload: any = {
     };
     let token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
@@ -42,14 +42,73 @@ import { IdTokenValidation } from '../lib/InputValidation/IdTokenValidation';
     response = await validator.validate(token.rawToken, setup.defaultUserDid, siop.contract);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Wrong or missing iss property in verifiableCredential. Expected '["did:test:issuer"]'`);
+    expect(response.detailedError).toEqual(`The verifiable credential does not has the vc property`);
+
+    // Missing context
+    payload = {
+      vc: {}
+    };
+    token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
+    validator = new VerifiableCredentialValidation(options, expected);
+    response = await validator.validate(token.rawToken, setup.defaultUserDid, siop.contract);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`The verifiable credential vc property does not contain @context`);
+
+    // The verifiable credential vc property does not contain https://www.w3.org/2018/credentials/v1
+    payload = {
+      vc: {
+      }
+    };
+    payload.vc['@context'] = ['xxx'];
+
+    token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
+    validator = new VerifiableCredentialValidation(options, expected);
+    response = await validator.validate(token.rawToken, setup.defaultUserDid, siop.contract);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`The verifiable credential context should have two elements`);
+
+    payload.vc['@context'] = ['https://www.w3.org/2018/credentials/v1'];
+    token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
+    validator = new VerifiableCredentialValidation(options, expected);
+    response = await validator.validate(token.rawToken, setup.defaultUserDid, siop.contract);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`The verifiable credential context should have two elements`);
+    
+
+    payload.vc['@context'] =  ['xxx'];
+    payload.vc['@context'].push('xxx');
+    token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
+    validator = new VerifiableCredentialValidation(options, expected);
+    response = await validator.validate(token.rawToken, setup.defaultUserDid, siop.contract);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`The verifiable credential context first element should be https://www.w3.org/2018/credentials/v1`);
+    
+    // Missing iss
+    payload = {
+      vc: {}
+    };
+    payload.vc['@context'] =  ['https://www.w3.org/2018/credentials/v1'];
+    payload.vc['@context'].push('test');
+    token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
+    validator = new VerifiableCredentialValidation(options, expected);
+    response = await validator.validate(token.rawToken, setup.defaultUserDid, siop.contract);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`Missing sub property in verifiableCredential. Expected 'did:test:user'`);
 
     // bad sub
     payload = {
+      vc: {},
       iss: 'did:test:issuer',
       sub: 'test'
     };
 
+    payload.vc['@context'] =  ['https://www.w3.org/2018/credentials/v1'];
+    payload.vc['@context'].push('test');
     token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
     response = await validator.validate(token.rawToken, setup.defaultUserDid, siop.contract);
     expect(response.result).toBeFalsy();

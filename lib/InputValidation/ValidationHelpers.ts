@@ -322,7 +322,7 @@ export class ValidationHelpers {
   public checkScopeValidityOnVcToken(validationResponse: IValidationResponse, expected: IExpectedVerifiableCredential, siopDid: string): IValidationResponse {
     const self: any = this;
 
-    // check iss value
+    // check sub value
     if (!validationResponse.payloadObject.sub) {
       return {
         result: false,
@@ -332,7 +332,7 @@ export class ValidationHelpers {
     }
 
     // check sub value
-    if (validationResponse.payloadObject.sub !== siopDid) {
+    if (siopDid && validationResponse.payloadObject.sub !== siopDid) {
       return {
         result: false,
         detailedError: `Wrong sub property in verifiableCredential. Expected '${siopDid}'`,
