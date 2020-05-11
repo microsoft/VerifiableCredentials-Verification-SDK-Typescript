@@ -106,8 +106,9 @@ export default class Validator {
       response = {
         result: true,
         status: 200,
-        validationResult: this.setValidationResult(queue)
-      }
+        validationResult: this.setValidationResult(queue),
+        payloadObject: response.payloadObject,
+      };
   }
     return response;
   }
