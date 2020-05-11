@@ -12,7 +12,7 @@ import ClaimToken, { TokenType } from '../VerifiableCredential/ClaimToken';
 import VerifiableCredentialConstants from '../VerifiableCredential/VerifiableCredentialConstants';
 import { IdTokenValidationResponse } from './IdTokenValidationResponse';
 import { IValidationResponse } from './IValidationResponse';
-import { IExpectedIdToken, IExpectedVerifiablePresentation, IExpectedVerifiableCredential } from '..';
+import { IExpectedIdToken, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IdTokenValidation } from '..';
 import { IExpectedBase, IExpectedSiop } from '../Options/IExpected';
 
 require('es6-promise').polyfill();
@@ -237,27 +237,17 @@ export class ValidationHelpers {
       };
     }
 
-    if (expected.configuration && !expected.configuration[siopContract]) {
-      return {
-        result: false,
-        detailedError: `No issuers found in expected for ${siopContract}`,
-        status: 403
-      };
+    // Get issuers from configuration
+    const issuers = IdTokenValidation.getIssuersFromExpected(expected, siopContract);
+    if (!(issuers instanceof Array)) {
+      return <IdTokenValidationResponse>issuers;
     }
 
-    const issuers = expected.configuration[siopContract];
-    if (!issuers.includes(issuer)) {
-      return validationResponse = {
-        result: false,
-        detailedError: `The issuer ${issuer} in idToken was not expected. Expected '${JSON.stringify(expected.configuration[siopContract])}'`,
-        status: 403
-      };
-    }
 
     if (!validationResponse.payloadObject.iss) {
       return {
         result: false,
-        detailedError: `Missing iss property in idToken. Expected '${JSON.stringify(expected.configuration[siopContract])}'`,
+        detailedError: `Missing iss property in idToken. Expected '${JSON.stringify(issuers)}'`,
         status: 403
       };
     }
@@ -385,15 +375,15 @@ export class ValidationHelpers {
     if (!validationResponse.payloadObject.iss) {
       return validationResponse = {
         result: false,
-        detailedError: `Missing iss property in siop. Expected '${validationResponse.did}'`,
+        detailedError: `Missing iss property in siop. Expected '${VerifiableCredentialConstants.TOKEN_SI_ISS}'`,
         status: 403
       };
     }
 
-    if (validationResponse.payloadObject.iss !== validationResponse.did) {
+    if (validationResponse.payloadObject.iss !== VerifiableCredentialConstants.TOKEN_SI_ISS) {
       return validationResponse = {
         result: false,
-        detailedError: `Missing iss property in siop. Expected '${validationResponse.did}'`,
+        detailedError: `Wrong iss property in siop. Expected '${VerifiableCredentialConstants.TOKEN_SI_ISS}'`,
         status: 403
       };
     }
@@ -411,7 +401,7 @@ export class ValidationHelpers {
       if (validationResponse.payloadObject.aud !== expected.audience) {
         return validationResponse = {
           result: false,
-          detailedError: `wRONG AUD property in siop. Expected '${expected.audience}'`,
+          detailedError: `Wrong aud property in siop. Expected '${expected.audience}'`,
           status: 403
         };
       }

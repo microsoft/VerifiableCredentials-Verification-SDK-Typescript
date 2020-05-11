@@ -180,7 +180,8 @@ import { IExpectedSiop, IExpectedIdToken } from '../lib';
     expect(response.status).toEqual(403);
     expect(response.detailedError?.startsWith('The presented verifiableCredential is not yet valid')).toBeTruthy();
   });
-  it('should test checkScopeValidityOnSiopTokenDelegate', () => {
+
+  xit('should test checkScopeValidityOnIdTokenDelegate', () => {
     const options = new ValidationOptions(setup.validatorOptions, TokenType.verifiableCredential);
 
     const validationResponse: IValidationResponse = {

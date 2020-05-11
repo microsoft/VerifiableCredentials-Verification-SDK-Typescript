@@ -74,7 +74,7 @@ export interface IExpectedIdToken extends IExpectedBase {
   /**
    * Expected issuers configuration endpoint for the different contracts.
    */
-  configuration: { [contract: string]: string[]},
+  configuration: ({ [contract: string]: string[]}) | string[],
 
   /**
    * Expected audience for the token type

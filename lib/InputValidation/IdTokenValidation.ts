@@ -38,16 +38,12 @@ export class IdTokenValidation implements IIdTokenValidation {
       return validationResponse;
     }
 
-    // Validate token signature
-    if (!this.expected.configuration || !this.expected.configuration[this.siopContract]) {
-      return {
-        result: false,
-        status: 500,
-        detailedError: `Expected should have configuration issuers set for '${this.siopContract}'`
-      };
+    // Validate token signature    
+    const issuers = IdTokenValidation.getIssuersFromExpected(this.expected, this.siopContract);
+    if (!(issuers instanceof Array)) {
+      return <IdTokenValidationResponse>issuers;
     }
 
-    const issuers = this.expected.configuration[this.siopContract];
     let idTokenValidated = false;
     for (let inx = 0; inx < issuers.length; inx++) {
       console.log(`Checking id token for configuration ${issuers[inx]}`);
@@ -76,4 +72,43 @@ export class IdTokenValidation implements IIdTokenValidation {
     return validationResponse;
   }
 
+  /**
+   * Return expected issuers for id tokens
+   * @param expected Could be a contract based object or just an array with expected issuers
+   * @param siopContract The contract to which issuers are linked
+   */
+  public static getIssuersFromExpected(expected: IExpectedIdToken, siopContract?: string): string[] | IdTokenValidationResponse {
+    if (!expected.configuration) {
+      return {
+        result: false,
+        status: 500,
+        detailedError: `Expected should have configuration issuers set for idToken`
+      };
+    }
+
+    let issuers: string[];
+
+    // Expected can provide a list of configuration or a list linked to a contract
+    if (expected.configuration instanceof Array) {
+      if (expected.configuration.length === 0) {
+        return {
+          result: false,
+          status: 500,
+          detailedError: `Expected should have configuration issuers set for idToken. Empty array presented.`
+        };
+      }
+      issuers = <string[]>expected.configuration;
+    } else {
+      // check for issuers for the contract
+      if (!(<{ [contract: string]: string[] }>expected.configuration)[siopContract]) {
+        return {
+          result: false,
+          status: 500,
+          detailedError: `Expected should have configuration issuers set for idToken. Missing configuration for '${siopContract}'.`
+        };
+      }
+      issuers = <string[]>expected.configuration[siopContract]
+    }
+    return issuers;
+  }
 }

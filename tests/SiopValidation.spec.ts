@@ -40,15 +40,24 @@ describe('SiopValidation', () =>
     expect(response.jti).toEqual(request.decodedToken.jti);
     
     // Negative cases
-    // Bad iss
+    // Missing iss
     let payload: any = {
-      iss: 'test'
     };
     let siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
     response = await validator.validate(siopRequest.rawToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Wrong iss property in siop. Expected '["https://self-issued.me"]'`);
+    expect(response.detailedError).toEqual(`Missing iss property in siop. Expected 'https://self-issued.me'`);
+
+    // Bad iss
+    payload = {
+      iss: 'test'
+    };
+    siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
+    response = await validator.validate(siopRequest.rawToken);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`Wrong iss property in siop. Expected 'https://self-issued.me'`);
 
     // Missing aud
     payload = {
@@ -58,7 +67,7 @@ describe('SiopValidation', () =>
     response = await validator.validate(siopRequest.rawToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Missing aud property in siop. Expected 'https://portableidentitycards.azure-api.net/42b39d9d-0cdd-4ae0-b251-b7b39a561f91/api/portable/v1.0/card/issue'`);
+    expect(response.detailedError).toEqual(`Missing aud property in siop`);
 
     // Wrong aud
     payload = {

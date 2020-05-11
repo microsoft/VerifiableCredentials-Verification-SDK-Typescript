@@ -17,6 +17,9 @@ describe('Validator', () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.idToken);
     const expected: IExpectedIdToken = siop.expected.filter((token: IExpectedIdToken) => token.type === TokenType.idToken)[0];
 
+    // because we only pass in the id token we need to pass configuration as an array
+    expected.configuration = (<{ [contract: string]: string[]}>expected.configuration)[siop.contract];
+
     let tokenValidator = new IdTokenTokenValidator(setup.validatorOptions, expected);
     let validator = new ValidatorBuilder()
       .useValidators(tokenValidator)
@@ -26,7 +29,7 @@ describe('Validator', () => {
     expect(result.result).toBeTruthy(); tokenValidator = new IdTokenTokenValidator(setup.validatorOptions, expected);
 
     // Negative cases
-    expected.configuration = {test: ['xxx'] };
+    expected.configuration = ['xxx'];
     tokenValidator = new IdTokenTokenValidator(setup.validatorOptions, expected);
     validator = new ValidatorBuilder()
       .useValidators(tokenValidator)
