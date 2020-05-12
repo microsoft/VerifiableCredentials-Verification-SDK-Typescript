@@ -77,7 +77,7 @@ describe('VerifiablePresentationValidation', () => {
     response = await validator.validate(siopRequest.rawToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Wrong aud property in verifiablePresentation. Expected 'did:test:issuer'`);
+    expect(response.detailedError).toEqual(`Missing aud property in verifiablePresentation. Expected 'did:test:issuer'`);
 
     // Wrong aud
     payload = {

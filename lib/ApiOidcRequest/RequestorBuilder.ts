@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { Requestor, IssuanceAttestationsModel, Crypto } from '../index';
+import IRequestor from './IRequestor';
 
 /**
  * Class to build an OIDC requestor
@@ -15,26 +16,9 @@ export default class RequestorBuilder {
 
   /**
    * Create a new instance of RequestorBuilder
-   * @param _clientName the name of the requestor (Relying Party)
-   * @param _clientPurpose the name of the requestor (Relying Party)
-   * @param _clientId the url where the request came from
-   * @param _redirectUri url to send response to
-   * @param _issuer DID of the requestor (Relying Party)
-   * @param _tosUri url pointing to terms and service user can open in a webview
-   * @param _logoUri url pointing to logo of the requestor (Relying Party)
-   * @param _attestation claims being asked for
+   * @param _requestor Initializer for the requestor
    */
-  constructor(
-    private _crypto: Crypto,
-    private _clientName: string,
-    private _clientPurpose: string[],
-    private _clientId: string,
-    private _redirectUri: string,
-    private _issuer: string,
-    private _tosUri: string[],
-    private _logoUri: string[],
-    private _attestation: IssuanceAttestationsModel
-    ) {
+  constructor(private _requestor: IRequestor) {
   }
 //#region constructor properties
 
@@ -42,63 +26,63 @@ export default class RequestorBuilder {
    * Gets the crypto object
    */
   public get crypto() {
-    return this._crypto;
+    return this._requestor.crypto;
   }
 
   /**
    * Get the name of the requestor (Relying Party)
    */
   public get clientName() {
-    return this._clientName;
+    return this._requestor.clientName;
   }
 
   /**
    * Get the requestor's purpose for the request
    */
   public get clientPurpose() {
-    return this._clientPurpose;
+    return this._requestor.clientPurpose;
   }
 
   /**
    * Get the url where the request came from
    */
   public get clientId() {
-    return this._clientId;
+    return this._requestor.clientId;
   }
 
   /**
    * Get the url to send response to
    */
   public get redirectUri() {
-    return this._redirectUri;
+    return this._requestor.redirectUri;
   }
 
   /**
    * Get the DID of the requestor (Relying Party)t
    */
   public get issuer() {
-    return this._issuer;
+    return this._requestor.issuer;
   }
 
   /**
    * Gets the url pointing to terms and service user can open in a webview
    */
   public get tosUri() {
-    return this._tosUri;
+    return this._requestor.tosUri;
   }
 
   /**
    * Gets the url pointing to logo of the requestor (Relying Party)
    */
   public get logoUri() {
-    return this._logoUri;
+    return this._requestor.logoUri;
   }
 
   /**
    * Gets the claims being asked for
    */
   public get attestation() {
-    return this._attestation;
+    return this._requestor.attestation;
   }
   //#endregion
   

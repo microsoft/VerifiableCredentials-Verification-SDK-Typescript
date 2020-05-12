@@ -22,6 +22,7 @@
     // Use when one wants to validate that SIOP was presented to the relying party (audience). Optional.
     .useAudience('https://example.org', 'did:test:12345678');
           
+    // The constructor can be create once for a specific a specific token type.
     let validator = new ValidatorBuilder()
     .useValidators(tokenValidatorsBuilder.build())
     .build();
@@ -121,6 +122,7 @@
     // OIDC request
     const state = 'state to pass to App';
     const nonce = 'nonce to pass to App'
+    // The constructure takes argument which are static for a specific request type
     const requestorBuilder = new RequestorBuilder(
       crypto,
       'Contoso - My Relying Party name',
@@ -188,6 +190,7 @@
     // OIDC request
     const state = 'state to pass to App';
     const nonce = 'nonce to pass to App'
+    // The constructure takes argument which are static for a specific request type
     const requestorBuilder = new RequestorBuilder(
       crypto,
       'Contoso - My Relying Party name',

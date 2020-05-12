@@ -10,6 +10,7 @@ import { KeyReferenceOptions } from '@microsoft/crypto-sdk';
  * Class to model the OIDC requestor
  */
 export default class Requestor {
+  private _payload: any = {};
 
   constructor(
     private _builder: RequestorBuilder) {
@@ -23,10 +24,17 @@ export default class Requestor {
   }
 
   /**
+   * Gets the payload for the request
+   */
+  public get payload(): any {
+    return this._payload;
+  }
+
+  /**
    * Create the actual request
    */
   public async create(keyReference: string): Promise<IResponse> {
-    let payload: any = {
+    this._payload = {
       response_type: 'idtoken',
       response_mode: 'form_post',
       client_id: this.builder.clientId,
@@ -46,13 +54,13 @@ export default class Requestor {
 
     // Add optional fields
     if (this.builder.logoUri) {
-      payload.logo_uri = this.builder.logoUri;
+      this._payload.logo_uri = this.builder.logoUri;
     }
 
     const crypto = this.builder.crypto.builder;
     const signature = await crypto.payloadProtectionProtocol.sign(
       new KeyReferenceOptions({ keyReference, extractable: false }),
-      Buffer.from(JSON.stringify(payload)),
+      Buffer.from(JSON.stringify(this._payload)),
       'JwsCompactJson',
       crypto.payloadProtectionOptions);
 

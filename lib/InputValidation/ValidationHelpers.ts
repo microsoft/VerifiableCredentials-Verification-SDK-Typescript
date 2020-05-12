@@ -291,15 +291,15 @@ export class ValidationHelpers {
     }
 
     // check aud value
-    if (!validationResponse.payloadObject.iss) {
-      return {
-        result: false,
-        detailedError: `Missing aud property in verifiablePresentation. Expected DID of audience`,
-        status: 403
-      };
-    }
-
     if (expected.didAdience) {
+      if (!validationResponse.payloadObject.aud) {
+        return {
+          result: false,
+          detailedError: `Missing aud property in verifiablePresentation. Expected '${expected.didAdience}'`,
+          status: 403
+        };
+      }
+
       if (validationResponse.payloadObject.aud !== expected.didAdience) {
         return {
           result: false,
@@ -363,6 +363,7 @@ export class ValidationHelpers {
     const self: any = this;
 
     // check sub
+    /* TODO temporary disabled
     if (validationResponse.payloadObject.sub && validationResponse.payloadObject.sub !== validationResponse.did) {
       return {
         result: false,
@@ -370,6 +371,7 @@ export class ValidationHelpers {
         status: 403
       };
     }
+    */
 
     // check iss value
     if (!validationResponse.payloadObject.iss) {
