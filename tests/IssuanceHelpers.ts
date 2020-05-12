@@ -65,7 +65,8 @@ export class IssuanceHelpers {
           "https://portableidentitycards.azure-api.net/42b39d9d-0cdd-4ae0-b251-b7b39a561f91/api/portable/v1.0/contracts/test/schema"
         ],
         "type": [
-          "VerifiableCredential"
+          "VerifiableCredential",
+          "DrivingLicense"
         ],
         "credentialSubject": {
         },
@@ -242,7 +243,7 @@ export class IssuanceHelpers {
      );
 
      const vcContractIssuers:{ [contract: string]: string[]}  = {};
-     vcContractIssuers[contract] = [setup.defaultIssuerDid];
+     vcContractIssuers['DrivingLicense'] = [setup.defaultIssuerDid];
      const idTokenConfiguration:{ [contract: string]: string[]}  = {};
      idTokenConfiguration[contract] = [setup.defaultIdTokenConfiguration];
      const expected: IExpectedBase[] = [

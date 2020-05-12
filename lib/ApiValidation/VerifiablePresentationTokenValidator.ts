@@ -20,19 +20,19 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
    * Create new instance of <see @class VerifiablePresentationTokenValidator>
    * @param validatorOption The options used during validation
    * @param expected values to find in the token to validate
-   * @param siopDid needs to be equal to audience of VP
    */
-  constructor (private validatorOption: IValidatorOptions, private expected: IExpectedVerifiablePresentation, private siopDid: string) {
+  constructor (private validatorOption: IValidatorOptions, private expected: IExpectedVerifiablePresentation ) {
   }
 
   /**
    * Validate the token
    * @param queue with tokens to validate
    * @param queueItem under validation
+   * @param siopDid needs to be equal to audience of VP
    */
-  public async validate(queue: ValidationQueue, queueItem: ValidationQueueItem): Promise<IValidationResponse> { 
+  public async validate(queue: ValidationQueue, queueItem: ValidationQueueItem, siopDid: string): Promise<IValidationResponse> { 
     const options = new ValidationOptions(this.validatorOption, TokenType.verifiablePresentation);
-    const validator = new VerifiablePresentationValidation(options, this.expected, this.siopDid, queueItem.id);
+    const validator = new VerifiablePresentationValidation(options, this.expected, siopDid, queueItem.id);
     const validationResult = await validator.validate(queueItem.tokenToValidate);
 
     if (validationResult.tokensToValidate) {

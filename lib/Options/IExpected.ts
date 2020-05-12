@@ -56,7 +56,7 @@ export interface IExpectedVerifiableCredential extends IExpectedBase {
   contractIssuers?: { [contract: string]: string[]},
 
   /**
-   * Expected audience for the token type
+   * Expected audience did for the token type
    */
   audience?: string , 
 }

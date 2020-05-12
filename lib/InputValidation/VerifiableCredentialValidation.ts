@@ -26,10 +26,9 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
    * Validate the verifiable credential
    * @param verifiableCredential The credential to validate as a signed token
    * @param siopDid needs to be equal to audience of VC
-   * @param siopContract Conract type asked during siop
    * @returns result is true if validation passes
    */
-  public async validate(verifiableCredential: string, siopDid: string, siopContract: string): Promise<VerifiableCredentialValidationResponse> {
+  public async validate(verifiableCredential: string, siopDid: string): Promise<VerifiableCredentialValidationResponse> {
     let validationResponse: VerifiableCredentialValidationResponse = {
       result: true,
       status: 200
@@ -53,18 +52,10 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
     }
 
     const context: string[] = validationResponse.payloadObject.vc[VerifiableCredentialConstants.CLAIM_CONTEXT];
-    if (!context) {
+    if (!context || context.length === 0) {
       return {
         result: false,
         detailedError: `The verifiable credential vc property does not contain ${VerifiableCredentialConstants.CLAIM_CONTEXT}`,
-        status: 403
-      };
-    }
-
-    if (context.length < 2) {
-      return {
-        result: false,
-        detailedError: `The verifiable credential context should have two elements`,
         status: 403
       };
     }
@@ -77,13 +68,37 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       };
     }
 
-    // get vc contract
-    siopContract = context[1];
+    const types: string[] = validationResponse.payloadObject.vc.type;
+    if (!types || types.length === 0) {
+      return {
+        result: false,
+        detailedError: `The vc property does not contain type`,
+        status: 403
+      };
+    }
 
-    // get contract
+    if (types.length < 2) {
+      return {
+        result: false,
+        detailedError: `The verifiable credential type property should have two elements`,
+        status: 403
+      };
+    }
+
+    if (types[0] !== VerifiableCredentialConstants.DEFAULT_VERIFIABLECREDENTIAL_TYPE) {
+      return {
+        result: false,
+        detailedError: `The verifiable credential type first element should be ${VerifiableCredentialConstants.DEFAULT_VERIFIABLECREDENTIAL_TYPE}`,
+        status: 403
+      };
+    }
+
+
+    // get vc type
+    const vcType: string = types[1];
 
     // Check token scope (aud and iss)
-    validationResponse = await this.options.checkScopeValidityOnVcTokenDelegate(validationResponse, this.expected, siopDid, siopContract);
+    validationResponse = await this.options.checkScopeValidityOnVcTokenDelegate(validationResponse, this.expected, siopDid);
     if (!validationResponse.result) {
       return validationResponse;
     }
@@ -91,13 +106,13 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
     // Check if the VC matches the contract and its issuers
     // Get the contract from the VC
     if (this.expected.contractIssuers) {
-      const contractIssuers = this.expected.contractIssuers[siopContract];
+      const contractIssuers = this.expected.contractIssuers[vcType];
       
       // Check if the we found a matching contract.
       if (!contractIssuers) {
         return {
           result: false,
-          detailedError: `The verifiable credential with contract '${siopContract}' is not expected in '${JSON.stringify(this.expected.contractIssuers)}'`,
+          detailedError: `The verifiable credential with contract '${vcType}' is not expected in '${JSON.stringify(this.expected.contractIssuers)}'`,
           status: 403
         };
       }
@@ -105,7 +120,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       if (!contractIssuers.includes(validationResponse.payloadObject.iss)) {
         return {
           result: false,
-          detailedError: `The verifiable credential with contract '${siopContract}' is not from a trusted issuer '${JSON.stringify(this.expected.contractIssuers)}'`,
+          detailedError: `The verifiable credential with contract '${vcType}' is not from a trusted issuer '${JSON.stringify(this.expected.contractIssuers)}'`,
           status: 403
         };
       }

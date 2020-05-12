@@ -71,7 +71,7 @@ export default class Validator {
           break;
         case TokenType.verifiableCredential: 
           options = new ValidationOptions(validatorOption, claimToken.type);
-          response = await validator.validate(queue, queueItem!, siopDid!, siopContract!);
+          response = await validator.validate(queue, queueItem!, siopDid!);
           break;
         case TokenType.verifiablePresentation: 
           options = new ValidationOptions(validatorOption, claimToken.type);

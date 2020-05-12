@@ -20,9 +20,9 @@ export default class VerifiableCredentialTokenValidator implements ITokenValidat
   /**
    * Create new instance of <see @class VerifiableCredentialTokenValidator>
    * @param validatorOption The options used during validation
-   * @param expectedMap values to find in the token to validate
+   * @param expected values to find in the token to validate
    */
-  constructor(private validatorOption: IValidatorOptions, private expectedMap: { [expected: string]: IExpectedVerifiableCredential }) {
+  constructor(private validatorOption: IValidatorOptions, private expected: IExpectedVerifiableCredential) {
   }
 
 
@@ -33,23 +33,11 @@ export default class VerifiableCredentialTokenValidator implements ITokenValidat
    * @param siopDid needs to be equal to audience of VC
    * @param siopContract Conract type asked during siop
    */
-  public async validate(_queue: ValidationQueue, queueItem: ValidationQueueItem, siopDid: string, siopContract: string): Promise<IValidationResponse> {
+  public async validate(_queue: ValidationQueue, queueItem: ValidationQueueItem, siopDid: string): Promise<IValidationResponse> {
     const options = new ValidationOptions(this.validatorOption, TokenType.verifiableCredential);
 
-    // find the correct IExpected instance, if not mapped, it's a bad request
-    if (!this.expectedMap[queueItem.id]) {
-      const validationResponse: IValidationResponse = {
-        result: false,
-        status: 400,
-        detailedError: `Unexpected Verifiable Credential of type ${queueItem.id}`
-      };
-
-      return validationResponse;
-    }
-
-    const expected = this.expectedMap[queueItem.id];
-    const validator = new VerifiableCredentialValidation(options, expected);
-    const validationResult = await validator.validate(queueItem.tokenToValidate, siopDid, siopContract);
+    const validator = new VerifiableCredentialValidation(options, this.expected);
+    const validationResult = await validator.validate(queueItem.tokenToValidate, siopDid);
     return validationResult as IValidationResponse;
   }
 
