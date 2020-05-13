@@ -71,7 +71,7 @@ export default class Validator {
           break;
         case TokenType.verifiableCredential: 
           options = new ValidationOptions(validatorOption, claimToken.type);
-          response = await validator.validate(queue, queueItem!, siopDid!);
+          response = await validator.validate(queue, queueItem!, siopDid!, siopContract!);
           break;
         case TokenType.verifiablePresentation: 
           options = new ValidationOptions(validatorOption, claimToken.type);
@@ -81,7 +81,7 @@ export default class Validator {
           options = new ValidationOptions(validatorOption, claimToken.type);
           response = await validator.validate(queue, queueItem!);
           siopDid = response.did;
-          siopContract = response.payloadObject.contract;
+          siopContract = Validator.getContractIdFromSiop(response.payloadObject.contract);
           break;
         case TokenType.selfIssued: 
           options = new ValidationOptions(validatorOption, claimToken.type);
@@ -154,6 +154,16 @@ export default class Validator {
       selfIssued: si
     }
     return validationResult;
+  }
+
+  /**
+   * Extract contract id from the siop contract url
+   * @param contractUrl The contract url
+   */
+  public static getContractIdFromSiop(contractUrl: string) {
+    const contractTypeSplitted = contractUrl.split('/');
+    const contractId = contractTypeSplitted[contractTypeSplitted.length - 1];
+    return contractId;
   }
 
   /**

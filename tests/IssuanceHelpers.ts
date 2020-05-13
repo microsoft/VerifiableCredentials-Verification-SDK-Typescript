@@ -8,7 +8,7 @@ import { DidDocument } from '@decentralized-identity/did-common-typescript';
 import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
 import base64url from "base64url";
 import ValidationOptions from '../lib/Options/ValidationOptions';
-import { IExpectedBase, IExpectedSelfIssued, IExpectedIdToken, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential } from '../lib/index';
+import { IExpectedBase, IExpectedSelfIssued, IExpectedIdToken, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, Validator } from '../lib/index';
 import VerifiableCredentialConstants from '../lib/VerifiableCredential/VerifiableCredentialConstants';
 
 export class IssuanceHelpers {
@@ -243,9 +243,9 @@ export class IssuanceHelpers {
      );
 
      const vcContractIssuers:{ [contract: string]: string[]}  = {};
-     vcContractIssuers['DrivingLicense'] = [setup.defaultIssuerDid];
+     vcContractIssuers[Validator.getContractIdFromSiop(contract)] = [setup.defaultIssuerDid];
      const idTokenConfiguration:{ [contract: string]: string[]}  = {};
-     idTokenConfiguration[contract] = [setup.defaultIdTokenConfiguration];
+     idTokenConfiguration[Validator.getContractIdFromSiop(contract)] = [setup.defaultIdTokenConfiguration];
      const expected: IExpectedBase[] = [
       <IExpectedSelfIssued>{ type: TokenType.selfIssued },
       <IExpectedIdToken>{ type: TokenType.idToken, configuration: idTokenConfiguration, audience: setup.AUDIENCE },

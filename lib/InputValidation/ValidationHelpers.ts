@@ -221,10 +221,10 @@ export class ValidationHelpers {
     * Check the scope validity of the token such as iss and aud
     * @param validationResponse The response for the requestor
     * @param expected Expected output of the verifiable credential
-   * @param vcType Conract type asked during siop
+   * @param contractId Conract type asked during siop
     * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
     */
-  public checkScopeValidityOnIdToken(validationResponse: IValidationResponse, expected: IExpectedIdToken, vcType: string): IValidationResponse {
+  public checkScopeValidityOnIdToken(validationResponse: IValidationResponse, expected: IExpectedIdToken, contractId: string): IValidationResponse {
     const self: any = this;
 
     // check iss value
@@ -238,7 +238,7 @@ export class ValidationHelpers {
     }
 
     // Get issuers from configuration
-    const issuers = IdTokenValidation.getIssuersFromExpected(expected, vcType);
+    const issuers = IdTokenValidation.getIssuersFromExpected(expected, contractId);
     if (!(issuers instanceof Array)) {
       return <IdTokenValidationResponse>issuers;
     }

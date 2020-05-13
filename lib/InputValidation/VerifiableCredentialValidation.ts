@@ -26,9 +26,10 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
    * Validate the verifiable credential
    * @param verifiableCredential The credential to validate as a signed token
    * @param siopDid needs to be equal to audience of VC
+   * @param siopContractId The id for contract which is validated
    * @returns result is true if validation passes
    */
-  public async validate(verifiableCredential: string, siopDid: string): Promise<VerifiableCredentialValidationResponse> {
+  public async validate(verifiableCredential: string, siopDid: string, siopContractId: string): Promise<VerifiableCredentialValidationResponse> {
     let validationResponse: VerifiableCredentialValidationResponse = {
       result: true,
       status: 200
@@ -93,10 +94,6 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       };
     }
 
-
-    // get vc type
-    const vcType: string = types[1];
-
     // Check token scope (aud and iss)
     validationResponse = await this.options.checkScopeValidityOnVcTokenDelegate(validationResponse, this.expected, siopDid);
     if (!validationResponse.result) {
@@ -106,7 +103,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
     // Check if the VC matches the contract and its issuers
     // Get the contract from the VC
     if (this.expected.contractIssuers) {
-      const contractIssuers = VerifiableCredentialValidation.getIssuersFromExpected(this.expected, vcType);
+      const contractIssuers = VerifiableCredentialValidation.getIssuersFromExpected(this.expected, siopContractId);
       if (!(contractIssuers instanceof Array)) {
         return <VerifiableCredentialValidationResponse>contractIssuers;
       }
@@ -116,7 +113,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       if (!contractIssuers) {
         return {
           result: false,
-          detailedError: `The verifiable credential with contract '${vcType}' is not expected in '${JSON.stringify(this.expected.contractIssuers)}'`,
+          detailedError: `The verifiable credential with contract '${siopContractId}' is not expected in '${JSON.stringify(this.expected.contractIssuers)}'`,
           status: 403
         };
       }
@@ -124,7 +121,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       if (!contractIssuers.includes(validationResponse.payloadObject.iss)) {
         return {
           result: false,
-          detailedError: `The verifiable credential with contract '${vcType}' is not from a trusted issuer '${JSON.stringify(this.expected.contractIssuers)}'`,
+          detailedError: `The verifiable credential with contract '${siopContractId}' is not from a trusted issuer '${JSON.stringify(this.expected.contractIssuers)}'`,
           status: 403
         };
       }
@@ -138,9 +135,9 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
   /**
    * Return expected issuers for verifyable credentials
    * @param expected Could be a contract based object or just an array with expected issuers
-   * @param vcType The contract to which issuers are linked
+   * @param siopContractId The contract to which issuers are linked
    */
-  public static getIssuersFromExpected(expected: IExpectedVerifiableCredential, vcType?: string): string[] | VerifiableCredentialValidationResponse {
+  public static getIssuersFromExpected(expected: IExpectedVerifiableCredential, siopContractId?: string): string[] | VerifiableCredentialValidationResponse {
     if (!expected.contractIssuers) {
       return {
         result: false,
@@ -157,28 +154,28 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
         return {
           result: false,
           status: 500,
-          detailedError: `Expected should have contractIssuers issuers set for idToken. Empty array presented.`
+          detailedError: `Expected should have contractIssuers issuers set for verifiableCredential. Empty array presented.`
         };
       }
       issuers = <string[]>expected.contractIssuers;
     } else {
-      if (!vcType) {
+      if (!siopContractId) {
         return {
           result: false,
           status: 500,
-          detailedError: `The vcType needs to be specified to validate the idTokens.`
+          detailedError: `The siopContractId needs to be specified to validate the verifiableCredential.`
         };
       }
 
       // check for issuers for the contract
-      if (!(<{ [contract: string]: string[] }>expected.contractIssuers)[vcType]) {
+      if (!(<{ [contract: string]: string[] }>expected.contractIssuers)[siopContractId]) {
         return {
           result: false,
           status: 500,
-          detailedError: `Expected should have contractIssuers issuers set for idToken. Missing contractIssuers for '${vcType}'.`
+          detailedError: `Expected should have contractIssuers issuers set for verifiableCredential. Missing contractIssuers for '${siopContractId}'.`
         };
       }
-      issuers = <string[]>expected.contractIssuers[vcType]
+      issuers = <string[]>expected.contractIssuers[siopContractId]
     }
     return issuers;
   }
