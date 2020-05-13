@@ -6,9 +6,9 @@
 import { TokenType } from '../index';
 
 /**
- * Type for delegates to validate certain value in the token
+ * Type issuer mapping
  */
-export type CheckTokenProperty = (property: any) => boolean;
+export type IssuerMap =  ({ [contract: string]: string[]}) | string[];
 
 
 
@@ -53,7 +53,7 @@ export interface IExpectedVerifiableCredential extends IExpectedBase {
   /**
    * Expected issuers for the different contracts.
    */
-  contractIssuers?: { [contract: string]: string[]},
+  contractIssuers?: IssuerMap,
 
   /**
    * Expected audience did for the token type
@@ -74,7 +74,7 @@ export interface IExpectedIdToken extends IExpectedBase {
   /**
    * Expected issuers configuration endpoint for the different contracts.
    */
-  configuration: ({ [contract: string]: string[]}) | string[],
+  configuration: IssuerMap,
 
   /**
    * Expected audience for the token type

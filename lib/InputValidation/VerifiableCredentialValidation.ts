@@ -106,7 +106,11 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
     // Check if the VC matches the contract and its issuers
     // Get the contract from the VC
     if (this.expected.contractIssuers) {
-      const contractIssuers = this.expected.contractIssuers[vcType];
+      const contractIssuers = VerifiableCredentialValidation.getIssuersFromExpected(this.expected, vcType);
+      if (!(contractIssuers instanceof Array)) {
+        return <VerifiableCredentialValidationResponse>contractIssuers;
+      }
+        
       
       // Check if the we found a matching contract.
       if (!contractIssuers) {
@@ -131,4 +135,51 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
     return validationResponse;
   }
 
+  /**
+   * Return expected issuers for verifyable credentials
+   * @param expected Could be a contract based object or just an array with expected issuers
+   * @param vcType The contract to which issuers are linked
+   */
+  public static getIssuersFromExpected(expected: IExpectedVerifiableCredential, vcType?: string): string[] | VerifiableCredentialValidationResponse {
+    if (!expected.contractIssuers) {
+      return {
+        result: false,
+        status: 500,
+        detailedError: `Expected should have contractIssuers issuers set for verifyableCredential`
+      };
+    }
+
+    let issuers: string[];
+
+    // Expected can provide a list of contractIssuers or a list linked to a contract
+    if (expected.contractIssuers instanceof Array) {
+      if (expected.contractIssuers.length === 0) {
+        return {
+          result: false,
+          status: 500,
+          detailedError: `Expected should have contractIssuers issuers set for idToken. Empty array presented.`
+        };
+      }
+      issuers = <string[]>expected.contractIssuers;
+    } else {
+      if (!vcType) {
+        return {
+          result: false,
+          status: 500,
+          detailedError: `The vcType needs to be specified to validate the idTokens.`
+        };
+      }
+
+      // check for issuers for the contract
+      if (!(<{ [contract: string]: string[] }>expected.contractIssuers)[vcType]) {
+        return {
+          result: false,
+          status: 500,
+          detailedError: `Expected should have contractIssuers issuers set for idToken. Missing contractIssuers for '${vcType}'.`
+        };
+      }
+      issuers = <string[]>expected.contractIssuers[vcType]
+    }
+    return issuers;
+  }
 }
