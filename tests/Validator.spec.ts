@@ -3,6 +3,7 @@ import { IssuanceHelpers } from './IssuanceHelpers';
 import TestSetup from './TestSetup';
 import ValidationQueue from '../lib/InputValidation/ValidationQueue';
 import { SiopTokenValidator, SelfIssuedTokenValidator } from '../lib/index';
+import { DidValidation } from '../lib/InputValidation/DidValidation';
 
 describe('Validator', () => {
   let setup: TestSetup;
@@ -105,7 +106,7 @@ describe('Validator', () => {
     expectAsync(validator.validate(queue.getNextToken()!.tokenToValidate)).toBeRejectedWith('verifiableCredential does not has a TokenValidator');
   });
 
-  it('should validate siop', async () => {
+  fit('should validate siop', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentation);
     const siopExpected = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siop)[0];
     const vpExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiablePresentation)[0];
@@ -161,6 +162,43 @@ describe('Validator', () => {
     expect(result.validationResult?.verifiableCredentials!['VerifiableCredential'].vc.credentialSubject.givenName).toEqual('Jules');
 
     // Negative cases
+
+    // no attestation
+    const didValidation = new DidValidation(options, siopExpected);
+    result = await didValidation.validate(request.rawToken);
+    delete result.payloadObject.attestations;
+    let token = await IssuanceHelpers.createSiopRequestWithPayload(setup, result.payloadObject, siop.tokenJwkPrivate);
+    result = await validator.validate(token.rawToken);
+    expect(result.result).toBeFalsy();
+    expect(result.detailedError).toEqual(`Missing idToken in request`);
+    expect(result.status).toEqual(403);
+
+    // no id token
+    result = await didValidation.validate(request.rawToken);
+    delete result.payloadObject.attestations.idTokens;
+    token = await IssuanceHelpers.createSiopRequestWithPayload(setup, result.payloadObject, siop.tokenJwkPrivate);
+    result = await validator.validate(token.rawToken);
+    expect(result.result).toBeFalsy();
+    expect(result.detailedError).toEqual(`Wrong iss property in verifiablePresentation. Expected 'did:test:issuer'`);
+    expect(result.status).toEqual(403);
+    
+    // no self issued
+    result = await didValidation.validate(request.rawToken);
+    delete result.payloadObject.attestations.selfIssued;
+    token = await IssuanceHelpers.createSiopRequestWithPayload(setup, result.payloadObject, siop.tokenJwkPrivate);
+    result = await validator.validate(token.rawToken);
+    expect(result.result).toBeFalsy();
+    expect(result.detailedError).toEqual(`Wrong iss property in verifiablePresentation. Expected 'did:test:issuer'`);
+    expect(result.status).toEqual(403);
+
+    // no vc
+    result = await didValidation.validate(request.rawToken);
+    delete result.payloadObject.attestations.verifiableCredentials;
+    token = await IssuanceHelpers.createSiopRequestWithPayload(setup, result.payloadObject, siop.tokenJwkPrivate);
+    result = await validator.validate(token.rawToken);
+    expect(result.result).toBeFalsy();
+    expect(result.detailedError).toEqual(`Wrong iss property in verifiablePresentation. Expected 'did:test:issuer'`);
+    expect(result.status).toEqual(403);
 
   });
 });

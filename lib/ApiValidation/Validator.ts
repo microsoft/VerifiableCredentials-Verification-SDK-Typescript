@@ -11,7 +11,6 @@ import { KeyStoreInMemory, CryptoFactoryManager, CryptoFactoryNode, SubtleCrypto
 import { IValidationResponse } from '../InputValidation/IValidationResponse';
 import ValidationQueue from '../InputValidation/ValidationQueue';
 import IValidationResult from './IValidationResult';
-import { throws } from 'assert';
 import ValidationQueueItem from '../InputValidation/ValidationQueueItem';
 
 /**
@@ -101,16 +100,98 @@ export default class Validator {
 
     // Set output
     response =queue.getResult();
-    if (response.result) {
-      // set claims
-      response = {
-        result: true,
-        status: 200,
-        validationResult: this.setValidationResult(queue),
-        payloadObject: response.payloadObject,
-      };
+    return this.setResult(response, queue);
   }
-    return response;
+
+  private setResult(response: IValidationResponse, queue: ValidationQueue) {
+    if (!response.result) {
+      // Return error that occured
+      return response;
+    }
+
+    // check if result set has all expected tokens
+    const validationResult = this.setValidationResult(queue);
+    if (this.tokenValidators[TokenType.idToken]) {
+      if (!validationResult.idTokens) {
+        return {
+          result: false,
+          status: 403,
+          detailedError: `Missing idToken in request`
+        };
+      }
+
+      // Make sure there are tokens
+      let tokenFound = false;
+      for (let token in validationResult.idTokens) {
+        if (token && validationResult.idTokens[token]) {
+          tokenFound = true;
+          break;
+        }
+      }
+      if (!tokenFound) {
+        return {
+          result: false,
+          status: 403,
+          detailedError: `Missing idToken in request`
+        };
+      }
+    }
+
+    if (this.tokenValidators[TokenType.verifiableCredential]) {
+      if (!validationResult.verifiableCredentials) {
+        return {
+          result: false,
+          status: 403,
+          detailedError: `Missing presentation in request`
+        };
+      }
+      // Make sure there are vcs
+      let tokenFound = false;
+      for (let token in validationResult.verifiableCredentials) {
+        if (token && validationResult.verifiableCredentials[token]) {
+          tokenFound = true;
+          break;
+        }
+      }
+      if (!tokenFound) {
+        return {
+          result: false,
+          status: 403,
+          detailedError: `Missing presentation in request`
+        };
+      }
+    }
+
+    if (this.tokenValidators[TokenType.selfIssued]) {
+      if (!validationResult.selfIssued) {
+        return {
+          result: false,
+          status: 403,
+          detailedError: `Missing selfIssued in request`
+        };
+      }
+      // Make sure there are properties in si
+      let tokenFound = false;
+      for (let token in validationResult.selfIssued) {
+        if (token) {
+          tokenFound = true;
+          break;
+        }
+      }
+      if (!tokenFound) {
+        return {
+          result: false,
+          status: 403,
+          detailedError: `Missing selfIssued in request`
+        };
+      }
+    }
+
+    return {
+      result: true,
+      status: 200,
+      validationResult
+    };
   }
 
   private setValidationResult(queue: ValidationQueue): IValidationResult {
