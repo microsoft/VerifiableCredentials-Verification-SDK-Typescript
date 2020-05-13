@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TokenType, IExpected, ITokenValidator, ClaimToken } from '../index';
+import { TokenType, IExpectedVerifiablePresentation, ITokenValidator, ClaimToken } from '../index';
 import { IValidationResponse } from '../InputValidation/IValidationResponse';
 import ValidationOptions from '../Options/ValidationOptions';
 import { VerifiablePresentationValidation } from '../InputValidation/VerifiablePresentationValidation';
@@ -21,7 +21,7 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
    * @param validatorOption The options used during validation
    * @param expected values to find in the token to validate
    */
-  constructor (private validatorOption: IValidatorOptions, private expected: IExpected) {
+  constructor (private validatorOption: IValidatorOptions, private expected: IExpectedVerifiablePresentation ) {
   }
 
   /**

@@ -6,7 +6,7 @@ import TestSetup from './TestSetup';
 import { IdTokenValidation } from '../lib/InputValidation/IdTokenValidation';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
-import { IExpected } from '../lib';
+import { IExpectedIdToken, Validator } from '../lib';
 
  describe('idTokenValidation', () => {
   let setup: TestSetup;
@@ -24,9 +24,9 @@ import { IExpected } from '../lib';
   it('should test validate', async () => {
     
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.idToken);   
-    const expected = siop.expected.filter((token: IExpected) => token.type === TokenType.idToken)[0];
+    const expected = siop.expected.filter((token: IExpectedIdToken) => token.type === TokenType.idToken)[0];
 
-    let validator = new IdTokenValidation(options, expected);
+    let validator = new IdTokenValidation(options, expected, Validator.getContractIdFromSiop(siop.contract));
     let response = await validator.validate(siop.idToken.rawToken)
     expect(response.result).toBeTruthy();
     
@@ -40,11 +40,5 @@ import { IExpected } from '../lib';
 
     // todo fix aud
     return;
-    expected.audience = 'abcdef';
-    validator = new IdTokenValidation(options, expected);
-    response = await validator.validate(siop.idToken.rawToken);
-    expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Wrong or missing sub property in idToken. Expected 'abcdef'`);
   });
  });

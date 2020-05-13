@@ -7,7 +7,7 @@ import { IValidationResponse } from '../InputValidation/IValidationResponse';
 import { ICryptoToken } from '@microsoft/crypto-sdk';
 import { ValidationHelpers } from '../InputValidation/ValidationHelpers';
 import IValidatorOptions from '../Options/IValidatorOptions';
-import { IExpected } from '../index';
+import { IExpectedBase, IExpectedIdToken, IExpectedVerifiablePresentation, IExpectedVerifiableCredential } from '../index';
 import { ISiopValidationResponse } from '../InputValidation/SiopValidationResponse';
 
  export type GetTokenObject = (validationResponse: IValidationResponse, token: string) => IValidationResponse;
@@ -15,7 +15,10 @@ import { ISiopValidationResponse } from '../InputValidation/SiopValidationRespon
  export type ValidateDidSignature = (validationResponse: IValidationResponse, token: ICryptoToken) => Promise<IValidationResponse>;
  export type CheckTimeValidityOnIdToken = (validationResponse: IValidationResponse, driftInSec?: number) => IValidationResponse;
  export type CheckTimeValidityOnToken = (validationResponse: IValidationResponse, driftInSec?: number) => IValidationResponse;
- export type CheckScopeValidityOnToken = (validationResponse: IValidationResponse, expected: IExpected) => IValidationResponse;
+ export type CheckScopeValidityOnToken = (validationResponse: IValidationResponse, expected: IExpectedBase) => IValidationResponse;
+ export type CheckScopeValidityOnIdToken = (validationResponse: IValidationResponse, expected: IExpectedIdToken, siopContract: string) => IValidationResponse;
+ export type CheckScopeValidityOnVpToken = (validationResponse: IValidationResponse, expected: IExpectedVerifiablePresentation, siopDid: string) => IValidationResponse;
+ export type CheckScopeValidityOnVcToken = (validationResponse: IValidationResponse, expected: IExpectedVerifiableCredential, siopDid: string) => IValidationResponse;
  export type FetchKeyAndValidateSignatureOnIdToken = (validationResponse: IValidationResponse, token: ClaimToken) => Promise<IValidationResponse>;
  export type ValidateSignatureOnToken = (validationResponse: IValidationResponse, token: ClaimToken, key: any) => Promise<IValidationResponse>;
  export type GetTokensFromSiop = (validationResponse: IValidationResponse) => IValidationResponse;
@@ -62,12 +65,22 @@ getTokenObjectDelegate: GetTokenObject;
   /**
    * Check the scope validity of the token
    */
-  checkScopeValidityOnTokenDelegate: CheckScopeValidityOnToken,
+  checkScopeValidityOnSiopTokenDelegate: CheckScopeValidityOnToken,
 
   /**
-   * Check the scope validity of the token
+   * Check the scope validity of the id token
    */
-  checkScopeValidityOnIdTokenDelegate: CheckScopeValidityOnToken,
+  checkScopeValidityOnIdTokenDelegate: CheckScopeValidityOnIdToken,
+
+  /**
+   * Check the scope validity of the verifiable presentation token
+   */
+  checkScopeValidityOnVpTokenDelegate: CheckScopeValidityOnVpToken,
+
+  /**
+   * Check the scope validity of the verifiable credential token
+   */
+  checkScopeValidityOnVcTokenDelegate: CheckScopeValidityOnVcToken,
 
   /**
    * Delegate for getting a key and validate the signature on the token

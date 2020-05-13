@@ -4,15 +4,17 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IResponse, RequestorBuilder } from '../index';
+import { KeyReferenceOptions } from '@microsoft/crypto-sdk';
 
 /**
  * Class to model the OIDC requestor
  */
 export default class Requestor {
+  private _payload: any = {};
 
   constructor(
     private _builder: RequestorBuilder) {
-  } 
+  }
 
   /**
    * Gets the builder for the request
@@ -22,10 +24,17 @@ export default class Requestor {
   }
 
   /**
+   * Gets the payload for the request
+   */
+  public get payload(): any {
+    return this._payload;
+  }
+
+  /**
    * Create the actual request
    */
-  public async create(): Promise<IResponse> {
-    let payload: any = {
+  public async create(keyReference: string): Promise<IResponse> {
+    this._payload = {
       response_type: 'idtoken',
       response_mode: 'form_post',
       client_id: this.builder.clientId,
@@ -42,18 +51,26 @@ export default class Requestor {
         tos_uri: this.builder.tosUri
       }
     };
+
     // Add optional fields
     if (this.builder.logoUri) {
-      payload.logo_uri = this.builder.logoUri;
+      this._payload.logo_uri = this.builder.logoUri;
     }
-    return new Promise((resolve) => {
-      resolve({
-        status: 200,
-        result: true,
-        payload
-      } as any);
-    })
-  }
 
+    const crypto = this.builder.crypto.builder;
+    const signature = await crypto.payloadProtectionProtocol.sign(
+      new KeyReferenceOptions({ keyReference, extractable: false }),
+      Buffer.from(JSON.stringify(this._payload)),
+      'JwsCompactJson',
+      crypto.payloadProtectionOptions);
+
+    const response = {
+      result: true,
+      status: 200,
+      request: signature.serialize()
+    };
+
+    return response;
+  }
 }
 

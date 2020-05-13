@@ -5,9 +5,11 @@
 
 export { DidDocument, IDidDocument, IDidDocumentPublicKey, IDidDocumentServiceDescriptor, IDidResolver, IDidResolveResult } from '@decentralized-identity/did-common-typescript';
 
-import IExpected from './Options/IExpected';
+import {IExpectedBase, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSelfIssued, IExpectedIdToken} from './Options/IExpected';
+export { IExpectedBase, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSelfIssued, IExpectedIdToken };
+
 import CryptoOptions, { ICryptoOptions } from './Options/CryptoOptions';
-export { ICryptoOptions, CryptoOptions, IExpected };
+export { ICryptoOptions, CryptoOptions };
 
 import ManagedHttpResolver from './Resolver/ManagedHttpResolver';
 export { ManagedHttpResolver };
@@ -50,6 +52,10 @@ import RequestorBuilder from './ApiOidcRequest/RequestorBuilder';
 import Requestor from './ApiOidcRequest/Requestor';
 export { IResponse, RequestorBuilder, Requestor };
 
+import Crypto from './ApiCrypto/Crypto';
+import CryptoBuilder from './ApiCrypto/CryptoBuilder';
+import { SubtleCrypto } from '@microsoft/crypto-sdk';
+export { Crypto, CryptoBuilder, SubtleCrypto };
 import { BaseAttestationModel } from './rules-model/BaseAttestationModel';
 import { BaseIssuanceModel } from './rules-model/BaseIssuanceModel';
 import { IdTokenAttestationModel } from './rules-model/IdTokenAttestationModel';

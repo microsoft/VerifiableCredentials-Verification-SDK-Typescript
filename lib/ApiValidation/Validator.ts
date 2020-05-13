@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ClaimToken, IExpected, IDidResolver, CryptoOptions, ITokenValidator, ISiopValidationResponse } from '../index';
+import { ClaimToken, IDidResolver, CryptoOptions, ITokenValidator, ISiopValidationResponse } from '../index';
 import { TokenType } from '../VerifiableCredential/ClaimToken';
 import ValidationOptions from '../Options/ValidationOptions';
 import IValidatorOptions from '../Options/IValidatorOptions';
@@ -51,6 +51,7 @@ export default class Validator {
     };
     let claimToken: ClaimToken;
     let siopDid: string | undefined;
+    let siopContract: string | undefined;
     const queue = new ValidationQueue();
     queue.enqueueToken('siop', token);
     let queueItem = queue.getNextToken();
@@ -66,11 +67,11 @@ export default class Validator {
       switch (claimToken.type) {
         case TokenType.idToken: 
           options = new ValidationOptions(validatorOption, claimToken.type);
-          response = await validator.validate(queue, queueItem!);
+          response = await validator.validate(queue, queueItem!, '', siopContract);
           break;
         case TokenType.verifiableCredential: 
           options = new ValidationOptions(validatorOption, claimToken.type);
-          response = await validator.validate(queue, queueItem!, siopDid!);
+          response = await validator.validate(queue, queueItem!, siopDid!, siopContract!);
           break;
         case TokenType.verifiablePresentation: 
           options = new ValidationOptions(validatorOption, claimToken.type);
@@ -80,6 +81,7 @@ export default class Validator {
           options = new ValidationOptions(validatorOption, claimToken.type);
           response = await validator.validate(queue, queueItem!);
           siopDid = response.did;
+          siopContract = Validator.getContractIdFromSiop(response.payloadObject.contract);
           break;
         case TokenType.selfIssued: 
           options = new ValidationOptions(validatorOption, claimToken.type);
@@ -152,6 +154,16 @@ export default class Validator {
       selfIssued: si
     }
     return validationResult;
+  }
+
+  /**
+   * Extract contract id from the siop contract url
+   * @param contractUrl The contract url
+   */
+  public static getContractIdFromSiop(contractUrl: string) {
+    const contractTypeSplitted = contractUrl.split('/');
+    const contractId = contractTypeSplitted[contractTypeSplitted.length - 1];
+    return contractId;
   }
 
   /**

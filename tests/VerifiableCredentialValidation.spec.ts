@@ -5,8 +5,7 @@
 import TestSetup from './TestSetup';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import { VerifiableCredentialValidation } from '../lib/InputValidation/VerifiableCredentialValidation';
-import { IExpected, TokenType } from '../lib';
-import { IdTokenValidation } from '../lib/InputValidation/IdTokenValidation';
+import { TokenType, IExpectedVerifiableCredential, Validator } from '../lib';
 
  describe('VerifiableCredentialValidation', () => {
   let setup: TestSetup;
@@ -20,26 +19,146 @@ import { IdTokenValidation } from '../lib/InputValidation/IdTokenValidation';
 
   it('should test validate', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential);   
-    const expected = siop.expected.filter((token: IExpected) => token.type === TokenType.verifiableCredential)[0];
+    const expected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
 
-    let validator = new VerifiableCredentialValidation(options, expected, setup.defaultUserDid);
-    let response = await validator.validate(siop.vc.rawToken);
+    let validator = new VerifiableCredentialValidation(options, expected);
+    let response = await validator.validate(siop.vc.rawToken, setup.defaultUserDid, Validator.getContractIdFromSiop(siop.contract));
     expect(response.result).toBeTruthy();
 
     // Negative cases
 
     // Bad VC signature
-    response = await validator.validate(siop.vc.rawToken + 'a');
+    response = await validator.validate(siop.vc.rawToken + 'a', setup.defaultUserDid, Validator.getContractIdFromSiop(siop.contract));
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredential is invalid');
 
-    // bad subject
-    expected.subject = 'abcdef';
-    validator = new VerifiableCredentialValidation(options, expected, setup.defaultUserDid);
-    response = await validator.validate(siop.vc.rawToken);
+    // Missing vc
+    let payload: any = {
+    };
+    let token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
+    validator = new VerifiableCredentialValidation(options, expected);
+    response = await validator.validate(token.rawToken, setup.defaultUserDid, Validator.getContractIdFromSiop(siop.contract));
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Wrong sub property in verifiableCredential. Expected 'abcdef'`);
+    expect(response.detailedError).toEqual(`The verifiable credential does not has the vc property`);
+
+    // Missing context
+    payload = {
+      iss: 'did:test:issuer',
+      sub: 'test',
+      vc: {}
+    };
+    token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
+    validator = new VerifiableCredentialValidation(options, expected);
+    response = await validator.validate(token.rawToken, setup.defaultUserDid, Validator.getContractIdFromSiop(siop.contract));
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`The verifiable credential vc property does not contain @context`);
+
+    // The verifiable credential vc property does not contain https://www.w3.org/2018/credentials/v1
+    payload = {
+      iss: 'did:test:issuer',
+      sub: 'test',
+      vc: {
+      }
+    };
+    payload.vc['@context'] = ['xxx'];
+
+    token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
+    validator = new VerifiableCredentialValidation(options, expected);
+    response = await validator.validate(token.rawToken, setup.defaultUserDid, Validator.getContractIdFromSiop(siop.contract));
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`The verifiable credential context first element should be https://www.w3.org/2018/credentials/v1`);
+
+    payload.vc['@context'] = ['https://www.w3.org/2018/credentials/v1']; 
+
+    payload.vc['@context'] =  ['xxx'];
+    payload.vc['@context'].push('xxx');
+    token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
+    validator = new VerifiableCredentialValidation(options, expected);
+    response = await validator.validate(token.rawToken, setup.defaultUserDid, Validator.getContractIdFromSiop(siop.contract));
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`The verifiable credential context first element should be https://www.w3.org/2018/credentials/v1`);
+    
+    // Missing type
+    payload = {
+      iss: 'did:test:issuer',
+      sub: 'test',
+      vc: {}
+    };
+    payload.vc['@context'] = ['https://www.w3.org/2018/credentials/v1']; 
+    token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
+    validator = new VerifiableCredentialValidation(options, expected);
+    response = await validator.validate(token.rawToken, setup.defaultUserDid, Validator.getContractIdFromSiop(siop.contract));
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`The vc property does not contain type`);
+
+    // The verifiable credential vc property does not contain https://www.w3.org/2018/credentials/v1
+    payload = {
+      iss: 'did:test:issuer',
+      sub: 'test',
+      vc: {
+        type: ['VerifiableCredential'],
+      }
+    };
+    payload.vc['@context'] = ['https://www.w3.org/2018/credentials/v1']; 
+
+    token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
+    validator = new VerifiableCredentialValidation(options, expected);
+    response = await validator.validate(token.rawToken, setup.defaultUserDid, Validator.getContractIdFromSiop(siop.contract));
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`The verifiable credential type property should have two elements`);
+    
+    payload = {
+      iss: 'did:test:issuer',
+      sub: 'test',
+      vc: {
+        type: ['xxx', 'yyy'],
+      }
+    };
+    payload.vc['@context'] = ['https://www.w3.org/2018/credentials/v1']; 
+    token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
+    validator = new VerifiableCredentialValidation(options, expected);
+    response = await validator.validate(token.rawToken, setup.defaultUserDid, Validator.getContractIdFromSiop(siop.contract));
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`The verifiable credential type first element should be VerifiableCredential`);
+    
+    // Missing sub
+    payload = {
+      vc: {
+        type: ['VerifiableCredential', 'xxx'],
+      }
+    };
+    payload.vc['@context'] =  ['https://www.w3.org/2018/credentials/v1'];
+    payload.vc['@context'].push('test');
+    token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
+    validator = new VerifiableCredentialValidation(options, expected);
+    response = await validator.validate(token.rawToken, setup.defaultUserDid, Validator.getContractIdFromSiop(siop.contract));
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`Missing sub property in verifiableCredential. Expected 'did:test:user'`);
+
+    // bad sub
+    payload = {
+      vc: {
+        type: ['VerifiableCredential', 'xxx'],
+      },
+      iss: 'did:test:issuer',
+      sub: 'test'
+    };
+
+    payload.vc['@context'] =  ['https://www.w3.org/2018/credentials/v1'];
+    payload.vc['@context'].push('test');
+    token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
+    response = await validator.validate(token.rawToken, setup.defaultUserDid, Validator.getContractIdFromSiop(siop.contract));
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`Wrong sub property in verifiableCredential. Expected 'did:test:user'`);
  });
 });

@@ -6,7 +6,7 @@
 import { ICryptoToken } from '@microsoft/crypto-sdk';
 import { IDidValidation, IDidValidationResponse } from './DidValidationResponse';
 import { IValidationOptions } from '../Options/IValidationOptions';
-import { IExpected, ValidationOptions } from '..';
+import { ValidationOptions, IExpectedBase } from '../index';
 
 /**
  * Class for input validation of a token signed with DID key
@@ -18,7 +18,7 @@ export class DidValidation implements IDidValidation {
  * @param options Options to steer the validation process
  * @param expectedSchema Expected schema of the verifiable credential
  */
-  constructor (private options: IValidationOptions, private expected: IExpected) {
+  constructor (private options: IValidationOptions, private expected: IExpectedBase) {
   }
 
   /**
@@ -43,7 +43,7 @@ export class DidValidation implements IDidValidation {
      if (parts.length <= 1) {
        return {
          result: false,
-         detailedError: `The kid in does not contain the did. Required format for kid is <did>#kid`,
+         detailedError: `The kid in the protected header does not contain the DID. Required format for kid is <did>#kid`,
          status: 403
        };
      }
@@ -52,7 +52,7 @@ export class DidValidation implements IDidValidation {
     if (!validationResponse.did) {
       return validationResponse = {
           result: false,
-          detailedError: 'The input token does not contain the DID',
+          detailedError: 'The kid does not contain the DID',
           status: 403
         };
     }
@@ -71,12 +71,6 @@ export class DidValidation implements IDidValidation {
 
    // Check token time validity
    validationResponse = await this.options.checkTimeValidityOnTokenDelegate(validationResponse);
-   if (!validationResponse.result) {
-     return validationResponse;
-   }
-
-   // Check token scope (aud and iss)
-   validationResponse = await this.options.checkScopeValidityOnTokenDelegate(validationResponse, this.expected);
    if (!validationResponse.result) {
      return validationResponse;
    }

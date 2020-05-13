@@ -3,31 +3,30 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import VerifiableCredentialConstants from '../VerifiableCredential/VerifiableCredentialConstants';
 import { ISiopValidation, ISiopValidationResponse } from './SiopValidationResponse';
 import { DidValidation } from './DidValidation';
 import { IValidationOptions } from '../Options/IValidationOptions';
-import { IExpected } from '..';
+import { IExpectedSiop } from '../index';
 
 /**
  * Class for siop validation
  */
 export class SiopValidation implements ISiopValidation {
 
-/**
- * Create a new instance of @see <SiopValidation>
- * @param options Options to steer the validation process
- * @param expected Expected properties of the SIOP
- */
-constructor (private options: IValidationOptions, private expected: IExpected) {
-}
+  /**
+   * Create a new instance of @see <SiopValidation>
+   * @param options Options to steer the validation process
+   * @param expected Expected properties of the SIOP
+   */
+  constructor(private options: IValidationOptions, private expected: IExpectedSiop) {
+  }
 
   /**
    * Validate the input for a correct format and signature
    * @param siop The SIOP token
    * @returns true if validation passes together with parsed objects
    */
-  public async validate (siop: string): Promise<ISiopValidationResponse> {
+  public async validate(siop: string): Promise<ISiopValidationResponse> {
     let validationResponse: ISiopValidationResponse = {
       result: true,
       status: 200
@@ -40,12 +39,18 @@ constructor (private options: IValidationOptions, private expected: IExpected) {
       return validationResponse;
     }
 
+    // Check token scope (aud and iss)
+    validationResponse = await this.options.checkScopeValidityOnSiopTokenDelegate(validationResponse, this.expected);
+    if (!validationResponse.result) {
+      return validationResponse;
+    }
+
     // Get input for the requested VC
     validationResponse = await this.options.getTokensFromSiopDelegate(validationResponse);
     if (!validationResponse.result) {
       return validationResponse;
     }
-  
+
     console.log(`The SIOP signature is verified with DID ${validationResponse.did}`);
     return validationResponse;
   }

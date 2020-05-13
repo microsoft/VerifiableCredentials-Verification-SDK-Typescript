@@ -8,16 +8,23 @@ import { DidDocument } from '@decentralized-identity/did-common-typescript';
 import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
 import base64url from "base64url";
 import ValidationOptions from '../lib/Options/ValidationOptions';
-import { IExpected } from '../lib/index';
+import { IExpectedBase, IExpectedSelfIssued, IExpectedIdToken, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, Validator } from '../lib/index';
 import VerifiableCredentialConstants from '../lib/VerifiableCredential/VerifiableCredentialConstants';
 
 export class IssuanceHelpers {
   /**
    * Create siop request
    */
-  public static async createSiopRequest(setup: TestSetup, key: any, didDocument: DidDocument, contract: string, nonce: string, attestations: any): Promise<ClaimToken> {
+  public static async createSiopRequestWithPayload(setup: TestSetup, siop: any, key: any): Promise<ClaimToken> {
+    const claimToken = await IssuanceHelpers.signAToken(setup, JSON.stringify(siop), '', key);
+    return claimToken;
+  }
+  
+  /**
+   * Create siop request
+   */
+  public static async createSiopRequest(setup: TestSetup, key: any, contract: string, nonce: string, attestations: any): Promise<ClaimToken> {
     const siop = {
-      did: didDocument.id,
       nonce,
       contract,
       attestations,
@@ -26,8 +33,7 @@ export class IssuanceHelpers {
       jti: 'test-jti'
     }
 
-    const claimToken = await IssuanceHelpers.signAToken(setup, JSON.stringify(siop), '', key);
-    return claimToken;
+    return IssuanceHelpers.createSiopRequestWithPayload(setup, siop, key);
   }
 
   /**
@@ -59,7 +65,8 @@ export class IssuanceHelpers {
           "https://portableidentitycards.azure-api.net/42b39d9d-0cdd-4ae0-b251-b7b39a561f91/api/portable/v1.0/contracts/test/schema"
         ],
         "type": [
-          "VerifiableCredential"
+          "VerifiableCredential",
+          "DrivingLicense"
         ],
         "credentialSubject": {
         },
@@ -89,8 +96,9 @@ export class IssuanceHelpers {
         "verifiableCredential": []        
       },
       iss: `${setup.defaultUserDid}`,
-      aud: setup.AUDIENCE
+      aud: `${setup.defaultIssuerDid}`,
     };
+
     for (let inx=0; inx < vcs.length; inx++) {
       (vpTemplate.vp.verifiableCredential as string[]).push(vcs[inx].rawToken);
     }
@@ -229,22 +237,27 @@ export class IssuanceHelpers {
     const request = await IssuanceHelpers.createSiopRequest(
       setup,
       didJwkPrivate,
-      didDocument, 
       contract, 
       '', 
       attestations
      );
-     const expected: IExpected[] = [
-      { type: TokenType.selfIssued },
-      { type: TokenType.idToken, issuers: [setup.defaultIdTokenConfiguration], audience: setup.AUDIENCE },
-      { type: TokenType.siop, issuers: ['https://self-issued.me'], audience: setup.AUDIENCE },
-      { type: TokenType.verifiablePresentation, issuers: [setup.defaultUserDid] , audience: setup.AUDIENCE },
-      { type: TokenType.verifiableCredential, issuers: [setup.defaultIssuerDid], subject: setup.defaultUserDid, contracts: [contract] }
+
+     const vcContractIssuers:{ [contract: string]: string[]}  = {};
+     vcContractIssuers[Validator.getContractIdFromSiop(contract)] = [setup.defaultIssuerDid];
+     const idTokenConfiguration:{ [contract: string]: string[]}  = {};
+     idTokenConfiguration[Validator.getContractIdFromSiop(contract)] = [setup.defaultIdTokenConfiguration];
+     const expected: IExpectedBase[] = [
+      <IExpectedSelfIssued>{ type: TokenType.selfIssued },
+      <IExpectedIdToken>{ type: TokenType.idToken, configuration: idTokenConfiguration, audience: setup.AUDIENCE },
+      <IExpectedSiop>{ type: TokenType.siop, audience: setup.AUDIENCE },
+      <IExpectedVerifiablePresentation>{ type: TokenType.verifiablePresentation, didAdience: setup.defaultIssuerDid },
+      <IExpectedVerifiableCredential>{ type: TokenType.verifiableCredential, contractIssuers: vcContractIssuers }
     ];
 
      const siopRequest = {
       didJwkPrivate,
       didJwkPublic,
+      tokenJwkPrivate,
       didDocument,
       contract,
       attestations,

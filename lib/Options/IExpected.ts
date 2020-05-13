@@ -6,35 +6,78 @@
 import { TokenType } from '../index';
 
 /**
- * Type for delegates to validate certain value in the token
+ * Type issuer mapping
  */
-export type CheckTokenProperty = (property: any) => boolean;
+export type IssuerMap =  ({ [contract: string]: string[]}) | string[];
 
-export default interface IExpected {
+
+
+/**
+ * Expected base
+ */
+export interface IExpectedBase {
+
   /**
    * The token type
    */
-  type: TokenType,
+  type: TokenType
+}
+
+
+/**
+ * Expected values for SIOP
+ */
+export interface IExpectedSiop extends IExpectedBase {
+
+ /**
+   * Expected audience for the token type
+   */
+  audience?: string
+}
+
+/**
+ * Expected values for verifiable presentation
+ */
+export interface IExpectedVerifiablePresentation extends IExpectedBase {
 
   /**
-   * Expected issuers for the token type (iss). 
-   * Configuration url for id tokens. The actual issuer is found in the issuer property of the configuration data.
+   * Expected audience DID for the token type
    */
-  issuers?: string[],
+  didAdience?: string
+}
+
+/**
+ * Expected values for verifiable credentials
+ */
+export interface IExpectedVerifiableCredential extends IExpectedBase {
+  /**
+   * Expected issuers for the different contracts.
+   */
+  contractIssuers?: IssuerMap,
+
+  /**
+   * Expected audience did for the token type
+   */
+  audience?: string , 
+}
+
+/**
+ * Expected values for self issued tokens
+ */
+export interface IExpectedSelfIssued extends IExpectedBase {
+}
+
+/**
+ * Expected values for id tokens
+ */
+export interface IExpectedIdToken extends IExpectedBase {
+  /**
+   * Expected issuers configuration endpoint for the different contracts.
+   */
+  configuration: IssuerMap,
 
   /**
    * Expected audience for the token type
    */
-  audience?: string ,
-
-  /**
-   * Expected subject for the token type
-   */
-  subject?: string ,
-
-  /**
-   * Verifiable credentials will use contracts to define their type
-   */
-  contracts?: string[],
-  
+  audience?: string
 }

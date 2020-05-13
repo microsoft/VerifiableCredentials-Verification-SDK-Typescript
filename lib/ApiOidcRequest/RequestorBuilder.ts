@@ -2,7 +2,8 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Requestor, IssuanceAttestationsModel } from '../index';
+import { Requestor, IssuanceAttestationsModel, Crypto } from '../index';
+import IRequestor from './IRequestor';
 
 /**
  * Class to build an OIDC requestor
@@ -13,59 +14,77 @@ export default class RequestorBuilder {
   private _state: string | undefined;
   private _nonce: string | undefined;
 
-  constructor(
-    private _clientName: string,
-    private _clientPurpose: string[],
-    private _clientId: string,
-    private _redirectUri: string,
-    private _issuer: string,
-    private _tosUri: string[],
-    private _logoUri: string[],
-    private _attestation: IssuanceAttestationsModel
-    ) {
+  /**
+   * Create a new instance of RequestorBuilder
+   * @param _requestor Initializer for the requestor
+   */
+  constructor(private _requestor: IRequestor) {
+  }
+//#region constructor properties
+
+  /**
+   * Gets the crypto object
+   */
+  public get crypto() {
+    return this._requestor.crypto;
   }
 
   /**
-   * Get the client name for the request
+   * Get the name of the requestor (Relying Party)
    */
   public get clientName() {
-    return this._clientName;
+    return this._requestor.clientName;
   }
 
   /**
-   * Get the client purpose for the request
+   * Get the requestor's purpose for the request
    */
   public get clientPurpose() {
-    return this._clientPurpose;
+    return this._requestor.clientPurpose;
+  }
+
+  /**
+   * Get the url where the request came from
+   */
+  public get clientId() {
+    return this._requestor.clientId;
+  }
+
+  /**
+   * Get the url to send response to
+   */
+  public get redirectUri() {
+    return this._requestor.redirectUri;
+  }
+
+  /**
+   * Get the DID of the requestor (Relying Party)t
+   */
+  public get issuer() {
+    return this._requestor.issuer;
   }
 
   /**
    * Gets the url pointing to terms and service user can open in a webview
    */
   public get tosUri() {
-    return this._tosUri;
+    return this._requestor.tosUri;
+  }
+
+  /**
+   * Gets the url pointing to logo of the requestor (Relying Party)
+   */
+  public get logoUri() {
+    return this._requestor.logoUri;
   }
 
   /**
    * Gets the claims being asked for
    */
   public get attestation() {
-    return this._attestation;
+    return this._requestor.attestation;
   }
-
-  /**
-   * Gets the url pointing to logo of relying party
-   */
-  public get logoUri() {
-    return this._logoUri;
-  }
-
-  /**
-   * Get the client id for the request
-   */
-  public get clientId() {
-    return this._clientId;
-  }
+  //#endregion
   
  /**
    * Sets the vp expiry
@@ -82,20 +101,6 @@ export default class RequestorBuilder {
    */
   public get verifiablePresentationExpiry(): number | undefined {
     return this.vpExpirty;
-  }
-
-  /**
-   * Get the redirect uri for the request
-   */
-  public get redirectUri() {
-    return this._redirectUri;
-  }
-
-  /**
-   * Get the issuer for the request
-   */
-  public get issuer() {
-    return this._issuer;
   }
   
  /**

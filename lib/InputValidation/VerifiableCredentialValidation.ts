@@ -5,34 +5,35 @@
 import { IValidationOptions } from '../Options/IValidationOptions';
 import { IVerifiableCredentialValidation, VerifiableCredentialValidationResponse } from './VerifiableCredentialValidationResponse';
 import { DidValidation } from './DidValidation';
+import { IExpectedVerifiableCredential } from '../index';
 import VerifiableCredentialConstants from '../VerifiableCredential/VerifiableCredentialConstants';
-import { IExpected } from '../index';
+import { isContext } from 'vm';
 
 /**
  * Class for verifiable credential validation
  */
 export class VerifiableCredentialValidation implements IVerifiableCredentialValidation {
 
-/**
- * Create a new instance of @see <VerifiableCredentialValidation>
- * @param options Options to steer the validation process
- * @param expected Expected properties of the verifiable credential
- * @param siopDid needs to be equal to audience of VC
- */
-  constructor (private options: IValidationOptions, private expected: IExpected, private siopDid: string) {
+  /**
+   * Create a new instance of @see <VerifiableCredentialValidation>
+   * @param options Options to steer the validation process
+   * @param expected Expected properties of the verifiable credential
+   */
+  constructor(private options: IValidationOptions, private expected: IExpectedVerifiableCredential) {
   }
- 
+
   /**
    * Validate the verifiable credential
    * @param verifiableCredential The credential to validate as a signed token
+   * @param siopDid needs to be equal to audience of VC
+   * @param siopContractId The id for contract which is validated
    * @returns result is true if validation passes
    */
-  public async validate(verifiableCredential: string): Promise<VerifiableCredentialValidationResponse> {
+  public async validate(verifiableCredential: string, siopDid: string, siopContractId: string): Promise<VerifiableCredentialValidationResponse> {
     let validationResponse: VerifiableCredentialValidationResponse = {
       result: true,
       status: 200
     };
-
     // Check the DID parts of the VC
     const didValidation = new DidValidation(this.options, this.expected);
     validationResponse = await didValidation.validate(verifiableCredential);
@@ -43,41 +44,139 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
     // Get issuer from verifiable credential payload
     validationResponse.did = validationResponse.payloadObject.iss;
 
-    // Check if VC subject and SIOP DID are equal
-    if (this.siopDid && validationResponse.payloadObject.sub !== this.siopDid) {
+    if (!validationResponse.payloadObject.vc) {
       return {
         result: false,
-        detailedError: `The DID used for the SIOP '${this.siopDid}' is not equal to the subject of the verifiable credential ${validationResponse.payloadObject.sub}`,
+        detailedError: `The verifiable credential does not has the vc property`,
         status: 403
       };
     }
 
-    // Check if the VC matches the contract
+    const context: string[] = validationResponse.payloadObject.vc[VerifiableCredentialConstants.CLAIM_CONTEXT];
+    if (!context || context.length === 0) {
+      return {
+        result: false,
+        detailedError: `The verifiable credential vc property does not contain ${VerifiableCredentialConstants.CLAIM_CONTEXT}`,
+        status: 403
+      };
+    }
+
+    if (context[0] !== VerifiableCredentialConstants.DEFAULT_VERIFIABLECREDENTIAL_CONTEXT) {
+      return {
+        result: false,
+        detailedError: `The verifiable credential context first element should be ${VerifiableCredentialConstants.DEFAULT_VERIFIABLECREDENTIAL_CONTEXT}`,
+        status: 403
+      };
+    }
+
+    const types: string[] = validationResponse.payloadObject.vc.type;
+    if (!types || types.length === 0) {
+      return {
+        result: false,
+        detailedError: `The vc property does not contain type`,
+        status: 403
+      };
+    }
+
+    if (types.length < 2) {
+      return {
+        result: false,
+        detailedError: `The verifiable credential type property should have two elements`,
+        status: 403
+      };
+    }
+
+    if (types[0] !== VerifiableCredentialConstants.DEFAULT_VERIFIABLECREDENTIAL_TYPE) {
+      return {
+        result: false,
+        detailedError: `The verifiable credential type first element should be ${VerifiableCredentialConstants.DEFAULT_VERIFIABLECREDENTIAL_TYPE}`,
+        status: 403
+      };
+    }
+
+    // Check token scope (aud and iss)
+    validationResponse = await this.options.checkScopeValidityOnVcTokenDelegate(validationResponse, this.expected, siopDid);
+    if (!validationResponse.result) {
+      return validationResponse;
+    }
+
+    // Check if the VC matches the contract and its issuers
     // Get the contract from the VC
-    if (this.expected.contracts && this.expected.contracts.length > 0) {
-      const context: string[] = validationResponse.payloadObject.vc[VerifiableCredentialConstants.CLAIM_CONTEXT];
-      let contractFound = false;
-      let contract: string = '';
-      for (let inx = 0 ; inx < context.length; inx++) {
-        if (this.expected.contracts.includes(context[inx])) {
-          contractFound = true;
-          contract = context[inx];
-          break;
-        }
+    if (this.expected.contractIssuers) {
+      const contractIssuers = VerifiableCredentialValidation.getIssuersFromExpected(this.expected, siopContractId);
+      if (!(contractIssuers instanceof Array)) {
+        return <VerifiableCredentialValidationResponse>contractIssuers;
       }
-  
+        
+      
       // Check if the we found a matching contract.
-      if (!contractFound) {
-        return validationResponse = {
+      if (!contractIssuers) {
+        return {
           result: false,
-          detailedError: `The verifiable credential with contract '${JSON.stringify(context)}' is not expected in '${JSON.stringify(this.expected.contracts)}`,
+          detailedError: `The verifiable credential with contract '${siopContractId}' is not expected in '${JSON.stringify(this.expected.contractIssuers)}'`,
           status: 403
         };
-      }  
+      }
+
+      if (!contractIssuers.includes(validationResponse.payloadObject.iss)) {
+        return {
+          result: false,
+          detailedError: `The verifiable credential with contract '${siopContractId}' is not from a trusted issuer '${JSON.stringify(this.expected.contractIssuers)}'`,
+          status: 403
+        };
+      }
     }
 
     // TODO Validate status
 
     return validationResponse;
+  }
+
+  /**
+   * Return expected issuers for verifyable credentials
+   * @param expected Could be a contract based object or just an array with expected issuers
+   * @param siopContractId The contract to which issuers are linked
+   */
+  public static getIssuersFromExpected(expected: IExpectedVerifiableCredential, siopContractId?: string): string[] | VerifiableCredentialValidationResponse {
+    if (!expected.contractIssuers) {
+      return {
+        result: false,
+        status: 500,
+        detailedError: `Expected should have contractIssuers issuers set for verifyableCredential`
+      };
+    }
+
+    let issuers: string[];
+
+    // Expected can provide a list of contractIssuers or a list linked to a contract
+    if (expected.contractIssuers instanceof Array) {
+      if (expected.contractIssuers.length === 0) {
+        return {
+          result: false,
+          status: 500,
+          detailedError: `Expected should have contractIssuers issuers set for verifiableCredential. Empty array presented.`
+        };
+      }
+      issuers = <string[]>expected.contractIssuers;
+    } else {
+      if (!siopContractId) {
+        return {
+          result: false,
+          status: 500,
+          detailedError: `The siopContractId needs to be specified to validate the verifiableCredential.`
+        };
+      }
+
+      // check for issuers for the contract
+      if (!(<{ [contract: string]: string[] }>expected.contractIssuers)[siopContractId]) {
+        return {
+          result: false,
+          status: 500,
+          detailedError: `Expected should have contractIssuers issuers set for verifiableCredential. Missing contractIssuers for '${siopContractId}'.`
+        };
+      }
+      issuers = <string[]>expected.contractIssuers[siopContractId]
+    }
+    return issuers;
   }
 }
