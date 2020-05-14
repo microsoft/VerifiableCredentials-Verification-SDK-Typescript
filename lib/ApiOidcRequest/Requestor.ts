@@ -58,7 +58,7 @@ export default class Requestor {
     }
 
     if (this.builder.logoUri) {
-      this._payload.logo_uri = this.builder.logoUri;
+      this._payload.registration.logo_uri = this.builder.logoUri;
     }
 
     const crypto = this.builder.crypto.builder;
