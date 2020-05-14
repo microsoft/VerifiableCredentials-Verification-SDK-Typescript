@@ -60,7 +60,7 @@ export default class Requestor {
     const crypto = this.builder.crypto.builder;
     const key = crypto.signingKeyReference;
     const signature = await crypto.payloadProtectionProtocol.sign(
-      new KeyReferenceOptions({ key, extractable: false }),
+      new KeyReferenceOptions({ keyReference: key, extractable: true }),
       Buffer.from(JSON.stringify(this._payload)),
       'JwsCompactJson',
       crypto.payloadProtectionOptions);

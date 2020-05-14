@@ -10,6 +10,7 @@ export default class CryptoBuilder {
     'CryptoFactoryNode',
     this.keyStore,
     this.subtle);
+  
   private _payloadProtectionProtocol: IPayloadProtection = new JoseProtocol();
   private _payloadProtectionOptions: IPayloadProtectionOptions  =  {
     cryptoFactory: this.cryptoFactory,
@@ -23,6 +24,7 @@ export default class CryptoBuilder {
    * @param signingKeyReference Reference in the key store to the signing key
    */
   constructor(private _did: string, private _signingKeyReference: string) {
+    this.subtle.cryptoFactory = this._cryptoFactory;
   }
   
   /**

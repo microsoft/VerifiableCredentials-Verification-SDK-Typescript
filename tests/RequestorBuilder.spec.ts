@@ -62,7 +62,7 @@ describe('RequestorBuilder', () => {
       true,
       ['sign', 'verify']
     );
-    const jwk: any = await crypto.builder.subtle.exportKey('jwk', key);
+    const jwk: any = await crypto.builder.subtle.exportKey('jwk', key.privateKey);
 
     // Store key
     await crypto.builder.keyStore.save(keyReference, jwk);
@@ -118,5 +118,6 @@ describe('RequestorBuilder', () => {
     const result: any = await requestor.create();
     expect(result.result).toBeTruthy();
     expect(result.request.split('.').length).toEqual(3);
+    console.log(`Signed request: ${result.request}`);
   });
 });
