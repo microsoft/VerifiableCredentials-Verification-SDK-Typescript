@@ -104,7 +104,7 @@ describe('RequestorBuilder', () => {
     expect(builder.verifiablePresentationExpiry).toEqual(-1);
   });
 
-  fit('should sign the request', async () => {
+  it('should sign the request', async () => {
     console.log('Create signed request');
     await generateKey(signingKeyReference, crypto);
     let requestorBuilder = new RequestorBuilder(initializer)
