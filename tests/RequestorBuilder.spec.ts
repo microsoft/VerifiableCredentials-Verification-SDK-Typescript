@@ -107,7 +107,7 @@ describe('RequestorBuilder', () => {
     expect(requestor.builder.crypto).toEqual(crypto);
   });
 
-  fit('should sign the request', async () => {
+  it('should sign the request', async () => {
     console.log('Create signed request');
     await generateKey(signingKeyReference, crypto);
     const requestor = new RequestorBuilder(initializer)
