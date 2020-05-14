@@ -43,7 +43,7 @@ export interface IExpectedVerifiablePresentation extends IExpectedBase {
   /**
    * Expected audience DID for the token type
    */
-  didAdience?: string
+  didAudience?: string
 }
 
 /**
@@ -54,11 +54,6 @@ export interface IExpectedVerifiableCredential extends IExpectedBase {
    * Expected issuers for the different contracts.
    */
   contractIssuers?: IssuerMap,
-
-  /**
-   * Expected audience did for the token type
-   */
-  audience?: string , 
 }
 
 /**

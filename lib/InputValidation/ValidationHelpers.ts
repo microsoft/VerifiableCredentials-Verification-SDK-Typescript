@@ -291,19 +291,19 @@ export class ValidationHelpers {
     }
 
     // check aud value
-    if (expected.didAdience) {
+    if (expected.didAudience) {
       if (!validationResponse.payloadObject.aud) {
         return {
           result: false,
-          detailedError: `Missing aud property in verifiablePresentation. Expected '${expected.didAdience}'`,
+          detailedError: `Missing aud property in verifiablePresentation. Expected '${expected.didAudience}'`,
           status: 403
         };
       }
 
-      if (validationResponse.payloadObject.aud !== expected.didAdience) {
+      if (validationResponse.payloadObject.aud !== expected.didAudience) {
         return {
           result: false,
-          detailedError: `Wrong aud property in verifiablePresentation. Expected '${expected.didAdience}'`,
+          detailedError: `Wrong aud property in verifiablePresentation. Expected '${expected.didAudience}'`,
           status: 403
         };
       }
@@ -319,7 +319,7 @@ export class ValidationHelpers {
     * @param siopDid The DID which has been extablished during the SIOP validation
     * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
     */
-  public checkScopeValidityOnVcToken(validationResponse: IValidationResponse, expected: IExpectedVerifiableCredential, siopDid: string): IValidationResponse {
+  public checkScopeValidityOnVcToken(validationResponse: IValidationResponse, _expected: IExpectedVerifiableCredential, siopDid: string): IValidationResponse {
     const self: any = this;
 
     // check sub value
@@ -340,16 +340,6 @@ export class ValidationHelpers {
       };
     }
 
-    if (expected.audience) {
-      if (validationResponse.payloadObject.aud !== expected.audience) {
-        return {
-          result: false,
-          detailedError: `Wrong aud property in verifiableCredential. Expected '${expected.audience}'`,
-          status: 403
-        };
-      }
-  
-    }
     return validationResponse;
   }
 

@@ -42,7 +42,10 @@ import { IValidationResponse } from './InputValidation/IValidationResponse';
 import { ISiopValidationResponse } from './InputValidation/SiopValidationResponse';
 import { IdTokenValidation } from './InputValidation/IdTokenValidation';
 import { VerifiablePresentationValidation } from './InputValidation/VerifiablePresentationValidation';
-export { IValidationResponse, IdTokenValidationResponse, ISiopValidationResponse, IdTokenValidation, VerifiablePresentationValidation };
+import { DidValidation } from './InputValidation/DidValidation'
+import { SiopValidation } from './InputValidation/SiopValidation'
+import { VerifiableCredentialValidation } from './InputValidation/VerifiableCredentialValidation'
+export { IValidationResponse, IdTokenValidationResponse, ISiopValidationResponse, IdTokenValidation, VerifiablePresentationValidation, DidValidation, SiopValidation, VerifiableCredentialValidation };
 
 import IRevocedCard from './Revocation/IRevokedCard';
 export { IRevocedCard };
