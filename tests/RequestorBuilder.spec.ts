@@ -1,5 +1,5 @@
 import IRequestor from '../lib/ApiOidcRequest/IRequestor';
-import { Crypto, IssuanceAttestationsModel, SelfIssuedAttestationModel, VerifiablePresentationAttestationModel, TrustedIssuerModel, InputClaimModel, IdTokenAttestationModel, CryptoBuilder, RequestorBuilder, IResponse } from '../lib/index';
+import { Crypto, IssuanceAttestationsModel, SelfIssuedAttestationModel, VerifiablePresentationAttestationModel, TrustedIssuerModel, InputClaimModel, IdTokenAttestationModel, CryptoBuilder, RequestorBuilder, IResponse, Requestor } from '../lib/index';
 
 describe('RequestorBuilder', () => {
   const getAttestations = () => {
@@ -71,16 +71,16 @@ describe('RequestorBuilder', () => {
   const initializer: IRequestor = {
     crypto,
     clientName: 'My relying party',
-    clientPurpose: ['Get access to my website'],
+    clientPurpose: 'Get access to my website',
     clientId: 'https://example.com/',
     redirectUri: 'https://example.com/login',
     issuer: did,
-    tosUri: ['https://example.com/tos'],
-    logoUri: ['https://example.com/mylogo.png'],
+    tosUri: 'https://example.com/tos',
+    logoUri: 'https://example.com/mylogo.png',
     attestation: getAttestations()
   };
 
-  it('should build RequestorBuilder', () => {
+  fit('should build RequestorBuilder', () => {
     const builder = new RequestorBuilder(initializer);
     expect(builder.crypto).toEqual(crypto);
     expect(builder.attestation).toEqual(getAttestations());
@@ -102,22 +102,30 @@ describe('RequestorBuilder', () => {
     expect(builder.state).toEqual('state');
     builder.useVerifiablePresentationExpiry(-1);
     expect(builder.verifiablePresentationExpiry).toEqual(-1);
-
-    const requestor = builder.build();
-    expect(requestor.builder.crypto).toEqual(crypto);
   });
 
-  it('should sign the request', async () => {
+  fit('should sign the request', async () => {
     console.log('Create signed request');
     await generateKey(signingKeyReference, crypto);
-    const requestor = new RequestorBuilder(initializer)
+    let requestorBuilder = new RequestorBuilder(initializer)
       .useNonce('nonce')
       .useState('state')
-      .useVerifiablePresentationExpiry(10)
-      .build();
-    const result: any = await requestor.create();
+      .useVerifiablePresentationExpiry(10);
+    let requestor = requestorBuilder.build();
+
+    let result: any = await requestor.create();
     expect(result.result).toBeTruthy();
+    expect(requestor.payload.prompt).toBeUndefined();
     expect(result.request.split('.').length).toEqual(3);
     console.log(`Signed request: ${result.request}`);
+
+    requestor = requestorBuilder.allowIssuance(false).build();
+    result = requestor.create();
+    expect(requestor.payload.prompt).toBeUndefined();
+
+    requestor = requestorBuilder.allowIssuance(true).build();
+    result = requestor.create();
+    expect(requestor.payload.prompt).toEqual('create');
+
   });
 });

@@ -18,7 +18,7 @@ export default interface IRequestor {
   /**
    * explaining the purpose of sending claims to relying party
    */
-  clientPurpose: string[],
+  clientPurpose: string,
 
   /**
    *  the url where the request came from
@@ -38,12 +38,12 @@ export default interface IRequestor {
   /**
    * url pointing to terms and service user can open in a webview
    */
-  tosUri: string[],
+  tosUri: string,
 
   /**
    * url pointing to logo of the requestor (Relying Party)
    */
-  logoUri: string[],
+  logoUri: string,
 
   /**
    * claims being asked for

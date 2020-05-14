@@ -44,7 +44,6 @@ export default class Requestor {
       state: state || this.builder.state,
       nonce: nonce || this.builder.nonce,
       attestations: this.builder.attestation,
-      prompt: 'create',
       registration: {
         client_name: this.builder.clientName,
         client_purpose: this.builder.clientPurpose,
@@ -53,6 +52,11 @@ export default class Requestor {
     };
 
     // Add optional fields
+    const issuance: boolean | undefined = this.builder.issuance; 
+    if ( issuance) {
+      this._payload.prompt = 'create';
+    }
+
     if (this.builder.logoUri) {
       this._payload.logo_uri = this.builder.logoUri;
     }
