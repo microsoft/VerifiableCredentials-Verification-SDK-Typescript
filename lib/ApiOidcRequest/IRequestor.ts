@@ -31,11 +31,6 @@ export default interface IRequestor {
   redirectUri: string,
 
   /**
-   * DID of the requestor (Relying Party)
-   */
-  issuer: string,
-
-  /**
    * url pointing to terms and service user can open in a webview
    */
   tosUri: string,

@@ -20,18 +20,25 @@ export default class CryptoBuilder {
 
   /**
    * Create a crypto builder to provide crypto capabilities
-   * @param did of the requestor
+   * @param didKid of the requestor's signing key
    * @param signingKeyReference Reference in the key store to the signing key
    */
-  constructor(private _did: string, private _signingKeyReference: string) {
+  constructor(private _didKid: string, private _signingKeyReference: string) {
     this.subtle.cryptoFactory = this._cryptoFactory;
+
+    // Set the protected header
+    const protectedHeader = new TSMap();
+    protectedHeader.set('kid', _didKid);
+    protectedHeader.set('typ', 'JWT');
+    this._payloadProtectionOptions.options.set(JoseConstants.optionProtectedHeader, protectedHeader);
   }
   
   /**
    * Get the DID of the requestor
    */
   public get did() {
-    return this._did;
+    const splitted = this._didKid.split('#');
+    return splitted[0];
   }
 
   /**

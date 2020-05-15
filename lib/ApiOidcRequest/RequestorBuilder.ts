@@ -59,13 +59,6 @@ export default class RequestorBuilder {
   }
 
   /**
-   * Get the DID of the requestor (Relying Party)t
-   */
-  public get issuer() {
-    return this._requestor.issuer;
-  }
-
-  /**
    * Gets the url pointing to terms and service user can open in a webview
    */
   public get tosUri() {

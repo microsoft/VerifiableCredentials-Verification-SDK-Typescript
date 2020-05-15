@@ -74,20 +74,18 @@ describe('RequestorBuilder', () => {
     clientPurpose: 'Get access to my website',
     clientId: 'https://example.com/',
     redirectUri: 'https://example.com/login',
-    issuer: did,
     tosUri: 'https://example.com/tos',
     logoUri: 'https://example.com/mylogo.png',
     attestation: getAttestations()
   };
 
-  fit('should build RequestorBuilder', () => {
+  it('should build RequestorBuilder', () => {
     const builder = new RequestorBuilder(initializer);
     expect(builder.crypto).toEqual(crypto);
     expect(builder.attestation).toEqual(getAttestations());
     expect(builder.clientId).toEqual(initializer.clientId);
     expect(builder.clientName).toEqual(initializer.clientName);
     expect(builder.clientPurpose).toEqual(initializer.clientPurpose);
-    expect(builder.issuer).toEqual(initializer.issuer);
     expect(builder.logoUri).toEqual(initializer.logoUri);
     expect(builder.redirectUri).toEqual(initializer.redirectUri);
     expect(builder.tosUri).toEqual(initializer.tosUri);

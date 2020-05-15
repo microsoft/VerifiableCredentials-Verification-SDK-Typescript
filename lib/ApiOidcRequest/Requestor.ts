@@ -34,16 +34,17 @@ export default class Requestor {
    * Create the actual request
    */
   public async create(state?: string, nonce?: string): Promise<IResponse> {
+    const crypto = this.builder.crypto.builder;
     this._payload = {
       response_type: 'idtoken',
       response_mode: 'form_post',
       client_id: this.builder.clientId,
       redirect_uri: this.builder.redirectUri,
-      iss: this.builder.issuer,
       scope: 'openid did_authn',
       state: state || this.builder.state,
       nonce: nonce || this.builder.nonce,
       attestations: this.builder.attestation,
+      iss: crypto.did,
       registration: {
         client_name: this.builder.clientName,
         client_purpose: this.builder.clientPurpose,
@@ -61,7 +62,6 @@ export default class Requestor {
       this._payload.registration.logo_uri = this.builder.logoUri;
     }
 
-    const crypto = this.builder.crypto.builder;
     const key = crypto.signingKeyReference;
     const signature = await crypto.payloadProtectionProtocol.sign(
       new KeyReferenceOptions({ keyReference: key, extractable: true }),
