@@ -33,18 +33,18 @@ export default class Requestor {
   /**
    * Create the actual request
    */
-  public async create(keyReference: string): Promise<IResponse> {
+  public async create(state?: string, nonce?: string): Promise<IResponse> {
+    const crypto = this.builder.crypto.builder;
     this._payload = {
       response_type: 'idtoken',
       response_mode: 'form_post',
       client_id: this.builder.clientId,
       redirect_uri: this.builder.redirectUri,
-      iss: this.builder.issuer,
       scope: 'openid did_authn',
-      state: this.builder.state,
-      nonce: this.builder.nonce,
+      state: state || this.builder.state,
+      nonce: nonce || this.builder.nonce,
       attestations: this.builder.attestation,
-      prompt: 'create',
+      iss: crypto.did,
       registration: {
         client_name: this.builder.clientName,
         client_purpose: this.builder.clientPurpose,
@@ -53,13 +53,18 @@ export default class Requestor {
     };
 
     // Add optional fields
-    if (this.builder.logoUri) {
-      this._payload.logo_uri = this.builder.logoUri;
+    const issuance: boolean | undefined = this.builder.issuance; 
+    if ( issuance) {
+      this._payload.prompt = 'create';
     }
 
-    const crypto = this.builder.crypto.builder;
+    if (this.builder.logoUri) {
+      this._payload.registration.logo_uri = this.builder.logoUri;
+    }
+
+    const key = crypto.signingKeyReference;
     const signature = await crypto.payloadProtectionProtocol.sign(
-      new KeyReferenceOptions({ keyReference, extractable: false }),
+      new KeyReferenceOptions({ keyReference: key, extractable: true }),
       Buffer.from(JSON.stringify(this._payload)),
       'JwsCompactJson',
       crypto.payloadProtectionOptions);

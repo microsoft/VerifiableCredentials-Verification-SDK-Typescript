@@ -59,6 +59,7 @@ import Crypto from './ApiCrypto/Crypto';
 import CryptoBuilder from './ApiCrypto/CryptoBuilder';
 import { SubtleCrypto } from '@microsoft/crypto-sdk';
 export { Crypto, CryptoBuilder, SubtleCrypto };
+
 import { BaseAttestationModel } from './rules-model/BaseAttestationModel';
 import { BaseIssuanceModel } from './rules-model/BaseIssuanceModel';
 import { IdTokenAttestationModel } from './rules-model/IdTokenAttestationModel';
@@ -73,7 +74,7 @@ import { TrustedIssuerModel } from './rules-model/TrustedIssuerModel';
 import { VerifiablePresentationAttestationModel } from './rules-model/VerifiablePresentationAttestationModel';
 import { RefreshConfigurationModel } from './rules-model/RefreshConfigurationModel';
 import { VerifiableCredentialModel } from './rules-model/VerifiableCredentialModel';
-import { TransformModel } from './rules-model/TransformModel';
+import { TransformModel } from './rules-model/TransformModel'; 
 export {
   TransformModel,
   VerifiableCredentialModel,
