@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { SubtleCryptoExtension, CryptoFactoryScope, KeyUse, JoseConstants } from '@microsoft/crypto-sdk';
+import { SubtleCrypto, CryptoFactoryScope, KeyUse, JoseConstants } from '@microsoft/crypto-sdk';
 import TestSetup from './TestSetup';
 import { DidDocument } from '@decentralized-identity/did-common-typescript';
 import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
@@ -109,7 +109,8 @@ export class IssuanceHelpers {
    * Generate a signing keys and set the configuration mock
    */
   public static async generateSigningKey(setup: TestSetup, kid: string): Promise<[any, any]> {
-    const generator = new SubtleCryptoExtension(setup.cryptoFactory);
+    const generator = new SubtleCrypto();
+    generator.cryptoFactory = setup.cryptoFactory;
     const key: any = await generator.generateKey(
     <any>{
         name: "RSASSA-PKCS1-v1_5",
@@ -119,17 +120,9 @@ export class IssuanceHelpers {
     },
     true, 
     ["sign", "verify"]);
-    const jwkPublic = await generator.exportJwkKey(
-      <any>{
-        name: "RSASSA-PKCS1-v1_5",
-        hash: {name: "SHA-256"}, 
-    }, key.publicKey, CryptoFactoryScope.Public);
+    const jwkPublic = await generator.exportKey('jwk', key.publicKey);
     
-    const jwkPrivate = await generator.exportJwkKey(
-      <any>{
-        name: "RSASSA-PKCS1-v1_5",
-        hash: {name: "SHA-256"}, 
-    }, key.privateKey, CryptoFactoryScope.Private);
+    const jwkPrivate = await generator.exportKey('jwk', key.privateKey);
     (<any>jwkPrivate).kid = (<any>jwkPublic).kid = kid;
     return [jwkPrivate, jwkPublic];
   }
