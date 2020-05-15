@@ -23,4 +23,9 @@ export default interface IValidationResult {
    * Claims found in the input self issued token
    */
   selfIssued?: any
+
+  /**
+   * The jti of the incoming siop token
+   */
+  siopJti: string,
 }

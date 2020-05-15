@@ -151,7 +151,8 @@ describe('Validator', () => {
     expect(result.detailedError).toBeUndefined();
     expect(result.tokensToValidate).toBeUndefined();
     expect(result.validationResult?.did).toEqual(setup.defaultUserDid);
-    expect(result.validationResult?.idTokens).toBeDefined();
+    expect(result.validationResult?.siopJti).toEqual(IssuanceHelpers.jti);
+    expect(result.validationResult?.idTokens).toBeDefined();    
     for (let idtoken in result.validationResult?.idTokens) {
       expect(result.validationResult?.idTokens[idtoken].upn).toEqual('jules@pulpfiction.com');
     }

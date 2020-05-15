@@ -22,7 +22,7 @@ export default class Validator {
   constructor(
     private _tokenValidators: { [type: string]: ITokenValidator },
     private _resolver: IDidResolver) {
-  } 
+  }
 
   /**
    * Gets the resolver
@@ -63,27 +63,27 @@ export default class Validator {
           reject(`${claimToken.type} does not has a TokenValidator`);
         });
       }
-  
+
       switch (claimToken.type) {
-        case TokenType.idToken: 
+        case TokenType.idToken:
           options = new ValidationOptions(validatorOption, claimToken.type);
           response = await validator.validate(queue, queueItem!, '', siopContract);
           break;
-        case TokenType.verifiableCredential: 
+        case TokenType.verifiableCredential:
           options = new ValidationOptions(validatorOption, claimToken.type);
           response = await validator.validate(queue, queueItem!, siopDid!, siopContract!);
           break;
-        case TokenType.verifiablePresentation: 
+        case TokenType.verifiablePresentation:
           options = new ValidationOptions(validatorOption, claimToken.type);
           response = await validator.validate(queue, queueItem!, siopDid!);
           break;
-        case TokenType.siop: 
+        case TokenType.siop:
           options = new ValidationOptions(validatorOption, claimToken.type);
           response = await validator.validate(queue, queueItem!);
           siopDid = response.did;
           siopContract = Validator.getContractIdFromSiop(response.payloadObject.contract);
           break;
-        case TokenType.selfIssued: 
+        case TokenType.selfIssued:
           options = new ValidationOptions(validatorOption, claimToken.type);
           response = await validator.validate(queue, queueItem!);
           break;
@@ -97,10 +97,10 @@ export default class Validator {
 
       // Get next token to validate
       queueItem = queue.getNextToken();
-    } while(queueItem);
+    } while (queueItem);
 
     // Set output
-    response =queue.getResult();
+    response = queue.getResult();
     if (response.result) {
       // set claims
       response = {
@@ -109,7 +109,7 @@ export default class Validator {
         validationResult: this.setValidationResult(queue),
         payloadObject: response.payloadObject,
       };
-  }
+    }
     return response;
   }
 
@@ -129,15 +129,20 @@ export default class Validator {
       return (siop.validationResponse as ISiopValidationResponse).payloadObject.contract;
     })[0];
 
+    // Set the jti
+    const jti = queue.items.filter((item) => item.validatedToken?.type === TokenType.siop).map((siop) => {
+      return (siop.validationResponse as ISiopValidationResponse).payloadObject.jti;
+    })[0];
+
     // get id tokens
-    const idTokens: {[id: string]: any} = {};
-    for (let inx = 0, tokens=queue.items.filter((item) => item.validatedToken?.type === TokenType.idToken) ; inx < tokens.length; inx++) {
+    const idTokens: { [id: string]: any } = {};
+    for (let inx = 0, tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.idToken); inx < tokens.length; inx++) {
       idTokens[tokens[inx].id] = tokens[inx].validatedToken?.decodedToken;
     }
 
     // get verifiable credentials
-    const vcs: {[id: string]: any} = {};
-    for (let inx = 0, tokens=queue.items.filter((item) => item.validatedToken?.type === TokenType.verifiableCredential) ; inx < tokens.length; inx++) {
+    const vcs: { [id: string]: any } = {};
+    for (let inx = 0, tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.verifiableCredential); inx < tokens.length; inx++) {
       vcs[tokens[inx].id] = tokens[inx].validatedToken?.decodedToken;
     }
 
@@ -151,7 +156,8 @@ export default class Validator {
       contract: contract ? contract : '',
       verifiableCredentials: vcs,
       idTokens: idTokens,
-      selfIssued: si
+      selfIssued: si,
+      siopJti: jti ?? '',
     }
     return validationResult;
   }
