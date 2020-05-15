@@ -12,6 +12,8 @@ import { IExpectedBase, IExpectedSelfIssued, IExpectedIdToken, IExpectedSiop, IE
 import VerifiableCredentialConstants from '../lib/VerifiableCredential/VerifiableCredentialConstants';
 
 export class IssuanceHelpers {
+  public static readonly jti: string = 'testJti';
+
   /**
    * Create siop request
    */
@@ -30,7 +32,7 @@ export class IssuanceHelpers {
       attestations,
       iss: 'https://self-issued.me',
       aud: setup.AUDIENCE,
-      jti: 'test-jti'
+      jti: IssuanceHelpers.jti
     }
 
     return IssuanceHelpers.createSiopRequestWithPayload(setup, siop, key);
@@ -243,7 +245,7 @@ export class IssuanceHelpers {
       <IExpectedSelfIssued>{ type: TokenType.selfIssued },
       <IExpectedIdToken>{ type: TokenType.idToken, configuration: idTokenConfiguration, audience: setup.AUDIENCE },
       <IExpectedSiop>{ type: TokenType.siop, audience: setup.AUDIENCE },
-      <IExpectedVerifiablePresentation>{ type: TokenType.verifiablePresentation, didAdience: setup.defaultIssuerDid },
+      <IExpectedVerifiablePresentation>{ type: TokenType.verifiablePresentation, didAudience: setup.defaultIssuerDid },
       <IExpectedVerifiableCredential>{ type: TokenType.verifiableCredential, contractIssuers: vcContractIssuers }
     ];
 
@@ -259,7 +261,8 @@ export class IssuanceHelpers {
       vp,
       vc,
       si,
-      expected
+      expected,
+      jti: IssuanceHelpers.jti
     }
      return [request, options, siopRequest];
   }
