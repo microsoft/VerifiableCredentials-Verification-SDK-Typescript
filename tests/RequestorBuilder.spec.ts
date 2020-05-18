@@ -1,5 +1,6 @@
 import IRequestor from '../lib/ApiOidcRequest/IRequestor';
 import { Crypto, IssuanceAttestationsModel, SelfIssuedAttestationModel, VerifiablePresentationAttestationModel, TrustedIssuerModel, InputClaimModel, IdTokenAttestationModel, CryptoBuilder, RequestorBuilder, IResponse, Requestor } from '../lib/index';
+import LongFormDid from '../lib/ApiCrypto/LongFormDid';
 
 describe('RequestorBuilder', () => {
   const getAttestations = () => {
@@ -47,25 +48,14 @@ describe('RequestorBuilder', () => {
 
   const did = 'did:test:12345678';
   const signingKeyReference = 'sign';
-  const crypto = new CryptoBuilder(did, signingKeyReference)
+  let crypto = new CryptoBuilder(did, signingKeyReference)
     .build();
 
-  const generateKey = async (keyReference: string, crypto: Crypto): Promise<void> => {
-    // See https://github.com/diafygi/webcrypto-examples for examples how to use the W3C web Crypto stamdard
-    // Generate a key
-    const key: any = await crypto.builder.subtle.generateKey(
-      <EcKeyGenParams>{
-        name: 'ECDSA',
-        //namedCurve: 'secp256k1',
-        namedCurve: 'P-256'
-      },
-      true,
-      ['sign', 'verify']
-    );
-    const jwk: any = await crypto.builder.subtle.exportKey('jwk', key.privateKey);
-
-    // Store key
-    await crypto.builder.keyStore.save(keyReference, jwk);
+  const generateKey = async (keyReference: string, crypto: Crypto): Promise<string> => {
+    const longFormDid = new LongFormDid(crypto);
+    const longForm = await longFormDid.create(keyReference);
+    console.log(`Long-form DID: ${longForm}`);
+    return longForm;
   };
 
   const initializer: IRequestor = {
@@ -102,9 +92,10 @@ describe('RequestorBuilder', () => {
     expect(builder.verifiablePresentationExpiry).toEqual(-1);
   });
 
-  it('should sign the request', async () => {
+  fit('should sign the request', async () => {
     console.log('Create signed request');
-    await generateKey(signingKeyReference, crypto);
+    crypto.builder.did =await generateKey(signingKeyReference, crypto);
+
     let requestorBuilder = new RequestorBuilder(initializer)
       .useNonce('nonce')
       .useState('state')

@@ -155,3 +155,4 @@ bld/
 .vs
 .user
 /services/PouchDbClient/testdb
+package-lock.json

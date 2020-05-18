@@ -92,3 +92,6 @@ export {
   TrustedIssuerModel,
   VerifiablePresentationAttestationModel
 };
+
+import LongFormDid from './ApiCrypto/LongFormDid';
+export { LongFormDid };
