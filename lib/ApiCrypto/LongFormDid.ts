@@ -49,13 +49,13 @@ export default class LongFormDid {
     await this.crypto.builder.keyStore.save('recovery', recoveryPrivate);
 
     // Create long-form did
-    const createOperationData = await this.generateCreateOperation(recoveryPublic, signingPublic);
-    const didMethodName = 'sidetree';
+    const createOperationData = await this.generateCreateOperation(recoveryPublic, signingPublic, keyReference);
+    const didMethodName = 'ion';
     const didUniqueSuffix = createOperationData.createOperation.didUniqueSuffix;
     const shortFormDid = `did:${didMethodName}:${didUniqueSuffix}`;
     const encodedSuffixData = createOperationData.createOperation.encodedSuffixData;
     const encodedDelta = createOperationData.createOperation.encodedDelta;
-    const longFormDid = `${shortFormDid}?-sidetree-initial-state=${encodedSuffixData}.${encodedDelta}`;
+    const longFormDid = `${shortFormDid}?-ion-initial-state=${encodedSuffixData}.${encodedDelta}`;
 
     // const did = await Did.create(longFormDid, didMethodName);
     return longFormDid;
@@ -65,7 +65,7 @@ export default class LongFormDid {
   /**
    * Generates an create operation.
    */
-  public async generateCreateOperation(recoveryPublicKey: any, signingPublicKey: any) {
+  public async generateCreateOperation(recoveryPublicKey: any, signingPublicKey: any, keyReference: string) {
     // Generate the next update and recover operation commitment hash reveal value pair.
     const [nextRecoveryRevealValueEncodedString, nextRecoveryCommitmentHash] = await this.generateCommitRevealPair();
     const [nextUpdateRevealValueEncodedString, nextUpdateCommitmentHash] = await this.generateCommitRevealPair();
@@ -73,6 +73,7 @@ export default class LongFormDid {
     const operationRequest = this.generateCreateOperationRequest(
       recoveryPublicKey,
       signingPublicKey,
+      keyReference,
       nextRecoveryCommitmentHash,
       nextUpdateCommitmentHash
     );
@@ -111,10 +112,22 @@ export default class LongFormDid {
   public generateCreateOperationRequest(
     recoveryPublicKey: any,
     signingPublicKey: any,
+    keyReference: string,
     nextRecoveryCommitment: string,
     nextUpdateCommitment: string) {
+
+    const publicKey = {
+      id: keyReference,
+      type: "EcdsaSecp256k1VerificationKey2019",
+      jwk: signingPublicKey,
+      usage: [
+        "ops",
+        "auth",
+        "general"
+      ]
+    }
     const document = {
-      publicKeys: [signingPublicKey]
+      publicKeys: [publicKey]
     };
 
     const patches = [{
