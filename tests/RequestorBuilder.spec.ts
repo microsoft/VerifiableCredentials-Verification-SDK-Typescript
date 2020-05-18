@@ -48,13 +48,14 @@ describe('RequestorBuilder', () => {
 
   const did = 'did:test:12345678';
   const signingKeyReference = 'sign';
-  const crypto = new CryptoBuilder(did, signingKeyReference)
+  let crypto = new CryptoBuilder(did, signingKeyReference)
     .build();
 
-  const generateKey = async (keyReference: string, crypto: Crypto): Promise<void> => {
+  const generateKey = async (keyReference: string, crypto: Crypto): Promise<string> => {
     const longFormDid = new LongFormDid(crypto);
     const longForm = await longFormDid.create(keyReference);
     console.log(`Long-form DID: ${longForm}`);
+    return longForm;
   };
 
   const initializer: IRequestor = {
@@ -93,7 +94,8 @@ describe('RequestorBuilder', () => {
 
   fit('should sign the request', async () => {
     console.log('Create signed request');
-    await generateKey(signingKeyReference, crypto);
+    crypto.builder.did =await generateKey(signingKeyReference, crypto);
+
     let requestorBuilder = new RequestorBuilder(initializer)
       .useNonce('nonce')
       .useState('state')

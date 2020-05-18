@@ -1,9 +1,9 @@
 import { Crypto } from '../index';
-import { PublicKey } from '@microsoft/crypto-keys';
 import base64url from 'base64url';
 import OperationType from '@decentralized-identity/sidetree/dist/lib/core/enums/OperationType';
 import CreateOperation from '@decentralized-identity/sidetree/dist/lib/core/versions/latest/CreateOperation';
 import Multihash from '@decentralized-identity/sidetree/dist/lib/core/versions/latest/Multihash';
+import Did from '@decentralized-identity/sidetree/dist/lib/core/versions/latest/Did';
 
 
 /**
@@ -16,7 +16,7 @@ export default class LongFormDid {
    * Create key and return longform
    * @param keyReference Reference to the key
    */
-  public async create(keyReference: string): Promise<any> {
+  public async create(keyReference: string): Promise<string> {
     // See https://github.com/diafygi/webcrypto-examples for examples how to use the W3C web Crypto stamdard
     // Generate the signing key
     let key: any = await this.crypto.builder.subtle.generateKey(
@@ -28,10 +28,8 @@ export default class LongFormDid {
       ['sign', 'verify']
     );
     const signingPrivate: any = await this.crypto.builder.subtle.exportKey('jwk', key.privateKey);
-    const signingPublic = await this.crypto.builder.subtle.exportKey('jwk', key.publicKey);
-    delete (<any>signingPublic).key_ops;
-    delete (<any>signingPublic).ext;
-
+    const signingPublic = this.normalizeJwk(await this.crypto.builder.subtle.exportKey('jwk', key.publicKey));
+    
     // Generate recovery key
     key = await this.crypto.builder.subtle.generateKey(
       <EcKeyGenParams>{
@@ -42,7 +40,7 @@ export default class LongFormDid {
       ['sign', 'verify']
     );
     const recoveryPrivate: any = await this.crypto.builder.subtle.exportKey('jwk', key.privateKey);
-    const recoveryPublic = await this.crypto.builder.subtle.exportKey('jwk', key.publicKey);
+    const recoveryPublic = this.normalizeJwk(await this.crypto.builder.subtle.exportKey('jwk', key.publicKey));
     delete (<any>recoveryPublic).key_ops;
     delete (<any>recoveryPublic).ext;
 
@@ -51,7 +49,16 @@ export default class LongFormDid {
     await this.crypto.builder.keyStore.save('recovery', recoveryPrivate);
 
     // Create long-form did
-    return this.generateCreateOperation(recoveryPublic, signingPublic);
+    const createOperationData = await this.generateCreateOperation(recoveryPublic, signingPublic);
+    const didMethodName = 'sidetree';
+    const didUniqueSuffix = createOperationData.createOperation.didUniqueSuffix;
+    const shortFormDid = `did:${didMethodName}:${didUniqueSuffix}`;
+    const encodedSuffixData = createOperationData.createOperation.encodedSuffixData;
+    const encodedDelta = createOperationData.createOperation.encodedDelta;
+    const longFormDid = `${shortFormDid}?-sidetree-initial-state=${encodedSuffixData}.${encodedDelta}`;
+
+    // const did = await Did.create(longFormDid, didMethodName);
+    return longFormDid;
   };
 
 
@@ -102,8 +109,8 @@ export default class LongFormDid {
  * @param nextUpdateCommitment The encoded commitment hash for the next update.
  */
   public generateCreateOperationRequest(
-    recoveryPublicKey: PublicKey,
-    signingPublicKey: PublicKey,
+    recoveryPublicKey: any,
+    signingPublicKey: any,
     nextRecoveryCommitment: string,
     nextUpdateCommitment: string) {
     const document = {
@@ -138,5 +145,12 @@ export default class LongFormDid {
     };
 
     return operation;
+  }
+
+  private normalizeJwk(key: any) {
+    delete key.key_ops;
+    delete key.ext;
+    key.crv = 'secp256k1';
+    return key;
   }
 }
