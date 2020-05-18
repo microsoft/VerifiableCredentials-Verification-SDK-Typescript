@@ -34,15 +34,17 @@
     "ts-node": "8.1.0",
     "tslint": "5.16.0",
     "tslint-config-standard": "8.0.1",
-    "typescript": "3.8.2"
+    "typescript": "3.9.2"
   },
   "dependencies": {
     "@decentralized-identity/did-common-typescript": "0.1.19",
+    "@decentralized-identity/sidetree": "^0.7.0",
     "@microsoft/crypto-sdk": "1.0.11",
     "base64url": "3.0.1",
     "deep-property-access": "1.0.1",
     "es6-promise": "^4.2.8",
     "isomorphic-fetch": "2.2.1",
+    "multihashes": "0.4.14",
     "typescript-map": "0.0.7",
     "uuid": "7.0.1"
   },
