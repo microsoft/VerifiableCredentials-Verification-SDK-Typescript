@@ -12,8 +12,7 @@ import ClaimToken, { TokenType } from '../VerifiableCredential/ClaimToken';
 import VerifiableCredentialConstants from '../VerifiableCredential/VerifiableCredentialConstants';
 import { IdTokenValidationResponse } from './IdTokenValidationResponse';
 import { IValidationResponse } from './IValidationResponse';
-import { IExpectedIdToken, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IdTokenValidation } from '..';
-import { IExpectedBase, IExpectedSiop } from '../Options/IExpected';
+import { IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSiop, IExpectedAudience } from '../Options/IExpected';
 
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
@@ -220,10 +219,9 @@ export class ValidationHelpers {
   /**
     * Check the scope validity of the token such as iss and aud
     * @param validationResponse The response for the requestor
-    * @param expected Expected output of the verifiable credential
     * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
     */
-  public checkScopeValidityOnIdToken(validationResponse: IValidationResponse, _expected: IExpectedIdToken): IValidationResponse {
+  public checkScopeValidityOnIdToken(validationResponse: IValidationResponse, expected: IExpectedAudience): IValidationResponse {
     const self: any = this;
 
     // check iss value
@@ -249,6 +247,15 @@ export class ValidationHelpers {
         result: false,
         detailedError: `The issuer in configuration '${issuer}' does not correspond with the issuer in the payload ${validationResponse.payloadObject.iss}`,
         status: 403
+      };
+    }
+
+    // check for the audience to match
+    if (expected.audience && expected.audience !== validationResponse.payloadObject.aud) {
+      return {
+        result: false,
+        status: 401,
+        detailedError: `The audience ${validationResponse.payloadObject.aud} is invalid`
       };
     }
 

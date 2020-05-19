@@ -5,8 +5,8 @@
 
 export { DidDocument, IDidDocument, IDidDocumentPublicKey, IDidDocumentServiceDescriptor, IDidResolver, IDidResolveResult } from '@decentralized-identity/did-common-typescript';
 
-import {IExpectedBase, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSelfIssued, IExpectedIdToken} from './Options/IExpected';
-export { IExpectedBase, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSelfIssued, IExpectedIdToken };
+import {IExpectedBase, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSelfIssued, IExpectedIdToken, IExpectedOpenIdToken, IExpectedAudience} from './Options/IExpected';
+export { IExpectedBase, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSelfIssued, IExpectedIdToken, IExpectedOpenIdToken, IExpectedAudience };
 
 import CryptoOptions, { ICryptoOptions } from './Options/CryptoOptions';
 export { ICryptoOptions, CryptoOptions };
@@ -42,12 +42,12 @@ import { IValidationResponse } from './InputValidation/IValidationResponse';
 import { ISiopValidationResponse } from './InputValidation/SiopValidationResponse';
 import { IdTokenValidation } from './InputValidation/IdTokenValidation';
 import { BaseIdTokenValidation } from './InputValidation/BaseIdTokenValidation';
-// import { OpenIdTokenValidation } from './InputValidation/OpenIdTokenValidation';
+import { OpenIdTokenValidation } from './InputValidation/OpenIdTokenValidation';
 import { VerifiablePresentationValidation } from './InputValidation/VerifiablePresentationValidation';
 import { DidValidation } from './InputValidation/DidValidation'
 import { SiopValidation } from './InputValidation/SiopValidation'
 import { VerifiableCredentialValidation } from './InputValidation/VerifiableCredentialValidation'
-export { IValidationResponse, IdTokenValidationResponse, ISiopValidationResponse, IdTokenValidation, VerifiablePresentationValidation, DidValidation, SiopValidation, VerifiableCredentialValidation, BaseIdTokenValidation };
+export { IValidationResponse, IdTokenValidationResponse, ISiopValidationResponse, IdTokenValidation, VerifiablePresentationValidation, DidValidation, SiopValidation, VerifiableCredentialValidation, BaseIdTokenValidation, OpenIdTokenValidation };
 
 import IRevocedCard from './Revocation/IRevokedCard';
 export { IRevocedCard };

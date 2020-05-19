@@ -9,7 +9,7 @@ import ClaimToken, { TokenType } from '../VerifiableCredential/ClaimToken';
 import { BaseIdTokenValidation } from './BaseIdTokenValidation';
 
 /**
- * Class for id token validation
+ * Class for id token validation for the Verifiable Credential attestation scenario
  */
 export class IdTokenValidation extends BaseIdTokenValidation {
   /**
@@ -18,7 +18,7 @@ export class IdTokenValidation extends BaseIdTokenValidation {
    * @param expected Expected properties of the id token
    * @param siopContract Conract type asked during siop
    */
-  constructor(options: IValidationOptions, expected: IExpectedIdToken, private siopContract: string) {
+  constructor(options: IValidationOptions, private expected: IExpectedIdToken, private siopContract: string) {
     super(options, expected);
   }
 
