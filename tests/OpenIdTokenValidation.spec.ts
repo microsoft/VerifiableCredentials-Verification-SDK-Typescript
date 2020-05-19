@@ -3,10 +3,9 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import TestSetup from './TestSetup';
-import { IdTokenValidation } from '../lib/InputValidation/IdTokenValidation';
 import { IssuanceHelpers } from './IssuanceHelpers';
-import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
-import { IExpectedIdToken, Validator, OpenIdTokenValidation, IExpectedOpenIdToken } from '../lib';
+import { TokenType } from '../lib/VerifiableCredential/ClaimToken';
+import { OpenIdTokenValidation, IExpectedOpenIdToken } from '../lib';
 
 describe('OpenIdTokenValidation', () => {
   let setup: TestSetup;
