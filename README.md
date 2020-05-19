@@ -1,3 +1,4 @@
+[![Build Status](https://dev.azure.com/decentralized-identity/Core/_apis/build/status/VerifiableCredentials-Verification-SDK-Typescript?branchName=master)](https://dev.azure.com/decentralized-identity/Core/_build/latest?definitionId=32&branchName=master)
 
 # Sample Validation API
     const siop = 'put your siop here';
