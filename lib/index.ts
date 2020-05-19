@@ -41,11 +41,13 @@ import { IdTokenValidationResponse } from './InputValidation/IdTokenValidationRe
 import { IValidationResponse } from './InputValidation/IValidationResponse';
 import { ISiopValidationResponse } from './InputValidation/SiopValidationResponse';
 import { IdTokenValidation } from './InputValidation/IdTokenValidation';
+import { BaseIdTokenValidation } from './InputValidation/BaseIdTokenValidation';
+// import { OpenIdTokenValidation } from './InputValidation/OpenIdTokenValidation';
 import { VerifiablePresentationValidation } from './InputValidation/VerifiablePresentationValidation';
 import { DidValidation } from './InputValidation/DidValidation'
 import { SiopValidation } from './InputValidation/SiopValidation'
 import { VerifiableCredentialValidation } from './InputValidation/VerifiableCredentialValidation'
-export { IValidationResponse, IdTokenValidationResponse, ISiopValidationResponse, IdTokenValidation, VerifiablePresentationValidation, DidValidation, SiopValidation, VerifiableCredentialValidation };
+export { IValidationResponse, IdTokenValidationResponse, ISiopValidationResponse, IdTokenValidation, VerifiablePresentationValidation, DidValidation, SiopValidation, VerifiableCredentialValidation, BaseIdTokenValidation };
 
 import IRevocedCard from './Revocation/IRevokedCard';
 export { IRevocedCard };

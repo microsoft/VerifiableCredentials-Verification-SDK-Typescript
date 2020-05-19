@@ -221,10 +221,9 @@ export class ValidationHelpers {
     * Check the scope validity of the token such as iss and aud
     * @param validationResponse The response for the requestor
     * @param expected Expected output of the verifiable credential
-   * @param contractId Conract type asked during siop
     * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
     */
-  public checkScopeValidityOnIdToken(validationResponse: IValidationResponse, expected: IExpectedIdToken, contractId: string): IValidationResponse {
+  public checkScopeValidityOnIdToken(validationResponse: IValidationResponse, _expected: IExpectedIdToken): IValidationResponse {
     const self: any = this;
 
     // check iss value
@@ -237,17 +236,10 @@ export class ValidationHelpers {
       };
     }
 
-    // Get issuers from configuration
-    const issuers = IdTokenValidation.getIssuersFromExpected(expected, contractId);
-    if (!(issuers instanceof Array)) {
-      return <IdTokenValidationResponse>issuers;
-    }
-
-
     if (!validationResponse.payloadObject.iss) {
       return {
         result: false,
-        detailedError: `Missing iss property in idToken. Expected '${JSON.stringify(issuers)}'`,
+        detailedError: `Missing iss property in idToken. Expected '${JSON.stringify(issuer)}'`,
         status: 403
       };
     }

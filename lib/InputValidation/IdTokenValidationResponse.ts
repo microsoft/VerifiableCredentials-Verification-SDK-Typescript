@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IValidationResponse } from './IValidationResponse';
-import ClaimToken from '../VerifiableCredential/ClaimToken';
 
 export interface IdTokenValidationResponse extends IValidationResponse {
 

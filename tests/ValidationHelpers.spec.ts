@@ -198,34 +198,34 @@ import { IExpectedSiop, IExpectedIdToken } from '../lib';
       aud: audience
     }
 
-    let response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, {type: TokenType.idToken, configuration: {test: [issuer]}, audience: audience} as IExpectedIdToken, 'contract');
+    let response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, {type: TokenType.idToken, configuration: {test: [issuer]}, audience: audience} as IExpectedIdToken);
     expect(response.result).toBeTruthy();
     expect(response.status).toEqual(200);
 
     // Negative cases
     validationResponse.payloadObject.iss = undefined;
-    response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, {type: TokenType.idToken, configuration: {test: [issuer]}, audience: audience} as IExpectedIdToken, 'contract');
+    response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, {type: TokenType.idToken, configuration: {test: [issuer]}, audience: audience} as IExpectedIdToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Missing iss property in verifiableCredential. Expected '["iss"]'`);
     validationResponse.payloadObject.iss = issuer;
 
     validationResponse.payloadObject.iss = 'abc';
-    response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, {type: TokenType.idToken, configuration: {test: [issuer]}, audience: audience} as IExpectedIdToken, 'contract');
+    response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, {type: TokenType.idToken, configuration: {test: [issuer]}, audience: audience} as IExpectedIdToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Wrong iss property in verifiableCredential. Expected '["iss"]'`);
     validationResponse.payloadObject.iss = issuer;
 
     validationResponse.payloadObject.aud = undefined;
-    response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, {type: TokenType.idToken, configuration: {test: [issuer]}, audience: audience} as IExpectedIdToken, 'contract');
+    response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, {type: TokenType.idToken, configuration: {test: [issuer]}, audience: audience} as IExpectedIdToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Missing aud property in verifiableCredential. Expected 'aud'`);
     validationResponse.payloadObject.aud = audience;
 
     validationResponse.payloadObject.aud = 'xxx';
-    response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, {type: TokenType.idToken, configuration: {test: [issuer]}, audience: audience} as IExpectedIdToken, 'contract');
+    response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, {type: TokenType.idToken, configuration: {test: [issuer]}, audience: audience} as IExpectedIdToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Wrong aud property in verifiableCredential. Expected 'aud'`);

@@ -16,7 +16,7 @@ import { ISiopValidationResponse } from '../InputValidation/SiopValidationRespon
  export type CheckTimeValidityOnIdToken = (validationResponse: IValidationResponse, driftInSec?: number) => IValidationResponse;
  export type CheckTimeValidityOnToken = (validationResponse: IValidationResponse, driftInSec?: number) => IValidationResponse;
  export type CheckScopeValidityOnToken = (validationResponse: IValidationResponse, expected: IExpectedBase) => IValidationResponse;
- export type CheckScopeValidityOnIdToken = (validationResponse: IValidationResponse, expected: IExpectedIdToken, siopContract: string) => IValidationResponse;
+ export type CheckScopeValidityOnIdToken = (validationResponse: IValidationResponse, expected: IExpectedIdToken) => IValidationResponse;
  export type CheckScopeValidityOnVpToken = (validationResponse: IValidationResponse, expected: IExpectedVerifiablePresentation, siopDid: string) => IValidationResponse;
  export type CheckScopeValidityOnVcToken = (validationResponse: IValidationResponse, expected: IExpectedVerifiableCredential, siopDid: string) => IValidationResponse;
  export type FetchKeyAndValidateSignatureOnIdToken = (validationResponse: IValidationResponse, token: ClaimToken) => Promise<IValidationResponse>;
