@@ -62,17 +62,31 @@ export interface IExpectedVerifiableCredential extends IExpectedBase {
 export interface IExpectedSelfIssued extends IExpectedBase {
 }
 
-/**
- * Expected values for id tokens
- */
-export interface IExpectedIdToken extends IExpectedBase {
-  /**
-   * Expected issuers configuration endpoint for the different contracts.
-   */
-  configuration: IssuerMap,
+export interface IExpectedAudience {
 
   /**
    * Expected audience for the token type
    */
   audience?: string
+}
+
+
+/**
+ * Expected values for id tokens
+ */
+export interface IExpectedIdToken extends IExpectedBase, IExpectedAudience {
+  /**
+   * Expected issuers configuration endpoint for the different contracts.
+   */
+  configuration: IssuerMap,
+}
+
+/**
+ * Expected values for any open id token
+ */
+export interface IExpectedOpenIdToken extends IExpectedBase, IExpectedAudience {
+  /**
+   * Expected issuers configuration endpoint
+   */
+  configuration: string,
 }

@@ -185,7 +185,12 @@ export class IssuanceHelpers {
     return claimToken;
   }
   
-  public static async createRequest(setup: TestSetup, tokenDescription: TokenType): Promise<[ClaimToken, ValidationOptions, any]> {
+  public static async createRequest(
+    setup: TestSetup, 
+    tokenDescription: TokenType,
+    idTokenIssuer?: string,
+    idTokenAudience? :string,
+    idTokenExp?: number): Promise<[ClaimToken, ValidationOptions, any]> {
     const options = new ValidationOptions(setup.validatorOptions, tokenDescription);
     const [didJwkPrivate, didJwkPublic] = await IssuanceHelpers.generateSigningKey(setup, setup.defaulUserDidKid); 
     const [tokenJwkPrivate, tokenJwkPublic, tokenConfiguration] = await IssuanceHelpers.generateSigningKeyAndSetConfigurationMock(setup, setup.defaulIssuerDidKid); 
@@ -194,8 +199,9 @@ export class IssuanceHelpers {
     const idTokenPayload = {
       upn: 'jules@pulpfiction.com',
       name: 'Jules Winnfield',
-      iss: setup.tokenIssuer,
-      aud: setup.tokenAudience,
+      iss: idTokenIssuer ?? setup.tokenIssuer,
+      aud: idTokenAudience ?? setup.tokenAudience,
+      exp: idTokenExp ?? Math.trunc(Date.now() / 1000) + 10000,
     };
 
     const idToken = await IssuanceHelpers.signAToken(

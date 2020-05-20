@@ -3,16 +3,13 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ClaimToken, IDidResolver, CryptoOptions, ITokenValidator, ISiopValidationResponse } from '../index';
-import { TokenType } from '../VerifiableCredential/ClaimToken';
-import ValidationOptions from '../Options/ValidationOptions';
-import IValidatorOptions from '../Options/IValidatorOptions';
-import { KeyStoreInMemory, CryptoFactoryManager, CryptoFactoryNode, SubtleCryptoNode, JoseProtocol, JoseConstants } from '@microsoft/crypto-sdk';
+import { BasicValidatorOptions, ClaimToken, IDidResolver, ISiopValidationResponse, ITokenValidator } from '../index';
 import { IValidationResponse } from '../InputValidation/IValidationResponse';
 import ValidationQueue from '../InputValidation/ValidationQueue';
-import IValidationResult from './IValidationResult';
-import { throws } from 'assert';
 import ValidationQueueItem from '../InputValidation/ValidationQueueItem';
+import ValidationOptions from '../Options/ValidationOptions';
+import { TokenType } from '../VerifiableCredential/ClaimToken';
+import IValidationResult from './IValidationResult';
 
 /**
  * Class model the token validator
@@ -43,7 +40,7 @@ export default class Validator {
    * @param token to validate
    */
   public async validate(token: string): Promise<IValidationResponse> {
-    const validatorOption: IValidatorOptions = this.setValidatorOptions();
+    const validatorOption = new BasicValidatorOptions(this.resolver);
     let options = new ValidationOptions(validatorOption, TokenType.siop);
     let response: IValidationResponse = {
       result: true,
@@ -181,27 +178,4 @@ export default class Validator {
     const claimToken = queueItem.claimToken ?? ClaimToken.getTokenType(queueItem.tokenToValidate);
     return claimToken;
   }
-
-  /**
-   * Set the validator options
-   */
-  private setValidatorOptions(): IValidatorOptions {
-    const keyStore = new KeyStoreInMemory();
-    const cryptoFactory = new CryptoFactoryNode(keyStore, SubtleCryptoNode.getSubtleCrypto());
-    const payloadProtectionProtocol = new JoseProtocol();
-
-    return {
-      resolver: this.resolver,
-      httpClient: {
-        options: {}
-      },
-      crypto: {
-        keyStore,
-        cryptoFactory,
-        payloadProtectionProtocol,
-        payloadProtectionOptions: new CryptoOptions(cryptoFactory, payloadProtectionProtocol).payloadProtectionOptions
-      }
-    }
-  }
 }
-

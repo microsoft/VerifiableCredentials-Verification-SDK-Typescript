@@ -7,8 +7,7 @@ import { IValidationResponse } from '../InputValidation/IValidationResponse';
 import { ICryptoToken } from '@microsoft/crypto-sdk';
 import { ValidationHelpers } from '../InputValidation/ValidationHelpers';
 import IValidatorOptions from '../Options/IValidatorOptions';
-import { IExpectedBase, IExpectedIdToken, IExpectedVerifiablePresentation, IExpectedVerifiableCredential } from '../index';
-import { ISiopValidationResponse } from '../InputValidation/SiopValidationResponse';
+import { IExpectedBase, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedAudience } from './IExpected';
 
  export type GetTokenObject = (validationResponse: IValidationResponse, token: string) => IValidationResponse;
  export type ResolveDidAndGetKeys = (validationResponse: IValidationResponse) => Promise<IValidationResponse>;
@@ -16,7 +15,7 @@ import { ISiopValidationResponse } from '../InputValidation/SiopValidationRespon
  export type CheckTimeValidityOnIdToken = (validationResponse: IValidationResponse, driftInSec?: number) => IValidationResponse;
  export type CheckTimeValidityOnToken = (validationResponse: IValidationResponse, driftInSec?: number) => IValidationResponse;
  export type CheckScopeValidityOnToken = (validationResponse: IValidationResponse, expected: IExpectedBase) => IValidationResponse;
- export type CheckScopeValidityOnIdToken = (validationResponse: IValidationResponse, expected: IExpectedIdToken, siopContract: string) => IValidationResponse;
+ export type CheckScopeValidityOnIdToken = (validationResponse: IValidationResponse, expected: IExpectedAudience) => IValidationResponse;
  export type CheckScopeValidityOnVpToken = (validationResponse: IValidationResponse, expected: IExpectedVerifiablePresentation, siopDid: string) => IValidationResponse;
  export type CheckScopeValidityOnVcToken = (validationResponse: IValidationResponse, expected: IExpectedVerifiableCredential, siopDid: string) => IValidationResponse;
  export type FetchKeyAndValidateSignatureOnIdToken = (validationResponse: IValidationResponse, token: ClaimToken) => Promise<IValidationResponse>;
