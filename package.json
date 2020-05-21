@@ -39,7 +39,7 @@
   "dependencies": {
     "@decentralized-identity/did-common-typescript": "0.1.19",
     "@decentralized-identity/sidetree": "^0.7.0",
-    "@microsoft/crypto-sdk": "1.0.12",
+    "@microsoft/crypto-sdk": "1.0.13",
     "base64url": "3.0.1",
     "deep-property-access": "1.0.1",
     "es6-promise": "^4.2.8",
