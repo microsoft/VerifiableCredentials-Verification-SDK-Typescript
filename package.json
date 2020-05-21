@@ -1,7 +1,7 @@
 {
-  "name": "portableidentity-relyingpartysdk-typescript",
-  "version": "0.6.11",
-  "description": "Typescript SDK for Portable Identity",
+  "name": "verifiablecredentials-verification-sdk-typescript",
+  "version": "0.6.12",
+  "description": "Typescript SDK for verifiable credentials",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
   "scripts": {
@@ -39,7 +39,7 @@
   "dependencies": {
     "@decentralized-identity/did-common-typescript": "0.1.19",
     "@decentralized-identity/sidetree": "^0.7.0",
-    "@microsoft/crypto-sdk": "1.0.11",
+    "@microsoft/crypto-sdk": "1.0.12",
     "base64url": "3.0.1",
     "deep-property-access": "1.0.1",
     "es6-promise": "^4.2.8",
