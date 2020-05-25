@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import ClaimToken from '../VerifiableCredential/ClaimToken';
 import { IValidationResponse } from '../InputValidation/IValidationResponse';
-import { ICryptoToken } from '@microsoft/crypto-sdk';
+import { ICryptoToken } from 'verifiablecredentials-crypto-sdk-typescript';
 import { ValidationHelpers } from '../InputValidation/ValidationHelpers';
 import IValidatorOptions from '../Options/IValidatorOptions';
 import { IExpectedBase, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedAudience } from './IExpected';

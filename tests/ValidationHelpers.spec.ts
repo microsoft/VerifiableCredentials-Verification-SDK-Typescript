@@ -5,7 +5,7 @@
 import TestSetup from './TestSetup';
 import { IValidationResponse } from '../lib/InputValidation/IValidationResponse';
 import base64url from 'base64url';
-import { ICryptoToken } from '@microsoft/crypto-sdk';
+import { ICryptoToken } from 'verifiablecredentials-crypto-sdk-typescript';
 import ValidationOptions from '../lib/Options/ValidationOptions';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';

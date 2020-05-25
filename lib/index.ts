@@ -60,7 +60,7 @@ export { IResponse, RequestorBuilder, Requestor };
 
 import Crypto from './ApiCrypto/Crypto';
 import CryptoBuilder from './ApiCrypto/CryptoBuilder';
-import { SubtleCrypto } from '@microsoft/crypto-sdk';
+import { SubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript';
 export { Crypto, CryptoBuilder, SubtleCrypto };
 
 import { BaseAttestationModel } from './rules-model/BaseAttestationModel';

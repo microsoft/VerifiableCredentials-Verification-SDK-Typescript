@@ -1,4 +1,4 @@
-import { KeyStoreInMemory, CryptoFactoryNode, SubtleCryptoNode, JoseProtocol } from '@microsoft/crypto-sdk';
+import { KeyStoreInMemory, CryptoFactoryNode, SubtleCryptoNode, JoseProtocol } from 'verifiablecredentials-crypto-sdk-typescript';
 import { IValidationOptions, ValidationOptions, ManagedHttpResolver, CryptoOptions, TokenType } from '../../lib';
 
 export default class ToolHelpers {

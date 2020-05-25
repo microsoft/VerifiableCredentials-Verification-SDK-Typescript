@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ICryptoToken } from '@microsoft/crypto-sdk';
+import { ICryptoToken } from 'verifiablecredentials-crypto-sdk-typescript';
 import { IDidValidation, IDidValidationResponse } from './DidValidationResponse';
 import { IValidationOptions } from '../Options/IValidationOptions';
 import { ValidationOptions, IExpectedBase } from '../index';

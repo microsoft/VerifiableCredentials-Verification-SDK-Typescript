@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CryptoFactoryNode, JoseProtocol, KeyStoreInMemory, SubtleCryptoNode } from '@microsoft/crypto-sdk';
+import { CryptoFactoryNode, JoseProtocol, KeyStoreInMemory, SubtleCryptoNode } from 'verifiablecredentials-crypto-sdk-typescript';
 import { CryptoOptions, ICryptoOptions, IDidResolver } from '../index';
 import IValidatorOptions from '../Options/IValidatorOptions';
 import { IHttpClientOptions } from "./IValidatorOptions";

@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 // tslint:disable-next-line:max-line-length
-import { JoseConstants, IKeyStore, KeyStoreFactory, SubtleCryptoNode, CryptoFactoryManager, CryptoFactory, JoseProtocol, SubtleCrypto } from '@microsoft/crypto-sdk';
+import { JoseConstants, IKeyStore, KeyStoreFactory, SubtleCryptoNode, CryptoFactoryManager, CryptoFactory, JoseProtocol, SubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript';
 import { TSMap } from 'typescript-map';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import { ManagedHttpResolver, CryptoOptions } from '../lib/index';
@@ -82,7 +82,7 @@ export default class TestSetup {
   /**
    * TestSetup crypto properties
    */
-  public keyStore: IKeyStore = KeyStoreFactory.create('KeyStoreInMemory', '', '', '', '');
+  public keyStore: IKeyStore = KeyStoreFactory.create('KeyStoreInMemory');
 
   /**
    * SubtleCrypto instance

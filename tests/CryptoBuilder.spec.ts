@@ -1,5 +1,6 @@
 import { CryptoBuilder } from "../lib";
-import { KeyStoreInMemory, CryptoFactoryNode, JoseProtocol, SubtleCrypto, KeyStoreKeyVault, CryptoFactoryManager } from "@microsoft/crypto-sdk";
+import { KeyStoreInMemory, CryptoFactoryNode, JoseProtocol, SubtleCrypto, KeyStoreKeyVault, CryptoFactoryManager } from "verifiablecredentials-crypto-sdk-typescript";
+import { ClientSecretCredential } from '@azure/identity';
 
 describe('CryptoBuilder', () => {
   it('should create a CryptoBuiler', () => {
@@ -29,8 +30,9 @@ describe('CryptoBuilder', () => {
   it('should build a CryptoBuiler with key vault', () => {
     const did = 'did:test:12345678';
     const signingKeyReference = 'test';
+    const credential = new ClientSecretCredential('tenantId', 'clientId', 'clientSecret');
     const crypto = new CryptoBuilder(did, signingKeyReference)
-      .useKeyVault('tenantid', 'clientid', 'clientsecret', 'https://keyvault.com')
+      .useKeyVault(credential, 'https://keyvault.com')
       .build();
 
     expect(crypto.builder.keyStore instanceof KeyStoreKeyVault).toBeTruthy();

@@ -1,6 +1,7 @@
 import { Crypto, SubtleCrypto } from '../index';
-import { IKeyStore, CryptoFactory, KeyStoreFactory, CryptoFactoryManager, SubtleCryptoNode, IPayloadProtection, IPayloadProtectionOptions, JoseProtocol, JoseConstants, KeyStoreInMemory } from '@microsoft/crypto-sdk';
+import { IKeyStore, CryptoFactory, KeyStoreFactory, CryptoFactoryManager, SubtleCryptoNode, IPayloadProtection, IPayloadProtectionOptions, JoseProtocol, JoseConstants, KeyStoreInMemory } from 'verifiablecredentials-crypto-sdk-typescript';
 import { TSMap } from 'typescript-map';
+import { TokenCredential } from '@azure/identity';
 
 export default class CryptoBuilder {
   // Set the default state
@@ -25,7 +26,6 @@ export default class CryptoBuilder {
    * @param signingKeyReference Reference in the key store to the signing key
    */
   constructor(private _did: string, private _signingKeyReference: string) {
-    this.subtle.cryptoFactory = this._cryptoFactory;
   }
   
   /**
@@ -116,18 +116,12 @@ export default class CryptoBuilder {
    * @param vaultUri Vault uri
    */
   public useKeyVault(
-    tenantGuid: string,
-    clientId: string,
-    clientSecret: string,
+    credential: TokenCredential,
     vaultUri: string
   ): CryptoBuilder {
     
-    this._keyStore = KeyStoreFactory.create(
-      'KeyStoreKeyVault',
-      tenantGuid,
-      clientId,
-      clientSecret,
-      vaultUri);
+
+    this._keyStore = KeyStoreFactory.create('KeyStoreKeyVault', credential, vaultUri);
       this._subtle = new SubtleCryptoNode().getSubtleCrypto();
       this._cryptoFactory = CryptoFactoryManager.create(
         'CryptoFactoryKeyVault',

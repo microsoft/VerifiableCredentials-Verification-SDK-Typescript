@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IResponse, RequestorBuilder } from '../index';
-import { KeyReferenceOptions } from '@microsoft/crypto-sdk';
+import { KeyReferenceOptions } from 'verifiablecredentials-crypto-sdk-typescript';
 
 /**
  * Class to model the OIDC requestor

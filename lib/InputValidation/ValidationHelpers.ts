@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { IDidResolveResult } from '@decentralized-identity/did-common-typescript';
-import { ICryptoToken, JoseConstants, ProtectionFormat } from '@microsoft/crypto-sdk';
+import { ICryptoToken, JoseConstants, ProtectionFormat } from 'verifiablecredentials-crypto-sdk-typescript';
 import base64url from "base64url";
 import { IValidationOptions } from '../Options/IValidationOptions';
 import IValidatorOptions from '../Options/IValidatorOptions';

@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { ICryptoToken } from '@microsoft/crypto-sdk';
+import { ICryptoToken } from 'verifiablecredentials-crypto-sdk-typescript';
 import { DidDocument } from '@decentralized-identity/did-common-typescript';
 import { IValidationResult, ClaimToken } from '../index';
 
