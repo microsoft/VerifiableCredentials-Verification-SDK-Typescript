@@ -11,6 +11,7 @@ import IRequestor from './IRequestor';
 export default class RequestorBuilder {
 
   private vpExpirty: number | undefined;
+  private oidRequestExpirty: number = 5 * 60;
   private _state: string | undefined;
   private _nonce: string | undefined;
   private _issuance: boolean | undefined;
@@ -82,7 +83,7 @@ export default class RequestorBuilder {
   
  /**
    * Sets the vp expiry
-   * @param vpExpiry The verifiable presentation expiry
+   * @param expiry The verifiable presentation expiry
    * @returns The validator builder
    */
   public useVerifiablePresentationExpiry(expiry: number): RequestorBuilder {
@@ -95,6 +96,23 @@ export default class RequestorBuilder {
    */
   public get verifiablePresentationExpiry(): number | undefined {
     return this.vpExpirty;
+  }
+  
+ /**
+   * Sets the OIDC request expiry
+   * @param expiry The OIDC request expiry
+   * @returns The validator builder
+   */
+  public useOidcRequestExpiry(expiry: number): RequestorBuilder {
+    this.oidRequestExpirty = expiry;
+    return this;
+  }
+ 
+ /**
+   * Gets the OIDC request expiry
+   */
+  public get OidcRequestExpiry(): number {
+    return this.oidRequestExpirty;
   }
   
  /**

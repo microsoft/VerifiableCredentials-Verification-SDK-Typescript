@@ -53,6 +53,12 @@ export default class Requestor {
     };
 
     // Add optional fields
+    const current = Math.trunc(Date.now() / 1000);
+    const iat = current;
+    let expiry = iat + this.builder.OidcRequestExpiry;
+    this._payload.iat = iat;
+    this._payload.exp = expiry;
+
     const issuance: boolean | undefined = this.builder.issuance; 
     if ( issuance) {
       this._payload.prompt = 'create';

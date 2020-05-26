@@ -81,6 +81,7 @@ describe('RequestorBuilder', () => {
     expect(builder.tosUri).toEqual(initializer.tosUri);
     expect(builder.nonce).toBeUndefined();
     expect(builder.state).toBeUndefined();
+    expect(builder.OidcRequestExpiry).toEqual(5 * 60);
     expect(builder.verifiablePresentationExpiry).toBeUndefined();
 
     // Add optional props
@@ -90,6 +91,9 @@ describe('RequestorBuilder', () => {
     expect(builder.state).toEqual('state');
     builder.useVerifiablePresentationExpiry(-1);
     expect(builder.verifiablePresentationExpiry).toEqual(-1);
+    builder.useOidcRequestExpiry(60 * 60);
+    expect(builder.OidcRequestExpiry).toEqual(60 * 60);
+
   });
 
   it('should sign the request', async () => {
@@ -99,11 +103,17 @@ describe('RequestorBuilder', () => {
     let requestorBuilder = new RequestorBuilder(initializer)
       .useNonce('nonce')
       .useState('state')
+      .useOidcRequestExpiry(100)
       .useVerifiablePresentationExpiry(10);
     let requestor = requestorBuilder.build();
 
     let result: any = await requestor.create();
+
     expect(result.result).toBeTruthy();
+
+    const iat = requestor.payload.iat;
+    expect(requestor.payload.exp).toEqual(iat + 100);
+
     expect(requestor.payload.prompt).toBeUndefined();
     expect(result.request.split('.').length).toEqual(3);
     console.log(`Signed request: ${result.request}`);
