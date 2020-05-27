@@ -3,7 +3,6 @@ import { IssuanceHelpers } from './IssuanceHelpers';
 import TestSetup from './TestSetup';
 import ValidationQueue from '../lib/InputValidation/ValidationQueue';
 import { SiopTokenValidator, SelfIssuedTokenValidator } from '../lib/index';
-import SiopValidationSimulation from './SiopValidationSimulation';
 
 describe('Validator', () => {
   let setup: TestSetup;
