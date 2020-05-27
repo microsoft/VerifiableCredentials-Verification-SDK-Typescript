@@ -30,7 +30,7 @@ export interface IExpectedBase {
 export interface IExpectedSiop extends IExpectedBase {
 
  /**
-   * Expected audience for the token type
+   * Expected audience url to where the siop was presented
    */
   audience?: string
 }
@@ -41,9 +41,9 @@ export interface IExpectedSiop extends IExpectedBase {
 export interface IExpectedVerifiablePresentation extends IExpectedBase {
 
   /**
-   * Expected audience DID for the token type
+   * Expected audience DID of the receiver of the siop
    */
-  didAudience?: string
+  didAudience: string
 }
 
 /**

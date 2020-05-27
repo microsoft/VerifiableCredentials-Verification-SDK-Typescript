@@ -10,6 +10,7 @@ import { VerifiablePresentationValidation } from '../InputValidation/VerifiableP
 import IValidatorOptions from '../Options/IValidatorOptions';
 import ValidationQueue from '../InputValidation/ValidationQueue';
 import ValidationQueueItem from '../InputValidation/ValidationQueueItem';
+import { Crypto } from '../index';
 
 /**
  * Class to validate a token
@@ -21,7 +22,7 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
    * @param validatorOption The options used during validation
    * @param expected values to find in the token to validate
    */
-  constructor (private validatorOption: IValidatorOptions, private expected: IExpectedVerifiablePresentation ) {
+  constructor (private validatorOption: IValidatorOptions, private crypto: Crypto, private expected: IExpectedVerifiablePresentation ) {
   }
 
   /**
@@ -32,7 +33,7 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
    */
   public async validate(queue: ValidationQueue, queueItem: ValidationQueueItem, siopDid: string): Promise<IValidationResponse> { 
     const options = new ValidationOptions(this.validatorOption, TokenType.verifiablePresentation);
-    const validator = new VerifiablePresentationValidation(options, this.expected, siopDid, queueItem.id);
+    const validator = new VerifiablePresentationValidation(options, this.expected, siopDid, queueItem.id, this.crypto);
     const validationResult = await validator.validate(queueItem.tokenToValidate);
 
     if (validationResult.tokensToValidate) {

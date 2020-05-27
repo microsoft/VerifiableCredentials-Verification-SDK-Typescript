@@ -5,6 +5,7 @@
 
 import { ITokenValidator, Validator, IDidResolver, ManagedHttpResolver } from '../index';
 import VerifiableCredentialConstants from '../VerifiableCredential/VerifiableCredentialConstants';
+import { Crypto } from '../index';
 
 /**
  * Class to build a token validator
@@ -13,11 +14,22 @@ export default class ValidatorBuilder {
   private _tokenValidators: { [type: string]: ITokenValidator } = {};
   private _resolver: IDidResolver  = new ManagedHttpResolver(VerifiableCredentialConstants.UNIVERSAL_RESOLVER_URL);
 
+  constructor(private _crypto: Crypto) {
+
+  }
+
+  /**
+   * Gets the crypto object
+   */
+  public get crypto() {
+    return this._crypto;
+  }
+
   /**
    * Build the validator
    */
   public build(): Validator {
-    return new Validator(this.tokenValidators, this.resolver);
+    return new Validator(this);
   }
 
   /**

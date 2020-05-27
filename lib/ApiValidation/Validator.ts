@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { BasicValidatorOptions, ClaimToken, IDidResolver, ISiopValidationResponse, ITokenValidator } from '../index';
+import { BasicValidatorOptions, ClaimToken, IDidResolver, ISiopValidationResponse, ITokenValidator, ValidatorBuilder } from '../index';
 import { IValidationResponse } from '../InputValidation/IValidationResponse';
 import ValidationQueue from '../InputValidation/ValidationQueue';
 import ValidationQueueItem from '../InputValidation/ValidationQueueItem';
@@ -16,23 +16,28 @@ import IValidationResult from './IValidationResult';
  */
 export default class Validator {
 
-  constructor(
-    private _tokenValidators: { [type: string]: ITokenValidator },
-    private _resolver: IDidResolver) {
+  constructor(private _builder: ValidatorBuilder) {
+  }
+
+  /**
+   * Gets the builder for the validator
+   */
+  public get builder(): ValidatorBuilder {
+    return this._builder;
   }
 
   /**
    * Gets the resolver
    */
   public get resolver(): IDidResolver {
-    return this._resolver;
+    return this.builder.resolver;
   }
 
   /**
    * Gets the token validators
    */
   public get tokenValidators(): { [type: string]: ITokenValidator } {
-    return this._tokenValidators;
+    return this.builder.tokenValidators;
   }
 
   /**

@@ -8,6 +8,8 @@ import ClaimToken from '../VerifiableCredential/ClaimToken';
 import { DidValidation } from './DidValidation';
 import VerifiableCredentialConstants from '../VerifiableCredential/VerifiableCredentialConstants';
 import { IExpectedVerifiablePresentation } from '../index';
+import { Crypto } from '../index';
+import { KeyReferenceOptions } from 'verifiablecredentials-crypto-sdk-typescript';
 
 /**
  * Class for verifiable presentation validation
@@ -20,7 +22,7 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
    * @param expected Expected properties of the verifiable presentation
    * @param siopDid needs to be equal to audience of VC
    */
-  constructor (private options: IValidationOptions, private expected: IExpectedVerifiablePresentation, private siopDid: string, private id: string) {
+  constructor (private options: IValidationOptions, private expected: IExpectedVerifiablePresentation, private siopDid: string, private id: string, private crypto: Crypto ) {
   }
  
   /**
@@ -82,6 +84,7 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
       };
     }
 
+
     validationResponse.tokensToValidate = this.setVcTokens(validationResponse.payloadObject.vp.verifiableCredential);
     if (!validationResponse.tokensToValidate) {
       return {
@@ -92,6 +95,26 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
     }
 
     return validationResponse;
+  }
+
+  public async checkVpStatus(verifiablePresentationToken: string) {
+
+    const payload: any = {
+      did: this.crypto.builder.did,
+      kid: `${this.crypto.builder.did}#${this.crypto.builder.signingKeyReference}`,
+      vc: verifiablePresentationToken
+    };
+    const key = this.crypto.builder.signingKeyReference;
+    const siop = await this.crypto.builder.payloadProtectionProtocol.sign(
+      // TODO needs support for extractable and non extractable keys
+      new KeyReferenceOptions({ keyReference: key, extractable: true }),
+      Buffer.from(JSON.stringify(payload)),
+      'JwsCompactJson',
+      this.crypto.builder.payloadProtectionOptions);
+
+      console.log(`verifiablePresentation status check`);
+      //let response = await fetch();
+
   }
 
   private setVcTokens(vc: string[]) {
