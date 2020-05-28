@@ -92,7 +92,7 @@ export default class TestSetup {
   /**
    * CryptoFactory instance
    */
-  public crypto = new CryptoBuilder(this.defaultUserDid, this.defaulSigKey).build();
+  public crypto = new CryptoBuilder(this.defaultIssuerDid, this.defaulSigKey).build();
 
   /**
    * TestSetup crypto properties
@@ -104,10 +104,6 @@ export default class TestSetup {
   */
   public validatorOptions: IValidatorOptions = {
       resolver: this.resolver,
-      
-      httpClient: {
-        options: {}
-      },
       crypto: this.crypto
   };
 

@@ -28,11 +28,6 @@ export default interface IValidatorOptions {
     resolver: IDidResolver,
 
     /**
-     * The http client to use
-     */
-    httpClient: IHttpClientOptions,
-
-    /**
      * Get the crypto options
      */
     crypto: Crypto

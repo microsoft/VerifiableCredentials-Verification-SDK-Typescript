@@ -14,7 +14,6 @@ export { ManagedHttpResolver };
 import ClaimToken, { TokenType } from './VerifiableCredential/ClaimToken';
 export { TokenType, ClaimToken };
 
-import TokenValidatorsBuilder from './ApiValidation/TokenValidatorsBuilder';
 import ITokenValidator from './ApiValidation/ITokenValidator';
 import IdTokenTokenValidator from './ApiValidation/IdTokenTokenValidator';
 import VerifiableCredentialTokenValidator from './ApiValidation/VerifiableCredentialTokenValidator';
@@ -24,7 +23,7 @@ import IValidationResult from './ApiValidation/IValidationResult';
 import ValidatorBuilder from './ApiValidation/ValidatorBuilder';
 import SelfIssuedTokenValidator from './ApiValidation/SelfIssuedTokenValidator';
 import SiopTokenValidator from './ApiValidation/SiopTokenValidator';
-export { TokenValidatorsBuilder, IValidationResult, SelfIssuedTokenValidator, SiopTokenValidator, VerifiablePresentationTokenValidator, VerifiableCredentialTokenValidator, IdTokenTokenValidator, Validator, ValidatorBuilder, ITokenValidator };
+export { IValidationResult, SelfIssuedTokenValidator, SiopTokenValidator, VerifiablePresentationTokenValidator, VerifiableCredentialTokenValidator, IdTokenTokenValidator, Validator, ValidatorBuilder, ITokenValidator };
 
 import { IValidationOptions } from './Options/IValidationOptions';
 import IValidatorOptions from './Options/IValidatorOptions';
