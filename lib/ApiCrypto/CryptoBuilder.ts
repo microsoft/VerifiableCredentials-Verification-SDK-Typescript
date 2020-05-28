@@ -55,6 +55,13 @@ export default class CryptoBuilder {
   }
 
   /**
+   * Gets the kid for the signing key
+   */
+  public get signingKeyKid() {
+    return `${this.did}#${this._signingKeyReference}`;
+  }
+
+  /**
    * Set the reference in the key store to the signing key
    */
   public set signingKeyReference(signingKeyReference: string) {
@@ -78,6 +85,15 @@ export default class CryptoBuilder {
    */
   public get cryptoFactory(): CryptoFactory {
     return this._cryptoFactory;
+  }
+
+  /**
+   * Sets the crypto factory
+   */
+  public useCryptoFactory(value: CryptoFactory) {
+    this._cryptoFactory = value;
+    this._payloadProtectionOptions.cryptoFactory = value;
+    return this;
   }
 
   /**

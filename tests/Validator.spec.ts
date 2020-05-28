@@ -2,18 +2,18 @@ import { TokenType, ValidatorBuilder, IdTokenTokenValidator, VerifiableCredentia
 import { IssuanceHelpers } from './IssuanceHelpers';
 import TestSetup from './TestSetup';
 import ValidationQueue from '../lib/InputValidation/ValidationQueue';
-import { SiopTokenValidator, SelfIssuedTokenValidator } from '../lib/index';
+import { Crypto, SiopTokenValidator, SelfIssuedTokenValidator } from '../lib/index';
 
 describe('Validator', () => {
-
-  const did = 'did:test:12345678';
-  const signingKeyReference = 'sign';
-  let crypto = new CryptoBuilder(did, signingKeyReference)
-    .build();
-
+  let crypto: Crypto;
+  let signingKeyReference: string;
   let setup: TestSetup;
   beforeEach(async () => {
     setup = new TestSetup();
+    signingKeyReference = 'sigkey';
+    crypto = new CryptoBuilder(setup.defaultUserDid, signingKeyReference)
+    .useCryptoFactory(setup.cryptoFactory)
+    .build();  
   });
   afterEach(async () => {
     setup.fetchMock.reset();

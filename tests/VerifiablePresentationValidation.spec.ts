@@ -6,24 +6,22 @@ import TestSetup from './TestSetup';
 import { VerifiablePresentationValidation } from '../lib/InputValidation/VerifiablePresentationValidation';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
-import { IExpectedVerifiablePresentation, CryptoBuilder } from '../lib';
+import { Crypto, IExpectedVerifiablePresentation, CryptoBuilder } from '../lib';
 
 describe('VerifiablePresentationValidation', () => {
 
-  const did = 'did:test:12345678';
-  const signingKeyReference = 'sign';
-  let crypto = new CryptoBuilder(did, signingKeyReference)
-    .build();
-
-    let setup: TestSetup;
-  const originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+  let crypto: Crypto;
+  let signingKeyReference: string;
+  let setup: TestSetup;
   beforeEach(async () => {
     setup = new TestSetup();
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+    signingKeyReference = 'sigkey';
+    crypto = new CryptoBuilder(setup.defaultUserDid, signingKeyReference)
+      .useCryptoFactory(setup.cryptoFactory)
+      .build();
   });
 
   afterEach(() => {
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
     setup.fetchMock.reset();
   });
 
