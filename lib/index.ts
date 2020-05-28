@@ -8,9 +8,6 @@ export { DidDocument, IDidDocument, IDidDocumentPublicKey, IDidDocumentServiceDe
 import {IExpectedBase, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSelfIssued, IExpectedIdToken, IExpectedOpenIdToken, IExpectedAudience} from './Options/IExpected';
 export { IExpectedBase, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSelfIssued, IExpectedIdToken, IExpectedOpenIdToken, IExpectedAudience };
 
-import CryptoOptions, { ICryptoOptions } from './Options/CryptoOptions';
-export { ICryptoOptions, CryptoOptions };
-
 import ManagedHttpResolver from './Resolver/ManagedHttpResolver';
 export { ManagedHttpResolver };
 

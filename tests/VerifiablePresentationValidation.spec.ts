@@ -6,7 +6,7 @@ import TestSetup from './TestSetup';
 import { VerifiablePresentationValidation } from '../lib/InputValidation/VerifiablePresentationValidation';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
-import { Crypto, IExpectedVerifiablePresentation, CryptoBuilder } from '../lib';
+import { Crypto, IExpectedVerifiablePresentation } from '../lib';
 
 describe('VerifiablePresentationValidation', () => {
 
@@ -15,10 +15,8 @@ describe('VerifiablePresentationValidation', () => {
   let setup: TestSetup;
   beforeEach(async () => {
     setup = new TestSetup();
-    signingKeyReference = 'sigkey';
-    crypto = new CryptoBuilder(setup.defaultUserDid, signingKeyReference)
-      .useCryptoFactory(setup.cryptoFactory)
-      .build();
+    signingKeyReference = setup.defaulSigKey;
+    crypto = setup.crypto
   });
 
   afterEach(() => {

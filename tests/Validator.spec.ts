@@ -10,10 +10,8 @@ describe('Validator', () => {
   let setup: TestSetup;
   beforeEach(async () => {
     setup = new TestSetup();
-    signingKeyReference = 'sigkey';
-    crypto = new CryptoBuilder(setup.defaultUserDid, signingKeyReference)
-    .useCryptoFactory(setup.cryptoFactory)
-    .build();  
+    signingKeyReference = setup.defaulSigKey;
+    crypto = setup.crypto
   });
   afterEach(async () => {
     setup.fetchMock.reset();

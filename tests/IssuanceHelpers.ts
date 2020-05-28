@@ -186,11 +186,11 @@ export class IssuanceHelpers {
   public static async signAToken(setup: TestSetup, payload: string, configuration: string, jwkPrivate: any): Promise<ClaimToken> {
     const keyId = jwkPrivate.kid;
     await setup.keyStore.save(keyId, <any>jwkPrivate);
-    const protectedHeader = setup.validatorOptions.crypto.payloadProtectionOptions.options.get(JoseConstants.optionProtectedHeader);
+    const protectedHeader = setup.validatorOptions.crypto.builder.payloadProtectionOptions.options.get(JoseConstants.optionProtectedHeader);
     protectedHeader.set(VerifiableCredentialConstants.TOKEN_KID, jwkPrivate.kid);
 
-    const signature = await setup.validatorOptions.crypto.payloadProtectionProtocol.sign(keyId, Buffer.from(payload), 'jwscompactjson', setup.validatorOptions.crypto.payloadProtectionOptions);
-    const token = setup.validatorOptions.crypto.payloadProtectionProtocol.serialize(signature, 'jwscompactjson', setup.validatorOptions.crypto.payloadProtectionOptions);
+    const signature = await setup.validatorOptions.crypto.builder.payloadProtectionProtocol.sign(keyId, Buffer.from(payload), 'jwscompactjson', setup.validatorOptions.crypto.builder.payloadProtectionOptions);
+    const token = setup.validatorOptions.crypto.builder.payloadProtectionProtocol.serialize(signature, 'jwscompactjson', setup.validatorOptions.crypto.builder.payloadProtectionOptions);
     let claimToken = new ClaimToken(TokenType.idToken, token, configuration);
     return claimToken;
   }
