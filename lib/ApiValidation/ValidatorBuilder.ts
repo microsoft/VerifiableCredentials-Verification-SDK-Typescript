@@ -93,7 +93,8 @@ export default class ValidatorBuilder {
   }
 
   /**
-   * Specify the trusted issuer for the verifiable credentials
+   * Specify the trusted issuer for the verifiable credentialsrush rebuild
+   * 
    * @param issuers array of issuers
    */
   public useTrustedIssuersForVerifiableCredentials(issuers: string[]): ValidatorBuilder {
