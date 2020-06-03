@@ -1,219 +1,179 @@
-[![Build Status](https://dev.azure.com/decentralized-identity/Core/_apis/build/status/VerifiableCredentials-Verification-SDK-Typescript?branchName=master)](https://dev.azure.com/decentralized-identity/Core/_build/latest?definitionId=32&branchName=master)
+# GitHub Verification SDK
 
-# Sample Validation API
-    const siop = 'put your siop here';
+ 
 
-    // Create all validators to validate a full SIOP
-    let tokenValidatorsBuilder = new TokenValidatorsBuilder()
-    // Check if the VCs in the SIOP are from the trust issuers
-    .useTrustedIssuersForVerifiableCredentials([
-      {
-        credentialType: 'driverslicense',
-        issuers: ['did:test:issuer1', 'did:test:issuer2']
-      }
-    ])
+# Repo
 
-    // Check if the id tokens in the SIOP are from the trust issuers
-    .useTrustedIssuersForIdTokens([
-      {
-        credentialType: 'driverslicense',
-        configuration: ['https://example.org/.well-known/openid']
-      }
-    ])
-    // Use when one wants to validate that SIOP was presented to the relying party (audience). Optional.
-    .useAudience('https://example.org', 'did:test:12345678');
-          
-    // The constructor can be create once for a specific a specific token type.
-    let validator = new ValidatorBuilder()
-    .useValidators(tokenValidatorsBuilder.build())
-    .build();
+[https://github.com/microsoft/VerifiableCredentials-Verification-SDK-Typescript](https://github.com/microsoft/VerifiableCredentials-Verification-SDK-Typescript)
 
-    const validation = await validator.validate(siop);
-    if (validation.result) {
-      // Show decoded tokens
-      console.log(`Id Token ${JSON.stringify(validation.validationResult.idToken[0])}`);
-      console.log(`VC ${JSON.stringify(validation.validationResult.verifiableCredentials[0])}`);
-    } else {
-      console.log(`validation error: ${validation.detailedError`});
-    }
+ 
 
-# Sample data for OIDC Request
+# Goals
 
-    // common method to get an attestations object
-    const getAttestations = () => {
-      const attestations: IssuanceAttestationsModel = new IssuanceAttestationsModel(
-      new SelfIssuedAttestationModel(
-        {
-          alias: new InputClaimModel('name', 'string', false, true)
-        },
-        false,
-        undefined,
-        true
-      ),
-      [
-        new VerifiablePresentationAttestationModel(
-          'CredentialType',
-          [
-            new TrustedIssuerModel('trusted issuer 1'),
-            new TrustedIssuerModel('trusted issuer 2')
-          ],
-          [
-            new TrustedIssuerModel('endorser')
-          ],
-          [
-            'contract'
-          ],
-          {
-            givenName: new InputClaimModel('vc.credentialSubject.givenName'),
-            familyName: new InputClaimModel('vc.credentialSubject.familyName', 'string', true)
-          },
-        ),
-      ],
-      [
-        new IdTokenAttestationModel(
-          'oidc config endpoint',
-          'clientId',
-          'redirect',
-          {
-            email: new InputClaimModel('upn', 'string', false, true),
-            name: new InputClaimModel('name')
+## Goal – Validate complex Self-Issued OpenID Connect (SIOP) requests
+
+SIOPs can contain multiple id tokens such as verifiable credentials and presentations. The SDK defines easy methods to validate these complex payloads.
+
+We can pass in expected values and these values are checked by the SDK during the validation process.
+
+## Goal – Help services to create OpenID Connect requests
+
+Support for creating signed OpenID Connect requests. The signing can be done on nodejs or on Key Vault.
+
+## Goal – Service can decide to use Key Vault for key storage and crypto operations
+
+Provide flexibility to services to use more secure environments such as Key Vault for critical cryptographic operations. The service can use configuration to switch between Key Vault or nodejs.
+
+# Concepts
+
+## Builder pattern
+
+The top-level API is based on the [Builder pattern](https://en.wikipedia.org/wiki/Builder_pattern). The Builder pattern allows for different representation of complex classes. This is great to deal with a lot of different options. Our SDK must deal with a lot of options, hence the choice for the Builder pattern.
+
+Practically each base class has a builder class. We use the following convention:
+
+ for the base class.
+
+Builder for the builder class.
+
+The builder class use verbs to add options (e.g. useState, useNonce). The builder class’s purpose is managing the options and not to do actions. By calling the build() method, an instance of the base class is created.
+
+The action methods are defined in the base class. The base class has access to the builder class for access to all properties.
+
+The constructor of the builder class will use arguments which are fixed for the object so the constructor can be instantiated beforehand, in some initializer class.
+
+ 
+
+## CryptoBuilder/Crypto
+
+The Crypto class is necessary for the Requestor class. The Requestor needs to sign the request payload and requires cryptographic capabilities.
+
+The creation of the Crypto base class is faily simple.
+
+	    const crypto = new CryptoBuilder(did, signingKeyReference)
+        .build();
+
+### did 
+
+The DID of the service  
+
+
+### signingKeyReference
+
+The reference that is used to publish the public key of the signing key in the DID document.
+
+Services require flexibility where their security critical, cryptographic operations happen. The default is no secure environment.
+
+The Crypto object supports Key Vault as a secure environment for the cryptographic operations.
+
+      const crypto = new CryptoBuilder(did, signingKeyReference)
+        .useKeyVault(credential, vaultUrl)
+        .build();
+
+### useKeyVault
+
+The useKeyVault method informs the Crypto class that cryptographic operations need to happen on Key Vault.
+
+‘credential’ allows to pass in different credential used to access Key Vault. One can pass in a client id and client secret but also an X.509 certificate.
+
+‘vaultUrl’ specifies the bases url of the Key Vault environment to use.
+
+## RequestorBuilder/Requestor
+
+Services authenticate users by means of DIDs. The DID community created a protocol based on the Self Issued OpenID Connect provider protocol called [DID Auth](https://nbviewer.jupyter.org/github/WebOfTrustInfo/rwot8-barcelona/blob/master/final-documents/did-auth-oidc.pdf) based on a simple request/response transaction. The service needs to produce a signed request on which the user’s agent will respond with a response containing claims about the subject/user.
+
+The Requestor class is designed to create DID Auth Requests and make the process of allowing users to authenticate by means of DIDs simpler.
+
+      const requestor = new RequestorBuilder(request)
+        .useNonce(nonce)
+        .useState(state)  
+        .build();
+
+The constructor takes a JSON object which contains information about the service. There are three important areas in the request:
+
+1. The Crypto object needed to allow the Requestor to sign the request.
+2. Properties about the service such as its name, logo, etc.
+3. An attestation sections which allows the service to state which claims are expected in the response.
+
+In the example we also pass in the state and nonce properties intended to protect the transaction. In case one wants to instantiate the builder class beforehand, in some service initializer class, nonce and state can also be passed into the requestor create method.
+
+The actual OpenID Connect request can be created by means of a simple call.
+
+ const requestResult = await requestor.create();
+
+## ValidatorBuilder/Validator
+
+The Validator class validates id tokens. Tokens in the DID space can be very complex and the Validator class helps services to making the process of validating these tokens much simpler.
+
+The Validator class validates five kind of tokens.
+
+### Self-Issued token
+
+A self-issued token is just a set of claims provided by the user in a JSON object. There is no validation done on the self-issued token.
+
+### OpenID Connect id token
+
+An OpenID Connect id token is issued by an OpenID Connect provider. This provider is represented by a [configuration URI](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfig) usually referred to as the well-known URI. The configuration URIs of the trusted OpenID Connect providers need to be provided to the Validator to allow the Validator to validate the corresponding id token.
+
+### Verifiable credentials and their corresponding presentations
+
+[Verifiable credentials](https://www.w3.org/TR/vc-data-model/) are standardized by W3C.
+
+Verifiable credentials are issued to the user by some trusted issuer. 
+
+Verifiable presentations present a verifiable credential to some peer. A presentation can contain one or more verifiable credentials. A presentation is also a token.
+
+### Self-Issued OpenID Connect (SIOP) 
+
+The SIOP is the actual response signed by the DID of the client that is returned when the service does a SIOP request. The SIOP can contain any of the above tokens. 
+
+           const validator = new ValidatorBuilder(this.crypto)
+            .useTrustedIssuerConfigurationsForIdTokens(rules.attestations.idTokens.map((idTokenRule: any) => idTokenRule.configuration))
+            .useAudienceUrl('https://test-relyingparty.azurewebsites.net/verify')
+            .build();
+
+          const validationResult = await validator.validate(siop);
+          if (!validationResult.result) {
+              console.error(`Validation failed: ${validationResult.detailedError}`);
+              return validationResult;
           }
-        )
-      ]);
-    return attestations;  
-    }
 
-# Sample create OIDC Request with crypto on the server
+          return validationResult;
 
-    // Return crypto object for crypto on server operations
-    const getCryptoOnServer = async (did: string, keyReference: string) => {
-      const cryptoBuilder = new CryptoBuilder(did);
-      const crypto = cryptoBuilder.build();
+The example creates a Validator object by passing in two options.
 
-      // See https://github.com/diafygi/webcrypto-examples for examples how to use the W3C web Crypto stamdard
-      // Generate a key
-      const key = await crypto.builder.subtle.generateKey(
-        {
-          name: 'ECDSA',
-          namedCurve: 'secp256k1',
-        },
-        true, //whether the key is extractable (i.e. can be used in exportKey)
-        ['sign', 'verify'] //can be any combination of 'sign' and 'verify'
-      );
-      const jwk: any = await crypto.builder.subtle.exportKey(
-        "jwk",
-        key //can be a publicKey or privateKey, as long as extractable was true
-      );
+__useTrustedIssuerConfigurationsForIdTokens__ provides an array of trusted well-know configuration URIs, needed by the validator to check id tokens.
 
-      // Store key
-      await crypto.builder.keyStore.save(keyReference, jwk);
-      return crypto;
-    };
+__useAudienceUrl__ provides the URL of the service’s validation endpoint. This is used to check whether the SIOP was presented to the right endpoint.
 
-    // Create crypto running on server
-    const did = 'the relying party DID';
-    const keyReference = 'myKey';
+The validate(siop) method does the actual validation.
 
-    // Generate key and get crypto object
-    const crypto: Crypto = await getCryptoOnServer(did, keyReference);
+# Getting started
 
-    // Get the required attestations. Tell the App which claims to expect
-    const attestations = getAttestations();
+## Install
 
-    // OIDC request
-    const state = 'state to pass to App';
-    const nonce = 'nonce to pass to App'
-    // The constructure takes argument which are static for a specific request type
-    const requestorBuilder = new RequestorBuilder(
-      crypto,
-      'Contoso - My Relying Party name',
-      ['Accessing Contoso'],
-      'https://www.contoso.com/',
-      'https://www.contoso.com/login',
-      'did:test:12345678',
-      ['https://www.contoso.com/tos'],
-      ['https://www.contoso.com/contoso.ico'],
-      attestations
-    )
-    // Add state which will be returned by the App
-    .useState(state)
-    // Add nonce to avoid replay attack
-    .useNonce(nonce);
+To add the sdk to your package.json:
 
-    // Build the requestor
-    const requestor = requestorBuilder.build();
-    const request = requestor.create(keyReference)
-    const serializedRequest = JSON.stringify(request);
-    console.log(serializedRequest);
+npm i verifiablecredentials-verification-sdk-typescript
 
-# Sample create OIDC Request with crypto on Key Vault
-  // Return crypto object for crypto on key vault
-  const getCryptoOnKeyVault = async (did: string, keyReference: string) => {
-    const cryptoBuilder = new CryptoBuilder(did)
-      .useKeyVault(
-        'tenantGuid',
-        'kvClientId',
-        'kvClientSecret',
-        'keyVaultUri');
+## Cloning
 
-    const crypto = cryptoBuilder.build();
+Git clone verifiablecredentials-verification-sdk-typescript.git
 
-    // See https://github.com/diafygi/webcrypto-examples for examples how to use the W3C web Crypto stamdard
-    // Generate a key
-    const key = await crypto.builder.subtle.generateKey(
-      {
-        name: 'ECDSA',
-        namedCurve: 'secp256k1',
-      },
-      true, //whether the key is extractable (i.e. can be used in exportKey)
-      ['sign', 'verify'] //can be any combination of 'sign' and 'verify'
-    );
-    const jwk: any = await crypto.builder.subtle.exportKey(
-      "jwk",
-      key //can be a publicKey or privateKey, as long as extractable was true
-    );
+### Update all packages
 
-    // Store key
-    await crypto.builder.keyStore.save(keyReference, jwk);
-    return crypto;
-  };
+npm install
 
-    // Create crypto running in Key Vault
-    const did = 'the relying party DID';
+### Build
 
-    // Generate key and get crypto object
-    const keyReference = 'myKey';
-    const crypto: Crypto = await getCryptoOnKeyVault(did, keyReference);
+npm run build
 
-    // Get the required attestations. Tell the App which claims to expect
-    const attestations = getAttestations();
+### Test
 
-    // OIDC request
-    const state = 'state to pass to App';
-    const nonce = 'nonce to pass to App'
-    // The constructure takes argument which are static for a specific request type
-    const requestorBuilder = new RequestorBuilder(
-      crypto,
-      'Contoso - My Relying Party name',
-      ['Accessing Contoso'],
-      'https://www.contoso.com/',
-      'https://www.contoso.com/login',
-      'did:test:12345678',
-      ['https://www.contoso.com/tos'],
-      ['https://www.contoso.com/contoso.ico'],
-      attestations
-    )
-    // Add state which will be returned by the App
-    .useState(state)
-    // Add nonce to avoid replay attack
-    .useNonce(nonce);
-
-    // Build the requestor
-    const requestor = requestorBuilder.build();
-    const request = requestor.create(keyReference)
-    const serializedRequest = JSON.stringify(request);
-    console.log(serializedRequest);
-
+npm run test 
+ 
+# 
+# 
 
 # Contributing
 
@@ -228,3 +188,4 @@ provided by the bot. You will only need to do this once across all repos using o
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
