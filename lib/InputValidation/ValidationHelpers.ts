@@ -69,10 +69,10 @@ export class ValidationHelpers {
     let tokenPayload: Buffer;
     const self: any = this;
     try {
-      validationResponse.didSignature = (self as ValidationOptions).validatorOptions.crypto.payloadProtectionProtocol.deserialize(
+      validationResponse.didSignature = (self as ValidationOptions).validatorOptions.crypto.builder.payloadProtectionProtocol.deserialize(
         token,
         ProtectionFormat.JwsCompactJson,
-        (self as ValidationOptions).validatorOptions.crypto.payloadProtectionOptions);
+        (self as ValidationOptions).validatorOptions.crypto.builder.payloadProtectionOptions);
       tokenPayload = validationResponse.didSignature!.get(JoseConstants.tokenPayload);
       if (!validationResponse.didSignature || !tokenPayload) {
         return {
@@ -414,11 +414,11 @@ export class ValidationHelpers {
       const signature = validationResponse.didSignature!.get(JoseConstants.tokenSignatures)[0];
       const kid = signature.protected.get(VerifiableCredentialConstants.TOKEN_KID);
       console.log(`Validate DID signature with kid '${kid}', key kid '${validationResponse.didSigningPublicKey?.kid}'`);
-      const validation = await (self as ValidationOptions).validatorOptions.crypto.payloadProtectionProtocol.verify(
+      const validation = await (self as ValidationOptions).validatorOptions.crypto.builder.payloadProtectionProtocol.verify(
         [validationResponse.didSigningPublicKey],
         validationResponse.didSignature!.get(JoseConstants.tokenPayload) as Buffer,
         token,
-        (self as ValidationOptions).validatorOptions.crypto.payloadProtectionOptions);
+        (self as ValidationOptions).validatorOptions.crypto.builder.payloadProtectionOptions);
       if (!validation.result) {
         return validationResponse = {
           result: false,
@@ -597,11 +597,11 @@ export class ValidationHelpers {
     try {
       // Get token and check signature
       validationResponse = (self as IValidationOptions).getTokenObjectDelegate(validationResponse, token.rawToken);
-      const validation = await (self as ValidationOptions).validatorOptions.crypto.payloadProtectionProtocol.verify(
+      const validation = await (self as ValidationOptions).validatorOptions.crypto.builder.payloadProtectionProtocol.verify(
         [key],
         validationResponse.didSignature!.get(JoseConstants.tokenPayload) as Buffer,
         validationResponse.didSignature as ICryptoToken,
-        (self as ValidationOptions).validatorOptions.crypto.payloadProtectionOptions);
+        (self as ValidationOptions).validatorOptions.crypto.builder.payloadProtectionOptions);
       if (!validation.result) {
         return {
           result: false,

@@ -10,6 +10,7 @@ import base64url from "base64url";
 import ValidationOptions from '../lib/Options/ValidationOptions';
 import { IExpectedBase, IExpectedSelfIssued, IExpectedIdToken, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, Validator } from '../lib/index';
 import VerifiableCredentialConstants from '../lib/VerifiableCredential/VerifiableCredentialConstants';
+import { stat } from 'fs';
 
 export class IssuanceHelpers {
   public static readonly jti: string = 'testJti';
@@ -21,7 +22,7 @@ export class IssuanceHelpers {
     const claimToken = await IssuanceHelpers.signAToken(setup, JSON.stringify(siop), '', key);
     return claimToken;
   }
-  
+
   /**
    * Create siop request
    */
@@ -42,22 +43,27 @@ export class IssuanceHelpers {
    * Create a verifiable credentiaL
    * @param claims Credential claims
    */
-  public static createSelfIssuedToken(claims: {[claim: string]: string}): ClaimToken {
+  public static createSelfIssuedToken(claims: { [claim: string]: string }): ClaimToken {
     const header = base64url.encode(JSON.stringify({
       alg: "none",
       typ: 'JWT'
     }));
     const body = base64url.encode(JSON.stringify(claims));
-    return new ClaimToken(TokenType.selfIssued, `${header}.${body}`,'');
-}
+    return new ClaimToken(TokenType.selfIssued, `${header}.${body}`, '');
+  }
 
   /**
    * Create a verifiable credential
    * @param claims Token claims
    */
-  public static async createVc(setup: TestSetup, credentialSubject: {[claim: string]: any}, configuration: string, jwkPrivate: any, jwkPublic: any): Promise<ClaimToken> {
+  public static async createVc(setup: TestSetup, credentialSubject: { [claim: string]: any }, configuration: string, jwkPrivate: any, jwkPublic: any): Promise<ClaimToken> {
     // Set the mock because we will resolve the signing key as did
     await this.resolverMock(setup, setup.defaultIssuerDid, jwkPrivate, jwkPublic);
+    const statusUrl = 'https://portableidentitycards.azure-api.net/42b39d9d-0cdd-4ae0-b251-b7b39a561f91/api/portable/v1.0/status';
+    
+    // Status mock
+    setup.fetchMock.post(statusUrl, {}, { overwriteRoutes: true });
+    console.log(`Set mock for ${statusUrl}`);
 
     let vcTemplate = {
       "jti": "urn:pic:80a509d2-99d4-4d6c-86a7-7b2636944080",
@@ -72,6 +78,10 @@ export class IssuanceHelpers {
         ],
         "credentialSubject": {
         },
+        "credentialStatus": {
+          "id": `${statusUrl}`,
+          "type": "PortableIdentityCardServiceCredentialStatus2020"
+        }
       },
       iss: `${setup.defaultIssuerDid}`,
       sub: `${setup.defaultUserDid}`
@@ -87,7 +97,7 @@ export class IssuanceHelpers {
   public static async createVp(setup: TestSetup, vcs: ClaimToken[], jwkPrivate: any): Promise<ClaimToken> {
     let vpTemplate = {
       "jti": "baab2cdccb38408d8f1179071fe37dbe",
-      "scope": "openid did_authn verify",      
+      "scope": "openid did_authn verify",
       "vp": {
         "@context": [
           "https://www.w3.org/2018/credentials/v1"
@@ -95,13 +105,13 @@ export class IssuanceHelpers {
         "type": [
           "VerifiablePresentation"
         ],
-        "verifiableCredential": []        
+        "verifiableCredential": []
       },
       iss: `${setup.defaultUserDid}`,
       aud: `${setup.defaultIssuerDid}`,
     };
 
-    for (let inx=0; inx < vcs.length; inx++) {
+    for (let inx = 0; inx < vcs.length; inx++) {
       (vpTemplate.vp.verifiableCredential as string[]).push(vcs[inx].rawToken);
     }
     return IssuanceHelpers.signAToken(setup, JSON.stringify(vpTemplate), '', jwkPrivate);
@@ -113,16 +123,16 @@ export class IssuanceHelpers {
   public static async generateSigningKey(_setup: TestSetup, kid: string): Promise<[any, any]> {
     const generator = new SubtleCrypto();
     const key: any = await generator.generateKey(
-    <any>{
+      <any>{
         name: "RSASSA-PKCS1-v1_5",
         modulusLength: 2048,
         publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-        hash: {name: "SHA-256"}, 
-    },
-    true, 
-    ["sign", "verify"]);
+        hash: { name: "SHA-256" },
+      },
+      true,
+      ["sign", "verify"]);
     const jwkPublic = await generator.exportKey('jwk', key.publicKey);
-    
+
     const jwkPrivate = await generator.exportKey('jwk', key.privateKey);
     (<any>jwkPrivate).kid = (<any>jwkPublic).kid = kid;
     return [jwkPrivate, jwkPublic];
@@ -134,11 +144,11 @@ export class IssuanceHelpers {
     configuration = configuration || setup.defaultIdTokenConfiguration;
     issuer = issuer || setup.tokenIssuer;
     const jwks = setup.defaultIdTokenJwksConfiguration
-    setup.fetchMock.get(configuration, {"jwks_uri":  `${jwks}`, "issuer": `${issuer}`}, {overwriteRoutes: true});
+    setup.fetchMock.get(configuration, { "jwks_uri": `${jwks}`, "issuer": `${issuer}` }, { overwriteRoutes: true });
     console.log(`Set mock for ${configuration}`);
     const [jwkPrivate, jwkPublic] = await IssuanceHelpers.generateSigningKey(setup, kid);
 
-    setup.fetchMock.get(jwks, `{"keys": [${JSON.stringify(jwkPublic)}]}`, {overwriteRoutes: true});
+    setup.fetchMock.get(jwks, `{"keys": [${JSON.stringify(jwkPublic)}]}`, { overwriteRoutes: true });
     console.log(`Set mock for ${jwks}`);
     return [jwkPrivate, jwkPublic, configuration];
   }
@@ -160,41 +170,42 @@ export class IssuanceHelpers {
           controller: did,
           publicKeyJwk: jwkPublic
         }]
-      })};
+      })
+    };
     (didDocument.document as any)['@context'] = 'https://w3id.org/did/v1';
-    
+
     // Resolver mock
     const resolverUrl = `${setup.resolverUrl}/${did}`;
-    setup.fetchMock.get(resolverUrl, didDocument, {overwriteRoutes: true});
+    setup.fetchMock.get(resolverUrl, didDocument, { overwriteRoutes: true });
     console.log(`Set mock for ${resolverUrl}`);
 
     return [didDocument.document, jwkPrivate, jwkPublic];
-  } 
+  }
 
   // Sign a token
   public static async signAToken(setup: TestSetup, payload: string, configuration: string, jwkPrivate: any): Promise<ClaimToken> {
     const keyId = jwkPrivate.kid;
-    await setup.keyStore.save(keyId, <any>jwkPrivate );
-    const protectedHeader = setup.validatorOptions.crypto.payloadProtectionOptions.options.get(JoseConstants.optionProtectedHeader);
+    await setup.keyStore.save(keyId, <any>jwkPrivate);
+    const protectedHeader = setup.validatorOptions.crypto.builder.payloadProtectionOptions.options.get(JoseConstants.optionProtectedHeader);
     protectedHeader.set(VerifiableCredentialConstants.TOKEN_KID, jwkPrivate.kid);
- 
-    const signature = await setup.validatorOptions.crypto.payloadProtectionProtocol.sign(keyId, Buffer.from(payload), 'jwscompactjson', setup.validatorOptions.crypto.payloadProtectionOptions);
-    const token =  setup.validatorOptions.crypto.payloadProtectionProtocol.serialize(signature, 'jwscompactjson', setup.validatorOptions.crypto.payloadProtectionOptions);
+
+    const signature = await setup.validatorOptions.crypto.builder.payloadProtectionProtocol.sign(keyId, Buffer.from(payload), 'jwscompactjson', setup.validatorOptions.crypto.builder.payloadProtectionOptions);
+    const token = setup.validatorOptions.crypto.builder.payloadProtectionProtocol.serialize(signature, 'jwscompactjson', setup.validatorOptions.crypto.builder.payloadProtectionOptions);
     let claimToken = new ClaimToken(TokenType.idToken, token, configuration);
     return claimToken;
   }
-  
+
   public static async createRequest(
-    setup: TestSetup, 
+    setup: TestSetup,
     tokenDescription: TokenType,
     idTokenIssuer?: string,
-    idTokenAudience? :string,
+    idTokenAudience?: string,
     idTokenExp?: number): Promise<[ClaimToken, ValidationOptions, any]> {
     const options = new ValidationOptions(setup.validatorOptions, tokenDescription);
-    const [didJwkPrivate, didJwkPublic] = await IssuanceHelpers.generateSigningKey(setup, setup.defaulUserDidKid); 
-    const [tokenJwkPrivate, tokenJwkPublic, tokenConfiguration] = await IssuanceHelpers.generateSigningKeyAndSetConfigurationMock(setup, setup.defaulIssuerDidKid); 
+    const [didJwkPrivate, didJwkPublic] = await IssuanceHelpers.generateSigningKey(setup, setup.defaulUserDidKid);
+    const [tokenJwkPrivate, tokenJwkPublic, tokenConfiguration] = await IssuanceHelpers.generateSigningKeyAndSetConfigurationMock(setup, setup.defaulIssuerDidKid);
     const [didDocument, jwkPrivate2, jwkPublic2] = await IssuanceHelpers.resolverMock(setup, setup.defaultUserDid, didJwkPrivate, didJwkPublic);
-    
+
     const idTokenPayload = {
       upn: 'jules@pulpfiction.com',
       name: 'Jules Winnfield',
@@ -223,8 +234,8 @@ export class IssuanceHelpers {
       tokenJwkPublic);
 
     const vp = await IssuanceHelpers.createVp(setup, [vc], didJwkPrivate);
-    const si = IssuanceHelpers.createSelfIssuedToken({name: 'jules',  birthDate:  new Date().toString()});
-    const attestations: {[claim: string]: any} =    { 
+    const si = IssuanceHelpers.createSelfIssuedToken({ name: 'jules', birthDate: new Date().toString() });
+    const attestations: { [claim: string]: any } = {
       selfIssued: si.rawToken,
       idTokens: {},
       presentations: {}
@@ -233,20 +244,21 @@ export class IssuanceHelpers {
     attestations.presentations['VerifiableCredential'] = vp.rawToken;
 
     const contract = 'https://portableidentitycards.azure-api.net/42b39d9d-0cdd-4ae0-b251-b7b39a561f91/api/portable/v1.0/contracts/test/schema';
-   
+
     const request = await IssuanceHelpers.createSiopRequest(
       setup,
       didJwkPrivate,
-      contract, 
-      '', 
+      contract,
+      '',
       attestations
-     );
+    );
 
-     const vcContractIssuers:{ [contract: string]: string[]}  = {};
-     vcContractIssuers[Validator.getContractIdFromSiop(contract)] = [setup.defaultIssuerDid];
-     const idTokenConfiguration:{ [contract: string]: string[]}  = {};
-     idTokenConfiguration[Validator.getContractIdFromSiop(contract)] = [setup.defaultIdTokenConfiguration];
-     const expected: IExpectedBase[] = [
+    const vcContractIssuers: { [contract: string]: string[] } = {};
+    vcContractIssuers[Validator.getContractIdFromSiop(contract)] = [setup.defaultIssuerDid];
+    //const idTokenConfiguration: { [contract: string]: string[] } = {};
+    const idTokenConfiguration: string[] =[setup.defaultIdTokenConfiguration];
+    //idTokenConfiguration[Validator.getContractIdFromSiop(contract)] = [setup.defaultIdTokenConfiguration];
+    const expected: IExpectedBase[] = [
       <IExpectedSelfIssued>{ type: TokenType.selfIssued },
       <IExpectedIdToken>{ type: TokenType.idToken, configuration: idTokenConfiguration, audience: setup.AUDIENCE },
       <IExpectedSiop>{ type: TokenType.siop, audience: setup.AUDIENCE },
@@ -254,7 +266,7 @@ export class IssuanceHelpers {
       <IExpectedVerifiableCredential>{ type: TokenType.verifiableCredential, contractIssuers: vcContractIssuers }
     ];
 
-     const siopRequest = {
+    const siopRequest = {
       didJwkPrivate,
       didJwkPublic,
       tokenJwkPrivate,
@@ -269,7 +281,7 @@ export class IssuanceHelpers {
       expected,
       jti: IssuanceHelpers.jti
     }
-     return [request, options, siopRequest];
+    return [request, options, siopRequest];
   }
 
 }

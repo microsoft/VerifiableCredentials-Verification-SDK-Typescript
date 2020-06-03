@@ -127,8 +127,6 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       }
     }
 
-    // TODO Validate status
-
     return validationResponse;
   }
 

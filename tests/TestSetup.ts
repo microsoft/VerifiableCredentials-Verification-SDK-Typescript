@@ -7,7 +7,7 @@
 import { JoseConstants, IKeyStore, KeyStoreFactory, SubtleCryptoNode, CryptoFactoryManager, CryptoFactory, JoseProtocol, SubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript';
 import { TSMap } from 'typescript-map';
 import { IssuanceHelpers } from './IssuanceHelpers';
-import { ManagedHttpResolver, CryptoOptions } from '../lib/index';
+import { ManagedHttpResolver, Crypto, CryptoBuilder } from '../lib/index';
 import IValidatorOptions from '../lib/Options/IValidatorOptions';
 
 /**
@@ -62,12 +62,17 @@ export default class TestSetup {
   /**
    * Constant for default kid for user DID
    */
-  public defaulUserDidKid = `${this.defaultUserDid}#sigkey`;
+  public defaulSigKey = 'sigkey';
+
+  /**
+   * Constant for default kid for user DID
+   */
+  public defaulUserDidKid = `${this.defaultUserDid}#${this.defaulSigKey}`;
 
   /**
    * Constant for default kid for issuer DID
    */
-  public defaulIssuerDidKid = `${this.defaultIssuerDid}#sigkey`;
+  public defaulIssuerDidKid = `${this.defaultIssuerDid}#${this.defaulSigKey}`;
 
   /**
    * Constant for token audience
@@ -80,11 +85,6 @@ export default class TestSetup {
   public tokenIssuer = 'https://example.com/issuer';
   
   /**
-   * TestSetup crypto properties
-   */
-  public keyStore: IKeyStore = KeyStoreFactory.create('KeyStoreInMemory');
-
-  /**
    * SubtleCrypto instance
    */
   public defaultSubtleCrypto: SubtleCrypto = new SubtleCryptoNode().getSubtleCrypto();
@@ -92,26 +92,19 @@ export default class TestSetup {
   /**
    * CryptoFactory instance
    */
-  public cryptoFactory: CryptoFactory = CryptoFactoryManager.create(
-    'CryptoFactoryNode',
-    this.keyStore,
-    this.defaultSubtleCrypto);
-  
- /**
+  public crypto = new CryptoBuilder(this.defaultIssuerDid, this.defaulSigKey).build();
+
+  /**
+   * TestSetup crypto properties
+   */
+  public keyStore: IKeyStore = this.crypto.builder.keyStore;
+
+  /**
   * Validator options
   */
   public validatorOptions: IValidatorOptions = {
       resolver: this.resolver,
-      
-      httpClient: {
-        options: {}
-      },
-      crypto: {
-        keyStore: this.keyStore,
-        cryptoFactory: this.cryptoFactory,
-        payloadProtectionProtocol: new JoseProtocol(),
-        payloadProtectionOptions: new CryptoOptions(this.cryptoFactory, new JoseProtocol()).payloadProtectionOptions
-      }
+      crypto: this.crypto
   };
 
   /**
@@ -180,6 +173,6 @@ export default class TestSetup {
     const options = new TSMap<string, any>([ 
       [JoseConstants.optionProtectedHeader, new TSMap([['typ', 'JWT']]) ]
     ]);
-    this.validatorOptions.crypto.payloadProtectionOptions.options = options;
+    this.validatorOptions.crypto.builder.payloadProtectionOptions.options = options;
   }
 }

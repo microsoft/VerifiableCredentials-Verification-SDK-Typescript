@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IDidResolver, ICryptoOptions } from '../index';
+import { IDidResolver, Crypto } from '../index';
 
 /**
  * Interface to model the fetch options
@@ -28,12 +28,7 @@ export default interface IValidatorOptions {
     resolver: IDidResolver,
 
     /**
-     * The http client to use
-     */
-    httpClient: IHttpClientOptions,
-
-    /**
      * Get the crypto options
      */
-    crypto: ICryptoOptions
+    crypto: Crypto
 }

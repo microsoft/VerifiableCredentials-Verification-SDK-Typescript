@@ -2,8 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CryptoFactoryNode, JoseProtocol, KeyStoreInMemory, SubtleCryptoNode } from 'verifiablecredentials-crypto-sdk-typescript';
-import { CryptoOptions, ICryptoOptions, IDidResolver } from '../index';
+import { Crypto, IDidResolver, CryptoBuilder } from '../index';
 import IValidatorOptions from '../Options/IValidatorOptions';
 import { IHttpClientOptions } from "./IValidatorOptions";
 
@@ -13,22 +12,14 @@ import { IHttpClientOptions } from "./IValidatorOptions";
 export default class BasicValidatorOptions implements IValidatorOptions {
 
   private readonly _httpClient: IHttpClientOptions;
-  private readonly _crypto: ICryptoOptions;
+  private readonly _crypto: Crypto;
 
   constructor(private _resolver?: IDidResolver) {
-    const keyStore = new KeyStoreInMemory();
-    const cryptoFactory = new CryptoFactoryNode(keyStore, SubtleCryptoNode.getSubtleCrypto());
-    const payloadProtectionProtocol = new JoseProtocol();
     this._httpClient = {
       options: {}
     };
 
-    this._crypto = {
-      keyStore,
-      cryptoFactory,
-      payloadProtectionProtocol,
-      payloadProtectionOptions: new CryptoOptions(cryptoFactory, payloadProtectionProtocol).payloadProtectionOptions
-    };
+    this._crypto = new CryptoBuilder('', '').build();
   }
 
   get resolver(): IDidResolver {
@@ -39,7 +30,7 @@ export default class BasicValidatorOptions implements IValidatorOptions {
     return this._httpClient;
   }
 
-  get crypto(): ICryptoOptions {
+  get crypto(): Crypto {
     return this._crypto;
   }
 }

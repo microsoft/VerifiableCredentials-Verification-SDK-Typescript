@@ -1,6 +1,6 @@
 {
   "name": "verifiablecredentials-verification-sdk-typescript",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "description": "Typescript SDK for verifiable credentials",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -16,7 +16,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "devDependencies": {
     "@types/jasmine": "3.3.12",
     "@types/node": "12.0.0",
@@ -39,7 +39,7 @@
   "dependencies": {
     "@azure/identity": "1.0.0",
     "@decentralized-identity/did-common-typescript": "0.1.19",
-    "@decentralized-identity/sidetree": "^0.7.0",
+    "@decentralized-identity/sidetree": "0.7.0",
     "verifiablecredentials-crypto-sdk-typescript": "1.1.1",
     "base64url": "3.0.1",
     "deep-property-access": "1.0.1",

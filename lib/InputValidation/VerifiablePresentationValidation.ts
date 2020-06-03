@@ -8,6 +8,11 @@ import ClaimToken from '../VerifiableCredential/ClaimToken';
 import { DidValidation } from './DidValidation';
 import VerifiableCredentialConstants from '../VerifiableCredential/VerifiableCredentialConstants';
 import { IExpectedVerifiablePresentation } from '../index';
+import { Crypto } from '../index';
+import { KeyReferenceOptions } from 'verifiablecredentials-crypto-sdk-typescript';
+
+require('es6-promise').polyfill();
+require('isomorphic-fetch');
 
 /**
  * Class for verifiable presentation validation
@@ -20,7 +25,7 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
    * @param expected Expected properties of the verifiable presentation
    * @param siopDid needs to be equal to audience of VC
    */
-  constructor (private options: IValidationOptions, private expected: IExpectedVerifiablePresentation, private siopDid: string, private id: string) {
+  constructor (private options: IValidationOptions, private expected: IExpectedVerifiablePresentation, private siopDid: string, private id: string, private crypto: Crypto ) {
   }
  
   /**
@@ -82,6 +87,7 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
       };
     }
 
+
     validationResponse.tokensToValidate = this.setVcTokens(validationResponse.payloadObject.vp.verifiableCredential);
     if (!validationResponse.tokensToValidate) {
       return {
@@ -91,7 +97,60 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
       };
     }
 
-    return validationResponse;
+    return this.checkVpStatus(validationResponse, verifiablePresentationToken);
+  }
+
+  public async checkVpStatus(validationResponse: VerifiablePresentationValidationResponse, verifiablePresentationToken: string): Promise<VerifiablePresentationValidationResponse> {
+    
+    validationResponse = await this.options.resolveDidAndGetKeysDelegate(validationResponse);
+    if (!validationResponse.result) {
+      return validationResponse;
+    }
+
+    //construct payload
+    const publicKey = await validationResponse.didDocument?.getPublicKey(`${this.crypto.builder.did}#${this.crypto.builder.signingKeyReference}`);
+    const payload: any = {
+      did: this.crypto.builder.did,
+      kid: `${this.crypto.builder.did}#${this.crypto.builder.signingKeyReference}`,
+      vc: verifiablePresentationToken,
+      sub_jwk: publicKey?.publicKeyJwk
+    };
+
+    // get status url, restricted to one VC for the moment TODO
+    const allProperties = Object.keys(validationResponse.tokensToValidate!);
+
+    const vcToValidate: any = validationResponse.tokensToValidate![allProperties[0]];
+    const statusUrl = vcToValidate.decodedToken.vc.credentialStatus && vcToValidate.decodedToken.vc.credentialStatus.id ? 
+      vcToValidate.decodedToken.vc.credentialStatus.id :
+      undefined;
+
+    if (!statusUrl) {
+      console.log(`verifiableCredential '${vcToValidate.jti}' has not status endpoint`);
+      return validationResponse;
+    }
+
+    // send the payload
+    const siop = await this.crypto.builder.payloadProtectionProtocol.sign(
+      // TODO needs support for extractable and non extractable keys
+      new KeyReferenceOptions({ keyReference: this.crypto.builder.signingKeyKid, extractable: true }),
+      Buffer.from(JSON.stringify(payload)),
+      'JwsCompactJson',
+      this.crypto.builder.payloadProtectionOptions);
+
+      console.log(`verifiablePresentation status check`);
+      let response = await fetch(statusUrl, {
+        method: 'POST',
+        body: siop.serialize()
+      });
+      if (!response.ok) {
+        return {
+          result: false,
+          status: 403,
+          detailedError: `status check could not fetch response from ${statusUrl}`
+        };
+      }
+
+      return validationResponse;
   }
 
   private setVcTokens(vc: string[]) {

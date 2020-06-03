@@ -13,7 +13,7 @@ describe('SiopValidationSimulation', () => {
   afterEach(async () => {
     setup.fetchMock.reset();
   });
-
+/*
   xit('should validate the ProofOfResidenceCredential', async () =>{
         // Token to test - ProofOfResidence
         const token = SiopValidationSimulation.token;
@@ -34,4 +34,5 @@ describe('SiopValidationSimulation', () => {
     expect(result.result).toBeTruthy();
 
   });
+*/
 });

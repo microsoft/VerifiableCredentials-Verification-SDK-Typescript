@@ -6,18 +6,20 @@ import TestSetup from './TestSetup';
 import { VerifiablePresentationValidation } from '../lib/InputValidation/VerifiablePresentationValidation';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
-import { IExpectedVerifiablePresentation } from '../lib';
+import { Crypto, IExpectedVerifiablePresentation } from '../lib';
 
 describe('VerifiablePresentationValidation', () => {
+
+  let crypto: Crypto;
+  let signingKeyReference: string;
   let setup: TestSetup;
-  const originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
   beforeEach(async () => {
     setup = new TestSetup();
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+    signingKeyReference = setup.defaulSigKey;
+    crypto = setup.crypto
   });
 
   afterEach(() => {
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
     setup.fetchMock.reset();
   });
 
@@ -25,12 +27,12 @@ describe('VerifiablePresentationValidation', () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentation);
     const expected = siop.expected.filter((token: IExpectedVerifiablePresentation) => token.type === TokenType.verifiablePresentation)[0];
 
-    let validator = new VerifiablePresentationValidation(options, expected, setup.defaultUserDid, 'id');
+    let validator = new VerifiablePresentationValidation(options, expected, setup.defaultUserDid, 'id', crypto);
     let response = await validator.validate(siop.vp.rawToken);
     expect(response.result).toBeTruthy();
 
     // Negative cases
-    validator = new VerifiablePresentationValidation(options, expected, 'abcdef', 'id');
+    validator = new VerifiablePresentationValidation(options, expected, 'abcdef', 'id', crypto);
     response = await validator.validate(siop.vp.rawToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
@@ -46,7 +48,7 @@ describe('VerifiablePresentationValidation', () => {
     let payload: any = {
     };
     let siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
-    validator = new VerifiablePresentationValidation(options, expected, setup.defaultUserDid, 'id');
+    validator = new VerifiablePresentationValidation(options, expected, setup.defaultUserDid, 'id', crypto);
     response = await validator.validate(siopRequest.rawToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
