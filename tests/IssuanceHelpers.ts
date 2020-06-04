@@ -161,7 +161,7 @@ export class IssuanceHelpers {
     }
 
     const didDocument = {
-      document: new DidDocument({
+      didDocument: new DidDocument({
         "@context": "https://w3id.org/did/v1",
         id: did,
         publicKey: <any>[{
@@ -172,14 +172,14 @@ export class IssuanceHelpers {
         }]
       })
     };
-    (didDocument.document as any)['@context'] = 'https://w3id.org/did/v1';
+    (didDocument.didDocument as any)['@context'] = 'https://w3id.org/did/v1';
 
     // Resolver mock
     const resolverUrl = `${setup.resolverUrl}/${did}`;
     setup.fetchMock.get(resolverUrl, didDocument, { overwriteRoutes: true });
     console.log(`Set mock for ${resolverUrl}`);
 
-    return [didDocument.document, jwkPrivate, jwkPublic];
+    return [didDocument.didDocument, jwkPrivate, jwkPublic];
   }
 
   // Sign a token
