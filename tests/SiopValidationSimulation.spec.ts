@@ -13,7 +13,7 @@ describe('SiopValidationSimulation', () => {
   afterEach(async () => {
     setup.fetchMock.reset();
   });
-  fit('should validate the WoodgroveIdentityCredential', async () =>{
+  xit('should validate the WoodgroveIdentityCredential', async () =>{
         // Token to test - WoodgroveIdentityCredential
         const token = SiopValidationSimulation.token;
            
