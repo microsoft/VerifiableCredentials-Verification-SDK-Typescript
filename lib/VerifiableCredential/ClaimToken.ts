@@ -20,9 +20,14 @@ export enum TokenType {
   idToken = 'idToken',
 
   /**
-   * Token is SIOP token
+   * Token is SIOP token issuance request
    */
-  siop = 'siop',
+  siopIssuance = 'siopIssuance',
+
+  /**
+   * Token is SIOP token presentation request
+   */
+  siopPresentation = 'siopPresentation',
 
   /**
    * Token is verifiable presentation
@@ -172,7 +177,7 @@ export default class ClaimToken {
 
     // Check type of token
     if (payload.iss === VerifiableCredentialConstants.TOKEN_SI_ISS) {
-      return new ClaimToken(TokenType.siop, token, '');
+      return new ClaimToken(payload.contract ? TokenType.siopIssuance : TokenType.siopPresentation, token, '');
     }
     if (payload.vc) {
       return new ClaimToken(TokenType.verifiableCredential, token, '');

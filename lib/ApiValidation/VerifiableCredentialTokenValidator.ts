@@ -31,13 +31,12 @@ export default class VerifiableCredentialTokenValidator implements ITokenValidat
    * @param queue with tokens to validate
    * @param queueItem under validation
    * @param siopDid needs to be equal to audience of VC
-   * @param siopContractId Conract id asked during siop
    */
-  public async validate(_queue: ValidationQueue, queueItem: ValidationQueueItem, siopDid: string, contractId: string): Promise<IValidationResponse> {
+  public async validate(_queue: ValidationQueue, queueItem: ValidationQueueItem, siopDid: string): Promise<IValidationResponse> {
     const options = new ValidationOptions(this.validatorOption, TokenType.verifiableCredential);
 
     const validator = new VerifiableCredentialValidation(options, this.expected);
-    const validationResult = await validator.validate(queueItem.tokenToValidate, siopDid, contractId);
+    const validationResult = await validator.validate(queueItem.tokenToValidate, siopDid);
     return validationResult as IValidationResponse;
   }
 

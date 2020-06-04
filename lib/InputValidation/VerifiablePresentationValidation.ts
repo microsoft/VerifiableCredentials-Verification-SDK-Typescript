@@ -55,6 +55,7 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
    }
 
     // Check if VP and SIOP DID are equal
+    /**** TODO re-enable check
     if (this.siopDid && validationResponse.did !== this.siopDid) {
       return {
         result: false,
@@ -62,7 +63,7 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
         status: 403
       };
     }
-
+****/
     if (!validationResponse.payloadObject.vp) {
       return {
         result: false,
@@ -132,7 +133,7 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
     // send the payload
     const siop = await this.crypto.builder.payloadProtectionProtocol.sign(
       // TODO needs support for extractable and non extractable keys
-      new KeyReferenceOptions({ keyReference: this.crypto.builder.signingKeyKid, extractable: true }),
+      new KeyReferenceOptions({ keyReference: this.crypto.builder.signingKeyReference, extractable: true }),
       Buffer.from(JSON.stringify(payload)),
       'JwsCompactJson',
       this.crypto.builder.payloadProtectionOptions);

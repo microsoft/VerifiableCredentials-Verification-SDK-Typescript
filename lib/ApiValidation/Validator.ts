@@ -46,14 +46,13 @@ export default class Validator {
    */
   public async validate(token: string): Promise<IValidationResponse> {
     const validatorOption = new BasicValidatorOptions(this.resolver);
-    let options = new ValidationOptions(validatorOption, TokenType.siop);
     let response: IValidationResponse = {
       result: true,
       status: 200,
     };
     let claimToken: ClaimToken;
     let siopDid: string | undefined;
-    let siopContract: string | undefined;
+    let siopContractId: string | undefined;
     const queue = new ValidationQueue();
     queue.enqueueToken('siop', token);
     let queueItem = queue.getNextToken();
@@ -68,25 +67,24 @@ export default class Validator {
 
       switch (claimToken.type) {
         case TokenType.idToken:
-          options = new ValidationOptions(validatorOption, claimToken.type);
-          response = await validator.validate(queue, queueItem!, '', siopContract);
+          response = await validator.validate(queue, queueItem!, '', siopContractId);
           break;
         case TokenType.verifiableCredential:
-          options = new ValidationOptions(validatorOption, claimToken.type);
-          response = await validator.validate(queue, queueItem!, siopDid!, siopContract!);
-          break;
-        case TokenType.verifiablePresentation:
-          options = new ValidationOptions(validatorOption, claimToken.type);
           response = await validator.validate(queue, queueItem!, siopDid!);
           break;
-        case TokenType.siop:
-          options = new ValidationOptions(validatorOption, claimToken.type);
+        case TokenType.verifiablePresentation:
+          response = await validator.validate(queue, queueItem!, siopDid!);
+          break;
+        case TokenType.siopIssuance:
           response = await validator.validate(queue, queueItem!);
           siopDid = response.did;
-          siopContract = Validator.getContractIdFromSiop(response.payloadObject.contract);
+          siopContractId = Validator.getContractIdFromSiop(response.payloadObject.contract);
+          break;
+        case TokenType.siopPresentation:
+          response = await validator.validate(queue, queueItem!);
+          siopDid = response.did;
           break;
         case TokenType.selfIssued:
-          options = new ValidationOptions(validatorOption, claimToken.type);
           response = await validator.validate(queue, queueItem!);
           break;
         default:
@@ -115,9 +113,13 @@ export default class Validator {
     return response;
   }
 
+  private isSiop(type: TokenType | undefined) {
+    return type === TokenType.siopIssuance || type === TokenType.siopPresentation
+  }
+
   private setValidationResult(queue: ValidationQueue): IValidationResult {
     // get user DID from SIOP or VC
-    let did = queue.items.filter((item) => item.validatedToken?.type === TokenType.siop).map((siop) => {
+    let did = queue.items.filter((item) => this.isSiop(item.validatedToken?.type)).map((siop) => {
       return siop.validationResponse.did;
     })[0];
     if (!did) {
@@ -127,12 +129,12 @@ export default class Validator {
     }
 
     // Set the contract
-    const contract = queue.items.filter((item) => item.validatedToken?.type === TokenType.siop).map((siop) => {
+    const contract = queue.items.filter((item) => this.isSiop(item.validatedToken?.type)).map((siop) => {
       return (siop.validationResponse as ISiopValidationResponse).payloadObject.contract;
     })[0];
 
     // Set the jti
-    const jti = queue.items.filter((item) => item.validatedToken?.type === TokenType.siop).map((siop) => {
+    const jti = queue.items.filter((item) => this.isSiop(item.validatedToken?.type)).map((siop) => {
       return (siop.validationResponse as ISiopValidationResponse).payloadObject.jti;
     })[0];
 

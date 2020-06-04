@@ -161,7 +161,7 @@ export class IssuanceHelpers {
     }
 
     const didDocument = {
-      document: new DidDocument({
+      didDocument: new DidDocument({
         "@context": "https://w3id.org/did/v1",
         id: did,
         publicKey: <any>[{
@@ -172,14 +172,14 @@ export class IssuanceHelpers {
         }]
       })
     };
-    (didDocument.document as any)['@context'] = 'https://w3id.org/did/v1';
+    (didDocument.didDocument as any)['@context'] = 'https://w3id.org/did/v1';
 
     // Resolver mock
     const resolverUrl = `${setup.resolverUrl}/${did}`;
     setup.fetchMock.get(resolverUrl, didDocument, { overwriteRoutes: true });
     console.log(`Set mock for ${resolverUrl}`);
 
-    return [didDocument.document, jwkPrivate, jwkPublic];
+    return [didDocument.didDocument, jwkPrivate, jwkPublic];
   }
 
   // Sign a token
@@ -253,15 +253,13 @@ export class IssuanceHelpers {
       attestations
     );
 
-    const vcContractIssuers: { [contract: string]: string[] } = {};
-    vcContractIssuers[Validator.getContractIdFromSiop(contract)] = [setup.defaultIssuerDid];
-    //const idTokenConfiguration: { [contract: string]: string[] } = {};
+    const vcContractIssuers: { [credentialType: string]: string[] } = {};
+    vcContractIssuers['DrivingLicense'] = [setup.defaultIssuerDid];
     const idTokenConfiguration: string[] =[setup.defaultIdTokenConfiguration];
-    //idTokenConfiguration[Validator.getContractIdFromSiop(contract)] = [setup.defaultIdTokenConfiguration];
     const expected: IExpectedBase[] = [
       <IExpectedSelfIssued>{ type: TokenType.selfIssued },
       <IExpectedIdToken>{ type: TokenType.idToken, configuration: idTokenConfiguration, audience: setup.AUDIENCE },
-      <IExpectedSiop>{ type: TokenType.siop, audience: setup.AUDIENCE },
+      <IExpectedSiop>{ type: TokenType.siopIssuance, audience: setup.AUDIENCE },
       <IExpectedVerifiablePresentation>{ type: TokenType.verifiablePresentation, didAudience: setup.defaultIssuerDid },
       <IExpectedVerifiableCredential>{ type: TokenType.verifiableCredential, contractIssuers: vcContractIssuers }
     ];

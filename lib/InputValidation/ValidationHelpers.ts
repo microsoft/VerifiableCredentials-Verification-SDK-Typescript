@@ -299,6 +299,7 @@ export class ValidationHelpers {
         };
       }
 
+      /**** TODO re-enable test. Disabled because of bug in the authenticator app
       if (validationResponse.payloadObject.aud !== expected.didAudience) {
         return {
           result: false,
@@ -306,6 +307,7 @@ export class ValidationHelpers {
           status: 403
         };
       }
+      ***/
     }
 
     return validationResponse;
@@ -356,7 +358,7 @@ export class ValidationHelpers {
     if (validationResponse.payloadObject.sub && validationResponse.payloadObject.sub !== validationResponse.did) {
       return {
         result: false,
-        detailedError: `The sub property in the siop must be equal to ${validationResponse.did}`,
+        detailedError: `The sub property in the siopIssuance must be equal to ${validationResponse.did}`,
         status: 403
       };
     }

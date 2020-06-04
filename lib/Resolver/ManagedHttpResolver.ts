@@ -33,7 +33,7 @@ export default class ManagedHttpResolver implements IDidResolver {
     if (response.status >= 200 || response.status < 300) {
       const didDocument = await response.json();
       return {
-        didDocument: new DidDocument(didDocument.document),
+        didDocument: new DidDocument(didDocument.didDocument),
         metadata: didDocument.resolverMetadata
       } as IDidResolveResult;
     }
