@@ -111,7 +111,7 @@ describe('Validator', () => {
 
   it('should validate siop with default validators', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentation);
-    const siopExpected = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siop)[0];
+    const siopExpected = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siopIssuance)[0];
     const vpExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiablePresentation)[0];
     const vcExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
     const idTokenExpected = siop.expected.filter((token: IExpectedIdToken) => token.type === TokenType.idToken)[0];
@@ -149,7 +149,7 @@ describe('Validator', () => {
 
   it('should validate siop', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentation);
-    const siopExpected = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siop)[0];
+    const siopExpected = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siopIssuance)[0];
     const vpExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiablePresentation)[0];
     const vcExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
     const idTokenExpected = siop.expected.filter((token: IExpectedIdToken) => token.type === TokenType.idToken)[0];
@@ -165,7 +165,7 @@ describe('Validator', () => {
     expect(vpValidator.isType).toEqual(TokenType.verifiablePresentation);
     expect(vcValidator.isType).toEqual(TokenType.verifiableCredential);
     expect(idTokenValidator.isType).toEqual(TokenType.idToken);
-    expect(siopValidator.isType).toEqual(TokenType.siop);
+    expect(siopValidator.isType).toEqual(TokenType.siopIssuance);
     expect(siValidator.isType).toEqual(TokenType.selfIssued);
 
     // Check siop validator

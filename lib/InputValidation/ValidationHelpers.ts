@@ -356,7 +356,7 @@ export class ValidationHelpers {
     if (validationResponse.payloadObject.sub && validationResponse.payloadObject.sub !== validationResponse.did) {
       return {
         result: false,
-        detailedError: `The sub property in the siop must be equal to ${validationResponse.did}`,
+        detailedError: `The sub property in the siopIssuance must be equal to ${validationResponse.did}`,
         status: 403
       };
     }

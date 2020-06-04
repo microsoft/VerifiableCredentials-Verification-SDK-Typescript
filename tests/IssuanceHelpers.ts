@@ -261,7 +261,7 @@ export class IssuanceHelpers {
     const expected: IExpectedBase[] = [
       <IExpectedSelfIssued>{ type: TokenType.selfIssued },
       <IExpectedIdToken>{ type: TokenType.idToken, configuration: idTokenConfiguration, audience: setup.AUDIENCE },
-      <IExpectedSiop>{ type: TokenType.siop, audience: setup.AUDIENCE },
+      <IExpectedSiop>{ type: TokenType.siopIssuance, audience: setup.AUDIENCE },
       <IExpectedVerifiablePresentation>{ type: TokenType.verifiablePresentation, didAudience: setup.defaultIssuerDid },
       <IExpectedVerifiableCredential>{ type: TokenType.verifiableCredential, contractIssuers: vcContractIssuers }
     ];

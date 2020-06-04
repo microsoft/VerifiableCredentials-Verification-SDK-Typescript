@@ -12,7 +12,12 @@ import { KeyReferenceOptions } from 'verifiablecredentials-crypto-sdk-typescript
 export default class Requestor {
   private _payload: any = {};
 
-  constructor(
+
+    /**
+     * Create instance of <see @class Requestor>
+     * @param _builder The builder object
+     */
+    constructor(
     private _builder: RequestorBuilder) {
   }
 

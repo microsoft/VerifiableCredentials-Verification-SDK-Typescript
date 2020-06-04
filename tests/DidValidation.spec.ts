@@ -25,8 +25,8 @@ describe('DidValidation', () =>
   });
   
   it('should test validate', async () => {
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.siop);    
-    const expected = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siop)[0];
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.siopIssuance);    
+    const expected = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siopIssuance)[0];
 
     const validator = new DidValidation(options, expected);
     let response = await validator.validate(request.rawToken);
@@ -37,14 +37,14 @@ describe('DidValidation', () =>
     response = await validator.validate(request.rawToken + 'a');
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual('The signature on the payload in the siop is invalid');
+    expect(response.detailedError).toEqual('The signature on the payload in the siopIssuance is invalid');
 
     // invalid format
     let tokenParts =  request.rawToken.split('.');
     response = await validator.validate(`.${tokenParts[1]}.${tokenParts[2]}`);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(400);
-    expect(response.detailedError).toEqual('The siop could not be deserialized');
+    expect(response.detailedError).toEqual('The siopIssuance could not be deserialized');
 
     // Token has no kid
     let header: any = {
@@ -55,7 +55,7 @@ describe('DidValidation', () =>
     response = await validator.validate(`${base64url.encode(JSON.stringify(header))}.${tokenParts[1]}.${tokenParts[2]}`);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual('The protected header in the siop does not contain the kid');
+    expect(response.detailedError).toEqual('The protected header in the siopIssuance does not contain the kid');
 
     // The kid has no did
     header = {

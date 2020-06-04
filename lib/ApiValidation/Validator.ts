@@ -46,7 +46,7 @@ export default class Validator {
    */
   public async validate(token: string): Promise<IValidationResponse> {
     const validatorOption = new BasicValidatorOptions(this.resolver);
-    let options = new ValidationOptions(validatorOption, TokenType.siop);
+    let options: ValidationOptions;
     let response: IValidationResponse = {
       result: true,
       status: 200,
@@ -79,7 +79,7 @@ export default class Validator {
           options = new ValidationOptions(validatorOption, claimToken.type);
           response = await validator.validate(queue, queueItem!, siopDid!);
           break;
-        case TokenType.siop:
+        case TokenType.siopIssuance:
           options = new ValidationOptions(validatorOption, claimToken.type);
           response = await validator.validate(queue, queueItem!);
           siopDid = response.did;
@@ -115,9 +115,13 @@ export default class Validator {
     return response;
   }
 
+  private isSiop(type: TokenType | undefined) {
+    return type === TokenType.siopIssuance || type === TokenType.siopPresentation
+  }
+
   private setValidationResult(queue: ValidationQueue): IValidationResult {
     // get user DID from SIOP or VC
-    let did = queue.items.filter((item) => item.validatedToken?.type === TokenType.siop).map((siop) => {
+    let did = queue.items.filter((item) => this.isSiop(item.validatedToken?.type)).map((siop) => {
       return siop.validationResponse.did;
     })[0];
     if (!did) {
@@ -127,12 +131,12 @@ export default class Validator {
     }
 
     // Set the contract
-    const contract = queue.items.filter((item) => item.validatedToken?.type === TokenType.siop).map((siop) => {
+    const contract = queue.items.filter((item) => this.isSiop(item.validatedToken?.type)).map((siop) => {
       return (siop.validationResponse as ISiopValidationResponse).payloadObject.contract;
     })[0];
 
     // Set the jti
-    const jti = queue.items.filter((item) => item.validatedToken?.type === TokenType.siop).map((siop) => {
+    const jti = queue.items.filter((item) => this.isSiop(item.validatedToken?.type)).map((siop) => {
       return (siop.validationResponse as ISiopValidationResponse).payloadObject.jti;
     })[0];
 

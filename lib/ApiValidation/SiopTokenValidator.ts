@@ -30,7 +30,7 @@ export default class SiopTokenValidator implements ITokenValidator {
    * @param queueItem under validation
    */
   public async validate(queue: ValidationQueue, queueItem: ValidationQueueItem): Promise<IValidationResponse> { 
-    const options = new ValidationOptions(this.validatorOption, TokenType.siop);
+    const options = new ValidationOptions(this.validatorOption, this.expected.type);
     const validator = new SiopValidation(options, this.expected);
     const validationResult = await validator.validate(queueItem.tokenToValidate);
     if (validationResult.tokensToValidate) {
@@ -46,7 +46,7 @@ export default class SiopTokenValidator implements ITokenValidator {
    * Gets the type of token to validate
    */
   public get isType(): TokenType {
-    return TokenType.siop;
+    return this.expected.type;
   }
 }
 
