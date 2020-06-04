@@ -46,14 +46,13 @@ export default class Validator {
    */
   public async validate(token: string): Promise<IValidationResponse> {
     const validatorOption = new BasicValidatorOptions(this.resolver);
-    let options: ValidationOptions;
     let response: IValidationResponse = {
       result: true,
       status: 200,
     };
     let claimToken: ClaimToken;
     let siopDid: string | undefined;
-    let siopContract: string | undefined;
+    let siopContractId: string | undefined;
     const queue = new ValidationQueue();
     queue.enqueueToken('siop', token);
     let queueItem = queue.getNextToken();
@@ -68,25 +67,24 @@ export default class Validator {
 
       switch (claimToken.type) {
         case TokenType.idToken:
-          options = new ValidationOptions(validatorOption, claimToken.type);
-          response = await validator.validate(queue, queueItem!, '', siopContract);
+          response = await validator.validate(queue, queueItem!, '', siopContractId);
           break;
         case TokenType.verifiableCredential:
-          options = new ValidationOptions(validatorOption, claimToken.type);
-          response = await validator.validate(queue, queueItem!, siopDid!, siopContract!);
+          response = await validator.validate(queue, queueItem!, siopDid!);
           break;
         case TokenType.verifiablePresentation:
-          options = new ValidationOptions(validatorOption, claimToken.type);
           response = await validator.validate(queue, queueItem!, siopDid!);
           break;
         case TokenType.siopIssuance:
-          options = new ValidationOptions(validatorOption, claimToken.type);
           response = await validator.validate(queue, queueItem!);
           siopDid = response.did;
-          siopContract = Validator.getContractIdFromSiop(response.payloadObject.contract);
+          siopContractId = Validator.getContractIdFromSiop(response.payloadObject.contract);
+          break;
+        case TokenType.siopPresentation:
+          response = await validator.validate(queue, queueItem!);
+          siopDid = response.did;
           break;
         case TokenType.selfIssued:
-          options = new ValidationOptions(validatorOption, claimToken.type);
           response = await validator.validate(queue, queueItem!);
           break;
         default:

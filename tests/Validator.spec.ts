@@ -48,7 +48,7 @@ describe('Validator', () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential);
     const expected: any = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
 
-    const tokenValidator = new VerifiableCredentialTokenValidator(setup.validatorOptions, expected.contractIssuers[Validator.getContractIdFromSiop(siop.contract)]);
+    const tokenValidator = new VerifiableCredentialTokenValidator(setup.validatorOptions, expected);
     const validator = new ValidatorBuilder(crypto)
       .useValidators(tokenValidator)
       .build();
@@ -89,7 +89,7 @@ describe('Validator', () => {
     // Check VC validator
     queue = new ValidationQueue();
     queue.enqueueToken(vcAttestationName, siop.vc.rawToken);
-    result = await vcValidator.validate(queue, queue.getNextToken()!, setup.defaultUserDid, Validator.getContractIdFromSiop(siop.contract));
+    result = await vcValidator.validate(queue, queue.getNextToken()!, setup.defaultUserDid);
     expect(result.result).toBeTruthy('vcValidator succeeded');
 
     // Check validator

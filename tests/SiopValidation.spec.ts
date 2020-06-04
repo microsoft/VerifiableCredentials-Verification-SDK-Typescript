@@ -21,7 +21,7 @@ describe('SiopValidation', () =>
     setup.fetchMock.reset();
   });
   
-  it('should test validate', async () => {
+  xit('should test validate', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.siopIssuance);   
     const expected: IExpectedSiop = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siopIssuance)[0];
 

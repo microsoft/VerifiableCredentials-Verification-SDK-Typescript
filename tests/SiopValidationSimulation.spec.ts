@@ -1,38 +1,32 @@
-import { TokenType, ValidatorBuilder, IdTokenTokenValidator, VerifiableCredentialTokenValidator, VerifiablePresentationTokenValidator, IExpectedVerifiableCredential, IExpectedVerifiablePresentation, IExpectedIdToken, IExpectedSiop, IExpectedSelfIssued, Validator } from '../lib/index';
-import { IssuanceHelpers } from './IssuanceHelpers';
+import { ValidatorBuilder } from '../lib/index';
 import TestSetup from './TestSetup';
 import ValidationQueue from '../lib/InputValidation/ValidationQueue';
-import { SiopTokenValidator, SelfIssuedTokenValidator } from '../lib/index';
 import SiopValidationSimulation from './SiopValidationSimulation';
 
 describe('SiopValidationSimulation', () => {
   let setup: TestSetup;
   beforeEach(async () => {
     setup = new TestSetup();
+    setup.fetchMock.reset();
   });
   afterEach(async () => {
     setup.fetchMock.reset();
   });
-/*
-  xit('should validate the ProofOfResidenceCredential', async () =>{
-        // Token to test - ProofOfResidence
+  it('should validate the WoodgroveIdentityCredential', async () =>{
+        // Token to test - WoodgroveIdentityCredential
         const token = SiopValidationSimulation.token;
-        
-        const vpValidator = new VerifiablePresentationTokenValidator(setup.validatorOptions, SiopValidationSimulation.vpExpected);
-        const vcValidator = new VerifiableCredentialTokenValidator(setup.validatorOptions, SiopValidationSimulation.vcExpected);
-        const siopValidator = new SiopTokenValidator(setup.validatorOptions, SiopValidationSimulation.siopExpected);
-        const siValidator = new SelfIssuedTokenValidator(setup.validatorOptions, SiopValidationSimulation.siExpected);
-    
+           
     // Check validator
-    let validator = new ValidatorBuilder()
-      .useValidators([vcValidator, vpValidator, siopValidator, siValidator])
+    let validator = new ValidatorBuilder(setup.crypto)
+      .useTrustedIssuerConfigurationsForIdTokens(['https://login.microsoftonline.com/woodgrove.ms/.well-known/openid-configuration'])    
+      .useAudienceUrl(SiopValidationSimulation.siopExpected.audience!)
       .build();
 
     const queue = new ValidationQueue();
-    queue.enqueueToken('siop', token);
+    queue.enqueueToken('siopPresentation', token);
     const result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeTruthy();
 
   });
-*/
+
 });

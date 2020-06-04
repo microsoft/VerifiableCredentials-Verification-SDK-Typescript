@@ -26,10 +26,9 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
    * Validate the verifiable credential
    * @param verifiableCredential The credential to validate as a signed token
    * @param siopDid needs to be equal to audience of VC
-   * @param siopContractId The id for contract which is validated
    * @returns result is true if validation passes
    */
-  public async validate(verifiableCredential: string, siopDid: string, siopContractId: string): Promise<VerifiableCredentialValidationResponse> {
+  public async validate(verifiableCredential: string, siopDid: string): Promise<VerifiableCredentialValidationResponse> {
     let validationResponse: VerifiableCredentialValidationResponse = {
       result: true,
       status: 200
@@ -94,6 +93,9 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       };
     }
 
+    // Get credential type from context
+    const credentialType = types[1];
+
     // Check token scope (aud and iss)
     validationResponse = await this.options.checkScopeValidityOnVcTokenDelegate(validationResponse, this.expected, siopDid);
     if (!validationResponse.result) {
@@ -103,8 +105,9 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
     // Check if the VC matches the contract and its issuers
     // Get the contract from the VC
     if (this.expected.contractIssuers) {
-      const contractIssuers = VerifiableCredentialValidation.getIssuersFromExpected(this.expected, siopContractId);
+      const contractIssuers = VerifiableCredentialValidation.getIssuersFromExpected(this.expected, credentialType);
       if (!(contractIssuers instanceof Array)) {
+        // Error in issuers
         return <VerifiableCredentialValidationResponse>contractIssuers;
       }
         
@@ -113,7 +116,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       if (!contractIssuers) {
         return {
           result: false,
-          detailedError: `The verifiable credential with contract '${siopContractId}' is not expected in '${JSON.stringify(this.expected.contractIssuers)}'`,
+          detailedError: `The verifiable credential with type '${credentialType}' is not expected in '${JSON.stringify(this.expected.contractIssuers)}'`,
           status: 403
         };
       }
@@ -121,7 +124,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       if (!contractIssuers.includes(validationResponse.payloadObject.iss)) {
         return {
           result: false,
-          detailedError: `The verifiable credential with contract '${siopContractId}' is not from a trusted issuer '${JSON.stringify(this.expected.contractIssuers)}'`,
+          detailedError: `The verifiable credential with type '${credentialType}' is not from a trusted issuer '${JSON.stringify(this.expected.contractIssuers)}'`,
           status: 403
         };
       }

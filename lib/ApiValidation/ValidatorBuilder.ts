@@ -78,6 +78,7 @@ export default class ValidatorBuilder {
         idToken: new IdTokenTokenValidator(validatorOptions, <IExpectedIdToken> {type: TokenType.idToken, configuration: <string[]>this._trustedIssuerConfigurationsForIdTokens}),
         verifiableCredential: new VerifiableCredentialTokenValidator(validatorOptions, <IExpectedVerifiableCredential> {type: TokenType.verifiableCredential, contractIssuers: this._trustedIssuersForVerifiableCredentials}),
         verifiablePresentation: new VerifiablePresentationTokenValidator(validatorOptions, this.crypto, <IExpectedVerifiablePresentation> {type: TokenType.verifiablePresentation, didAudience: this.crypto.builder.did}),
+        siopPresentation: new SiopTokenValidator(validatorOptions, <IExpectedSiop> {type: TokenType.siopPresentation, audience: this._audienceUrl}),
         siopIssuance: new SiopTokenValidator(validatorOptions, <IExpectedSiop> {type: TokenType.siopIssuance, audience: this._audienceUrl})
       };
     }
