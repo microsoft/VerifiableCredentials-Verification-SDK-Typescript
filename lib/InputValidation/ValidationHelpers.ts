@@ -299,6 +299,7 @@ export class ValidationHelpers {
         };
       }
 
+      /**** TODO re-enable test. Disabled because of bug in the authenticator app
       if (validationResponse.payloadObject.aud !== expected.didAudience) {
         return {
           result: false,
@@ -306,6 +307,7 @@ export class ValidationHelpers {
           status: 403
         };
       }
+      ***/
     }
 
     return validationResponse;

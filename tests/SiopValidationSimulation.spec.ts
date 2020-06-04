@@ -8,11 +8,12 @@ describe('SiopValidationSimulation', () => {
   beforeEach(async () => {
     setup = new TestSetup();
     setup.fetchMock.reset();
+    await setup.generateKeys();
   });
   afterEach(async () => {
     setup.fetchMock.reset();
   });
-  it('should validate the WoodgroveIdentityCredential', async () =>{
+  fit('should validate the WoodgroveIdentityCredential', async () =>{
         // Token to test - WoodgroveIdentityCredential
         const token = SiopValidationSimulation.token;
            
