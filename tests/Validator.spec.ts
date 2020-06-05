@@ -111,17 +111,15 @@ describe('Validator', () => {
     expectAsync(validator.validate(queue.getNextToken()!.tokenToValidate)).toBeRejectedWith('verifiableCredential does not has a TokenValidator');
   });
 
-  fit('should validate presentation siop', async () => {
+  it('should validate presentation siop', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentation, false);
     const siopExpected = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siopPresentation)[0];
     const vcExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
-    const idTokenExpected = siop.expected.filter((token: IExpectedIdToken) => token.type === TokenType.idToken)[0];
+    
 
-
-    // Check validator
+    // Check validator, only VCs in presentations
     let validator = new ValidatorBuilder(crypto)
       .useAudienceUrl(siopExpected.audience)
-      .useTrustedIssuerConfigurationsForIdTokens(idTokenExpected.configuration)
       .useTrustedIssuersForVerifiableCredentials(vcExpected.contractIssuers)
       .build();
 
@@ -151,15 +149,6 @@ describe('Validator', () => {
     expect(result.result).toBeFalsy();
     expect(result.detailedError).toEqual(`Expected should have contractIssuers issuers set for verifiableCredential. Missing contractIssuers for 'DrivingLicense'.`);
     expect(result.status).toEqual(403);
-
-    // map issuer to other contract id
-    validator = validator.builder
-                  .useTrustedIssuerConfigurationsForIdTokens({ someContract: [setup.defaultIdTokenConfiguration] })
-                  .useTrustedIssuersForVerifiableCredentials(vcExpected.contractIssuers)
-                  .build();
-    queue.enqueueToken('idToken', request.rawToken);
-    result = await validator.validate(queue.getNextToken()!.tokenToValidate);
-    expect(result.result).toBeFalsy();
   });
 
 

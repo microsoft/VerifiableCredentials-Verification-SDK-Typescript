@@ -15,7 +15,7 @@ export default class ValidatorBuilder {
   private _tokenValidators: ({ [type: string]: ITokenValidator }) | undefined;
   private _resolver: IDidResolver = new ManagedHttpResolver(VerifiableCredentialConstants.UNIVERSAL_RESOLVER_URL);
   
-  private _trustedIssuersForVerifiableCredentials: IssuerMap | undefined;
+  private _trustedIssuersForVerifiableCredentials:  {[credentialType: string]: string[]} | undefined;
   private _trustedIssuerConfigurationsForIdTokens: IssuerMap | undefined;
   private _audienceUrl: string | undefined;
 
@@ -92,7 +92,7 @@ export default class ValidatorBuilder {
    * 
    * @param issuers array of issuers
    */
-  public useTrustedIssuersForVerifiableCredentials(issuers: IssuerMap): ValidatorBuilder {
+  public useTrustedIssuersForVerifiableCredentials(issuers: {[credentialType: string]: string[]}): ValidatorBuilder {
     this._trustedIssuersForVerifiableCredentials = issuers;
     if (this._tokenValidators) {
       // Make sure existing expected gets updated
@@ -113,7 +113,7 @@ export default class ValidatorBuilder {
    * Specify the trusted issuer for the verifiable credentials
    * @param issuers array of issuers or dictionary mapped to credential type
    */
-  public get trustedIssuersForVerifiableCredentials(): IssuerMap | undefined {
+  public get trustedIssuersForVerifiableCredentials():  {[credentialType: string]: string[]} | undefined {
     return this._trustedIssuersForVerifiableCredentials;
   }
 

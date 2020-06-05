@@ -236,13 +236,21 @@ export class IssuanceHelpers {
 
     const vp = await IssuanceHelpers.createVp(setup, [vc], didJwkPrivate);
     const si = IssuanceHelpers.createSelfIssuedToken({ name: 'jules', birthDate: new Date().toString() });
-    const attestations: { [claim: string]: any } = {
-      selfIssued: si.rawToken,
-      idTokens: {},
-      presentations: {}
-    };
-    attestations.idTokens[setup.defaultIdTokenConfiguration] = idToken.rawToken;
-    attestations.presentations['VerifiableCredential'] = vp.rawToken;
+    let attestations: { [claim: string]: any };
+    if (issuance) {
+      attestations = {
+        selfIssued: si.rawToken,
+        idTokens: {},
+        presentations: {}
+      };
+      attestations.idTokens[setup.defaultIdTokenConfiguration] = idToken.rawToken;
+      attestations.presentations['VerifiableCredential'] = vp.rawToken;
+     } else {
+      attestations = {
+        presentations: {}
+      };
+      attestations.presentations['VerifiableCredential'] = vp.rawToken;
+     }
 
     const contract = 'https://portableidentitycards.azure-api.net/42b39d9d-0cdd-4ae0-b251-b7b39a561f91/api/portable/v1.0/contracts/test/schema';
 
