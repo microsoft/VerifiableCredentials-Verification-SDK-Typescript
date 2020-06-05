@@ -78,7 +78,7 @@ export default class Validator {
           options = new ValidationOptions(validatorOption, claimToken.type);
           response = await validator.validate(queue, queueItem!);
           siopDid = response.did;
-          siopContract = Validator.getContractIdFromSiop(response.payloadObject.contract);
+          siopContract = Validator.readContractId(response.payloadObject.contract);
           break;
         case TokenType.selfIssued:
           options = new ValidationOptions(validatorOption, claimToken.type);

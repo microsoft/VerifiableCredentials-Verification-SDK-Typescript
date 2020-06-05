@@ -18,7 +18,7 @@ describe('Validator', () => {
     const expected: IExpectedIdToken = siop.expected.filter((token: IExpectedIdToken) => token.type === TokenType.idToken)[0];
 
     // because we only pass in the id token we need to pass configuration as an array
-    expected.configuration = (<{ [contract: string]: string[]}>expected.configuration)[Validator.getContractIdFromSiop(siop.contract)];
+    expected.configuration = (<{ [contract: string]: string[]}>expected.configuration)[Validator.readContractId(siop.contract)];
 
     let tokenValidator = new IdTokenTokenValidator(setup.validatorOptions, expected);
     let validator = new ValidatorBuilder()
@@ -44,7 +44,7 @@ describe('Validator', () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential);
     const expected: any = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
 
-    const tokenValidator = new VerifiableCredentialTokenValidator(setup.validatorOptions, expected.contractIssuers[Validator.getContractIdFromSiop(siop.contract)]);
+    const tokenValidator = new VerifiableCredentialTokenValidator(setup.validatorOptions, expected.contractIssuers[Validator.readContractId(siop.contract)]);
     const validator = new ValidatorBuilder()
       .useValidators(tokenValidator)
       .build();
@@ -85,7 +85,7 @@ describe('Validator', () => {
     // Check VC validator
     queue = new ValidationQueue();
     queue.enqueueToken(vcAttestationName, siop.vc.rawToken);
-    result = await vcValidator.validate(queue, queue.getNextToken()!, setup.defaultUserDid, Validator.getContractIdFromSiop(siop.contract));
+    result = await vcValidator.validate(queue, queue.getNextToken()!, setup.defaultUserDid, Validator.readContractId(siop.contract));
     expect(result.result).toBeTruthy('vcValidator succeeded');
 
     // Check validator
