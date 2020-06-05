@@ -62,7 +62,7 @@ export default class TestSetup {
   /**
    * Constant for default kid for user DID
    */
-  public defaulSigKey = 'sigkey';
+  public defaulSigKey = 'signing';
 
   /**
    * Constant for default kid for user DID
@@ -111,7 +111,7 @@ export default class TestSetup {
    * Set the keys
    */
   public keys = [
-    { kid: 'signing', didKid: `${this.defaultUserDid}#signing1`, kty: 'EC', use: 'sig', alg: 'ES256K', extractable: true }
+    { kid: `${this.defaulSigKey}`, didKid: `${this.defaultUserDid}#${this.defaulSigKey}`, kty: 'EC', use: 'sig', alg: 'ES256K', extractable: true }
   ];
 
   /**
@@ -126,7 +126,7 @@ export default class TestSetup {
       x: 'AU-WZrK8O_rx4wlq3idyuFlvACM_sMXZputpkzyHPMk',
       y: 'qOpL6upm2RSrwrTBbUvL_4xYnSTdSFLtjOlQlJ74pt0',
       alg: 'ES256K',
-      kid: 'did:ion:test:EiCAvQuaAu5awq_e_hXyJImdQ5-xJsZzzQ3Xd9a2EAphtQ#sigKey',
+      kid: `did:ion:test:EiCAvQuaAu5awq_e_hXyJImdQ5-xJsZzzQ3Xd9a2EAphtQ#${this.defaulSigKey}`,
       kty: 'EC',
       use: 'verify'
     },

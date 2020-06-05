@@ -23,7 +23,7 @@ import { IExpectedIdToken, Validator } from '../lib';
 
   it('should test validate', async () => {
     
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.idToken);   
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.idToken, true);   
     const expected = siop.expected.filter((token: IExpectedIdToken) => token.type === TokenType.idToken)[0];
 
     let validator = new IdTokenValidation(options, expected, Validator.getContractIdFromSiop(siop.contract));
