@@ -203,4 +203,27 @@ describe('Validator', () => {
     // Negative cases
 
   });
+
+  it('should read the contract id with no spaces', () => {
+    const id = 'foo';
+    const url = `https://test.com/v1.0/abc/def/contracts/${id}`;
+    const result = Validator.readContractId(url);
+    expect(result).toEqual(id);
+  });
+
+  it('should read the contract id with spaces', () => {
+    const id = 'foo bar';
+    const url = `https://test.com/v1.0/abc/def/contracts/${encodeURIComponent(id)}`;
+    const result = Validator.readContractId(url);
+    expect(result).toEqual(id);
+  });
+
+  it('should read the contract id with spaces and query', () => {
+    const id = 'foo bar';
+    const url = `https://test.com/v1.0/abc/def/contracts/${encodeURIComponent(id)}?qs=abcdefggh`;
+    const result = Validator.readContractId(url);
+    expect(result).toEqual(id);
+  });
+
+
 });
