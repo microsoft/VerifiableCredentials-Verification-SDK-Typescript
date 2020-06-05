@@ -78,7 +78,7 @@ export default class Validator {
         case TokenType.siopIssuance:
           response = await validator.validate(queue, queueItem!);
           siopDid = response.did;
-          siopContractId = Validator.getContractIdFromSiop(response.payloadObject.contract);
+          siopContractId = Validator.readContractId(response.payloadObject.contract);
           break;
         case TokenType.siopPresentation:
           response = await validator.validate(queue, queueItem!);
@@ -167,14 +167,18 @@ export default class Validator {
   }
 
   /**
-   * Extract contract id from the siop contract url
-   * @param contractUrl The contract url
-   */
-  public static getContractIdFromSiop(contractUrl: string) {
-    const contractTypeSplitted = contractUrl.split('/');
-    const contractId = contractTypeSplitted[contractTypeSplitted.length - 1];
-    return contractId;
+   * for a given contract uri, get the id
+   * @param contractUrl the contract uri to extract the name from
+   * */
+  public static readContractId(contractUrl: string) {
+    const url = new URL(contractUrl);
+    let path = url.pathname;
+
+    const pathParts = path.split('/');
+    path = pathParts[pathParts.length - 1];
+    return decodeURIComponent(path);
   }
+
 
   /**
    * Check the token type based on the payload
