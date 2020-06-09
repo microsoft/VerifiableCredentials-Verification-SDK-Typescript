@@ -17,6 +17,7 @@ describe('VerifiablePresentationValidation', () => {
     setup = new TestSetup();
     signingKeyReference = setup.defaulSigKey;
     crypto = setup.crypto
+    await setup.generateKeys();
   });
 
   afterEach(() => {
@@ -24,7 +25,7 @@ describe('VerifiablePresentationValidation', () => {
   });
 
   it('should test validate', async () => {
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentation);
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentation, true);
     const expected = siop.expected.filter((token: IExpectedVerifiablePresentation) => token.type === TokenType.verifiablePresentation)[0];
 
     let validator = new VerifiablePresentationValidation(options, expected, setup.defaultUserDid, 'id', crypto);
@@ -81,7 +82,9 @@ describe('VerifiablePresentationValidation', () => {
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Missing aud property in verifiablePresentation. Expected 'did:test:issuer'`);
 
+     // TODO enable test again once validation of VP audience is enabled again.
     // Wrong aud
+    /*
     payload = {
       iss: 'did:test:user',
       aud: 'test',
@@ -95,6 +98,7 @@ describe('VerifiablePresentationValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Wrong aud property in verifiablePresentation. Expected 'did:test:issuer'`);
+  */
 
     // Missing context
     payload = {

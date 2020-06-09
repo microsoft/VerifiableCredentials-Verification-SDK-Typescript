@@ -16,6 +16,8 @@ import IValidationResult from './IValidationResult';
  */
 export default class Validator {
 
+  private tokens: ClaimToken[] = [];
+
   constructor(private _builder: ValidatorBuilder) {
   }
 
@@ -57,7 +59,11 @@ export default class Validator {
     queue.enqueueToken('siop', token);
     let queueItem = queue.getNextToken();
     do {
-      claimToken = Validator.getTokenType(queueItem!);
+      claimToken = Validator.getClaimToken(queueItem!);
+
+      // keep track of the validated tokens
+      this.tokens.push(claimToken);
+
       const validator = this.tokenValidators[claimToken.type];
       if (!validator) {
         return new Promise((_, reject) => {
@@ -106,8 +112,7 @@ export default class Validator {
       response = {
         result: true,
         status: 200,
-        validationResult: this.setValidationResult(queue),
-        payloadObject: response.payloadObject,
+        validationResult: this.setValidationResult(queue)
       };
     }
     return response;
@@ -138,30 +143,46 @@ export default class Validator {
       return (siop.validationResponse as ISiopValidationResponse).payloadObject.jti;
     })[0];
 
-    // get id tokens
-    const idTokens: { [id: string]: any } = {};
-    for (let inx = 0, tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.idToken); inx < tokens.length; inx++) {
-      idTokens[tokens[inx].id] = tokens[inx].validatedToken?.decodedToken;
-    }
-
-    // get verifiable credentials
-    const vcs: { [id: string]: any } = {};
-    for (let inx = 0, tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.verifiableCredential); inx < tokens.length; inx++) {
-      vcs[tokens[inx].id] = tokens[inx].validatedToken?.decodedToken;
-    }
-
-    // get self issued
-    const si = queue.items.filter((item) => item.validatedToken?.type === TokenType.selfIssued).map((si) => {
-      return si.validatedToken?.decodedToken;
-    })[0];
-
     const validationResult: IValidationResult = {
       did: did ? did : '',
       contract: contract ? contract : '',
-      verifiableCredentials: vcs,
-      idTokens: idTokens,
-      selfIssued: si,
-      siopJti: jti ?? '',
+      siopJti: jti ?? ''
+    }
+
+    // get id tokens
+    let tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.idToken)
+    if (tokens && tokens.length > 0) {
+      validationResult.idTokens = tokens.map((token: any) => token.validatedToken);
+    }
+
+    // get verifiable credentials
+    tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.verifiableCredential)
+    if (tokens && tokens.length > 0) {
+      validationResult.verifiableCredentials = {};
+      for (let inx = 0; inx < tokens.length; inx++) {
+        validationResult.verifiableCredentials[tokens[inx].id] = tokens[inx].validatedToken;
+      }
+    }
+
+    // get verifiable presentations
+    tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.verifiablePresentation)
+    if (tokens && tokens.length > 0) {
+      validationResult.verifiablePresentations = {};
+      for (let inx = 0; inx < tokens.length; inx++) {
+        validationResult.verifiablePresentations[tokens[inx].id] = tokens[inx].validatedToken;
+      }
+    }
+
+    // get self issued
+    tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.selfIssued);
+    if (tokens && tokens.length > 0) {
+      validationResult.selfIssued = tokens[0].validatedToken;
+    }
+
+    // get siop
+    tokens = queue.items.filter((item) => this.isSiop(item.validatedToken?.type));
+    if (tokens && tokens.length > 0) {
+      validationResult.siop = tokens[0].validatedToken;
     }
     return validationResult;
   }
@@ -185,8 +206,8 @@ export default class Validator {
    * @param validationOptions The options
    * @param token to check for type
    */
-  private static getTokenType(queueItem: ValidationQueueItem): ClaimToken {
-    const claimToken = queueItem.claimToken ?? ClaimToken.getTokenType(queueItem.tokenToValidate);
+  private static getClaimToken(queueItem: ValidationQueueItem): ClaimToken {
+    const claimToken = queueItem.claimToken ?? ClaimToken.create(queueItem.tokenToValidate);
     return claimToken;
   }
 }

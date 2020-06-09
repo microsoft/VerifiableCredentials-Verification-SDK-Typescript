@@ -160,7 +160,7 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
     }
     const decodedToken: {[key: string]: ClaimToken } = {};
     for (let token in vc) {
-      const claimToken = ClaimToken.getTokenType(vc[token]);
+      const claimToken = ClaimToken.create(vc[token]);
       decodedToken[this.id] = claimToken;
     }
     return decodedToken;

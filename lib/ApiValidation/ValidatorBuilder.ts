@@ -6,7 +6,7 @@
 import { ITokenValidator, Validator, IDidResolver, ManagedHttpResolver, VerifiablePresentationTokenValidator, VerifiableCredentialTokenValidator, IdTokenTokenValidator, SiopTokenValidator, SelfIssuedTokenValidator, TokenType, IValidatorOptions } from '../index';
 import VerifiableCredentialConstants from '../VerifiableCredential/VerifiableCredentialConstants';
 import { Crypto } from '../index';
-import { IExpectedIdToken, IExpectedSelfIssued, IExpectedVerifiableCredential, IExpectedVerifiablePresentation, IExpectedSiop } from '../Options/IExpected';
+import { IExpectedIdToken, IExpectedSelfIssued, IExpectedVerifiableCredential, IExpectedVerifiablePresentation, IExpectedSiop, IssuerMap } from '../Options/IExpected';
 
 /**
  * Class to build a token validator
@@ -14,15 +14,9 @@ import { IExpectedIdToken, IExpectedSelfIssued, IExpectedVerifiableCredential, I
 export default class ValidatorBuilder {
   private _tokenValidators: ({ [type: string]: ITokenValidator }) | undefined;
   private _resolver: IDidResolver = new ManagedHttpResolver(VerifiableCredentialConstants.UNIVERSAL_RESOLVER_URL);
-  private vpValidator: VerifiablePresentationTokenValidator | undefined;
-  private vcValidator: VerifiableCredentialTokenValidator | undefined;
-  private idTokenValidator: IdTokenTokenValidator | undefined;
-  private siopValidator: SiopTokenValidator | undefined;
-  private siValidator: SelfIssuedTokenValidator | undefined;
-
-
-  private _trustedIssuersForVerifiableCredentials: string[] | undefined;
-  private _trustedIssuerConfigurationsForIdTokens: string[] | undefined;
+  
+  private _trustedIssuersForVerifiableCredentials:  {[credentialType: string]: string[]} | undefined;
+  private _trustedIssuerConfigurationsForIdTokens: IssuerMap | undefined;
   private _audienceUrl: string | undefined;
 
   constructor(private _crypto: Crypto) {
@@ -75,7 +69,7 @@ export default class ValidatorBuilder {
 
       this._tokenValidators = {
         selfIssued: new SelfIssuedTokenValidator(validatorOptions, <IExpectedSelfIssued> {type: TokenType.selfIssued}),
-        idToken: new IdTokenTokenValidator(validatorOptions, <IExpectedIdToken> {type: TokenType.idToken, configuration: <string[]>this._trustedIssuerConfigurationsForIdTokens}),
+        idToken: new IdTokenTokenValidator(validatorOptions, <IExpectedIdToken> {type: TokenType.idToken, configuration: this._trustedIssuerConfigurationsForIdTokens}),
         verifiableCredential: new VerifiableCredentialTokenValidator(validatorOptions, <IExpectedVerifiableCredential> {type: TokenType.verifiableCredential, contractIssuers: this._trustedIssuersForVerifiableCredentials}),
         verifiablePresentation: new VerifiablePresentationTokenValidator(validatorOptions, this.crypto, <IExpectedVerifiablePresentation> {type: TokenType.verifiablePresentation, didAudience: this.crypto.builder.did}),
         siopPresentation: new SiopTokenValidator(validatorOptions, <IExpectedSiop> {type: TokenType.siopPresentation, audience: this._audienceUrl}),
@@ -98,16 +92,28 @@ export default class ValidatorBuilder {
    * 
    * @param issuers array of issuers
    */
-  public useTrustedIssuersForVerifiableCredentials(issuers: string[]): ValidatorBuilder {
+  public useTrustedIssuersForVerifiableCredentials(issuers: {[credentialType: string]: string[]}): ValidatorBuilder {
     this._trustedIssuersForVerifiableCredentials = issuers;
+    if (this._tokenValidators) {
+      // Make sure existing expected gets updated
+      const vcValidator = this._tokenValidators[TokenType.verifiableCredential];
+      if (vcValidator) {
+        const validatorOptions: IValidatorOptions = {
+          resolver: this.resolver,
+          crypto: this._crypto
+        };
+        const expected: IExpectedVerifiableCredential = {type: TokenType.verifiableCredential, contractIssuers: issuers};
+        this._tokenValidators[TokenType.verifiableCredential] = new VerifiableCredentialTokenValidator(validatorOptions, expected);
+      }
+    }
     return this;
   }
 
   /**
    * Specify the trusted issuer for the verifiable credentials
-   * @param issuers array of issuers
+   * @param issuers array of issuers or dictionary mapped to credential type
    */
-  public get trustedIssuersForVerifiableCredentials(): string[] | undefined {
+  public get trustedIssuersForVerifiableCredentials():  {[credentialType: string]: string[]} | undefined {
     return this._trustedIssuersForVerifiableCredentials;
   }
 
@@ -115,8 +121,20 @@ export default class ValidatorBuilder {
    * Specify the trusted issuer configuration endpoints for the OpenID Connect providers
    * @param issuers array of issuers
    */
-  public useTrustedIssuerConfigurationsForIdTokens(issuers: string[]): ValidatorBuilder {
+  public useTrustedIssuerConfigurationsForIdTokens(issuers: IssuerMap): ValidatorBuilder {
     this._trustedIssuerConfigurationsForIdTokens = issuers;
+    if (this._tokenValidators) {
+      // Make sure existing expected gets updated
+      const idtokenValidator = this._tokenValidators[TokenType.idToken];
+      if (idtokenValidator) {
+        const validatorOptions: IValidatorOptions = {
+          resolver: this.resolver,
+          crypto: this._crypto
+        };
+        const expected: IExpectedIdToken = {type: TokenType.idToken, configuration: issuers};
+        this._tokenValidators[TokenType.idToken] = new IdTokenTokenValidator(validatorOptions, expected);
+      }
+    }
     return this;
   }
 
@@ -124,7 +142,7 @@ export default class ValidatorBuilder {
    * Specify the trusted issuer for the verifiable credentials
    * @param issuers array of issuers
    */
-  public get trustedIssuerConfigurationsForIdTokens(): string[] | undefined {
+  public get trustedIssuerConfigurationsForIdTokens(): IssuerMap | undefined {
     return this._trustedIssuerConfigurationsForIdTokens;
   }
 

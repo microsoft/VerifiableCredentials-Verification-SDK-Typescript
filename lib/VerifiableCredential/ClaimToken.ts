@@ -131,47 +131,10 @@ export default class ClaimToken {
   }
 
   /**
-   * Decode the token
-   * @param type Claim type
-   * @param values Claim value
-   */
-  private decode(): void {
-    const parts = this.rawToken.split('.');
-    if (parts.length < 2) {
-      throw new Error(`Cannot decode. Invalid input token`);
-    }
-
-    this._tokenHeader = JSON.parse(base64url.decode(parts[0]));
-    this._decodedToken = JSON.parse(base64url.decode(parts[1]));
-  }
-
-  /**
-   * Get the token object from the self issued token
-   * @param token The token to parse
-   * @returns The payload object
-   */
-  private static getTokenPayload(token: string): any {
-    // Deserialize the token
-    const split = token.split('.');
-    return JSON.parse(base64url.decode(split[1]));
-  }
-
-  /**
-   * Get the token object from the self issued token
-   * @param token The token to parse
-   * @returns The payload object
-   */
-  private static tokenSignature(token: string): boolean {
-    // Split the token
-    const split = token.split('.');
-    return split[2] !== undefined && split[2].trim() !== '';
-  }
-
-  /**
-   * Check the token type based on the payload
+   * Factory class to create a ClaimToken containing the token type, raw token and decoded payload
    * @param token to check for type
    */
-  public static getTokenType(token: string): ClaimToken {
+  public static create(token: string): ClaimToken {
     // Deserialize the token
     const payload = ClaimToken.getTokenPayload(token);
 
@@ -209,7 +172,7 @@ export default class ClaimToken {
       }
       else {
         for (let tokenKey in token) {
-          const claimToken = ClaimToken.getTokenType(token[tokenKey]);
+          const claimToken = ClaimToken.create(token[tokenKey]);
           decodedTokens[tokenKey] = claimToken;
         }
       }
@@ -218,12 +181,49 @@ export default class ClaimToken {
   }
 
   /**
+   * Decode the token
+   * @param type Claim type
+   * @param values Claim value
+   */
+  private decode(): void {
+    const parts = this.rawToken.split('.');
+    if (parts.length < 2) {
+      throw new Error(`Cannot decode. Invalid input token`);
+    }
+
+    this._tokenHeader = JSON.parse(base64url.decode(parts[0]));
+    this._decodedToken = JSON.parse(base64url.decode(parts[1]));
+  }
+
+  /**
+   * Get the token object from the self issued token
+   * @param token The token to parse
+   * @returns The payload object
+   */
+  private static getTokenPayload(token: string): any {
+    // Deserialize the token
+    const split = token.split('.');
+    return JSON.parse(base64url.decode(split[1]));
+  }
+
+  /**
+   * Get the token object from the self issued token
+   * @param token The token to parse
+   * @returns The payload object
+   */
+  private static tokenSignature(token: string): boolean {
+    // Split the token
+    const split = token.split('.');
+    return split[2] !== undefined && split[2].trim() !== '';
+  }
+
+  /**
   * Attestations contain the tokens and VCs in the input.
   * This algorithm will convert the attestations to a ClaimToken
   * @param attestation The attestation
   */
   private static fromAttestation(attestation: string): ClaimToken {
-    const token = ClaimToken.getTokenType(attestation);
+    const token = ClaimToken.create(attestation);
     return token;
   }
 }

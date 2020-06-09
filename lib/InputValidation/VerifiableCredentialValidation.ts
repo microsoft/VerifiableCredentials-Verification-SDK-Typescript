@@ -136,9 +136,9 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
   /**
    * Return expected issuers for verifyable credentials
    * @param expected Could be a contract based object or just an array with expected issuers
-   * @param siopContractId The contract to which issuers are linked
+   * @param credentialType The credential types to which issuers are linked
    */
-  public static getIssuersFromExpected(expected: IExpectedVerifiableCredential, siopContractId?: string): string[] | VerifiableCredentialValidationResponse {
+  public static getIssuersFromExpected(expected: IExpectedVerifiableCredential, credentialType?: string): string[] | VerifiableCredentialValidationResponse {
     if (!expected.contractIssuers) {
       return {
         result: false,
@@ -160,23 +160,23 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       }
       issuers = <string[]>expected.contractIssuers;
     } else {
-      if (!siopContractId) {
+      if (!credentialType) {
         return {
           result: false,
           status: 500,
-          detailedError: `The siopContractId needs to be specified to validate the verifiableCredential.`
+          detailedError: `The credentialType needs to be specified to validate the verifiableCredential.`
         };
       }
 
       // check for issuers for the contract
-      if (!(<{ [contract: string]: string[] }>expected.contractIssuers)[siopContractId]) {
+      if (!(<{ [contract: string]: string[] }>expected.contractIssuers)[credentialType]) {
         return {
           result: false,
-          status: 500,
-          detailedError: `Expected should have contractIssuers issuers set for verifiableCredential. Missing contractIssuers for '${siopContractId}'.`
+          status: 403,
+          detailedError: `Expected should have contractIssuers issuers set for verifiableCredential. Missing contractIssuers for '${credentialType}'.`
         };
       }
-      issuers = <string[]>expected.contractIssuers[siopContractId]
+      issuers = <string[]>expected.contractIssuers[credentialType]
     }
     return issuers;
   }

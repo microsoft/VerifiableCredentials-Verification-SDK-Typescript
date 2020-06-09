@@ -18,7 +18,7 @@ import { TokenType, IExpectedVerifiableCredential, Validator } from '../lib';
   });
 
   it('should test validate', async () => {
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential);   
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential, true);   
     const expected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
 
     let validator = new VerifiableCredentialValidation(options, expected);

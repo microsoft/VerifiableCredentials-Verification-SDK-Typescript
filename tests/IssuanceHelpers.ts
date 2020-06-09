@@ -26,7 +26,7 @@ export class IssuanceHelpers {
   /**
    * Create siop request
    */
-  public static async createSiopRequest(setup: TestSetup, key: any, contract: string, nonce: string, attestations: any): Promise<ClaimToken> {
+  public static async createSiopRequest(setup: TestSetup, key: any, contract: string | undefined, nonce: string, attestations: any): Promise<ClaimToken> {
     const siop = {
       nonce,
       contract,
@@ -198,6 +198,7 @@ export class IssuanceHelpers {
   public static async createRequest(
     setup: TestSetup,
     tokenDescription: TokenType,
+    issuance: boolean,
     idTokenIssuer?: string,
     idTokenAudience?: string,
     idTokenExp?: number): Promise<[ClaimToken, ValidationOptions, any]> {
@@ -235,20 +236,28 @@ export class IssuanceHelpers {
 
     const vp = await IssuanceHelpers.createVp(setup, [vc], didJwkPrivate);
     const si = IssuanceHelpers.createSelfIssuedToken({ name: 'jules', birthDate: new Date().toString() });
-    const attestations: { [claim: string]: any } = {
-      selfIssued: si.rawToken,
-      idTokens: {},
-      presentations: {}
-    };
-    attestations.idTokens[setup.defaultIdTokenConfiguration] = idToken.rawToken;
-    attestations.presentations['VerifiableCredential'] = vp.rawToken;
+    let attestations: { [claim: string]: any };
+    if (issuance) {
+      attestations = {
+        selfIssued: si.rawToken,
+        idTokens: {},
+        presentations: {}
+      };
+      attestations.idTokens[setup.defaultIdTokenConfiguration] = idToken.rawToken;
+      attestations.presentations['VerifiableCredential'] = vp.rawToken;
+     } else {
+      attestations = {
+        presentations: {}
+      };
+      attestations.presentations['VerifiableCredential'] = vp.rawToken;
+     }
 
     const contract = 'https://portableidentitycards.azure-api.net/42b39d9d-0cdd-4ae0-b251-b7b39a561f91/api/portable/v1.0/contracts/test/schema';
 
     const request = await IssuanceHelpers.createSiopRequest(
       setup,
       didJwkPrivate,
-      contract,
+      issuance ? contract : undefined,
       '',
       attestations
     );
@@ -260,6 +269,7 @@ export class IssuanceHelpers {
       <IExpectedSelfIssued>{ type: TokenType.selfIssued },
       <IExpectedIdToken>{ type: TokenType.idToken, configuration: idTokenConfiguration, audience: setup.AUDIENCE },
       <IExpectedSiop>{ type: TokenType.siopIssuance, audience: setup.AUDIENCE },
+      <IExpectedSiop>{ type: TokenType.siopPresentation, audience: setup.AUDIENCE },
       <IExpectedVerifiablePresentation>{ type: TokenType.verifiablePresentation, didAudience: setup.defaultIssuerDid },
       <IExpectedVerifiableCredential>{ type: TokenType.verifiableCredential, contractIssuers: vcContractIssuers }
     ];

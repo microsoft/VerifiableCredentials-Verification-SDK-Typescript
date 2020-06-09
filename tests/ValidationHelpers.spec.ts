@@ -22,7 +22,7 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience } from '../lib';
   });
 
   it('should test getTokenObject', async () => {
-    let [request, options, siopRequest] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential);
+    let [request, options, siopRequest] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential, true);
     const validationResponse: IValidationResponse = {
       status: 200,
       result: true
@@ -49,7 +49,7 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience } from '../lib';
   });
 
   it('should test resolveDid', async () => {
-    let [request, options, siopRequest] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential);
+    let [request, options, siopRequest] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential, true);
     const validationResponse: IValidationResponse = {
       status: 200,
       result: true,
@@ -85,7 +85,7 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience } from '../lib';
   });
 
   it('should not resolve resolveDid', async () => {
-    let [request, options, siopRequest] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential);
+    let [request, options, siopRequest] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential, true);
     const validationResponse: IValidationResponse = {
       status: 200,
       result: true
@@ -98,7 +98,7 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience } from '../lib';
   });
 
   it('should test validateDidSignatureDelegate', async () => {
-    let [request, options, siopRequest] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential);
+    let [request, options, siopRequest] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential, true);
     let validationResponse: IValidationResponse = {
       status: 200,
       result: true,
