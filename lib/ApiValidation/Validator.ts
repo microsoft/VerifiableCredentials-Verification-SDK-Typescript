@@ -59,7 +59,7 @@ export default class Validator {
     queue.enqueueToken('siop', token);
     let queueItem = queue.getNextToken();
     do {
-      claimToken = Validator.getTokenType(queueItem!);
+      claimToken = Validator.getClaimToken(queueItem!);
 
       // keep track of the validated tokens
       this.tokens.push(claimToken);
@@ -202,7 +202,7 @@ export default class Validator {
    * @param validationOptions The options
    * @param token to check for type
    */
-  private static getTokenType(queueItem: ValidationQueueItem): ClaimToken {
+  private static getClaimToken(queueItem: ValidationQueueItem): ClaimToken {
     const claimToken = queueItem.claimToken ?? ClaimToken.create(queueItem.tokenToValidate);
     return claimToken;
   }
