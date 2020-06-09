@@ -76,4 +76,9 @@ export interface IValidationResponse extends IResponse {
    * the Json Web Token Id of the incoming token
    */
   jti?: string;
+
+  /**
+   * Used to return all the validated tokens
+   */
+  tokens?: ClaimToken[]
 }

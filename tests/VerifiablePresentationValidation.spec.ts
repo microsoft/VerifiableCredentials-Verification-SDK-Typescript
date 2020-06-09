@@ -82,7 +82,9 @@ describe('VerifiablePresentationValidation', () => {
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Missing aud property in verifiablePresentation. Expected 'did:test:issuer'`);
 
+     // TODO enable test again once validation of VP audience is enabled again.
     // Wrong aud
+    /*
     payload = {
       iss: 'did:test:user',
       aud: 'test',
@@ -96,6 +98,7 @@ describe('VerifiablePresentationValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Wrong aud property in verifiablePresentation. Expected 'did:test:issuer'`);
+  */
 
     // Missing context
     payload = {

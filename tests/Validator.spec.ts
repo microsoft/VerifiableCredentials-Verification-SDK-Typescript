@@ -32,7 +32,11 @@ describe('Validator', () => {
       .build();
 
     let result = await validator.validate(siop.idToken.rawToken);
-    expect(result.result).toBeTruthy(); tokenValidator = new IdTokenTokenValidator(setup.validatorOptions, expected);
+    expect(result.result).toBeTruthy(); 
+    expect(result.tokens?.length).toEqual(1); 
+    expect(result.tokens![0].type).toEqual(TokenType.idToken);
+
+    tokenValidator = new IdTokenTokenValidator(setup.validatorOptions, expected);
 
     // Negative cases
     expected.configuration = ['xxx'];
@@ -128,16 +132,13 @@ describe('Validator', () => {
     let result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeTruthy();
     expect(result.status).toEqual(200);
+    expect(result.tokens?.length).toEqual(3);
     expect(result.detailedError).toBeUndefined();
     expect(result.tokensToValidate).toBeUndefined();
     expect(result.validationResult?.did).toEqual(setup.defaultUserDid);
     expect(result.validationResult?.siopJti).toEqual(IssuanceHelpers.jti);
-    expect(result.validationResult?.idTokens).toBeDefined();
-    for (let idtoken in result.validationResult?.idTokens) {
-      expect(result.validationResult?.idTokens[idtoken].upn).toEqual('jules@pulpfiction.com');
-    }
-    expect(result.validationResult?.selfIssued).toBeDefined();
-    expect(result.validationResult?.selfIssued.name).toEqual('jules');
+    expect(result.validationResult?.idTokens).toBeUndefined();
+    expect(result.validationResult?.selfIssued).toBeUndefined();
     expect(result.validationResult?.verifiableCredentials).toBeDefined();
     expect(result.validationResult?.verifiableCredentials!['VerifiableCredential'].vc.credentialSubject.givenName).toEqual('Jules');
 
@@ -172,6 +173,7 @@ describe('Validator', () => {
     queue.enqueueToken('siop', request.rawToken);
     const result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeTruthy();
+    expect(result.tokens?.length).toEqual(5);
     expect(result.status).toEqual(200);
     expect(result.detailedError).toBeUndefined();
     expect(result.tokensToValidate).toBeUndefined();

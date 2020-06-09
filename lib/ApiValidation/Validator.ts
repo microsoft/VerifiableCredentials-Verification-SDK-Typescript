@@ -16,6 +16,8 @@ import IValidationResult from './IValidationResult';
  */
 export default class Validator {
 
+  private tokens: ClaimToken[] = [];
+
   constructor(private _builder: ValidatorBuilder) {
   }
 
@@ -58,6 +60,10 @@ export default class Validator {
     let queueItem = queue.getNextToken();
     do {
       claimToken = Validator.getTokenType(queueItem!);
+
+      // keep track of the validated tokens
+      this.tokens.push(claimToken);
+
       const validator = this.tokenValidators[claimToken.type];
       if (!validator) {
         return new Promise((_, reject) => {
@@ -107,7 +113,7 @@ export default class Validator {
         result: true,
         status: 200,
         validationResult: this.setValidationResult(queue),
-        payloadObject: response.payloadObject,
+        tokens: this.tokens,
       };
     }
     return response;
@@ -139,21 +145,34 @@ export default class Validator {
     })[0];
 
     // get id tokens
-    const idTokens: { [id: string]: any } = {};
-    for (let inx = 0, tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.idToken); inx < tokens.length; inx++) {
-      idTokens[tokens[inx].id] = tokens[inx].validatedToken?.decodedToken;
+    let idTokens: { [id: string]: any } | undefined;
+    let tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.idToken)
+    if (tokens && tokens.length > 0) {
+      idTokens = {};
+      for (let inx = 0; inx < tokens.length; inx++) {
+        idTokens[tokens[inx].id] = tokens[inx].validatedToken?.decodedToken;
+      }
     }
 
     // get verifiable credentials
-    const vcs: { [id: string]: any } = {};
-    for (let inx = 0, tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.verifiableCredential); inx < tokens.length; inx++) {
-      vcs[tokens[inx].id] = tokens[inx].validatedToken?.decodedToken;
+    let vcs: { [id: string]: any } | undefined;;
+    tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.verifiableCredential)
+    if (tokens && tokens.length > 0) {
+      vcs = {};
+      for (let inx = 0; inx < tokens.length; inx++) {
+        vcs[tokens[inx].id] = tokens[inx].validatedToken?.decodedToken;
+      }
     }
 
     // get self issued
-    const si = queue.items.filter((item) => item.validatedToken?.type === TokenType.selfIssued).map((si) => {
-      return si.validatedToken?.decodedToken;
-    })[0];
+    let si: any | undefined;
+    tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.selfIssued);
+    if (tokens) {
+      si = tokens.map((si) => {
+        return si.validatedToken?.decodedToken;
+      })[0];
+    }
+
 
     const validationResult: IValidationResult = {
       did: did ? did : '',
@@ -182,7 +201,7 @@ export default class Validator {
    * @param token to check for type
    */
   private static getTokenType(queueItem: ValidationQueueItem): ClaimToken {
-    const claimToken = queueItem.claimToken ?? ClaimToken.getTokenType(queueItem.tokenToValidate);
+    const claimToken = queueItem.claimToken ?? ClaimToken.create(queueItem.tokenToValidate);
     return claimToken;
   }
 }
