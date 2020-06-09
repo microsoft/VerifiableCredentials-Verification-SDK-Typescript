@@ -112,8 +112,7 @@ export default class Validator {
       response = {
         result: true,
         status: 200,
-        validationResult: this.setValidationResult(queue),
-        tokens: this.tokens,
+        validationResult: this.setValidationResult(queue)
       };
     }
     return response;
@@ -153,10 +152,7 @@ export default class Validator {
     // get id tokens
     let tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.idToken)
     if (tokens && tokens.length > 0) {
-      validationResult.idTokens = {};
-      for (let inx = 0; inx < tokens.length; inx++) {
-        validationResult.idTokens[tokens[inx].id] = tokens[inx].validatedToken?.decodedToken;
-      }
+      validationResult.idTokens = tokens.map((token: any) => token.validatedToken);
     }
 
     // get verifiable credentials
@@ -164,18 +160,30 @@ export default class Validator {
     if (tokens && tokens.length > 0) {
       validationResult.verifiableCredentials = {};
       for (let inx = 0; inx < tokens.length; inx++) {
-        validationResult.verifiableCredentials[tokens[inx].id] = tokens[inx].validatedToken?.decodedToken;
+        validationResult.verifiableCredentials[tokens[inx].id] = tokens[inx].validatedToken;
+      }
+    }
+
+    // get verifiable presentations
+    tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.verifiablePresentation)
+    if (tokens && tokens.length > 0) {
+      validationResult.verifiablePresentations = {};
+      for (let inx = 0; inx < tokens.length; inx++) {
+        validationResult.verifiablePresentations[tokens[inx].id] = tokens[inx].validatedToken;
       }
     }
 
     // get self issued
     tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.selfIssued);
-    if (tokens) {
-      validationResult.selfIssued = tokens.map((si) => {
-        return si.validatedToken?.decodedToken;
-      })[0];
+    if (tokens && tokens.length > 0) {
+      validationResult.selfIssued = tokens[0].validatedToken;
     }
 
+    // get siop
+    tokens = queue.items.filter((item) => this.isSiop(item.validatedToken?.type));
+    if (tokens && tokens.length > 0) {
+      validationResult.siop = tokens[0].validatedToken;
+    }
     return validationResult;
   }
 

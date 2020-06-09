@@ -12,7 +12,12 @@ export default interface IValidationResult {
   /**
    * Claims found in the input verifiable credentials
    */
-  verifiableCredentials?: { [id: string]: any },
+  verifiableCredentials?: { [type: string]: any },
+
+  /**
+   * Claims found in the input verifiable presentations
+   */
+  verifiablePresentations?:  { [type: string]: any },
 
   /**
    * Claims found in the input id tokens
@@ -23,6 +28,11 @@ export default interface IValidationResult {
    * Claims found in the input self issued token
    */
   selfIssued?: any
+
+  /**
+   * Claims found in the input SIOP
+   */
+  siop?: any
 
   /**
    * The jti of the incoming siop token
