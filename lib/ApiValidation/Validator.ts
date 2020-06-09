@@ -144,44 +144,38 @@ export default class Validator {
       return (siop.validationResponse as ISiopValidationResponse).payloadObject.jti;
     })[0];
 
+    const validationResult: IValidationResult = {
+      did: did ? did : '',
+      contract: contract ? contract : '',
+      siopJti: jti ?? ''
+    }
+
     // get id tokens
-    let idTokens: { [id: string]: any } | undefined;
     let tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.idToken)
     if (tokens && tokens.length > 0) {
-      idTokens = {};
+      validationResult.idTokens = {};
       for (let inx = 0; inx < tokens.length; inx++) {
-        idTokens[tokens[inx].id] = tokens[inx].validatedToken?.decodedToken;
+        validationResult.idTokens[tokens[inx].id] = tokens[inx].validatedToken?.decodedToken;
       }
     }
 
     // get verifiable credentials
-    let vcs: { [id: string]: any } | undefined;;
     tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.verifiableCredential)
     if (tokens && tokens.length > 0) {
-      vcs = {};
+      validationResult.verifiableCredentials = {};
       for (let inx = 0; inx < tokens.length; inx++) {
-        vcs[tokens[inx].id] = tokens[inx].validatedToken?.decodedToken;
+        validationResult.verifiableCredentials[tokens[inx].id] = tokens[inx].validatedToken?.decodedToken;
       }
     }
 
     // get self issued
-    let si: any | undefined;
     tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.selfIssued);
     if (tokens) {
-      si = tokens.map((si) => {
+      validationResult.selfIssued = tokens.map((si) => {
         return si.validatedToken?.decodedToken;
       })[0];
     }
 
-
-    const validationResult: IValidationResult = {
-      did: did ? did : '',
-      contract: contract ? contract : '',
-      verifiableCredentials: vcs,
-      idTokens: idTokens,
-      selfIssued: si,
-      siopJti: jti ?? '',
-    }
     return validationResult;
   }
 
