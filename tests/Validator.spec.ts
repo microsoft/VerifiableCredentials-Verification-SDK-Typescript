@@ -1,9 +1,10 @@
-import { TokenType, ValidatorBuilder, IdTokenTokenValidator, VerifiableCredentialTokenValidator, VerifiablePresentationTokenValidator, IExpectedVerifiableCredential, IExpectedVerifiablePresentation, IExpectedIdToken, IExpectedSiop, IExpectedSelfIssued, Validator, CryptoBuilder } from '../lib/index';
+import { TokenType, ValidatorBuilder, IdTokenTokenValidator, VerifiableCredentialTokenValidator, VerifiablePresentationTokenValidator, IExpectedVerifiableCredential, IExpectedVerifiablePresentation, IExpectedIdToken, IExpectedSiop, IExpectedSelfIssued, Validator, CryptoBuilder, ManagedHttpResolver } from '../lib/index';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import TestSetup from './TestSetup';
 import ValidationQueue from '../lib/InputValidation/ValidationQueue';
 import { Crypto, SiopTokenValidator, SelfIssuedTokenValidator } from '../lib/index';
 import { IssuerMap } from '../lib/Options/IExpected';
+import VerifiableCredentialConstants from '../lib/VerifiableCredential/VerifiableCredentialConstants';
 
 describe('Validator', () => {
   let crypto: Crypto;
@@ -168,8 +169,11 @@ describe('Validator', () => {
       .useAudienceUrl(siopExpected.audience)
       .useTrustedIssuerConfigurationsForIdTokens(idTokenExpected.configuration)
       .useTrustedIssuersForVerifiableCredentials(vcExpected.contractIssuers)
+      .useResolver(new ManagedHttpResolver(VerifiableCredentialConstants.UNIVERSAL_RESOLVER_URL))
       .build();
 
+    expect(validator.resolver).toBeDefined();
+    
     const queue = new ValidationQueue();
     queue.enqueueToken('siop', request.rawToken);
     const result = await validator.validate(queue.getNextToken()!.tokenToValidate);
