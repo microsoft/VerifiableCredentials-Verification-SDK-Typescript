@@ -16,6 +16,7 @@ describe('RequestorBuilder', () => {
       [
         new VerifiablePresentationAttestationModel(
           'CredentialType',
+          6 * 60,
           [
             new TrustedIssuerModel('trusted issuer 1'),
             new TrustedIssuerModel('trusted issuer 2')
@@ -81,16 +82,12 @@ describe('RequestorBuilder', () => {
     expect(builder.tosUri).toEqual(initializer.tosUri);
     expect(builder.nonce).toBeUndefined();
     expect(builder.state).toBeUndefined();
-    expect(builder.OidcRequestExpiry).toEqual(5 * 60);
-    expect(builder.verifiablePresentationExpiry).toBeUndefined();
 
     // Add optional props
     builder.useNonce('nonce');
     expect(builder.nonce).toEqual('nonce');
     builder.useState('state');
     expect(builder.state).toEqual('state');
-    builder.useVerifiablePresentationExpiry(-1);
-    expect(builder.verifiablePresentationExpiry).toEqual(-1);
     builder.useOidcRequestExpiry(60 * 60);
     expect(builder.OidcRequestExpiry).toEqual(60 * 60);
 
@@ -103,14 +100,14 @@ describe('RequestorBuilder', () => {
     let requestorBuilder = new RequestorBuilder(initializer)
       .useNonce('nonce')
       .useState('state')
-      .useOidcRequestExpiry(100)
-      .useVerifiablePresentationExpiry(10);
+      .useOidcRequestExpiry(100);
     let requestor = requestorBuilder.build();
 
     let result: any = await requestor.create();
 
     expect(result.result).toBeTruthy();
 
+    expect(requestor.payload.attestations.presentations[0].validityInterval).toEqual(360);
     const iat = requestor.payload.iat;
     expect(requestor.payload.exp).toEqual(iat + 100);
 
@@ -118,13 +115,15 @@ describe('RequestorBuilder', () => {
     expect(result.request.split('.').length).toEqual(3);
     console.log(`Signed request: ${result.request}`);
 
-    requestor = requestorBuilder.allowIssuance(false).build();
+    requestor = requestorBuilder.build();
     result = requestor.create();
     expect(requestor.payload.prompt).toBeUndefined();
+    expect(requestor.builder.issuance).toBeFalsy();
 
-    requestor = requestorBuilder.allowIssuance(true).build();
+    requestor = requestorBuilder.allowIssuance().build();
     result = requestor.create();
     expect(requestor.payload.prompt).toEqual('create');
+    expect(requestor.builder.issuance).toBeTruthy();
 
   });
 });

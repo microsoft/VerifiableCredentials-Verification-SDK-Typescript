@@ -88,6 +88,15 @@ export default class ValidatorBuilder {
   }
 
   /**
+   * Specify the resolver of the validator
+   * @param resolver New resolver
+   */
+  public useResolver(resolver: IDidResolver): ValidatorBuilder {
+    this._resolver = resolver;
+    return this;
+  }
+
+  /**
    * Specify the trusted issuer for the verifiable credentialsrush rebuild
    * 
    * @param issuers array of issuers

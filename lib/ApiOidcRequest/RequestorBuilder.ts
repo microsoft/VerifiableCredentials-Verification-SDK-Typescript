@@ -10,11 +10,10 @@ import IRequestor from './IRequestor';
  */
 export default class RequestorBuilder {
 
-  private vpExpirty: number | undefined;
   private oidRequestExpirty: number = 5 * 60;
   private _state: string | undefined;
   private _nonce: string | undefined;
-  private _issuance: boolean | undefined;
+  private _issuance: boolean = false;
 
   /**
    * Create a new instance of RequestorBuilder
@@ -22,7 +21,6 @@ export default class RequestorBuilder {
    */
   constructor(private _requestor: IRequestor) {
   }
-//#region constructor properties
 
   /**
    * Gets the crypto object
@@ -82,23 +80,6 @@ export default class RequestorBuilder {
   //#endregion
   
  /**
-   * Sets the vp expiry
-   * @param expiry The verifiable presentation expiry
-   * @returns The validator builder
-   */
-  public useVerifiablePresentationExpiry(expiry: number): RequestorBuilder {
-    this.vpExpirty = expiry;
-    return this;
-  }
- 
- /**
-   * Gets the vp expiry
-   */
-  public get verifiablePresentationExpiry(): number | undefined {
-    return this.vpExpirty;
-  }
-  
- /**
    * Sets the OIDC request expiry
    * @param expiry The OIDC request expiry
    * @returns The validator builder
@@ -134,11 +115,10 @@ export default class RequestorBuilder {
   
  /**
    * Sets the allowIssuance property. 
-   * @param allowIssuance True to suppoprt issuance
    * @returns The validator builder
    */
-  public allowIssuance(issuance: boolean): RequestorBuilder {
-    this._issuance = issuance;
+  public allowIssuance(): RequestorBuilder {
+    this._issuance = true;
     return this;
   }
 

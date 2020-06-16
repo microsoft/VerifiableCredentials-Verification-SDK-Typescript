@@ -22,6 +22,7 @@ describe('TenantSourceFactory', () => {
       [
         new VerifiablePresentationAttestationModel(
           'CredentialType',
+          5 * 60,
           [
             new TrustedIssuerModel('trusted issuer 1'),
             new TrustedIssuerModel('trusted issuer 2')
@@ -125,6 +126,7 @@ describe('TenantSourceFactory', () => {
       const roundtripPresentations = <VerifiablePresentationAttestationModel[]>roundtrip.attestations?.presentations;
       expect(roundtripPresentations).toBeDefined();
       expect(roundtripPresentations.length).toEqual(1);
+      expect(<any>roundtripPresentations[0].validityInterval).toEqual(5 * 60);
       expect(Object.keys(<any>roundtripPresentations[0].mapping).length).toEqual(2);
 
       const roundtripIdTokens = <IdTokenAttestationModel[]>roundtrip.attestations?.idTokens;

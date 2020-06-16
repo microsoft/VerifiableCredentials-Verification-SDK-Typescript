@@ -55,7 +55,6 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
    }
 
     // Check if VP and SIOP DID are equal
-    /**** TODO re-enable check
     if (this.siopDid && validationResponse.did !== this.siopDid) {
       return {
         result: false,
@@ -63,7 +62,7 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
         status: 403
       };
     }
-****/
+
     if (!validationResponse.payloadObject.vp) {
       return {
         result: false,

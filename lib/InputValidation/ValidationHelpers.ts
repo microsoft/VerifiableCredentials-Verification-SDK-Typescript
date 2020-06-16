@@ -160,7 +160,7 @@ export class ValidationHelpers {
       signingKey = publicKey.publicKeyJwk;
     }
 
-    // TODO use jwk in request if did is not registered
+    //  use jwk in request if did is not registered
     if (!signingKey) {
       return {
         result: false,
@@ -299,7 +299,6 @@ export class ValidationHelpers {
         };
       }
 
-      /**** TODO re-enable test. Disabled because of bug in the authenticator app
       if (validationResponse.payloadObject.aud !== expected.didAudience) {
         return {
           result: false,
@@ -307,7 +306,6 @@ export class ValidationHelpers {
           status: 403
         };
       }
-      ***/
     }
 
     return validationResponse;

@@ -14,6 +14,7 @@ export class VerifiablePresentationAttestationModel extends BaseAttestationModel
   /**
    * Instantiates a VerifiablePresentationModel
    * @param credentialType the type of the Verifiable Credential as specified: https://www.w3.org/TR/vc-data-model/#types
+   * @param validityInterval Expirty in seconds for the requested VP.
    * @param issuers an array of Trusted Issuers for the Verifiable Credential
    * @param endorsers an array of Trusted Endorsers for the Verifiable Credential
    * @param contracts an array of URLs to approved contracts which return the type of Verifiable Credential
@@ -24,6 +25,7 @@ export class VerifiablePresentationAttestationModel extends BaseAttestationModel
    */
   constructor (
     public credentialType?: string, 
+    public validityInterval?: number,
     public issuers?: TrustedIssuerModel[], 
     public endorsers?: TrustedIssuerModel[], 
     public contracts?: string[],
@@ -41,6 +43,7 @@ export class VerifiablePresentationAttestationModel extends BaseAttestationModel
   populateFrom (input: any): void {
     super.populateFrom(input);
     this.credentialType = input.credentialType;
+    this.validityInterval = input.validityInterval;
     this.contracts = input.contracts;
 
     if (input.issuers) {
@@ -67,6 +70,7 @@ export class VerifiablePresentationAttestationModel extends BaseAttestationModel
   protected createForInput(claims: InputClaimModel[]): BaseAttestationModel {
     return new VerifiablePresentationAttestationModel(
       this.credentialType,
+      this.validityInterval,
       this.issuers,
       this.endorsers,
       this.contracts,
