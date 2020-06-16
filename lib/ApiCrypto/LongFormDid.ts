@@ -82,19 +82,6 @@ export default class LongFormDid {
     };
   }
 
-  /**
-   * Generates a reveal value and commitment hash as encoded strings for use in opertaions.
-   * @returns [revealValueEncodedString, commitmentValueHashEncodedString]
-   */
-  public async generateCommitRevealPair(): Promise<[string, string]> {
-    const secretKey = await this.crypto.builder.subtle.generateKey(<AesKeyGenParams>{ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
-    const randomBytes =  await this.crypto.builder.subtle.exportKey('jwk', <any>secretKey);
-    const revealValueEncodedString = (<any>randomBytes).k;
-    const commitmentHash = Multihash.hash(base64url.toBuffer(revealValueEncodedString), 18); //sha-256
-    const commitmentHashEncodedString = base64url.encode(commitmentHash);
-    return [revealValueEncodedString, commitmentHashEncodedString];
-  }
-
   
   /**
    * Canonicalize the given content, then multihashes the result using the lastest supported hash algorithm, then encodes the multihash.
