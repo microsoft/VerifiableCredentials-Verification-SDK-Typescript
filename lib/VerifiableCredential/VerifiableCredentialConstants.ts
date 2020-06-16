@@ -75,5 +75,5 @@ export default class VerifiableCredentialConstants {
   /**
    * Default resolver url
    */
-  public static UNIVERSAL_RESOLVER_URL = 'https://beta.discover.did.microsoft.com';
+  public static UNIVERSAL_RESOLVER_URL = 'https://portableidentitycards.azure-api.net';
 }

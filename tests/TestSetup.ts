@@ -27,12 +27,12 @@ export default class TestSetup {
   /**
    * Resolver url
    */
-  public universalResolverUrl = `https://beta.discover.did.microsoft.com`;
+  public universalResolverUrl = `https://portableidentitycards.azure-api.net`;
 
   /**
    * Resolver url
    */
-  public resolverUrl = `https://beta.discover.did.microsoft.com/1.0/identifiers`;
+  public resolverUrl = `https://portableidentitycards.azure-api.net/1.0/identifiers`;
 
   /**
    * TestSetup environment

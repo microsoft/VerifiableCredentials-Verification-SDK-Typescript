@@ -14,7 +14,7 @@ export default class RequestorBuilder {
   private oidRequestExpirty: number = 5 * 60;
   private _state: string | undefined;
   private _nonce: string | undefined;
-  private _issuance: boolean | undefined;
+  private _issuance: boolean = false;
 
   /**
    * Create a new instance of RequestorBuilder
@@ -22,7 +22,6 @@ export default class RequestorBuilder {
    */
   constructor(private _requestor: IRequestor) {
   }
-//#region constructor properties
 
   /**
    * Gets the crypto object
@@ -134,11 +133,10 @@ export default class RequestorBuilder {
   
  /**
    * Sets the allowIssuance property. 
-   * @param allowIssuance True to suppoprt issuance
    * @returns The validator builder
    */
-  public allowIssuance(issuance: boolean): RequestorBuilder {
-    this._issuance = issuance;
+  public allowIssuance(): RequestorBuilder {
+    this._issuance = true;
     return this;
   }
 

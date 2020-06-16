@@ -3,8 +3,7 @@ import base64url from 'base64url';
 import OperationType from '@decentralized-identity/sidetree/dist/lib/core/enums/OperationType';
 import CreateOperation from '@decentralized-identity/sidetree/dist/lib/core/versions/latest/CreateOperation';
 import Multihash from '@decentralized-identity/sidetree/dist/lib/core/versions/latest/Multihash';
-import Did from '@decentralized-identity/sidetree/dist/lib/core/versions/latest/Did';
-
+const canonicalize = require('canonicalize');
 
 /**
  * Helper class to work with long form DID's
@@ -66,28 +65,20 @@ export default class LongFormDid {
    * Generates an create operation.
    */
   public async generateCreateOperation(recoveryPublicKey: any, signingPublicKey: any, keyReference: string) {
-    // Generate the next update and recover operation commitment hash reveal value pair.
-    const [nextRecoveryRevealValueEncodedString, nextRecoveryCommitmentHash] = await this.generateCommitRevealPair();
-    const [nextUpdateRevealValueEncodedString, nextUpdateCommitmentHash] = await this.generateCommitRevealPair();
 
     const operationRequest = this.generateCreateOperationRequest(
       recoveryPublicKey,
       signingPublicKey,
-      keyReference,
-      nextRecoveryCommitmentHash,
-      nextUpdateCommitmentHash
+      keyReference
     );
     const operationBuffer = Buffer.from(JSON.stringify(operationRequest));
-
     const createOperation = await CreateOperation.parse(operationBuffer);
 
     return {
       createOperation,
       operationRequest,
       recoveryPublicKey,
-      signingPublicKey,
-      nextRecoveryRevealValueEncodedString,
-      nextUpdateRevealValueEncodedString
+      signingPublicKey
     };
   }
 
@@ -104,6 +95,27 @@ export default class LongFormDid {
     return [revealValueEncodedString, commitmentHashEncodedString];
   }
 
+  
+  /**
+   * Canonicalize the given content, then multihashes the result using the lastest supported hash algorithm, then encodes the multihash.
+   * Mainly used for testing purposes.
+   */
+  public static canonicalizeThenHashThenEncode (content: object) {
+    const contentBuffer = LongFormDid.canonicalizeAsBuffer(content);
+    const contentHash = Multihash.hash(contentBuffer, 18);
+    const contentHashEncodedString = base64url.encode(contentHash);
+    return contentHashEncodedString;
+  }
+
+   /**
+   * Canonicalizes the given content as a UTF8 buffer.
+   */
+  public static canonicalizeAsBuffer (content: object): Buffer {
+    const canonicalizedString: string = canonicalize(content);
+    const contentBuffer = Buffer.from(canonicalizedString);
+    return contentBuffer;
+  }
+
   /**
  * Generates a create operation request.
  * @param nextRecoveryCommitment The encoded commitment hash for the next recovery.
@@ -112,22 +124,19 @@ export default class LongFormDid {
   public generateCreateOperationRequest(
     recoveryPublicKey: any,
     signingPublicKey: any,
-    keyReference: string,
-    nextRecoveryCommitment: string,
-    nextUpdateCommitment: string) {
+    keyReference: string) {
 
     const publicKey = {
       id: keyReference,
       type: "EcdsaSecp256k1VerificationKey2019",
       jwk: signingPublicKey,
-      usage: [
-        "ops",
+      purpose: [
         "auth",
         "general"
       ]
     }
     const document = {
-      publicKeys: [publicKey]
+      public_keys : [publicKey]
     };
 
     const patches = [{
@@ -135,18 +144,19 @@ export default class LongFormDid {
       document
     }];
 
+    const updateCommitment = LongFormDid.canonicalizeThenHashThenEncode(signingPublicKey);
     const delta = {
-      update_commitment: nextUpdateCommitment,
+      update_commitment: updateCommitment,
       patches
     };
 
     const deltaBuffer = Buffer.from(JSON.stringify(delta));
     const deltaHash = base64url.encode(Multihash.hash(deltaBuffer));
 
+    const recoveryCommitment =  LongFormDid.canonicalizeThenHashThenEncode(recoveryPublicKey);
     const suffixData = {
       delta_hash: deltaHash,
-      recovery_key: recoveryPublicKey,
-      recovery_commitment: nextRecoveryCommitment
+      recovery_commitment: recoveryCommitment
     };
 
     const suffixDataEncodedString = base64url.encode(JSON.stringify(suffixData));

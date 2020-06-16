@@ -118,13 +118,15 @@ describe('RequestorBuilder', () => {
     expect(result.request.split('.').length).toEqual(3);
     console.log(`Signed request: ${result.request}`);
 
-    requestor = requestorBuilder.allowIssuance(false).build();
+    requestor = requestorBuilder.build();
     result = requestor.create();
     expect(requestor.payload.prompt).toBeUndefined();
+    expect(requestor.builder.issuance).toBeFalsy();
 
-    requestor = requestorBuilder.allowIssuance(true).build();
+    requestor = requestorBuilder.allowIssuance().build();
     result = requestor.create();
     expect(requestor.payload.prompt).toEqual('create');
+    expect(requestor.builder.issuance).toBeTruthy();
 
   });
 });
