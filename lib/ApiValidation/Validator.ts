@@ -84,7 +84,11 @@ export default class Validator {
         case TokenType.siopIssuance:
           response = await validator.validate(queue, queueItem!);
           siopDid = response.did;
-          siopContractId = Validator.readContractId(response.payloadObject.contract);
+
+          if (response.result) {
+            siopContractId = Validator.readContractId(response.payloadObject.contract);
+          }
+
           break;
         case TokenType.siopPresentation:
           response = await validator.validate(queue, queueItem!);
