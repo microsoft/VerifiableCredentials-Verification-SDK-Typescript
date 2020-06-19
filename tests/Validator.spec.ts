@@ -172,6 +172,7 @@ describe('Validator', () => {
       .useResolver(new ManagedHttpResolver(VerifiableCredentialConstants.UNIVERSAL_RESOLVER_URL))
       .build();
 
+      fail();
     expect(validator.resolver).toBeDefined();
     
     const queue = new ValidationQueue();
