@@ -128,7 +128,7 @@ Verifiable presentations present a verifiable credential to some peer. A present
 The SIOP is the actual response signed by the DID of the client that is returned when the service does a SIOP request. The SIOP can contain any of the above tokens. 
 
            const validator = new ValidatorBuilder(this.crypto)
-            .useTrustedIssuerConfigurationsForIdTokens(rules.attestations.idTokens.map((idTokenRule: any) => idTokenRule.configuration))
+            .useTrustedIssuerConfigurationsForIdTokens(['https://idp.example.com'])
             .useAudienceUrl('https://test-relyingparty.azurewebsites.net/verify')
             .build();
 
