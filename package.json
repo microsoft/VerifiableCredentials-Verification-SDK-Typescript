@@ -40,7 +40,7 @@
     "@azure/identity": "1.0.0",
     "@decentralized-identity/did-common-typescript": "0.1.19",
     "@decentralized-identity/sidetree": "0.9.1",
-    "verifiablecredentials-crypto-sdk-typescript": "1.1.1",
+    "ajv": "^6.12.3",
     "base64url": "3.0.1",
     "canonicalize": "1.0.1",
     "deep-property-access": "1.0.1",
@@ -48,7 +48,8 @@
     "isomorphic-fetch": "2.2.1",
     "multihashes": "0.4.14",
     "typescript-map": "0.0.7",
-    "uuid": "7.0.1"
+    "uuid": "7.0.1",
+    "verifiablecredentials-crypto-sdk-typescript": "1.1.1"
   },
   "nyc": {
     "extension": [

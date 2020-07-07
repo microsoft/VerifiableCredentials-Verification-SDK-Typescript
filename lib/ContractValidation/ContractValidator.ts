@@ -1,7 +1,11 @@
-import Ajv from "ajv"
-import { contractSchema } from './ContractSchema'
-import { PortableIdentityCardError } from "../error-handling/PortableIdentityCardError";
-import { ErrorConstants } from "../error-handling/ErrorConstants";
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+import Ajv from 'ajv';
+import { contractSchema } from './ContractSchema';
+import { ContractValidationResponse } from './ContractValidationResponse';
 
 /**
  * Class used to Validate Contracts based on Contract Schema.
@@ -14,12 +18,21 @@ export class ContractValidator {
    * Validate contract using Contract Schema.
    * @param contract Contract to be validated.
    */
-  public validate(contract: any) {
+  public validate(contract: any): ContractValidationResponse {
     const isValid = this.ajv.validate(contractSchema, contract)
     if (!isValid) {
       const errorMessages = this.ajv.errorsText()
-      throw new PortableIdentityCardError(ErrorConstants.INVALID_CONTRACT, `Contract is not valid with error message: ${errorMessages}`, 404);
+      return {
+        result: false,
+        status: 400,
+        detailedError: errorMessages,
+        contract
+      }
     }
-    return contract
+    return {
+      result: true,
+      status: 200,
+      contract
+    }
   }
 }
