@@ -19,7 +19,7 @@ export default class BasicValidatorOptions implements IValidatorOptions {
       options: {}
     };
 
-    this._crypto = new CryptoBuilder('', '').build();
+    this._crypto = new CryptoBuilder().build();
   }
 
   get resolver(): IDidResolver {

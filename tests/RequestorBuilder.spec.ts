@@ -1,6 +1,6 @@
 import IRequestor from '../lib/ApiOidcRequest/IRequestor';
 import { Crypto, IssuanceAttestationsModel, SelfIssuedAttestationModel, VerifiablePresentationAttestationModel, TrustedIssuerModel, InputClaimModel, IdTokenAttestationModel, CryptoBuilder, RequestorBuilder, IResponse, Requestor } from '../lib/index';
-import LongFormDid from '../lib/ApiCrypto/LongFormDid';
+import { LongFormDid, KeyReference, KeyUse, JsonWebKey, KeyStoreOptions } from 'verifiablecredentials-crypto-sdk-typescript';
 
 describe('RequestorBuilder', () => {
   const getAttestations = () => {
@@ -48,19 +48,25 @@ describe('RequestorBuilder', () => {
   }
 
   const did = 'did:test:12345678';
-  const signingKeyReference = 'sign';
-  let crypto = new CryptoBuilder(did, signingKeyReference)
+  const signingKeyReference = new KeyReference('sign');
+  let crypto = new CryptoBuilder()
+    .useDid(did)
+    .useSigningKeyReference(signingKeyReference)
     .build();
 
-  const generateKey = async (keyReference: string, crypto: Crypto): Promise<string> => {
-    const longFormDid = new LongFormDid(crypto);
-    const longForm = await longFormDid.create(keyReference);
-    console.log(`Long-form DID: ${longForm}`);
-    return longForm;
+  const generateKey = async (keyReference: KeyReference, crypto: Crypto): Promise<string> => {
+
+    crypto.builder.useSigningKeyReference(keyReference);
+    crypto.builder.useRecoveryKeyReference(new KeyReference('recovery'));
+    crypto = await crypto.generateKey(KeyUse.Signature);
+    crypto = await crypto.generateKey(KeyUse.Signature, 'recovery');
+
+    const longFormDid = await new LongFormDid(crypto).serialize();
+    console.log(`Long-form DID: ${longFormDid}`);
+    return longFormDid;
   };
 
   const initializer: IRequestor = {
-    crypto,
     clientName: 'My relying party',
     clientPurpose: 'Get access to my website',
     clientId: 'https://example.com/',
@@ -71,7 +77,7 @@ describe('RequestorBuilder', () => {
   };
 
   it('should build RequestorBuilder', () => {
-    const builder = new RequestorBuilder(initializer);
+    const builder = new RequestorBuilder(initializer, crypto);
     expect(builder.crypto).toEqual(crypto);
     expect(builder.attestation).toEqual(getAttestations());
     expect(builder.clientId).toEqual(initializer.clientId);
@@ -95,9 +101,10 @@ describe('RequestorBuilder', () => {
 
   it('should sign the request', async () => {
     console.log('Create signed request');
-    crypto.builder.did =await generateKey(signingKeyReference, crypto);
+    const did = await generateKey(signingKeyReference, crypto)
+    crypto.builder.useDid(did);
 
-    let requestorBuilder = new RequestorBuilder(initializer)
+    let requestorBuilder = new RequestorBuilder(initializer, crypto)
       .useNonce('nonce')
       .useState('state')
       .useOidcRequestExpiry(100);

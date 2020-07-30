@@ -4,14 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 import ClaimToken from '../VerifiableCredential/ClaimToken';
 import { IValidationResponse } from '../InputValidation/IValidationResponse';
-import { ICryptoToken } from 'verifiablecredentials-crypto-sdk-typescript';
+import { IPayloadProtectionSigning } from 'verifiablecredentials-crypto-sdk-typescript';
 import { ValidationHelpers } from '../InputValidation/ValidationHelpers';
 import IValidatorOptions from '../Options/IValidatorOptions';
 import { IExpectedBase, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedAudience } from './IExpected';
 
  export type GetTokenObject = (validationResponse: IValidationResponse, token: string) => IValidationResponse;
  export type ResolveDidAndGetKeys = (validationResponse: IValidationResponse) => Promise<IValidationResponse>;
- export type ValidateDidSignature = (validationResponse: IValidationResponse, token: ICryptoToken) => Promise<IValidationResponse>;
+ export type ValidateDidSignature = (validationResponse: IValidationResponse, token: IPayloadProtectionSigning) => Promise<IValidationResponse>;
  export type CheckTimeValidityOnIdToken = (validationResponse: IValidationResponse, driftInSec?: number) => IValidationResponse;
  export type CheckTimeValidityOnToken = (validationResponse: IValidationResponse, driftInSec?: number) => IValidationResponse;
  export type CheckScopeValidityOnToken = (validationResponse: IValidationResponse, expected: IExpectedBase) => IValidationResponse;

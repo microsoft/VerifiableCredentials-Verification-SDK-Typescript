@@ -5,7 +5,7 @@
 import TestSetup from './TestSetup';
 import { IValidationResponse } from '../lib/InputValidation/IValidationResponse';
 import base64url from 'base64url';
-import { ICryptoToken } from 'verifiablecredentials-crypto-sdk-typescript';
+import { IPayloadProtectionSigning } from 'verifiablecredentials-crypto-sdk-typescript';
 import ValidationOptions from '../lib/Options/ValidationOptions';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
@@ -106,7 +106,7 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience } from '../lib';
     };
     validationResponse = options.getTokenObjectDelegate(validationResponse, request.rawToken);
     validationResponse.didSigningPublicKey = siopRequest.didJwkPublic;
-    const token = validationResponse.didSignature as ICryptoToken;
+    const token = validationResponse.didSignature as IPayloadProtectionSigning;
     let response = await options.validateDidSignatureDelegate(validationResponse, token);
     expect(response.result).toBeTruthy();
     expect(response.status).toEqual(200); 
@@ -114,7 +114,7 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience } from '../lib';
     // negative cases
     // Bad signature
     validationResponse = options.getTokenObjectDelegate(validationResponse, request.rawToken + 1);    
-    response = await options.validateDidSignatureDelegate(validationResponse, validationResponse.didSignature as ICryptoToken);
+    response = await options.validateDidSignatureDelegate(validationResponse, validationResponse.didSignature as IPayloadProtectionSigning);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403); 
     expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredential is invalid');
@@ -122,21 +122,21 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience } from '../lib';
     // No signature
     const splitToken = request.rawToken.split('.');
     validationResponse = options.getTokenObjectDelegate(validationResponse, `${splitToken[0]}.${splitToken[1]}`);    
-    response = await options.validateDidSignatureDelegate(validationResponse, validationResponse.didSignature as ICryptoToken);
+    response = await options.validateDidSignatureDelegate(validationResponse, validationResponse.didSignature as IPayloadProtectionSigning);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403); 
     expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredential is invalid');
 
     // no header
     validationResponse = options.getTokenObjectDelegate(validationResponse, `.${splitToken[1]}.${splitToken[2]}`);    
-    response = await options.validateDidSignatureDelegate(validationResponse, validationResponse.didSignature as ICryptoToken);
+    response = await options.validateDidSignatureDelegate(validationResponse, validationResponse.didSignature as IPayloadProtectionSigning);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403); 
     expect(response.detailedError).toEqual('Failed to validate signature');
 
     // no payload
     validationResponse = options.getTokenObjectDelegate(validationResponse, `${splitToken[0]}..${splitToken[2]}`);    
-    response = await options.validateDidSignatureDelegate(validationResponse, validationResponse.didSignature as ICryptoToken);
+    response = await options.validateDidSignatureDelegate(validationResponse, validationResponse.didSignature as IPayloadProtectionSigning);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403); 
     expect(response.detailedError).toEqual('Failed to validate signature');

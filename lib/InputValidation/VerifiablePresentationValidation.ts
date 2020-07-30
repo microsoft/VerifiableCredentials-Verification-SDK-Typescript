@@ -9,7 +9,6 @@ import { DidValidation } from './DidValidation';
 import VerifiableCredentialConstants from '../VerifiableCredential/VerifiableCredentialConstants';
 import { IExpectedVerifiablePresentation } from '../index';
 import { Crypto } from '../index';
-import { KeyReferenceOptions } from 'verifiablecredentials-crypto-sdk-typescript';
 
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
@@ -130,12 +129,8 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
     }
 
     // send the payload
-    const siop = await this.crypto.builder.payloadProtectionProtocol.sign(
       // TODO needs support for extractable and non extractable keys
-      new KeyReferenceOptions({ keyReference: this.crypto.builder.signingKeyReference, extractable: true }),
-      Buffer.from(JSON.stringify(payload)),
-      'JwsCompactJson',
-      this.crypto.builder.payloadProtectionOptions);
+      const siop = await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(payload)));
 
       console.log(`verifiablePresentation status check`);
       let response = await fetch(statusUrl, {

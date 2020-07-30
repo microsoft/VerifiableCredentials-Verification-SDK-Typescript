@@ -84,7 +84,7 @@ Services authenticate users by means of DIDs. The DID community created a protoc
 
 The Requestor class is designed to create DID Auth Requests and make the process of allowing users to authenticate by means of DIDs simpler.
 
-      const requestor = new RequestorBuilder(request)
+      const requestor = new RequestorBuilder(request, crypto)
         .useNonce(nonce)
         .useState(state)  
         .build();

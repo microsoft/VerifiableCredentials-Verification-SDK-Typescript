@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IResponse, RequestorBuilder } from '../index';
-import { KeyReferenceOptions } from 'verifiablecredentials-crypto-sdk-typescript';
+import { Crypto, CryptoBuilder } from 'verifiablecredentials-crypto-sdk-typescript';
 
 /**
  * Class to model the OIDC requestor
@@ -74,11 +74,7 @@ export default class Requestor {
     }
 
     const key = crypto.signingKeyReference;
-    const signature = await crypto.payloadProtectionProtocol.sign(
-      new KeyReferenceOptions({ keyReference: key, extractable: true }),
-      Buffer.from(JSON.stringify(this._payload)),
-      'JwsCompactJson',
-      crypto.payloadProtectionOptions);
+    const signature = await this.builder.signingProtocol.sign(Buffer.from(JSON.stringify(this._payload)));
 
     const response = {
       result: true,

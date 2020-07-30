@@ -5,10 +5,11 @@ import ValidationQueue from '../lib/InputValidation/ValidationQueue';
 import { Crypto, SiopTokenValidator, SelfIssuedTokenValidator } from '../lib/index';
 import { IssuerMap } from '../lib/Options/IExpected';
 import VerifiableCredentialConstants from '../lib/VerifiableCredential/VerifiableCredentialConstants';
+import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript';
 
 describe('Validator', () => {
   let crypto: Crypto;
-  let signingKeyReference: string;
+  let signingKeyReference: KeyReference;
   let setup: TestSetup;
   beforeEach(async () => {
     setup = new TestSetup();

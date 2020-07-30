@@ -2,13 +2,13 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { SubtleCrypto, CryptoFactoryScope, KeyUse, JoseConstants } from 'verifiablecredentials-crypto-sdk-typescript';
+import { Subtle } from 'verifiablecredentials-crypto-sdk-typescript';
 import TestSetup from './TestSetup';
 import { DidDocument } from '@decentralized-identity/did-common-typescript';
 import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
 import base64url from "base64url";
 import ValidationOptions from '../lib/Options/ValidationOptions';
-import { IExpectedBase, IExpectedSelfIssued, IExpectedIdToken, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, Validator } from '../lib/index';
+import { KeyReference, IExpectedBase, IExpectedSelfIssued, IExpectedIdToken, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, Validator } from '../lib/index';
 import VerifiableCredentialConstants from '../lib/VerifiableCredential/VerifiableCredentialConstants';
 import { stat } from 'fs';
 
@@ -121,7 +121,7 @@ export class IssuanceHelpers {
    * Generate a signing keys and set the configuration mock
    */
   public static async generateSigningKey(_setup: TestSetup, kid: string): Promise<[any, any]> {
-    const generator = new SubtleCrypto();
+    const generator = new Subtle();
     const key: any = await generator.generateKey(
       <any>{
         name: "RSASSA-PKCS1-v1_5",
@@ -184,13 +184,12 @@ export class IssuanceHelpers {
 
   // Sign a token
   public static async signAToken(setup: TestSetup, payload: string, configuration: string, jwkPrivate: any): Promise<ClaimToken> {
-    const keyId = jwkPrivate.kid;
+    const keyId = new KeyReference(jwkPrivate.kid);
     await setup.keyStore.save(keyId, <any>jwkPrivate);
-    const protectedHeader = setup.validatorOptions.crypto.builder.payloadProtectionOptions.options.get(JoseConstants.optionProtectedHeader);
-    protectedHeader.set(VerifiableCredentialConstants.TOKEN_KID, jwkPrivate.kid);
-
-    const signature = await setup.validatorOptions.crypto.builder.payloadProtectionProtocol.sign(keyId, Buffer.from(payload), 'jwscompactjson', setup.validatorOptions.crypto.builder.payloadProtectionOptions);
-    const token = setup.validatorOptions.crypto.builder.payloadProtectionProtocol.serialize(signature, 'jwscompactjson', setup.validatorOptions.crypto.builder.payloadProtectionOptions);
+    setup.validatorOptions.crypto.builder.useSigningKeyReference(keyId);
+    setup.validatorOptions.crypto.signingProtocol.builder.useKid(keyId.keyReference);
+    const signature = await setup.validatorOptions.crypto.signingProtocol.sign(Buffer.from(payload));
+    const token = setup.validatorOptions.crypto.signingProtocol.serialize();
     let claimToken = new ClaimToken(TokenType.idToken, token, configuration);
     return claimToken;
   }
