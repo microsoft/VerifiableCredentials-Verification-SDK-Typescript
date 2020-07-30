@@ -51,6 +51,8 @@ The Crypto class is necessary for the Requestor class. The Requestor needs to si
 The creation of the Crypto base class is faily simple.
 
 	    const crypto = new CryptoBuilder(did, signingKeyReference)
+        .useDid(did)
+        .useSigningKeyReference(signingKeyReference)
         .build();
 
 ### did 
@@ -66,8 +68,10 @@ Services require flexibility where their security critical, cryptographic operat
 
 The Crypto object supports Key Vault as a secure environment for the cryptographic operations.
 
-      const crypto = new CryptoBuilder(did, signingKeyReference)
+      const crypto = new CryptoBuilder()
         .useKeyVault(credential, vaultUrl)
+        .useDid(did)
+        .useSigningKeyReference(signingKeyReference)
         .build();
 
 ### useKeyVault
