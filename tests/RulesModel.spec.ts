@@ -43,6 +43,7 @@ describe('TenantSourceFactory', () => {
           'oidc config endpoint',
           'clientId',
           'redirect',
+          'scope',
           {
             email: new InputClaimModel('upn', 'string', false, true),
             name: new InputClaimModel('name')
@@ -201,6 +202,7 @@ describe('TenantSourceFactory', () => {
 
       for (let i = 0; i < rulesIdTokens.length; i++) {
         expect(inputIdTokens[i].encrypted).toEqual(rulesIdTokens[i].encrypted);
+        expect(inputIdTokens[i].scope).toEqual(rulesIdTokens[i].scope);
 
         rulesMap = rulesIdTokens[i].mapping;
         claims = <InputClaimModel[]>inputIdTokens[i].claims;
@@ -240,6 +242,19 @@ describe('TenantSourceFactory', () => {
           expect(inputClaim.type).toEqual(value.type);
         });
       });
+    });
+
+    it('missing scope value is still valid', async () => {
+      const json = JSON.stringify(RULES);
+      const roundtrip = new RulesModel();
+      roundtrip.populateFrom(JSON.parse(json));
+
+      // setting the scope to undefined ensures back compat with existing contracts
+      roundtrip.attestations!.idTokens![0].scope = undefined;
+
+      // derive the input model from the modified rules file
+      const input = new InputModel(roundtrip);
+      expect(input.attestations!.idTokens![0].scope).toBeUndefined();
     });
 
     it('should pass populating the VerifiableCredentialModel without context ', async () => {
