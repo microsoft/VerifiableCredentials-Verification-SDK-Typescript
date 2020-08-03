@@ -15,6 +15,7 @@ export class IdTokenAttestationModel extends BaseAttestationModel {
    * @param configuration url to an Open Id Connect Provider configuration
    * @param client_id if dynamic registration is not supported, the registered client to use for implicit authorization flows
    * @param redirect_uri if dynamic registration is not supported, the redirect_uri used for implicit authorization flows
+   * @param scope scope value to augment the required openid value
    * @param mapping a map of string to InputClaimModel instances
    * @param encrypted flag indicating if the attestation is encrypted
    * @param claims an array of InputClaimModel values
@@ -26,6 +27,7 @@ export class IdTokenAttestationModel extends BaseAttestationModel {
     public client_id?: string,
     // tslint:disable-next-line:variable-name
     public redirect_uri?: string,
+    public scope?: string,
     mapping?: { [map: string]: InputClaimModel }, 
     encrypted: boolean = false, 
     claims?: InputClaimModel[], 
@@ -49,6 +51,6 @@ export class IdTokenAttestationModel extends BaseAttestationModel {
    * @param claims Input claims
    */
   protected createForInput(claims: InputClaimModel[]): BaseAttestationModel {
-    return new IdTokenAttestationModel(this.configuration, this.client_id, this.redirect_uri, undefined, this.encrypted, claims, this.required);
+    return new IdTokenAttestationModel(this.configuration, this.client_id, this.redirect_uri, this.scope, undefined, this.encrypted, claims, this.required);
   }
 }
