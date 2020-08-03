@@ -166,7 +166,10 @@ describe('TenantSourceFactory', () => {
     });
 
     it('Input model must correctly derive from Rules Model ', async () => {
-      const input = new InputModel(RULES);
+      const json = JSON.stringify(RULES);
+      const roundtrip = new RulesModel();
+      roundtrip.populateFrom(JSON.parse(json));
+      const input = new InputModel(roundtrip);
 
       expect(input.credentialIssuer).toEqual(RULES.credentialIssuer);
       expect(input.issuer).toEqual(RULES.issuer);
@@ -200,6 +203,7 @@ describe('TenantSourceFactory', () => {
 
       for (let i = 0; i < rulesIdTokens.length; i++) {
         expect(inputIdTokens[i].encrypted).toEqual(rulesIdTokens[i].encrypted);
+        expect(inputIdTokens[i].scope).toBeDefined();
         expect(inputIdTokens[i].scope).toEqual(rulesIdTokens[i].scope);
 
         rulesMap = rulesIdTokens[i].mapping;
