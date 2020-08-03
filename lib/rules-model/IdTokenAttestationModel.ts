@@ -44,6 +44,7 @@ export class IdTokenAttestationModel extends BaseAttestationModel {
     this.configuration = input.configuration;
     this.client_id = input.client_id;
     this.redirect_uri  = input.redirect_uri;
+    this.scope = input.scope;
   }
 
   /**
