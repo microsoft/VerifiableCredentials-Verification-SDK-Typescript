@@ -3,7 +3,6 @@ import { IssuanceHelpers } from './IssuanceHelpers';
 import TestSetup from './TestSetup';
 import ValidationQueue from '../lib/InputValidation/ValidationQueue';
 import { Crypto, SiopTokenValidator, SelfIssuedTokenValidator } from '../lib/index';
-import { IssuerMap } from '../lib/Options/IExpected';
 import VerifiableCredentialConstants from '../lib/VerifiableCredential/VerifiableCredentialConstants';
 import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript';
 

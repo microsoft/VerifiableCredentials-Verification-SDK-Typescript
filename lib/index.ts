@@ -55,7 +55,7 @@ import RequestorBuilder from './ApiOidcRequest/RequestorBuilder';
 import Requestor from './ApiOidcRequest/Requestor';
 export { IResponse, RequestorBuilder, Requestor };
 
-export { LongFormDid, Subtle, Crypto, CryptoBuilder, IKeyContainer, IKeyStore, KeyReference, CryptoFactory } from 'verifiablecredentials-crypto-sdk-typescript';
+export { KeyStoreFactory, SubtleCryptoNode, KeyUse, JoseBuilder, IPayloadProtectionSigning, LongFormDid, Subtle, Crypto, CryptoBuilder, IKeyContainer, IKeyStore, KeyReference, CryptoFactory } from 'verifiablecredentials-crypto-sdk-typescript';
 
 import { BaseAttestationModel } from './rules-model/BaseAttestationModel';
 import { BaseIssuanceModel } from './rules-model/BaseIssuanceModel';

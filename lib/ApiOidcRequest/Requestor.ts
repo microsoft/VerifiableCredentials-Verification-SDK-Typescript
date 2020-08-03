@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IResponse, RequestorBuilder } from '../index';
-import { Crypto, CryptoBuilder } from 'verifiablecredentials-crypto-sdk-typescript';
 
 /**
  * Class to model the OIDC requestor

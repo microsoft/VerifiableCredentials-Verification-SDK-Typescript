@@ -1,6 +1,5 @@
 import IRequestor from '../lib/ApiOidcRequest/IRequestor';
-import { Crypto, IssuanceAttestationsModel, SelfIssuedAttestationModel, VerifiablePresentationAttestationModel, TrustedIssuerModel, InputClaimModel, IdTokenAttestationModel, CryptoBuilder, RequestorBuilder, IResponse, Requestor } from '../lib/index';
-import { LongFormDid, KeyReference, KeyUse, JsonWebKey, KeyStoreOptions } from 'verifiablecredentials-crypto-sdk-typescript';
+import { LongFormDid, KeyReference, KeyUse, Crypto, IssuanceAttestationsModel, SelfIssuedAttestationModel, VerifiablePresentationAttestationModel, TrustedIssuerModel, InputClaimModel, IdTokenAttestationModel, CryptoBuilder, RequestorBuilder, IResponse, Requestor } from '../lib/index';
 
 describe('RequestorBuilder', () => {
   const getAttestations = () => {

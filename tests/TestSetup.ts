@@ -3,11 +3,8 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-// tslint:disable-next-line:max-line-length
-import { JoseConstants, IKeyStore, KeyStoreFactory, SubtleCryptoNode, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript';
-import { TSMap } from 'typescript-map';
 import { IssuanceHelpers } from './IssuanceHelpers';
-import { ManagedHttpResolver, Crypto, CryptoBuilder } from '../lib/index';
+import { ManagedHttpResolver, CryptoBuilder, IKeyStore, SubtleCryptoNode, KeyReference } from '../lib/index';
 import IValidatorOptions from '../lib/Options/IValidatorOptions';
 
 /**
