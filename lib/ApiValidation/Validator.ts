@@ -47,7 +47,6 @@ export default class Validator {
    * @param token to validate
    */
   public async validate(token: string): Promise<IValidationResponse> {
-    const validatorOption = new BasicValidatorOptions(this.resolver);
     let response: IValidationResponse = {
       result: true,
       status: 200,

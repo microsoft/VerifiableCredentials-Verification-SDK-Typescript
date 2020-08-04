@@ -51,9 +51,12 @@ import IRevocedCard from './Revocation/IRevokedCard';
 export { IRevocedCard };
 
 import { IResponse } from './InputValidation/IValidationResponse';
-import RequestorBuilder from './ApiOidcRequest/RequestorBuilder';
+import RequestorBuilder, { PresentationProtocol } from './ApiOidcRequest/RequestorBuilder';
 import Requestor from './ApiOidcRequest/Requestor';
-export { IResponse, RequestorBuilder, Requestor };
+import IRequestor from './ApiOidcRequest/IRequestor';
+import IRequestorAttestation from './ApiOidcRequest/IRequestorAttestation';
+import IRequestorPresentationExchange from './ApiOidcRequest/IRequestorPresentationExchange';
+export { PresentationProtocol, IResponse, RequestorBuilder, Requestor, IRequestor, IRequestorAttestation, IRequestorPresentationExchange };
 
 export { KeyStoreFactory, SubtleCryptoNode, KeyUse, JoseBuilder, IPayloadProtectionSigning, LongFormDid, Subtle, Crypto, CryptoBuilder, IKeyContainer, IKeyStore, KeyReference, CryptoFactory } from 'verifiablecredentials-crypto-sdk-typescript';
 
@@ -72,7 +75,17 @@ import { VerifiablePresentationAttestationModel } from './rules-model/Verifiable
 import { RefreshConfigurationModel } from './rules-model/RefreshConfigurationModel';
 import { VerifiableCredentialModel } from './rules-model/VerifiableCredentialModel';
 import { TransformModel } from './rules-model/TransformModel'; 
+import { PresentationDefinitionModel } from './rules-model/PresentationExchange/PresentationDefinitionModel'; 
+import { InputDescriptorModel } from './rules-model/PresentationExchange/InputDescriptorModel'; 
+import { PresentationExchangeSchemaModel } from './rules-model/PresentationExchange/PresentationExchangeSchemaModel'; 
+import { PresentationExchangeIssuanceModel } from './rules-model/PresentationExchange/PresentationExchangeIssuanceModel'; 
+import { PresentationExchangeConstraintsModel } from './rules-model/PresentationExchange/PresentationExchangeConstraintsModel'; 
 export {
+  PresentationDefinitionModel,
+  InputDescriptorModel,
+  PresentationExchangeSchemaModel,
+  PresentationExchangeIssuanceModel,
+  PresentationExchangeConstraintsModel,
   TransformModel,
   VerifiableCredentialModel,
   RefreshConfigurationModel,

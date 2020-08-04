@@ -34,9 +34,4 @@ export default interface IRequestor {
    * url pointing to logo of the requestor (Relying Party)
    */
   logoUri: string,
-
-  /**
-   * claims being asked for
-   */
-  attestation: IssuanceAttestationsModel
 }
