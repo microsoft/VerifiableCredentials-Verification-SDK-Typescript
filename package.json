@@ -1,6 +1,6 @@
 {
   "name": "verifiablecredentials-verification-sdk-typescript",
-  "version": "0.6.20",
+  "version": "0.6.21",
   "description": "Typescript SDK for verifiable credentials",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -39,7 +39,7 @@
   "dependencies": {
     "@decentralized-identity/did-common-typescript": "0.1.19",
     "@decentralized-identity/sidetree": "^0.7.0",
-    "@microsoft/crypto-sdk": "1.0.15-a",
+    "@microsoft/crypto-sdk": "1.0.16-c",
     "base64url": "3.0.1",
     "deep-property-access": "1.0.1",
     "es6-promise": "^4.2.8",
