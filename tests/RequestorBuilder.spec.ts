@@ -37,6 +37,7 @@ describe('RequestorBuilder', () => {
           'oidc config endpoint',
           'clientId',
           'redirect',
+          'scope',
           {
             email: new InputClaimModel('upn', 'string', false, true),
             name: new InputClaimModel('name')
