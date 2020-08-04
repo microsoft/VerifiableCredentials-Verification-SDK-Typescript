@@ -1,14 +1,9 @@
-import { Requestor, IssuanceAttestationsModel, Crypto } from '../index';
+import { IssuanceAttestationsModel } from '../index';
 
 /**
  * Interface to initialize the Requestor
  */
 export default interface IRequestor {
-
-  /**
-   * the crypto object
-   */
-  crypto: Crypto,
 
   /**
    * the name of the requestor (Relying Party)

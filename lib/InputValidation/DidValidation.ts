@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ICryptoToken } from 'verifiablecredentials-crypto-sdk-typescript';
+import { IPayloadProtectionSigning } from 'verifiablecredentials-crypto-sdk-typescript';
 import { IDidValidation, IDidValidationResponse } from './DidValidationResponse';
 import { IValidationOptions } from '../Options/IValidationOptions';
-import { ValidationOptions, IExpectedBase } from '../index';
+import { IExpectedBase } from '../index';
 
 /**
  * Class for input validation of a token signed with DID key
@@ -64,7 +64,7 @@ export class DidValidation implements IDidValidation {
    }
     
    // Validate DID signature
-   validationResponse = await this.options.validateDidSignatureDelegate(validationResponse, validationResponse.didSignature as ICryptoToken);
+   validationResponse = await this.options.validateDidSignatureDelegate(validationResponse, validationResponse.didSignature as IPayloadProtectionSigning );
    if (!validationResponse.result) {
      return validationResponse;
    }

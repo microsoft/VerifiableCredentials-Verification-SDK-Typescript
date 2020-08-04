@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Requestor, IssuanceAttestationsModel, Crypto } from '../index';
+import { Crypto, CryptoBuilder, JoseBuilder, IPayloadProtectionSigning, Requestor } from '../index';
 import IRequestor from './IRequestor';
 
 /**
@@ -14,19 +14,32 @@ export default class RequestorBuilder {
   private _state: string | undefined;
   private _nonce: string | undefined;
   private _issuance: boolean = false;
-
+  private _crypto: Crypto = new CryptoBuilder().build();
+  private _signingProtocol: IPayloadProtectionSigning;
   /**
    * Create a new instance of RequestorBuilder
    * @param _requestor Initializer for the requestor
    */
-  constructor(private _requestor: IRequestor) {
+  constructor(private _requestor: IRequestor, crypto?: Crypto) {
+    if (crypto) {
+      this._crypto = crypto;
+    }
+
+    this._signingProtocol = new JoseBuilder(this._crypto).build();
   }
 
   /**
    * Gets the crypto object
    */
   public get crypto() {
-    return this._requestor.crypto;
+    return this._crypto;
+  }
+
+  /**
+   * Gets the signing protocol
+   */
+  public get signingProtocol() {
+    return this._signingProtocol;
   }
 
   /**

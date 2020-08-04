@@ -7,11 +7,12 @@ import { VerifiablePresentationValidation } from '../lib/InputValidation/Verifia
 import { IssuanceHelpers } from './IssuanceHelpers';
 import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
 import { Crypto, IExpectedVerifiablePresentation } from '../lib';
+import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript';
 
 describe('VerifiablePresentationValidation', () => {
 
   let crypto: Crypto;
-  let signingKeyReference: string;
+  let signingKeyReference: KeyReference;
   let setup: TestSetup;
   beforeEach(async () => {
     setup = new TestSetup();

@@ -4,12 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import TestSetup from './TestSetup';
-import ValidationOptions from '../lib/Options/ValidationOptions';
 import { TokenType, IExpectedSiop } from '../lib/index';
 import { IssuanceHelpers } from './IssuanceHelpers';
-import { IDidValidationResponse } from '../lib/InputValidation/DidValidationResponse';
 import { DidValidation } from '../lib/InputValidation/DidValidation';
-import VerifiableCredentialConstants from '../lib/VerifiableCredential/VerifiableCredentialConstants';
 import base64url from 'base64url';
 
 describe('DidValidation', () =>

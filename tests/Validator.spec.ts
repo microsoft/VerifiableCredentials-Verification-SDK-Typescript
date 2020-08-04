@@ -1,14 +1,14 @@
-import { TokenType, ValidatorBuilder, IdTokenTokenValidator, VerifiableCredentialTokenValidator, VerifiablePresentationTokenValidator, IExpectedVerifiableCredential, IExpectedVerifiablePresentation, IExpectedIdToken, IExpectedSiop, IExpectedSelfIssued, Validator, CryptoBuilder, ManagedHttpResolver } from '../lib/index';
+import { TokenType, ValidatorBuilder, IdTokenTokenValidator, VerifiableCredentialTokenValidator, VerifiablePresentationTokenValidator, IExpectedVerifiableCredential, IExpectedVerifiablePresentation, IExpectedIdToken, IExpectedSiop, IExpectedSelfIssued, Validator, CryptoBuilder, ManagedHttpResolver, ClaimToken } from '../lib/index';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import TestSetup from './TestSetup';
 import ValidationQueue from '../lib/InputValidation/ValidationQueue';
 import { Crypto, SiopTokenValidator, SelfIssuedTokenValidator } from '../lib/index';
-import { IssuerMap } from '../lib/Options/IExpected';
 import VerifiableCredentialConstants from '../lib/VerifiableCredential/VerifiableCredentialConstants';
+import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript';
 
 describe('Validator', () => {
   let crypto: Crypto;
-  let signingKeyReference: string;
+  let signingKeyReference: KeyReference;
   let setup: TestSetup;
   beforeEach(async () => {
     setup = new TestSetup();
@@ -60,8 +60,9 @@ describe('Validator', () => {
       .useValidators(tokenValidator)
       .build();
 
-    const result = await validator.validate(siop.vc.rawToken);
+    let result = await validator.validate(siop.vc.rawToken);
     expect(result.result).toBeTruthy();
+  
   });
 
   it('should validate verifiable presentations', async () => {
@@ -107,13 +108,22 @@ describe('Validator', () => {
     expect(result.validationResult?.verifiableCredentials).toBeDefined();
 
     // Negative cases
+    // No validator
+    validator = new ValidatorBuilder(crypto)
+      .useValidators([])
+      .build();
+    queue = new ValidationQueue();
+    queue.enqueueToken('vp', siop.vp.rawToken);
+    await expectAsync(validator.validate(queue.getNextToken()!.tokenToValidate)).toBeRejectedWith('verifiablePresentation does not has a TokenValidator');
+
     // Test validator with missing VC validator
     validator = new ValidatorBuilder(crypto)
       .useValidators(vpValidator)
       .build();
     queue = new ValidationQueue();
     queue.enqueueToken('vp', siop.vp.rawToken);
-    expectAsync(validator.validate(queue.getNextToken()!.tokenToValidate)).toBeRejectedWith('verifiableCredential does not has a TokenValidator');
+    await expectAsync(validator.validate(queue.getNextToken()!.tokenToValidate)).toBeRejectedWith('verifiableCredential does not has a TokenValidator');
+
   });
 
   it('should validate presentation siop', async () => {

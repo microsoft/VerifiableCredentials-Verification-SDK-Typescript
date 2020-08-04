@@ -3,11 +3,8 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-// tslint:disable-next-line:max-line-length
-import { JoseConstants, IKeyStore, KeyStoreFactory, SubtleCryptoNode, CryptoFactoryManager, CryptoFactory, JoseProtocol, SubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript';
-import { TSMap } from 'typescript-map';
 import { IssuanceHelpers } from './IssuanceHelpers';
-import { ManagedHttpResolver, Crypto, CryptoBuilder } from '../lib/index';
+import { ManagedHttpResolver, CryptoBuilder, IKeyStore, SubtleCryptoNode, KeyReference } from '../lib/index';
 import IValidatorOptions from '../lib/Options/IValidatorOptions';
 
 /**
@@ -38,17 +35,17 @@ export default class TestSetup {
    * TestSetup environment
    */
   public resolver = new ManagedHttpResolver(this.universalResolverUrl);
-  
+
   /**
    * Constant for default id token configuration
    */
   public defaultIdTokenConfiguration = 'http://example/configuration';
-    
+
   /**
    * Constant for default id token jwks configuration
    */
   public defaultIdTokenJwksConfiguration = 'http://example/jwks';
-  
+
   /**
    * Constant for the default user did
    */
@@ -62,17 +59,17 @@ export default class TestSetup {
   /**
    * Constant for default kid for user DID
    */
-  public defaulSigKey = 'signing';
+  public defaulSigKey = new KeyReference('signing');
 
   /**
    * Constant for default kid for user DID
    */
-  public defaulUserDidKid = `${this.defaultUserDid}#${this.defaulSigKey}`;
+  public defaulUserDidKid = `${this.defaultUserDid}#${this.defaulSigKey.keyReference}`;
 
   /**
    * Constant for default kid for issuer DID
    */
-  public defaulIssuerDidKid = `${this.defaultIssuerDid}#${this.defaulSigKey}`;
+  public defaulIssuerDidKid = `${this.defaultIssuerDid}#${this.defaulSigKey.keyReference}`;
 
   /**
    * Constant for token audience
@@ -83,7 +80,7 @@ export default class TestSetup {
    * Constant for token issuer url
    */
   public tokenIssuer = 'https://example.com/issuer';
-  
+
   /**
    * SubtleCrypto instance
    */
@@ -92,7 +89,10 @@ export default class TestSetup {
   /**
    * CryptoFactory instance
    */
-  public crypto = new CryptoBuilder(this.defaultIssuerDid, this.defaulSigKey).build();
+  public crypto = new CryptoBuilder()
+    .useDid(this.defaultIssuerDid)
+    .useSigningKeyReference(this.defaulSigKey)
+    .build();
 
   /**
    * TestSetup crypto properties
@@ -103,8 +103,8 @@ export default class TestSetup {
   * Validator options
   */
   public validatorOptions: IValidatorOptions = {
-      resolver: this.resolver,
-      crypto: this.crypto
+    resolver: this.resolver,
+    crypto: this.crypto
   };
 
   /**
@@ -157,22 +157,15 @@ export default class TestSetup {
   /**
    * Create keys for tests
    */
-  public async generateKeys () {
+  public async generateKeys() {
     for (let inx = 0; inx < this.keys.length; inx++) {
       const kid = this.keys[inx].kid;
       const didKid = this.keys[inx].didKid;
 
       // generate the keys
-      const [didJwkPrivate, didJwkPublic] = await IssuanceHelpers.generateSigningKey(this, didKid); 
+      const [didJwkPrivate, didJwkPublic] = await IssuanceHelpers.generateSigningKey(this, didKid);
       const [didDocument, jwkPrivate, jwkPublic] = await IssuanceHelpers.resolverMock(this, this.defaultUserDid, didJwkPrivate, didJwkPublic);
-      await this.keyStore.save(kid, jwkPrivate);
+      await this.keyStore.save(new KeyReference(kid), jwkPrivate);
     }
-  }
-
-  constructor () {
-    const options = new TSMap<string, any>([ 
-      [JoseConstants.optionProtectedHeader, new TSMap([['typ', 'JWT']]) ]
-    ]);
-    this.validatorOptions.crypto.builder.payloadProtectionOptions.options = options;
   }
 }

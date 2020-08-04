@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { IDidResolveResult } from '@decentralized-identity/did-common-typescript';
-import { ICryptoToken, JoseConstants, ProtectionFormat } from 'verifiablecredentials-crypto-sdk-typescript';
+import { IPayloadProtectionSigning, JoseConstants, ProtectionFormat } from 'verifiablecredentials-crypto-sdk-typescript';
 import base64url from "base64url";
 import { IValidationOptions } from '../Options/IValidationOptions';
 import IValidatorOptions from '../Options/IValidatorOptions';
@@ -69,12 +69,8 @@ export class ValidationHelpers {
     let tokenPayload: Buffer;
     const self: any = this;
     try {
-      validationResponse.didSignature = (self as ValidationOptions).validatorOptions.crypto.builder.payloadProtectionProtocol.deserialize(
-        token,
-        ProtectionFormat.JwsCompactJson,
-        (self as ValidationOptions).validatorOptions.crypto.builder.payloadProtectionOptions);
-      tokenPayload = validationResponse.didSignature!.get(JoseConstants.tokenPayload);
-      if (!validationResponse.didSignature || !tokenPayload) {
+      validationResponse.didSignature = (self as ValidationOptions).validatorOptions.crypto.signingProtocol.deserialize(token);
+      if (!validationResponse.didSignature) {
         return {
           result: false,
           detailedError: `The signature in the ${(self as ValidationOptions).tokenType} has an invalid format`,
@@ -82,9 +78,7 @@ export class ValidationHelpers {
         };
       }
 
-      const signature = validationResponse.didSignature.get(JoseConstants.tokenSignatures)[0];
-      const header = signature.protected;
-      const kid = header.get(JoseConstants.Kid);
+      const kid = validationResponse.didSignature.signatureProtectedHeader?.kid; 
       validationResponse.didKid = kid;
       if (!validationResponse.didKid) {
         return {
@@ -102,7 +96,16 @@ export class ValidationHelpers {
       };
     }
     try {
-      validationResponse.payloadObject = JSON.parse(tokenPayload!.toString());
+      const payload = validationResponse.didSignature!.signaturePayload;
+      if (!payload) {
+        return {
+          result: false,
+          detailedError: `The payload in the ${(self as ValidationOptions).tokenType} is undefined`,
+          status: 403
+        };
+      }
+
+      validationResponse.payloadObject = JSON.parse(payload.toString());
     } catch (err) {
       console.error(err);
       return {
@@ -407,19 +410,13 @@ export class ValidationHelpers {
    * @param token Token to validate
    * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
    */
-  public async validateDidSignature(validationResponse: IValidationResponse, token: ICryptoToken): Promise<IValidationResponse> {
+  public async validateDidSignature(validationResponse: IValidationResponse, token: IPayloadProtectionSigning): Promise<IValidationResponse> {
     const self: any = this;
     try {
       // show header
-      const signature = validationResponse.didSignature!.get(JoseConstants.tokenSignatures)[0];
-      const kid = signature.protected.get(VerifiableCredentialConstants.TOKEN_KID);
-      console.log(`Validate DID signature with kid '${kid}', key kid '${validationResponse.didSigningPublicKey?.kid}'`);
-      const validation = await (self as ValidationOptions).validatorOptions.crypto.builder.payloadProtectionProtocol.verify(
-        [validationResponse.didSigningPublicKey],
-        validationResponse.didSignature!.get(JoseConstants.tokenPayload) as Buffer,
-        token,
-        (self as ValidationOptions).validatorOptions.crypto.builder.payloadProtectionOptions);
-      if (!validation.result) {
+      //console.log(`Validate DID signature with kid '${kid}', key kid '${validationResponse.didSigningPublicKey?.kid}'`);
+      const validation = await token.verify([validationResponse.didSigningPublicKey]);
+      if (!validation) {
         return validationResponse = {
           result: false,
           detailedError: `The signature on the payload in the ${(self as ValidationOptions).tokenType} is invalid`,
@@ -597,12 +594,8 @@ export class ValidationHelpers {
     try {
       // Get token and check signature
       validationResponse = (self as IValidationOptions).getTokenObjectDelegate(validationResponse, token.rawToken);
-      const validation = await (self as ValidationOptions).validatorOptions.crypto.builder.payloadProtectionProtocol.verify(
-        [key],
-        validationResponse.didSignature!.get(JoseConstants.tokenPayload) as Buffer,
-        validationResponse.didSignature as ICryptoToken,
-        (self as ValidationOptions).validatorOptions.crypto.builder.payloadProtectionOptions);
-      if (!validation.result) {
+      const validation = await (self as ValidationOptions).validatorOptions.crypto.signingProtocol.verify([key]);
+      if (!validation) {
         return {
           result: false,
           detailedError: `The presented ${(self as ValidationOptions).tokenType} is has an invalid signature`,
