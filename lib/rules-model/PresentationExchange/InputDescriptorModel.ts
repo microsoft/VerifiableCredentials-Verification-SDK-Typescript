@@ -13,13 +13,15 @@ export class InputDescriptorModel {
      /**
    * Create an instance of InputDescriptorModel
    * @param id for the input definition
-   * @param presentationExchangeSchemaModel schema for the input definition
+   * @param schema schema for the input definition
+   * @param issuance issuance for the input definition
+   * @param constraints constraints for the input definition
    */
   constructor (
     public id: string,
     public schema: PresentationExchangeSchemaModel,
-    public issuance: PresentationExchangeIssuanceModel[],
-    public constraints: PresentationExchangeConstraintsModel) {
+    public issuance?: PresentationExchangeIssuanceModel[],
+    public constraints?: PresentationExchangeConstraintsModel) {
   }
 
 }
