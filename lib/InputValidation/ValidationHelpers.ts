@@ -13,6 +13,7 @@ import VerifiableCredentialConstants from '../VerifiableCredential/VerifiableCre
 import { IdTokenValidationResponse } from './IdTokenValidationResponse';
 import { IValidationResponse } from './IValidationResponse';
 import { IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSiop, IExpectedAudience } from '../Options/IExpected';
+const jp = require('jsonpath');
 
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
@@ -78,7 +79,7 @@ export class ValidationHelpers {
         };
       }
 
-      const kid = validationResponse.didSignature.signatureProtectedHeader?.kid; 
+      const kid = validationResponse.didSignature.signatureProtectedHeader?.kid;
       validationResponse.didKid = kid;
       if (!validationResponse.didKid) {
         return {
@@ -564,18 +565,61 @@ export class ValidationHelpers {
    */
   public getTokensFromSiop(validationResponse: IValidationResponse): IValidationResponse {
     const self: any = this;
-    const attestations = validationResponse.payloadObject[VerifiableCredentialConstants.ATTESTATIONS];
-    if (attestations) {
-      // Decode tokens
-      try {
-        validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromAttestations(attestations);
-      } catch (err) {
-        console.error(err);
-        return {
-          result: false,
-          status: 403,
-          detailedError: `Failed to decode input tokens`
-        };
+
+    // Check type of SIOP
+    const type = validationResponse.payloadObject[VerifiableCredentialConstants.ATTESTATIONS] ? TokenType.siopPresentationAttestation : TokenType.siopPresentationExchange;
+    if (type === TokenType.siopPresentationAttestation) {
+      const attestations = validationResponse.payloadObject[VerifiableCredentialConstants.ATTESTATIONS];
+      if (attestations) {
+        // Decode tokens
+        try {
+          validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromAttestations(attestations);
+        } catch (err) {
+          console.error(err);
+          return {
+            result: false,
+            status: 403,
+            detailedError: `Failed to decode input tokens`
+          };
+        }
+      }
+    } else {
+      // Get descriptor map
+      const descriptorMap: any[] = jp.query(validationResponse.payloadObject, `$.presentation_submission.descriptor_map.*`);
+      validationResponse.tokensToValidate = {};
+
+      for(let inx = 0; inx < descriptorMap.length; inx++) {
+        const item = descriptorMap[inx];
+        if (item.path) {
+          const tokenFinder = jp.query(validationResponse.payloadObject, item.path);
+          console.log(tokenFinder);
+          if (tokenFinder.length > 0) {
+            if (typeof tokenFinder[0] === 'object') {
+              const foundToken = tokenFinder[0];
+              const tokenName = Object.keys(foundToken)[0];
+              const claimToken = ClaimToken.create(foundToken[tokenName]);
+              validationResponse.tokensToValidate[tokenName] = claimToken;
+            } else {
+              return {
+                result: false,
+                status: 403,
+                detailedError: `The SIOP presentation exchange response has descriptor_map with id '${item.id}'. This path '${item.path}' did not return a token object in the style e.g. {vc: 'ey...'}.`
+              };
+            }
+          } else {
+            return {
+              result: false,
+              status: 403,
+              detailedError: `The SIOP presentation exchange response has descriptor_map with id '${item.id}'. This path '${item.path}' did not return any tokens.`
+            };
+          }
+        } else {
+          return {
+            result: false,
+            status: 403,
+            detailedError: `The SIOP presentation exchange response has descriptor_map with id '${item.id}'. No path property found.`
+          };
+        }
       }
     }
 

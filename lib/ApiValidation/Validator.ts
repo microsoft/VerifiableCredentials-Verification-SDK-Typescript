@@ -3,11 +3,10 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { BasicValidatorOptions, ClaimToken, IDidResolver, ISiopValidationResponse, ITokenValidator, ValidatorBuilder } from '../index';
+import { ClaimToken, IDidResolver, ISiopValidationResponse, ITokenValidator, ValidatorBuilder } from '../index';
 import { IValidationResponse } from '../InputValidation/IValidationResponse';
 import ValidationQueue from '../InputValidation/ValidationQueue';
 import ValidationQueueItem from '../InputValidation/ValidationQueueItem';
-import ValidationOptions from '../Options/ValidationOptions';
 import { TokenType } from '../VerifiableCredential/ClaimToken';
 import IValidationResult from './IValidationResult';
 
@@ -89,7 +88,11 @@ export default class Validator {
           }
 
           break;
-        case TokenType.siopPresentation:
+        case TokenType.siopPresentationAttestation:
+          response = await validator.validate(queue, queueItem!);
+          siopDid = response.did;
+          break;
+        case TokenType.siopPresentationExchange:
           response = await validator.validate(queue, queueItem!);
           siopDid = response.did;
           break;
@@ -122,7 +125,7 @@ export default class Validator {
   }
 
   private isSiop(type: TokenType | undefined) {
-    return type === TokenType.siopIssuance || type === TokenType.siopPresentation
+    return type === TokenType.siopIssuance || type === TokenType.siopPresentationAttestation
   }
 
   private setValidationResult(queue: ValidationQueue): IValidationResult {

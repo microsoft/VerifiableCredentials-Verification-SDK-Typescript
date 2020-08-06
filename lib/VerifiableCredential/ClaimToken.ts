@@ -25,9 +25,14 @@ export enum TokenType {
   siopIssuance = 'siopIssuance',
 
   /**
-   * Token is SIOP token presentation request
+   * Token is SIOP token presentation request with attestation presentation protocol
    */
-  siopPresentation = 'siopPresentation',
+  siopPresentationAttestation = 'siopPresentationAttestation',
+  
+  /**
+   * Token is SIOP token presentation request with presentation exchange protocol
+   */
+  siopPresentationExchange = 'siopPresentationExchange',
 
   /**
    * Token is verifiable presentation
@@ -140,8 +145,14 @@ export default class ClaimToken {
 
     // Check type of token
     if (payload.iss === VerifiableCredentialConstants.TOKEN_SI_ISS) {
-      return new ClaimToken(payload.contract ? TokenType.siopIssuance : TokenType.siopPresentation, token, '');
+      if (payload.contract) {
+        return new ClaimToken(TokenType.siopIssuance, token, '');  
+      } else if (payload.presentation_submission) {
+        return new ClaimToken(TokenType.siopPresentationExchange, token, '');  
+      }
+      return new ClaimToken(TokenType.siopPresentationAttestation, token, '');
     }
+    
     if (payload.vc) {
       return new ClaimToken(TokenType.verifiableCredential, token, '');
     }
@@ -161,24 +172,25 @@ export default class ClaimToken {
   * This algorithm will convert the attestations to a ClaimToken
   * @param attestations All presented claims
   */
-  public static getClaimTokensFromAttestations(attestations: { [key: string]: string }): { [key: string]: ClaimToken } {
-    const decodedTokens: { [key: string]: ClaimToken } = {};
+ public static getClaimTokensFromAttestations(attestations: { [key: string]: string }): { [key: string]: ClaimToken } {
+  const decodedTokens: { [key: string]: ClaimToken } = {};
 
-    for (let key in attestations) {
-      const token: any = attestations[key];
+  for (let key in attestations) {
+    const token: any = attestations[key];
 
-      if (key === VerifiableCredentialConstants.CLAIMS_SELFISSUED) {
-        decodedTokens[VerifiableCredentialConstants.CLAIMS_SELFISSUED] = new ClaimToken(TokenType.selfIssued, token, '');
+    if (key === VerifiableCredentialConstants.CLAIMS_SELFISSUED) {
+      decodedTokens[VerifiableCredentialConstants.CLAIMS_SELFISSUED] = new ClaimToken(TokenType.selfIssued, token, '');
+    }
+    else {
+      for (let tokenKey in token) {
+        const claimToken = ClaimToken.create(token[tokenKey]);
+        decodedTokens[tokenKey] = claimToken;
       }
-      else {
-        for (let tokenKey in token) {
-          const claimToken = ClaimToken.create(token[tokenKey]);
-          decodedTokens[tokenKey] = claimToken;
-        }
-      }
-    };
-    return decodedTokens;
-  }
+    }
+  };
+  return decodedTokens;
+}
+
 
   /**
    * Decode the token

@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IRequestorPresentationExchange, PresentationDefinitionModel, InputDescriptorModel, PresentationExchangeIssuanceModel, PresentationExchangeSchemaModel, RequestorBuilder, CryptoBuilder, KeyReference } from '../lib/index';
+import { IRequestorPresentationExchange, PresentationDefinitionModel, InputDescriptorModel, PresentationExchangeIssuanceModel, PresentationExchangeSchemaModel, RequestorBuilder, CryptoBuilder, KeyReference, KeyUse, LongFormDid } from '../lib/index';
+import TokenGenerator from './TokenGenerator';
 
 export default class RequestorHelper {
 
@@ -11,6 +12,11 @@ export default class RequestorHelper {
      * the name of the requestor (Relying Party)
      */
     public clientName = 'clientName';
+
+    /**
+     * The audience of the requestor
+     */
+    public audience = 'https://relyingparty.example.com';
 
     /**
      * explaining the purpose of sending claims to relying party
@@ -114,4 +120,14 @@ export default class RequestorHelper {
     public builder = new RequestorBuilder(this.presentationExchangeRequestor, this.crypto)
         .useOidcRequestExpiry(7*3600*24);
     public requestor = this.builder.build();
+
+    public async setup(): Promise<void> {
+        this.crypto = await this.crypto.generateKey(KeyUse.Signature, 'signing');
+        this.crypto = await this.crypto.generateKey(KeyUse.Signature, 'recovery');
+        let did = await new LongFormDid(this.crypto).serialize();
+        this.crypto.builder.useDid(did);
+
+        // setup mock to resolve this did
+        TokenGenerator.mockResolver(this.crypto);
+    }
 }

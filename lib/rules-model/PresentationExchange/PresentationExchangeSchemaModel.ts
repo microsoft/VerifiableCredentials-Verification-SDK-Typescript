@@ -20,7 +20,7 @@ export class PresentationExchangeSchemaModel {
     /**
      * Unique identifier for the requested type
      */
-    public url: string[],
+    public uri: string[],
 
     /**
      * The resource MAY contain this property, and if present its value SHOULD be a human-friendly name that describes what the Presentation Definition pertains to.
