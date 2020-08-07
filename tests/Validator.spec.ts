@@ -35,6 +35,23 @@ describe('Validator', () => {
     let result = await validator.validate(siop.idToken.rawToken);
     expect(result.result).toBeTruthy(); 
     expect(result.validationResult?.idTokens).toBeDefined();
+
+    validator = new ValidatorBuilder(crypto)
+      .useTrustedIssuerConfigurationsForIdTokens([setup.defaultIdTokenConfiguration])
+      .useTrustedIssuersForVerifiableCredentials({ DrivingLicense: [ 'did:test:issuer' ] })
+      .build();
+    result = await validator.validate(siop.idToken.rawToken);
+    expect(result.result).toBeTruthy(); 
+    expect(result.validationResult?.idTokens).toBeDefined();
+
+    //Redefine the urls
+    validator = validator.builder.useTrustedIssuerConfigurationsForIdTokens([setup.defaultIdTokenConfiguration])
+    .useTrustedIssuersForVerifiableCredentials({ DrivingLicense: [ 'did:test:issuer' ] })
+    .build();
+    result = await validator.validate(siop.idToken.rawToken);
+    expect(result.result).toBeTruthy(); 
+    expect(validator.builder.trustedIssuersForVerifiableCredentials).toEqual({ DrivingLicense: [ 'did:test:issuer' ] });
+    expect(validator.builder.trustedIssuerConfigurationsForIdTokens).toEqual([setup.defaultIdTokenConfiguration]);
     expect(result.validationResult?.verifiablePresentations).toBeUndefined();
 
     tokenValidator = new IdTokenTokenValidator(setup.validatorOptions, expected);
@@ -114,7 +131,9 @@ describe('Validator', () => {
       .build();
     queue = new ValidationQueue();
     queue.enqueueToken('vp', siop.vp.rawToken);
-    await expectAsync(validator.validate(queue.getNextToken()!.tokenToValidate)).toBeRejectedWith('verifiablePresentation does not has a TokenValidator');
+    result = await validator.validate(queue.getNextToken()!.tokenToValidate);
+    expect(result.result).toBeFalsy();
+    expect(result.detailedError).toEqual('verifiablePresentation does not has a TokenValidator');
 
     // Test validator with missing VC validator
     validator = new ValidatorBuilder(crypto)
@@ -122,8 +141,9 @@ describe('Validator', () => {
       .build();
     queue = new ValidationQueue();
     queue.enqueueToken('vp', siop.vp.rawToken);
-    await expectAsync(validator.validate(queue.getNextToken()!.tokenToValidate)).toBeRejectedWith('verifiableCredential does not has a TokenValidator');
-
+    result = await validator.validate(queue.getNextToken()!.tokenToValidate);
+    expect(result.result).toBeFalsy();
+    expect(result.detailedError).toEqual('verifiableCredential does not has a TokenValidator');
   });
 
   it('should validate presentation siop', async () => {
@@ -138,6 +158,8 @@ describe('Validator', () => {
       .useTrustedIssuersForVerifiableCredentials(vcExpected.contractIssuers)
       .build();
 
+    expect(validator.builder.audienceUrl).toEqual(siopExpected.audience);
+    
     const queue = new ValidationQueue();
     queue.enqueueToken('siopPresentationAttestation', request.rawToken);
     let result = await validator.validate(queue.getNextToken()!.tokenToValidate);
@@ -208,62 +230,6 @@ describe('Validator', () => {
 
   });
 
-  it('should validate siop', async () => {
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentation, true);
-    const siopExpected = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siopIssuance)[0];
-    const vpExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiablePresentation)[0];
-    const vcExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
-    const idTokenExpected = siop.expected.filter((token: IExpectedIdToken) => token.type === TokenType.idToken)[0];
-    const siExpected = siop.expected.filter((token: IExpectedSelfIssued) => token.type === TokenType.selfIssued)[0];
-
-    const vpValidator = new VerifiablePresentationTokenValidator(setup.validatorOptions, crypto, vpExpected);
-    const vcValidator = new VerifiableCredentialTokenValidator(setup.validatorOptions, vcExpected);
-    const idTokenValidator = new IdTokenTokenValidator(setup.validatorOptions, idTokenExpected);
-    const siopValidator = new SiopTokenValidator(setup.validatorOptions, siopExpected);
-    const siValidator = new SelfIssuedTokenValidator(setup.validatorOptions, siExpected);
-
-    // Check validator types
-    expect(vpValidator.isType).toEqual(TokenType.verifiablePresentation);
-    expect(vcValidator.isType).toEqual(TokenType.verifiableCredential);
-    expect(idTokenValidator.isType).toEqual(TokenType.idToken);
-    expect(siopValidator.isType).toEqual(TokenType.siopIssuance);
-    expect(siValidator.isType).toEqual(TokenType.selfIssued);
-
-    // Check siop validator
-    let queue = new ValidationQueue();
-    queue.enqueueToken('siop', request.rawToken);
-    let result = await siopValidator.validate(queue, queue.getNextToken()!);
-    expect(result.result).toBeTruthy();
-    expect(result.tokensToValidate!['VerifiableCredential'].rawToken).toEqual(siop.vp.rawToken);
-    expect(result.tokensToValidate![`${setup.defaultIdTokenConfiguration}`].rawToken).toEqual(siop.idToken.rawToken);
-    expect(result.tokensToValidate!['selfIssued'].rawToken).toEqual(siop.si.rawToken);
-
-    // Check validator
-    let validator = new ValidatorBuilder(crypto)
-      .useValidators([vcValidator, vpValidator, idTokenValidator, siopValidator, siValidator])
-      .build();
-
-    queue = new ValidationQueue();
-    queue.enqueueToken('siop', request.rawToken);
-    result = await validator.validate(queue.getNextToken()!.tokenToValidate);
-    expect(result.result).toBeTruthy();
-    expect(result.status).toEqual(200);
-    expect(result.detailedError).toBeUndefined();
-    expect(result.tokensToValidate).toBeUndefined();
-    expect(result.validationResult?.did).toEqual(setup.defaultUserDid);
-    expect(result.validationResult?.siopJti).toEqual(IssuanceHelpers.jti);
-    expect(result.validationResult?.idTokens).toBeDefined();
-    for (let idtoken in result.validationResult?.idTokens) {
-      expect(result.validationResult?.idTokens[idtoken].decodedToken.upn).toEqual('jules@pulpfiction.com');
-    }
-    expect(result.validationResult?.selfIssued).toBeDefined();
-    expect(result.validationResult?.selfIssued.decodedToken.name).toEqual('jules');
-    expect(result.validationResult?.verifiableCredentials).toBeDefined();
-    expect(result.validationResult?.verifiableCredentials!['VerifiableCredential'].decodedToken.vc.credentialSubject.givenName).toEqual('Jules');
-
-    // Negative cases
-
-  });
 
   it('should read the contract id with no spaces', () => {
     const id = 'foo';

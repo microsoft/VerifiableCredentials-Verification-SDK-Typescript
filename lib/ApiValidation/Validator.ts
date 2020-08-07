@@ -57,16 +57,26 @@ export default class Validator {
     queue.enqueueToken('siop', token);
     let queueItem = queue.getNextToken();
     do {
-      claimToken = Validator.getClaimToken(queueItem!);
+      try {
+        claimToken = Validator.getClaimToken(queueItem!);
+      } catch (error) {
+        return {
+          detailedError: error.message,
+          status: 400,
+          result: false
+        };
+      }
 
       // keep track of the validated tokens
       this.tokens.push(claimToken);
 
       const validator = this.tokenValidators[claimToken.type];
       if (!validator) {
-        return new Promise((_, reject) => {
-          reject(`${claimToken.type} does not has a TokenValidator`);
-        });
+        return {
+          detailedError: `${claimToken.type} does not has a TokenValidator`,
+          status: 500,
+          result: false
+        };
       }
 
       switch (claimToken.type) {
@@ -100,9 +110,11 @@ export default class Validator {
           response = await validator.validate(queue, queueItem!);
           break;
         default:
-          return new Promise((_, reject) => {
-            reject(`${claimToken.type} is not supported`);
-          });
+          return {
+            detailedError: `${claimToken.type} is not supported`,
+            status: 400,
+            result: false
+          };
       }
       // Save result
       queueItem!.setResult(response, claimToken);

@@ -37,11 +37,6 @@ validatorOptions: IValidatorOptions;
 validationHelpers: ValidationHelpers;
 
 /**
- * Get the token object from the self issued token
- */
-getSelfIssuedTokenObjectDelegate: GetTokenObject;
-
-/**
  * Get the token object from the request body
  */
 getTokenObjectDelegate: GetTokenObject;

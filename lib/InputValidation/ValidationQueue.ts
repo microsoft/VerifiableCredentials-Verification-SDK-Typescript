@@ -5,6 +5,7 @@
 
 import ValidationQueueItem from './ValidationQueueItem';
 import { IValidationResponse } from './IValidationResponse';
+import { TokenType } from '../VerifiableCredential/ClaimToken';
 
 export default class ValidationQueue {
 
@@ -55,10 +56,24 @@ export default class ValidationQueue {
    * Get the result of the validation
    */
   public getResult(): IValidationResponse {
+    let validatedSignature = false;
     for (let inx = this.queue.length - 1 ; inx >= 0; inx --) {
       const item = this.queue[inx];
-      if (item.isValidated && !item.result) {
+      if (!item.result) {
         return item.validationResponse;
+      }
+      // Check for signed proofs in the siop
+      if (item.validatedToken?.type === TokenType.idToken || item.validatedToken?.type === TokenType.verifiableCredential) {
+        validatedSignature = true;
+      }
+    }
+
+    // check if a signed token was present
+    if (!validatedSignature) {
+      return {
+        result: false,
+        detailedError: 'No signed token found during validation',
+        status: 403
       }
     }
 

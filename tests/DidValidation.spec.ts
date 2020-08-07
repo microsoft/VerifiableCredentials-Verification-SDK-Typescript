@@ -8,6 +8,7 @@ import { TokenType, IExpectedSiop } from '../lib/index';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import { DidValidation } from '../lib/InputValidation/DidValidation';
 import base64url from 'base64url';
+import { ValidationHelpers } from '../lib/InputValidation/ValidationHelpers';
 
 describe('DidValidation', () =>
 {
@@ -65,5 +66,12 @@ describe('DidValidation', () =>
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The kid in the protected header does not contain the DID. Required format for kid is <did>#kid');
-  });
+
+    // failing DID resolve
+    setup.fetchMock.reset();
+    const resolverUrl = `${setup.resolverUrl}/abc`;
+    setup.fetchMock.get(resolverUrl, {status: 404, response: {}});
+    response = await options.resolveDidAndGetKeysDelegate(<any>{did: 'abc'});
+    expect(response.result).toBeFalsy();
+});
 });

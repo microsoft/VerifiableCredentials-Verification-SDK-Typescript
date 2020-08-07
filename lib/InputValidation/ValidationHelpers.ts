@@ -33,30 +33,6 @@ export class ValidationHelpers {
   }
 
   /**
-   * Get the token object from the self issued token
-   * @param validationResponse The response for the requestor
-   * @param token The token to parse
-   * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
-   * @returns validationResponse.payloadObject The parsed payload
-   */
-  public getSelfIssuedTokenObject(validationResponse: IValidationResponse, token: string): IValidationResponse {
-    // Deserialize the token
-    try {
-      const split = token.split('.');
-      validationResponse.payloadObject = JSON.parse(base64url.decode(split[1]));
-    } catch (err) {
-      console.error(err);
-      return {
-        result: false,
-        detailedError: `The self issued token could not be deserialized`,
-        status: 400
-      };
-    }
-
-    return validationResponse;
-  }
-
-  /**
    * Get the token object from the token
    * @param validationResponse The response for the requestor
    * @param token The token to parse

@@ -44,10 +44,10 @@ export default class ResponderHelper {
                     id: this.requestor.inputDescriptorId,
                     format: 'jwt',
                     encoding: 'base64url',
-                    path: '$.vp.presentations'
+                    path: '$.tokens.presentations'
                 }]
             },
-            vp: {
+            tokens: {
                 presentations: {
                     DrivingLicense: (await this.generator.createPresentation([vc])).rawToken
                 }

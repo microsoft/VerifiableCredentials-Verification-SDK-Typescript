@@ -108,12 +108,8 @@ export default class ClaimToken {
     const tokentypeValues: string[] = Object.values(TokenType);
     if (tokentypeValues.includes(typeName)) {
       this._type = typeName as TokenType;
-    } else if (typeName === VerifiableCredentialConstants.CLAIMS_SELFISSUED) {
-      this._type = TokenType.selfIssued;
-    } else if (ClaimToken.isVc(typeName)) {
-      this._type = TokenType.verifiablePresentation;
     } else {
-      this._type = TokenType.idToken;
+      throw new Error(`Type '${typeName} is not supported`);
     }
 
     if( typeof token === 'string'){
@@ -125,14 +121,6 @@ export default class ClaimToken {
     }
 
     this._configuration = configuration;
-  }
-
-  /**
-   * Test if token name is a reference to a VC.
-   * @param tokenName Name to test for VC
-   */
-  public static isVc(tokenName: string): boolean {
-    return tokenName.includes(VerifiableCredentialConstants.CLAIMS_VERIFIABLECREDENTIAL);
   }
 
   /**
@@ -149,8 +137,11 @@ export default class ClaimToken {
         return new ClaimToken(TokenType.siopIssuance, token, '');  
       } else if (payload.presentation_submission) {
         return new ClaimToken(TokenType.siopPresentationExchange, token, '');  
+      } else if (payload.attestations) {
+        return new ClaimToken(TokenType.siopPresentationAttestation, token, '');
       }
-      return new ClaimToken(TokenType.siopPresentationAttestation, token, '');
+
+      throw new Error(`SIOP was not recognized.`);
     }
     
     if (payload.vc) {
