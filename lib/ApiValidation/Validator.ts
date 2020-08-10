@@ -3,11 +3,10 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { BasicValidatorOptions, ClaimToken, IDidResolver, ISiopValidationResponse, ITokenValidator, ValidatorBuilder } from '../index';
+import { ClaimToken, IDidResolver, ISiopValidationResponse, ITokenValidator, ValidatorBuilder } from '../index';
 import { IValidationResponse } from '../InputValidation/IValidationResponse';
 import ValidationQueue from '../InputValidation/ValidationQueue';
 import ValidationQueueItem from '../InputValidation/ValidationQueueItem';
-import ValidationOptions from '../Options/ValidationOptions';
 import { TokenType } from '../VerifiableCredential/ClaimToken';
 import IValidationResult from './IValidationResult';
 
@@ -47,7 +46,6 @@ export default class Validator {
    * @param token to validate
    */
   public async validate(token: string): Promise<IValidationResponse> {
-    const validatorOption = new BasicValidatorOptions(this.resolver);
     let response: IValidationResponse = {
       result: true,
       status: 200,
@@ -59,16 +57,26 @@ export default class Validator {
     queue.enqueueToken('siop', token);
     let queueItem = queue.getNextToken();
     do {
-      claimToken = Validator.getClaimToken(queueItem!);
+      try {
+        claimToken = Validator.getClaimToken(queueItem!);
+      } catch (error) {
+        return {
+          detailedError: error.message,
+          status: 400,
+          result: false
+        };
+      }
 
       // keep track of the validated tokens
       this.tokens.push(claimToken);
 
       const validator = this.tokenValidators[claimToken.type];
       if (!validator) {
-        return new Promise((_, reject) => {
-          reject(`${claimToken.type} does not has a TokenValidator`);
-        });
+        return {
+          detailedError: `${claimToken.type} does not has a TokenValidator`,
+          status: 500,
+          result: false
+        };
       }
 
       switch (claimToken.type) {
@@ -90,7 +98,11 @@ export default class Validator {
           }
 
           break;
-        case TokenType.siopPresentation:
+        case TokenType.siopPresentationAttestation:
+          response = await validator.validate(queue, queueItem!);
+          siopDid = response.did;
+          break;
+        case TokenType.siopPresentationExchange:
           response = await validator.validate(queue, queueItem!);
           siopDid = response.did;
           break;
@@ -98,9 +110,11 @@ export default class Validator {
           response = await validator.validate(queue, queueItem!);
           break;
         default:
-          return new Promise((_, reject) => {
-            reject(`${claimToken.type} is not supported`);
-          });
+          return {
+            detailedError: `${claimToken.type} is not supported`,
+            status: 400,
+            result: false
+          };
       }
       // Save result
       queueItem!.setResult(response, claimToken);
@@ -123,7 +137,7 @@ export default class Validator {
   }
 
   private isSiop(type: TokenType | undefined) {
-    return type === TokenType.siopIssuance || type === TokenType.siopPresentation
+    return type === TokenType.siopIssuance || type === TokenType.siopPresentationAttestation
   }
 
   private setValidationResult(queue: ValidationQueue): IValidationResult {

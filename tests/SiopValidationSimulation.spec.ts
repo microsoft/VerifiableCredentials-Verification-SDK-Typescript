@@ -24,7 +24,7 @@ describe('SiopValidationSimulation', () => {
       .build();
 
     const queue = new ValidationQueue();
-    queue.enqueueToken('siopPresentation', token);
+    queue.enqueueToken('siopPresentationAttestation', token);
     const result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeTruthy();
 

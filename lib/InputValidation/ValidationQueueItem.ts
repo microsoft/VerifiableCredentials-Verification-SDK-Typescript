@@ -79,7 +79,7 @@ export default class ValidationQueueItem {
    * Return false if the token still needs to be validated or the validation failed
    */
   public get result(): boolean {
-    return !this.isValidated &&  this._validationResult.result;
+    return this.isValidated &&  this._validationResult.result;
   }
 
   /**

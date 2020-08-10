@@ -9,7 +9,7 @@ import { IPayloadProtectionSigning } from 'verifiablecredentials-crypto-sdk-type
 import ValidationOptions from '../lib/Options/ValidationOptions';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
-import { IExpectedSiop, IExpectedIdToken, IExpectedAudience } from '../lib';
+import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationResponse } from '../lib';
 
  describe('ValidationHelpers', () => {
   let setup: TestSetup;
@@ -179,18 +179,20 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience } from '../lib';
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError?.startsWith('The presented verifiableCredential is not yet valid')).toBeTruthy();
+
   });
 
-  xit('should test checkScopeValidityOnIdTokenDelegate', () => {
+  it('should test checkScopeValidityOnIdTokenDelegate', () => {
     const options = new ValidationOptions(setup.validatorOptions, TokenType.verifiableCredential);
-
-    const validationResponse: IValidationResponse = {
-      status: 200,
-      result: true
-    };
 
     const issuer = 'iss';
     const audience = 'aud'
+
+    const validationResponse: IdTokenValidationResponse = {
+      issuer,
+      status: 200,
+      result: true
+    };
 
     // Set the payload
     validationResponse.payloadObject = {
@@ -207,33 +209,40 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience } from '../lib';
     expect(response.status).toEqual(200);
 
     // Negative cases
-    validationResponse.payloadObject.iss = undefined;
+    validationResponse.issuer = undefined;
     response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, expected);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Missing iss property in verifiableCredential. Expected '["iss"]'`);
-    validationResponse.payloadObject.iss = issuer;
-
-    validationResponse.payloadObject.iss = 'abc';
-    response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, expected);
-    expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Wrong iss property in verifiableCredential. Expected '["iss"]'`);
-    validationResponse.payloadObject.iss = issuer;
+    expect(response.detailedError).toEqual(`The issuer in configuration was not found`);
+    validationResponse.issuer = issuer;
 
     validationResponse.payloadObject.aud = undefined;
     response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, expected);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Missing aud property in verifiableCredential. Expected 'aud'`);
+    expect(response.status).toEqual(401);
+    expect(response.detailedError).toEqual(`The audience undefined is invalid`);
     validationResponse.payloadObject.aud = audience;
 
     validationResponse.payloadObject.aud = 'xxx';
     response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, expected);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Wrong aud property in verifiableCredential. Expected 'aud'`);
+    expect(response.status).toEqual(401);
+    expect(response.detailedError).toEqual(`The audience xxx is invalid`);
     validationResponse.payloadObject.aud = audience;
+
+    validationResponse.payloadObject.iss = undefined;
+    response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, expected);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`Missing iss property in idToken. Expected '"iss"'`);
+    validationResponse.payloadObject.iss = issuer;
+
+    validationResponse.payloadObject.iss = 'xxx';
+    response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, expected);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`The issuer in configuration 'iss' does not correspond with the issuer in the payload xxx`);
+    validationResponse.payloadObject.iss = issuer;
     });
     
   it('should test fetchKeyAndValidateSignatureOnIdTokenDelegate', async () => {

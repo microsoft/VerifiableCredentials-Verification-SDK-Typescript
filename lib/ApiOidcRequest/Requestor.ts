@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IResponse, RequestorBuilder } from '../index';
+import { IResponse, RequestorBuilder, IRequestorAttestation, IRequestorPresentationExchange } from '../index';
+import { PresentationProtocol } from './RequestorBuilder';
 
 /**
  * Class to model the OIDC requestor
@@ -12,11 +13,11 @@ export default class Requestor {
   private _payload: any = {};
 
 
-    /**
-     * Create instance of <see @class Requestor>
-     * @param _builder The builder object
-     */
-    constructor(
+  /**
+   * Create instance of <see @class Requestor>
+   * @param _builder The builder object
+   */
+  constructor(
     private _builder: RequestorBuilder) {
   }
 
@@ -47,7 +48,6 @@ export default class Requestor {
       scope: 'openid did_authn',
       state: state || this.builder.state,
       nonce: nonce || this.builder.nonce,
-      attestations: this.builder.attestation,
       iss: crypto.did,
       registration: {
         client_name: this.builder.clientName,
@@ -63,14 +63,19 @@ export default class Requestor {
     this._payload.iat = iat;
     this._payload.exp = expiry;
 
-    const issuance: boolean | undefined = this.builder.issuance; 
-    if ( issuance) {
+    const issuance: boolean | undefined = this.builder.issuance;
+    if (issuance) {
       this._payload.prompt = 'create';
     }
 
     if (this.builder.logoUri) {
       this._payload.registration.logo_uri = this.builder.logoUri;
     }
+
+    // Add protocol specifics
+    this._payload = this.builder.presentationProtocol === PresentationProtocol.attestation ?
+      this.createAttestationPresentationRequest(this._payload) :
+      this.createPresentationExchangeRequest(this._payload);
 
     const key = crypto.signingKeyReference;
     const signature = await this.builder.signingProtocol.sign(Buffer.from(JSON.stringify(this._payload)));
@@ -82,6 +87,22 @@ export default class Requestor {
     };
 
     return response;
+  }
+
+  /**
+   * Create the presentation exchange request
+   */
+  public createPresentationExchangeRequest(payload: any): any {
+    payload.presentation_definition = (<IRequestorPresentationExchange>this.builder.requestor).presentationDefinition;
+    return payload;
+  }
+
+  /**
+   * Create the attestation presentation request
+   */
+  public createAttestationPresentationRequest(payload: any): any {
+    payload.attestations = (<IRequestorAttestation>this.builder.requestor).attestation;
+    return payload;
   }
 }
 

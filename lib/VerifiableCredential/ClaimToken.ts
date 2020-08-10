@@ -25,9 +25,14 @@ export enum TokenType {
   siopIssuance = 'siopIssuance',
 
   /**
-   * Token is SIOP token presentation request
+   * Token is SIOP token presentation request with attestation presentation protocol
    */
-  siopPresentation = 'siopPresentation',
+  siopPresentationAttestation = 'siopPresentationAttestation',
+  
+  /**
+   * Token is SIOP token presentation request with presentation exchange protocol
+   */
+  siopPresentationExchange = 'siopPresentationExchange',
 
   /**
    * Token is verifiable presentation
@@ -103,12 +108,8 @@ export default class ClaimToken {
     const tokentypeValues: string[] = Object.values(TokenType);
     if (tokentypeValues.includes(typeName)) {
       this._type = typeName as TokenType;
-    } else if (typeName === VerifiableCredentialConstants.CLAIMS_SELFISSUED) {
-      this._type = TokenType.selfIssued;
-    } else if (ClaimToken.isVc(typeName)) {
-      this._type = TokenType.verifiablePresentation;
     } else {
-      this._type = TokenType.idToken;
+      throw new Error(`Type '${typeName} is not supported`);
     }
 
     if( typeof token === 'string'){
@@ -123,14 +124,6 @@ export default class ClaimToken {
   }
 
   /**
-   * Test if token name is a reference to a VC.
-   * @param tokenName Name to test for VC
-   */
-  public static isVc(tokenName: string): boolean {
-    return tokenName.includes(VerifiableCredentialConstants.CLAIMS_VERIFIABLECREDENTIAL);
-  }
-
-  /**
    * Factory class to create a ClaimToken containing the token type, raw token and decoded payload
    * @param token to check for type
    */
@@ -140,8 +133,17 @@ export default class ClaimToken {
 
     // Check type of token
     if (payload.iss === VerifiableCredentialConstants.TOKEN_SI_ISS) {
-      return new ClaimToken(payload.contract ? TokenType.siopIssuance : TokenType.siopPresentation, token, '');
+      if (payload.contract) {
+        return new ClaimToken(TokenType.siopIssuance, token, '');  
+      } else if (payload.presentation_submission) {
+        return new ClaimToken(TokenType.siopPresentationExchange, token, '');  
+      } else if (payload.attestations) {
+        return new ClaimToken(TokenType.siopPresentationAttestation, token, '');
+      }
+
+      throw new Error(`SIOP was not recognized.`);
     }
+    
     if (payload.vc) {
       return new ClaimToken(TokenType.verifiableCredential, token, '');
     }
@@ -161,24 +163,25 @@ export default class ClaimToken {
   * This algorithm will convert the attestations to a ClaimToken
   * @param attestations All presented claims
   */
-  public static getClaimTokensFromAttestations(attestations: { [key: string]: string }): { [key: string]: ClaimToken } {
-    const decodedTokens: { [key: string]: ClaimToken } = {};
+ public static getClaimTokensFromAttestations(attestations: { [key: string]: string }): { [key: string]: ClaimToken } {
+  const decodedTokens: { [key: string]: ClaimToken } = {};
 
-    for (let key in attestations) {
-      const token: any = attestations[key];
+  for (let key in attestations) {
+    const token: any = attestations[key];
 
-      if (key === VerifiableCredentialConstants.CLAIMS_SELFISSUED) {
-        decodedTokens[VerifiableCredentialConstants.CLAIMS_SELFISSUED] = new ClaimToken(TokenType.selfIssued, token, '');
+    if (key === VerifiableCredentialConstants.CLAIMS_SELFISSUED) {
+      decodedTokens[VerifiableCredentialConstants.CLAIMS_SELFISSUED] = new ClaimToken(TokenType.selfIssued, token, '');
+    }
+    else {
+      for (let tokenKey in token) {
+        const claimToken = ClaimToken.create(token[tokenKey]);
+        decodedTokens[tokenKey] = claimToken;
       }
-      else {
-        for (let tokenKey in token) {
-          const claimToken = ClaimToken.create(token[tokenKey]);
-          decodedTokens[tokenKey] = claimToken;
-        }
-      }
-    };
-    return decodedTokens;
-  }
+    }
+  };
+  return decodedTokens;
+}
+
 
   /**
    * Decode the token

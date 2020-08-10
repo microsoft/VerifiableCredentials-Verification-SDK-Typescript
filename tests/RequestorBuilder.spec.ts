@@ -1,4 +1,4 @@
-import IRequestor from '../lib/ApiOidcRequest/IRequestor';
+import IRequestorAttestation from '../lib/ApiOidcRequest/IRequestorAttestation';
 import { LongFormDid, KeyReference, KeyUse, Crypto, IssuanceAttestationsModel, SelfIssuedAttestationModel, VerifiablePresentationAttestationModel, TrustedIssuerModel, InputClaimModel, IdTokenAttestationModel, CryptoBuilder, RequestorBuilder, IResponse, Requestor } from '../lib/index';
 
 describe('RequestorBuilder', () => {
@@ -66,7 +66,7 @@ describe('RequestorBuilder', () => {
     return longFormDid;
   };
 
-  const initializer: IRequestor = {
+  const initializer: IRequestorAttestation = {
     clientName: 'My relying party',
     clientPurpose: 'Get access to my website',
     clientId: 'https://example.com/',
@@ -79,7 +79,7 @@ describe('RequestorBuilder', () => {
   it('should build RequestorBuilder', () => {
     const builder = new RequestorBuilder(initializer, crypto);
     expect(builder.crypto).toEqual(crypto);
-    expect(builder.attestation).toEqual(getAttestations());
+    expect((<IRequestorAttestation>builder.requestor).attestation).toEqual(getAttestations());
     expect(builder.clientId).toEqual(initializer.clientId);
     expect(builder.clientName).toEqual(initializer.clientName);
     expect(builder.clientPurpose).toEqual(initializer.clientPurpose);

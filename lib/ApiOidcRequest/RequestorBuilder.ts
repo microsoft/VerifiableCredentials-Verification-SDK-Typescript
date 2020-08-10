@@ -2,8 +2,22 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Crypto, CryptoBuilder, JoseBuilder, IPayloadProtectionSigning, Requestor } from '../index';
-import IRequestor from './IRequestor';
+import { Crypto, CryptoBuilder, JoseBuilder, IPayloadProtectionSigning, Requestor, IRequestorPresentationExchange, IRequestorAttestation, IRequestor } from '../index';
+
+/**
+ * Defines the presentation protcol
+ */
+export enum PresentationProtocol {
+  /**
+   * The presentation exchange protocol
+   */
+  presentationExchange,
+
+  /**
+   * The attestation presentation protocol
+   */
+  attestation
+}
 
 /**
  * Class to build an OIDC requestor
@@ -16,11 +30,12 @@ export default class RequestorBuilder {
   private _issuance: boolean = false;
   private _crypto: Crypto = new CryptoBuilder().build();
   private _signingProtocol: IPayloadProtectionSigning;
+
   /**
    * Create a new instance of RequestorBuilder
-   * @param _requestor Initializer for the requestor
+   * @param requestor Initializer for the requestor
    */
-  constructor(private _requestor: IRequestor, crypto?: Crypto) {
+  constructor(public requestor: IRequestor, crypto?: Crypto) {
     if (crypto) {
       this._crypto = crypto;
     }
@@ -43,52 +58,52 @@ export default class RequestorBuilder {
   }
 
   /**
+   * Gets the presentation protocol
+   */
+  public get presentationProtocol() {
+    return (<IRequestorAttestation>this.requestor).attestation ? PresentationProtocol.attestation : PresentationProtocol.presentationExchange;
+  }
+
+  /**
    * Get the name of the requestor (Relying Party)
    */
   public get clientName() {
-    return this._requestor.clientName;
+    return this.requestor.clientName;
   }
 
   /**
    * Get the requestor's purpose for the request
    */
   public get clientPurpose() {
-    return this._requestor.clientPurpose;
+    return this.requestor.clientPurpose;
   }
 
   /**
    * Get the url where the request came from
    */
   public get clientId() {
-    return this._requestor.clientId;
+    return this.requestor.clientId;
   }
 
   /**
    * Get the url to send response to
    */
   public get redirectUri() {
-    return this._requestor.redirectUri;
+    return this.requestor.redirectUri;
   }
 
   /**
    * Gets the url pointing to terms and service user can open in a webview
    */
   public get tosUri() {
-    return this._requestor.tosUri;
+    return this.requestor.tosUri;
   }
 
   /**
    * Gets the url pointing to logo of the requestor (Relying Party)
    */
   public get logoUri() {
-    return this._requestor.logoUri;
-  }
-
-  /**
-   * Gets the claims being asked for
-   */
-  public get attestation() {
-    return this._requestor.attestation;
+    return this.requestor.logoUri;
   }
   //#endregion
   
