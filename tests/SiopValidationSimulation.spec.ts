@@ -1,6 +1,6 @@
 import { ValidatorBuilder } from '../lib/index';
 import TestSetup from './TestSetup';
-import ValidationQueue from '../lib/InputValidation/ValidationQueue';
+import ValidationQueue from '../lib/input_validation/ValidationQueue';
 import SiopValidationSimulation from './SiopValidationSimulation';
 
 describe('SiopValidationSimulation', () => {

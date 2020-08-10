@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import TestSetup from './TestSetup';
-import { VerifiablePresentationValidation } from '../lib/InputValidation/VerifiablePresentationValidation';
+import { VerifiablePresentationValidation } from '../lib/input_validation/VerifiablePresentationValidation';
 import { IssuanceHelpers } from './IssuanceHelpers';
-import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
+import ClaimToken, { TokenType } from '../lib/verifiable_credential/ClaimToken';
 import { Crypto, IExpectedVerifiablePresentation } from '../lib';
 import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript';
 

@@ -5,7 +5,7 @@
 
 import { IssuanceHelpers } from './IssuanceHelpers';
 import { ManagedHttpResolver, CryptoBuilder, IKeyStore, SubtleCryptoNode, KeyReference } from '../lib/index';
-import IValidatorOptions from '../lib/Options/IValidatorOptions';
+import IValidatorOptions from '../lib/options/IValidatorOptions';
 
 /**
  * Class that creates resources needed for unit tests

@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import TestSetup from './TestSetup';
 import { IssuanceHelpers } from './IssuanceHelpers';
-import { TokenType } from '../lib/VerifiableCredential/ClaimToken';
+import { TokenType } from '../lib/verifiable_credential/ClaimToken';
 import { OpenIdTokenValidation, IExpectedOpenIdToken } from '../lib';
 
 describe('OpenIdTokenValidation', () => {

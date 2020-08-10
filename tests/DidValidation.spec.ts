@@ -6,9 +6,8 @@
 import TestSetup from './TestSetup';
 import { TokenType, IExpectedSiop } from '../lib/index';
 import { IssuanceHelpers } from './IssuanceHelpers';
-import { DidValidation } from '../lib/InputValidation/DidValidation';
+import { DidValidation } from '../lib/input_validation/DidValidation';
 import base64url from 'base64url';
-import { ValidationHelpers } from '../lib/InputValidation/ValidationHelpers';
 
 describe('DidValidation', () =>
 {

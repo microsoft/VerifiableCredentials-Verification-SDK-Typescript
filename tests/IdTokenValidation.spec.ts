@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import TestSetup from './TestSetup';
-import { IdTokenValidation } from '../lib/InputValidation/IdTokenValidation';
+import { IdTokenValidation } from '../lib/input_validation/IdTokenValidation';
 import { IssuanceHelpers } from './IssuanceHelpers';
-import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
+import ClaimToken, { TokenType } from '../lib/verifiable_credential/ClaimToken';
 import { IExpectedIdToken, Validator } from '../lib';
 
  describe('idTokenValidation', () => {

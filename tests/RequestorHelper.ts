@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IRequestorPresentationExchange, PresentationDefinitionModel, InputDescriptorModel, PresentationExchangeIssuanceModel, PresentationExchangeSchemaModel, RequestorBuilder, CryptoBuilder, KeyReference, KeyUse, LongFormDid } from '../lib/index';
+import { IRequestorPresentationExchange, PresentationDefinitionModel, PresentationExchangeInputDescriptorModel, PresentationExchangeIssuanceModel, PresentationExchangeSchemaModel, RequestorBuilder, CryptoBuilder, KeyReference, KeyUse, LongFormDid } from '../lib/index';
 import TokenGenerator from './TokenGenerator';
 
 export default class RequestorHelper {
@@ -51,23 +51,46 @@ export default class RequestorHelper {
     public issuance = [new PresentationExchangeIssuanceModel(this.userDid, this.manifest)];
 
     // Schema props
-    public schemaUrl = 'https://schema.example.com/drivinglicense';
+    public schemaUri = 'https://schema.example.com/drivinglicense';
     public schemaName = 'schemaName';
     public schemaPurpose = 'schemaPurpose';
-    public schema = new PresentationExchangeSchemaModel([this.schemaUrl], this.schemaName, this.schemaPurpose);
+    public schema = new PresentationExchangeSchemaModel([this.schemaUri], this.schemaName, this.schemaPurpose);
 
     // presentation definition
     public presentationDefinitionName = 'presentationDefinitionName';
     public presentationDefinitionPurpose = 'presentationDefinitionPurpose';
 
     public presentationDefinition = new PresentationDefinitionModel(
-        [new InputDescriptorModel(
+        [new PresentationExchangeInputDescriptorModel(
             this.inputDescriptorId,
             this.schema,
             this.issuance)],
         this.presentationDefinitionName,
         this.presentationDefinitionPurpose);
 
+    public presentationExchangeModel = {
+        presentation_definition: {
+            name: this.presentationDefinitionName,
+            purpose: this.presentationDefinitionPurpose,
+            input_descriptors: [
+                {
+                    id: this.inputDescriptorId,
+                    schema: {
+                        uri: this.schemaUri,
+                        name: this.schemaName,
+                        purpose: this.schemaPurpose
+                    },
+                    issuance: [
+                        {
+                          did: this.userDid, 
+                          manifest: this.manifest 
+                        }
+                    ]
+                }
+            ]
+        }
+
+    }
     /**
      * Define the presentation exchange requestor
      */

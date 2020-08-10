@@ -6,7 +6,7 @@
 import { CryptoBuilder, KeyReference, LongFormDid, KeyUse, TokenType, ClaimToken } from '../lib/index';
 import RequestorHelper from './RequestorHelper'
 import TokenGenerator from './TokenGenerator';
-import VerifiableCredentialConstants from '../lib/VerifiableCredential/VerifiableCredentialConstants';
+import VerifiableCredentialConstants from '../lib/verifiable_credential/VerifiableCredentialConstants';
 
 export default class ResponderHelper {
     constructor(public requestor: RequestorHelper) {

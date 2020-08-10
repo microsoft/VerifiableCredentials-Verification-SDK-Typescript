@@ -1,4 +1,4 @@
-import IRequestorAttestation from '../lib/ApiOidcRequest/IRequestorAttestation';
+import IRequestorAttestation from '../lib/api_oidc_request/IRequestorAttestation';
 import { LongFormDid, KeyReference, KeyUse, Crypto, IssuanceAttestationsModel, SelfIssuedAttestationModel, VerifiablePresentationAttestationModel, TrustedIssuerModel, InputClaimModel, IdTokenAttestationModel, CryptoBuilder, RequestorBuilder, IResponse, Requestor } from '../lib/index';
 
 describe('RequestorBuilder', () => {

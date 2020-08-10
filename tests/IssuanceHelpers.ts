@@ -5,11 +5,11 @@
 import { Subtle } from 'verifiablecredentials-crypto-sdk-typescript';
 import TestSetup from './TestSetup';
 import { DidDocument } from '@decentralized-identity/did-common-typescript';
-import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
+import ClaimToken, { TokenType } from '../lib/verifiable_credential/ClaimToken';
 import base64url from "base64url";
-import ValidationOptions from '../lib/Options/ValidationOptions';
+import ValidationOptions from '../lib/options/ValidationOptions';
 import { KeyReference, IExpectedBase, IExpectedSelfIssued, IExpectedIdToken, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, Validator } from '../lib/index';
-import VerifiableCredentialConstants from '../lib/VerifiableCredential/VerifiableCredentialConstants';
+import VerifiableCredentialConstants from '../lib/verifiable_credential/VerifiableCredentialConstants';
 import { stat } from 'fs';
 
 export class IssuanceHelpers {

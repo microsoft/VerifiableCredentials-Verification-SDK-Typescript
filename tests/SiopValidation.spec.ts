@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ISiopValidationResponse } from "../lib/InputValidation/SiopValidationResponse";
-import { SiopValidation } from "../lib/InputValidation/SiopValidation";
+import { ISiopValidationResponse } from "../lib/input_validation/SiopValidationResponse";
+import { SiopValidation } from "../lib/input_validation/SiopValidation";
 import TestSetup from './TestSetup';
-import ValidationOptions from '../lib/Options/ValidationOptions';
+import ValidationOptions from '../lib/options/ValidationOptions';
 import { IssuanceHelpers } from "./IssuanceHelpers";
 import { IExpectedSiop, TokenType } from "../lib/index";
 

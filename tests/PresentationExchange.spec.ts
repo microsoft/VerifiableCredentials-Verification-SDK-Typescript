@@ -7,7 +7,8 @@ import base64url from 'base64url';
 import RequestorHelper from './RequestorHelper';
 import ResponderHelper from './ResponderHelper';
 import { ValidatorBuilder, ClaimToken, TokenType } from '../lib';
-import VerifiableCredentialConstants from '../lib/VerifiableCredential/VerifiableCredentialConstants';
+import VerifiableCredentialConstants from '../lib/verifiable_credential/VerifiableCredentialConstants';
+import TokenGenerator from './TokenGenerator';
 const jp = require('jsonpath');
 const clone = require('clone');
 
@@ -20,6 +21,10 @@ describe('PresentationExchange', () => {
 
         responder = new ResponderHelper(requestor);
         await responder.setup();
+    });
+
+    afterAll(() => {
+        TokenGenerator.fetchMock.reset();
     });
 
     it('should create a requestor', () => {
@@ -35,9 +40,9 @@ describe('PresentationExchange', () => {
         expect(requestor.presentationExchangeRequestor.tosUri).toEqual(requestor.tosUri);
         expect(requestor.presentationExchangeRequestor.presentationDefinition.name).toEqual(requestor.presentationDefinitionName);
         expect(requestor.presentationExchangeRequestor.presentationDefinition.purpose).toEqual(requestor.presentationDefinitionPurpose);
-        expect(requestor.presentationExchangeRequestor.presentationDefinition.input_descriptors[0].id).toEqual(requestor.inputDescriptorId);
-        expect(requestor.presentationExchangeRequestor.presentationDefinition.input_descriptors[0].issuance![0].did).toEqual(requestor.userDid);
-        expect(requestor.presentationExchangeRequestor.presentationDefinition.input_descriptors[0].issuance![0].manifest).toEqual(requestor.manifest);
+        expect(requestor.presentationExchangeRequestor.presentationDefinition.input_descriptors![0].id).toEqual(requestor.inputDescriptorId);
+        expect(requestor.presentationExchangeRequestor.presentationDefinition.input_descriptors![0].issuance![0].did).toEqual(requestor.userDid);
+        expect(requestor.presentationExchangeRequestor.presentationDefinition.input_descriptors![0].issuance![0].manifest).toEqual(requestor.manifest);
     });
 
     it('should create a request', async () => {

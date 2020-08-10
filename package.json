@@ -40,6 +40,7 @@
     "@azure/identity": "1.0.0",
     "@decentralized-identity/did-common-typescript": "0.1.19",
     "base64url": "3.0.1",
+    "clone": "2.1.2",
     "deep-property-access": "1.0.1",
     "es6-promise": "^4.2.8",
     "isomorphic-fetch": "2.2.1",
