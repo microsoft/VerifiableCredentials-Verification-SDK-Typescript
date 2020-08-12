@@ -36,17 +36,7 @@ describe('Sample for Requestor with different key type and using Key Vault', () 
     const createRequest = async (crypto: Crypto): Promise<string> => {
 
         // Create requestor
-        const requestorData: IRequestorPresentationExchange = {
-            clientId: 'https://requestor.example.com',
-            clientName: 'My relying party',
-            clientPurpose: 'Need your VC to provide access',
-            redirectUri: 'https://response.example.com',
-            tosUri: 'https://tosUri.example.com',
-            logoUri: 'https://logoUri.example.com',
-            presentationDefinition: new PresentationDefinitionModel().populateFrom(PresentationDefinition.presentationExchangeDefinition)
-        }
-        
-        const requestor = new RequestorBuilder(requestorData, crypto)
+        const requestor = new RequestorBuilder(PresentationDefinition.presentationExchangeDefinition, crypto)
             .build();
         
         const request = await requestor.create();

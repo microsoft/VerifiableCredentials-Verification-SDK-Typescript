@@ -6,9 +6,11 @@
 import base64url from 'base64url';
 import RequestorHelper from './RequestorHelper';
 import ResponderHelper from './ResponderHelper';
-import { ValidatorBuilder, ClaimToken, TokenType } from '../lib';
+import { ValidatorBuilder, ClaimToken, TokenType, PresentationDefinitionModel, IRequestorPresentationExchange } from '../lib';
 import VerifiableCredentialConstants from '../lib/verifiable_credential/VerifiableCredentialConstants';
 import TokenGenerator from './TokenGenerator';
+import PresentationDefinition from './models/PresentationDefinitionSample1'
+
 const jp = require('jsonpath');
 const clone = require('clone');
 
@@ -79,7 +81,7 @@ describe('PresentationExchange', () => {
         siop = (await responder.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(responsePayload)))).serialize();
         result = await validator.validate(siop);
         expect(result.result).toBeFalsy();
-        expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'inputDescriptorId'. This path '$.tokens.presentations' did not return any tokens.`);
+        expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. This path '$.tokens.presentations' did not return any tokens.`);
 
         //Remove path
         responsePayload = clone(request.decodedToken);
@@ -87,7 +89,7 @@ describe('PresentationExchange', () => {
         siop = (await responder.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(responsePayload)))).serialize();
         result = await validator.validate(siop);
         expect(result.result).toBeFalsy();
-        expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'inputDescriptorId'. No path property found.`);
+        expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. No path property found.`);
     });
 
     it('should not validate siop with only selfissued', async () => {
@@ -126,4 +128,12 @@ describe('PresentationExchange', () => {
         expect(result.detailedError).toEqual('No signed token found during validation');
       });
     
+      it ('should populate the model', () => {
+        const model: any = new PresentationDefinitionModel().populateFrom(PresentationDefinition.presentationExchangeDefinition.presentationDefinition);
+        const requestor = new RequestorHelper();
+        expect(requestor.presentationExchangeRequestor.presentationDefinition.name).toEqual(model.name);
+        expect(requestor.presentationExchangeRequestor.presentationDefinition.purpose).toEqual(model.purpose);
+        expect(requestor.presentationExchangeRequestor.presentationDefinition.input_descriptors![0].id).toEqual(model.input_descriptors![0].id);
+        expect(requestor.presentationExchangeRequestor.presentationDefinition.input_descriptors![0].issuance![0].manifest).toEqual(model.input_descriptors[0].issuance![0].manifest);
+      });
 });

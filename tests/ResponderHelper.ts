@@ -49,7 +49,7 @@ export default class ResponderHelper {
             },
             tokens: {
                 presentations: {
-                    DrivingLicense: (await this.generator.createPresentation([vc])).rawToken
+                    IdentityCard: (await this.generator.createPresentation([vc])).rawToken
                 }
             },
             iss: `${VerifiableCredentialConstants.TOKEN_SI_ISS}`,
