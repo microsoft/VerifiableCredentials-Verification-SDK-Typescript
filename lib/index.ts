@@ -5,84 +5,84 @@
 
 export { DidDocument, IDidDocument, IDidDocumentPublicKey, IDidDocumentServiceDescriptor, IDidResolver, IDidResolveResult } from '@decentralized-identity/did-common-typescript';
 
-import {IExpectedBase, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSelfIssued, IExpectedIdToken, IExpectedOpenIdToken, IExpectedAudience, IssuerMap} from './Options/IExpected';
+import {IExpectedBase, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSelfIssued, IExpectedIdToken, IExpectedOpenIdToken, IExpectedAudience, IssuerMap} from './options/IExpected';
 export { IExpectedBase, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSelfIssued, IExpectedIdToken, IExpectedOpenIdToken, IExpectedAudience, IssuerMap };
 
-import ManagedHttpResolver from './Resolver/ManagedHttpResolver';
+import ManagedHttpResolver from './resolver/ManagedHttpResolver';
 export { ManagedHttpResolver };
 
-import ClaimToken, { TokenType } from './VerifiableCredential/ClaimToken';
+import ClaimToken, { TokenType } from './verifiable_credential/ClaimToken';
 export { TokenType, ClaimToken };
 
-import ITokenValidator from './ApiValidation/ITokenValidator';
-import IdTokenTokenValidator from './ApiValidation/IdTokenTokenValidator';
-import VerifiableCredentialTokenValidator from './ApiValidation/VerifiableCredentialTokenValidator';
-import VerifiablePresentationTokenValidator from './ApiValidation/VerifiablePresentationTokenValidator';
-import Validator from './ApiValidation/Validator';
-import IValidationResult from './ApiValidation/IValidationResult';
-import ValidatorBuilder from './ApiValidation/ValidatorBuilder';
-import SelfIssuedTokenValidator from './ApiValidation/SelfIssuedTokenValidator';
-import SiopTokenValidator from './ApiValidation/SiopTokenValidator';
+import ITokenValidator from './api_validation/ITokenValidator';
+import IdTokenTokenValidator from './api_validation/IdTokenTokenValidator';
+import VerifiableCredentialTokenValidator from './api_validation/VerifiableCredentialTokenValidator';
+import VerifiablePresentationTokenValidator from './api_validation/VerifiablePresentationTokenValidator';
+import Validator from './api_validation/Validator';
+import IValidationResult from './api_validation/IValidationResult';
+import ValidatorBuilder from './api_validation/ValidatorBuilder';
+import SelfIssuedTokenValidator from './api_validation/SelfIssuedTokenValidator';
+import SiopTokenValidator from './api_validation/SiopTokenValidator';
 export { IValidationResult, SelfIssuedTokenValidator, SiopTokenValidator, VerifiablePresentationTokenValidator, VerifiableCredentialTokenValidator, IdTokenTokenValidator, Validator, ValidatorBuilder, ITokenValidator };
 
-import { IValidationOptions } from './Options/IValidationOptions';
-import IValidatorOptions from './Options/IValidatorOptions';
-import ValidationOptions from './Options/ValidationOptions';
-import BasicValidatorOptions from './Options/BasicValidatorOptions';
+import { IValidationOptions } from './options/IValidationOptions';
+import IValidatorOptions from './options/IValidatorOptions';
+import ValidationOptions from './options/ValidationOptions';
+import BasicValidatorOptions from './options/BasicValidatorOptions';
 export { ValidationOptions, IValidationOptions, IValidatorOptions, BasicValidatorOptions };
 
 import TestSetup from '../tests/TestSetup';
 import { IssuanceHelpers } from '../tests/IssuanceHelpers';
 export { TestSetup, IssuanceHelpers  }
 
-import { IdTokenValidationResponse } from './InputValidation/IdTokenValidationResponse';
-import { IValidationResponse } from './InputValidation/IValidationResponse';
-import { ISiopValidationResponse } from './InputValidation/SiopValidationResponse';
-import { IdTokenValidation } from './InputValidation/IdTokenValidation';
-import { BaseIdTokenValidation } from './InputValidation/BaseIdTokenValidation';
-import { OpenIdTokenValidation } from './InputValidation/OpenIdTokenValidation';
-import { VerifiablePresentationValidation } from './InputValidation/VerifiablePresentationValidation';
-import { DidValidation } from './InputValidation/DidValidation'
-import { SiopValidation } from './InputValidation/SiopValidation'
-import { VerifiableCredentialValidation } from './InputValidation/VerifiableCredentialValidation'
+import { IdTokenValidationResponse } from './input_validation/IdTokenValidationResponse';
+import { IValidationResponse } from './input_validation/IValidationResponse';
+import { ISiopValidationResponse } from './input_validation/SiopValidationResponse';
+import { IdTokenValidation } from './input_validation/IdTokenValidation';
+import { BaseIdTokenValidation } from './input_validation/BaseIdTokenValidation';
+import { OpenIdTokenValidation } from './input_validation/OpenIdTokenValidation';
+import { VerifiablePresentationValidation } from './input_validation/VerifiablePresentationValidation';
+import { DidValidation } from './input_validation/DidValidation'
+import { SiopValidation } from './input_validation/SiopValidation'
+import { VerifiableCredentialValidation } from './input_validation/VerifiableCredentialValidation'
 export { IValidationResponse, IdTokenValidationResponse, ISiopValidationResponse, IdTokenValidation, VerifiablePresentationValidation, DidValidation, SiopValidation, VerifiableCredentialValidation, BaseIdTokenValidation, OpenIdTokenValidation };
 
-import IRevocedCard from './Revocation/IRevokedCard';
+import IRevocedCard from './revocation/IRevokedCard';
 export { IRevocedCard };
 
-import { IResponse } from './InputValidation/IValidationResponse';
-import RequestorBuilder, { PresentationProtocol } from './ApiOidcRequest/RequestorBuilder';
-import Requestor from './ApiOidcRequest/Requestor';
-import IRequestor from './ApiOidcRequest/IRequestor';
-import IRequestorAttestation from './ApiOidcRequest/IRequestorAttestation';
-import IRequestorPresentationExchange from './ApiOidcRequest/IRequestorPresentationExchange';
+import { IResponse } from './input_validation/IValidationResponse';
+import RequestorBuilder, { PresentationProtocol } from './api_oidc_request/RequestorBuilder';
+import Requestor from './api_oidc_request/Requestor';
+import IRequestor from './api_oidc_request/IRequestor';
+import IRequestorAttestation from './api_oidc_request/IRequestorAttestation';
+import IRequestorPresentationExchange from './api_oidc_request/IRequestorPresentationExchange';
 export { PresentationProtocol, IResponse, RequestorBuilder, Requestor, IRequestor, IRequestorAttestation, IRequestorPresentationExchange };
 
 export { KeyStoreFactory, SubtleCryptoNode, KeyUse, JoseBuilder, IPayloadProtectionSigning, LongFormDid, Subtle, Crypto, CryptoBuilder, IKeyContainer, IKeyStore, KeyReference, CryptoFactory } from 'verifiablecredentials-crypto-sdk-typescript';
 
-import { BaseAttestationModel } from './rules-model/BaseAttestationModel';
-import { BaseIssuanceModel } from './rules-model/BaseIssuanceModel';
-import { IdTokenAttestationModel } from './rules-model/IdTokenAttestationModel';
-import { InputClaimModel } from './rules-model/InputClaimModel';
-import { InputModel } from './rules-model/InputModel';
-import { IssuanceAttestationsModel } from './rules-model/IssuanceAttestationsModel';
-import { RemoteKeyAuthorizationModel } from './rules-model/RemoteKeyAuthorizationModel';
-import { RemoteKeyModel } from './rules-model/RemoteKeyModel';
-import { RulesModel } from './rules-model/RulesModel';
-import { SelfIssuedAttestationModel } from './rules-model/SelfIssuedAttestationModel';
-import { TrustedIssuerModel } from './rules-model/TrustedIssuerModel';
-import { VerifiablePresentationAttestationModel } from './rules-model/VerifiablePresentationAttestationModel';
-import { RefreshConfigurationModel } from './rules-model/RefreshConfigurationModel';
-import { VerifiableCredentialModel } from './rules-model/VerifiableCredentialModel';
-import { TransformModel } from './rules-model/TransformModel'; 
-import { PresentationDefinitionModel } from './rules-model/PresentationExchange/PresentationDefinitionModel'; 
-import { InputDescriptorModel } from './rules-model/PresentationExchange/InputDescriptorModel'; 
-import { PresentationExchangeSchemaModel } from './rules-model/PresentationExchange/PresentationExchangeSchemaModel'; 
-import { PresentationExchangeIssuanceModel } from './rules-model/PresentationExchange/PresentationExchangeIssuanceModel'; 
-import { PresentationExchangeConstraintsModel } from './rules-model/PresentationExchange/PresentationExchangeConstraintsModel'; 
+import { BaseAttestationModel } from './rules_model/BaseAttestationModel';
+import { BaseIssuanceModel } from './rules_model/BaseIssuanceModel';
+import { IdTokenAttestationModel } from './rules_model/IdTokenAttestationModel';
+import { InputClaimModel } from './rules_model/InputClaimModel';
+import { InputModel } from './rules_model/InputModel';
+import { IssuanceAttestationsModel } from './rules_model/IssuanceAttestationsModel';
+import { RemoteKeyAuthorizationModel } from './rules_model/RemoteKeyAuthorizationModel';
+import { RemoteKeyModel } from './rules_model/RemoteKeyModel';
+import { RulesModel } from './rules_model/RulesModel';
+import { SelfIssuedAttestationModel } from './rules_model/SelfIssuedAttestationModel';
+import { TrustedIssuerModel } from './rules_model/TrustedIssuerModel';
+import { VerifiablePresentationAttestationModel } from './rules_model/VerifiablePresentationAttestationModel';
+import { RefreshConfigurationModel } from './rules_model/RefreshConfigurationModel';
+import { VerifiableCredentialModel } from './rules_model/VerifiableCredentialModel';
+import { TransformModel } from './rules_model/TransformModel'; 
+import { PresentationDefinitionModel } from './rules_model/presentation_exchange/PresentationDefinitionModel'; 
+import { PresentationExchangeInputDescriptorModel } from './rules_model/presentation_exchange/PresentationExchangeInputDescriptorModel'; 
+import { PresentationExchangeSchemaModel } from './rules_model/presentation_exchange/PresentationExchangeSchemaModel'; 
+import { PresentationExchangeIssuanceModel } from './rules_model/presentation_exchange/PresentationExchangeIssuanceModel'; 
+import { PresentationExchangeConstraintsModel } from './rules_model/presentation_exchange/PresentationExchangeConstraintsModel'; 
 export {
   PresentationDefinitionModel,
-  InputDescriptorModel,
+  PresentationExchangeInputDescriptorModel,
   PresentationExchangeSchemaModel,
   PresentationExchangeIssuanceModel,
   PresentationExchangeConstraintsModel,

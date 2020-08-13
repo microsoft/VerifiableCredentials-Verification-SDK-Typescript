@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import TestSetup from './TestSetup';
 import { IssuanceHelpers } from './IssuanceHelpers';
-import { VerifiableCredentialValidation } from '../lib/InputValidation/VerifiableCredentialValidation';
+import { VerifiableCredentialValidation } from '../lib/input_validation/VerifiableCredentialValidation';
 import { TokenType, IExpectedVerifiableCredential, Validator } from '../lib';
 
  describe('VerifiableCredentialValidation', () => {

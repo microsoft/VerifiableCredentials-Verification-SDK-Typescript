@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import TestSetup from './TestSetup';
-import { IValidationResponse } from '../lib/InputValidation/IValidationResponse';
+import { IValidationResponse } from '../lib/input_validation/IValidationResponse';
 import base64url from 'base64url';
 import { IPayloadProtectionSigning } from 'verifiablecredentials-crypto-sdk-typescript';
-import ValidationOptions from '../lib/Options/ValidationOptions';
+import ValidationOptions from '../lib/options/ValidationOptions';
 import { IssuanceHelpers } from './IssuanceHelpers';
-import ClaimToken, { TokenType } from '../lib/VerifiableCredential/ClaimToken';
+import ClaimToken, { TokenType } from '../lib/verifiable_credential/ClaimToken';
 import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationResponse } from '../lib';
 
  describe('ValidationHelpers', () => {

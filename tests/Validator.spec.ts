@@ -1,9 +1,9 @@
 import { TokenType, ValidatorBuilder, IdTokenTokenValidator, VerifiableCredentialTokenValidator, VerifiablePresentationTokenValidator, IExpectedVerifiableCredential, IExpectedVerifiablePresentation, IExpectedIdToken, IExpectedSiop, IExpectedSelfIssued, Validator, CryptoBuilder, ManagedHttpResolver, ClaimToken } from '../lib/index';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import TestSetup from './TestSetup';
-import ValidationQueue from '../lib/InputValidation/ValidationQueue';
+import ValidationQueue from '../lib/input_validation/ValidationQueue';
 import { Crypto, SiopTokenValidator, SelfIssuedTokenValidator } from '../lib/index';
-import VerifiableCredentialConstants from '../lib/VerifiableCredential/VerifiableCredentialConstants';
+import VerifiableCredentialConstants from '../lib/verifiable_credential/VerifiableCredentialConstants';
 import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript';
 
 describe('Validator', () => {

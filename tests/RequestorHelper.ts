@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IRequestorPresentationExchange, PresentationDefinitionModel, InputDescriptorModel, PresentationExchangeIssuanceModel, PresentationExchangeSchemaModel, RequestorBuilder, CryptoBuilder, KeyReference, KeyUse, LongFormDid } from '../lib/index';
+import { IRequestorPresentationExchange, PresentationDefinitionModel, PresentationExchangeInputDescriptorModel, PresentationExchangeIssuanceModel, PresentationExchangeSchemaModel, RequestorBuilder, CryptoBuilder, KeyReference, KeyUse, LongFormDid } from '../lib/index';
 import TokenGenerator from './TokenGenerator';
 
 export default class RequestorHelper {
@@ -11,7 +11,7 @@ export default class RequestorHelper {
     /**
      * the name of the requestor (Relying Party)
      */
-    public clientName = 'clientName';
+    public clientName = 'My relying party';
 
     /**
      * The audience of the requestor
@@ -21,53 +21,76 @@ export default class RequestorHelper {
     /**
      * explaining the purpose of sending claims to relying party
      */
-    public clientPurpose = 'clientPurpose';
+    public clientPurpose = 'Need your VC to provide access';
 
     /**
      *  the url where the request came from
      */
-    public clientId = 'clientId';
+    public clientId = 'https://requestor.example.com';
 
     /**
      *  url to send response to
      */
-    public redirectUri = 'redirectUri';
+    public redirectUri = 'https://response.example.com';
 
     /**
      * url pointing to terms and service user can open in a webview
      */
-    public tosUri = 'tosUri';
+    public tosUri = 'https://tosUri.example.com';
 
     /**
      * url pointing to logo of the requestor (Relying Party)
      */
-    public logoUri = 'logoUri';
+    public logoUri = 'https://logoUri.example.com';
 
     public userDid = 'did:user';
 
-    public manifest = 'https://contract.example.com';
+    public manifest = 'https://portableidentitycards.azure-api.net/dev-v1.0/536279f6-15cc-45f2-be2d-61e352b51eef/portableIdentities/contracts/IdentityCard1';
 
-    public inputDescriptorId = 'inputDescriptorId';
+    public inputDescriptorId = 'IdentityCard';
     public issuance = [new PresentationExchangeIssuanceModel(this.userDid, this.manifest)];
 
     // Schema props
-    public schemaUrl = 'https://schema.example.com/drivinglicense';
-    public schemaName = 'schemaName';
-    public schemaPurpose = 'schemaPurpose';
-    public schema = new PresentationExchangeSchemaModel([this.schemaUrl], this.schemaName, this.schemaPurpose);
+    public schemaUri = 'https://schema.org/IdentityCardCredential';
+    public schemaName = 'IdentityCard';
+    public schemaPurpose = 'Testing the site';
+    public schema = new PresentationExchangeSchemaModel([this.schemaUri], this.schemaName, this.schemaPurpose);
 
     // presentation definition
-    public presentationDefinitionName = 'presentationDefinitionName';
-    public presentationDefinitionPurpose = 'presentationDefinitionPurpose';
+    public presentationDefinitionName = 'Get driving license';
+    public presentationDefinitionPurpose = 'Needed to provide you access to the site';
 
     public presentationDefinition = new PresentationDefinitionModel(
-        [new InputDescriptorModel(
+        [new PresentationExchangeInputDescriptorModel(
             this.inputDescriptorId,
             this.schema,
             this.issuance)],
         this.presentationDefinitionName,
         this.presentationDefinitionPurpose);
 
+    public presentationExchangeModel = {
+        presentation_definition: {
+            name: this.presentationDefinitionName,
+            purpose: this.presentationDefinitionPurpose,
+            input_descriptors: [
+                {
+                    id: this.inputDescriptorId,
+                    schema: {
+                        uri: this.schemaUri,
+                        name: this.schemaName,
+                        purpose: this.schemaPurpose
+                    },
+                    issuance: [
+                        {
+                          did: this.userDid, 
+                          manifest: this.manifest 
+                        }
+                    ]
+                }
+            ]
+        }
+
+    }
     /**
      * Define the presentation exchange requestor
      */

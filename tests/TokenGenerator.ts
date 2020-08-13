@@ -109,7 +109,7 @@ export default class TokenGenerator {
         };
         vcTemplate.vc.credentialSubject = credentialSubject;
         const token = (await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(vcTemplate)))).serialize();
-        return new ClaimToken(TokenType.verifiableCredential, token, this.vcSchema.uri[0])
+        return new ClaimToken(TokenType.verifiableCredential, token, this.vcSchema.uri![0])
     }
 
     public async createPresentation(vc: ClaimToken[]): Promise<ClaimToken> {
