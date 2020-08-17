@@ -9,6 +9,8 @@ import ValidationQueue from '../input_validation/ValidationQueue';
 import ValidationQueueItem from '../input_validation/ValidationQueueItem';
 import { TokenType } from '../verifiable_credential/ClaimToken';
 import IValidationResult from './IValidationResult';
+import { KeyStoreOptions } from 'verifiablecredentials-crypto-sdk-typescript';
+import { VerifiablePresentationValidationResponse } from '../input_validation/VerifiablePresentationValidationResponse';
 
 /**
  * Class model the token validator
@@ -134,6 +136,61 @@ export default class Validator {
       };
     }
     return response;
+  }
+
+  /**
+   * Validate status on verifiable presentation
+   */
+  public async checkVpStatus(verifiablePresentationToken: ClaimToken): Promise<VerifiablePresentationValidationResponse> {
+
+    //construct payload
+    const publicKey = await (await this.builder.crypto.builder.keyStore.get(this.builder.crypto.builder.signingKeyReference, new KeyStoreOptions({ publicKeyOnly: true }))).getKey<JsonWebKey>();
+    const payload: any = {
+      did: this.builder.crypto.builder.did,
+      kid: `${this.builder.crypto.builder.did}#${this.builder.crypto.builder.signingKeyReference}`,
+      vp: verifiablePresentationToken,
+      sub_jwk: publicKey
+    };
+
+    let validationResponse = {
+      result: true,
+      status: 200
+    }
+
+    // get vcs to obtain status url
+    const vcs = verifiablePresentationToken.decodedToken.vp?.verifiableCredential;
+    if (vcs) {
+      for (let vc in vcs) {
+        const vcToValidate: any = new ClaimToken(TokenType.verifiableCredential, vcs[vc], '');
+        const statusUrl = vcToValidate.decodedToken.vc.credentialStatus && vcToValidate.decodedToken.vc.credentialStatus.id ?
+          vcToValidate.decodedToken.vc.credentialStatus.id :
+          undefined;
+
+        if (statusUrl) {
+          // send the payload
+          const siop = await this.builder.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(payload)));
+
+          console.log(`verifiablePresentation status check`);
+          let response = await fetch(statusUrl, {
+            method: 'POST',
+            body: siop.serialize()
+          });
+          const status = response.status;
+          //const body = await response.body;
+          //const text = await response.text();
+          const json = await response.json();
+          if (!response.ok) {
+            return {
+              result: false,
+              status: 403,
+              detailedError: `status check could not fetch response from ${statusUrl}`
+            };
+          }
+        }
+      }
+    }
+
+    return validationResponse;
   }
 
   private isSiop(type: TokenType | undefined) {

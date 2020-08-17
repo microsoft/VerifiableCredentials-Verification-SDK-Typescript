@@ -48,7 +48,7 @@ export default class RequestorHelper {
     public manifest = 'https://portableidentitycards.azure-api.net/dev-v1.0/536279f6-15cc-45f2-be2d-61e352b51eef/portableIdentities/contracts/IdentityCard1';
 
     public inputDescriptorId = 'IdentityCard';
-    public issuance = [new PresentationExchangeIssuanceModel(this.userDid, this.manifest)];
+    public issuance = [new PresentationExchangeIssuanceModel(this.manifest)];
 
     // Schema props
     public schemaUri = 'https://schema.org/IdentityCardCredential';

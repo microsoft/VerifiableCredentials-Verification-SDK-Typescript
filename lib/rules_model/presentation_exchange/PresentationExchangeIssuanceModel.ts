@@ -11,15 +11,9 @@ import { BaseIssuanceModel } from '../../index';
 export class PresentationExchangeIssuanceModel {
      /**
    * Create an instance of PresentationExchangeIssuanceModel
-   * @param did for the issuance
    * @param manifest for the issuance (contract)
    */
   constructor (
-
-    /**
-     * Did of the issuer
-     */
-    public did?: string,
 
     /**
      * The url to the contract
@@ -32,7 +26,6 @@ export class PresentationExchangeIssuanceModel {
    * @param input model to populate object
    */
   public populateFrom(input: PresentationExchangeIssuanceModel): PresentationExchangeIssuanceModel {
-    this.did = input.did;
     this.manifest = input.manifest;
     return this;
   }

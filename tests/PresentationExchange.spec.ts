@@ -10,6 +10,7 @@ import { ValidatorBuilder, ClaimToken, TokenType, PresentationDefinitionModel, I
 import VerifiableCredentialConstants from '../lib/verifiable_credential/VerifiableCredentialConstants';
 import TokenGenerator from './TokenGenerator';
 import PresentationDefinition from './models/PresentationDefinitionSample1'
+import Siop from './tools/siop'
 
 const jp = require('jsonpath');
 const clone = require('clone');
@@ -43,7 +44,6 @@ describe('PresentationExchange', () => {
         expect(requestor.presentationExchangeRequestor.presentationDefinition.name).toEqual(requestor.presentationDefinitionName);
         expect(requestor.presentationExchangeRequestor.presentationDefinition.purpose).toEqual(requestor.presentationDefinitionPurpose);
         expect(requestor.presentationExchangeRequestor.presentationDefinition.input_descriptors![0].id).toEqual(requestor.inputDescriptorId);
-        expect(requestor.presentationExchangeRequestor.presentationDefinition.input_descriptors![0].issuance![0].did).toEqual(requestor.userDid);
         expect(requestor.presentationExchangeRequestor.presentationDefinition.input_descriptors![0].issuance![0].manifest).toEqual(requestor.manifest);
     });
 
@@ -90,6 +90,23 @@ describe('PresentationExchange', () => {
         result = await validator.validate(siop);
         expect(result.result).toBeFalsy();
         expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. No path property found.`);
+    });
+
+    fit('should check status on vp', async () => {
+
+        const request = await responder.createRequest();
+        const validator = new ValidatorBuilder(requestor.crypto)
+            .useTrustedIssuersForVerifiableCredentials({ BusinessCardCredential: [Siop.did] })
+            .useAudienceUrl('https://test-relyingparty.azurewebsites.net/verify')
+            .build();
+        TokenGenerator.fetchMock.reset();
+        let result = await validator.validate(Siop.response);
+        expect(result.result).toBeTruthy();
+        for (let vpName in result.validationResult?.verifiablePresentations) {
+            const vp = result.validationResult?.verifiablePresentations[vpName];
+            console.log(vp);
+            result = await validator.checkVpStatus(vp);
+        }
     });
 
     it('should not validate siop with only selfissued', async () => {
