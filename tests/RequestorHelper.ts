@@ -3,13 +3,18 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IRequestorPresentationExchange, PresentationDefinitionModel, PresentationExchangeInputDescriptorModel, PresentationExchangeIssuanceModel, PresentationExchangeSchemaModel, RequestorBuilder, CryptoBuilder, KeyReference, KeyUse, LongFormDid, IRequestor, ClaimToken, TokenType } from '../lib/index';
+import { IRequestorPresentationExchange, PresentationDefinitionModel, PresentationExchangeInputDescriptorModel, PresentationExchangeIssuanceModel, PresentationExchangeSchemaModel, RequestorBuilder, Crypto, CryptoBuilder, KeyReference, KeyUse, LongFormDid, IRequestor, ClaimToken, TokenType } from '../lib/index';
 import TokenGenerator from './TokenGenerator';
+import ITestModel from './models/ITestModel';
 
 export default class RequestorHelper {
 
-    constructor(requestorModel: IRequestorPresentationExchange) {
-        this.presentationExchangeRequestor = requestorModel;
+    constructor(requestDefinition: ITestModel, crypto?: Crypto) {
+        this.presentationExchangeRequestor = requestDefinition.presentationExchangeRequest;
+        if (crypto) {
+            this.crypto = crypto;
+        }
+
         this.builder = new RequestorBuilder(this.presentationExchangeRequestor, this.crypto)
         .useOidcRequestExpiry(7*3600*24);
         this.requestor = this.builder.build();
@@ -151,6 +156,9 @@ export default class RequestorHelper {
         .useOidcRequestExpiry(7*3600*24);
     public requestor = this.builder.build();
 
+    /**
+     * Setup of the requestor
+     */
     public async setup(): Promise<void> {
         this.crypto = await this.crypto.generateKey(KeyUse.Signature, 'signing');
         this.crypto = await this.crypto.generateKey(KeyUse.Signature, 'recovery');
@@ -161,8 +169,11 @@ export default class RequestorHelper {
         TokenGenerator.mockResolver(this.crypto);
     }
 
-    public async createPresentationExchangeRequest(requestDefinition: IRequestorPresentationExchange): Promise<ClaimToken> {
-        const requestor = new RequestorBuilder(requestDefinition, this.crypto).build();
+    /**
+     * Create presentation exchange request based on the this.presentationExchangeRequestor model
+     */
+    public async createPresentationExchangeRequest(): Promise<ClaimToken> {
+        const requestor = new RequestorBuilder(this.presentationExchangeRequestor, this.crypto).build();
         
         return new ClaimToken(TokenType.siopPresentationExchange, (await requestor.create()).request!, '');
     }

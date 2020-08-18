@@ -4,6 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 import base64url from 'base64url';
 import VerifiableCredentialConstants from './VerifiableCredentialConstants';
+import { PresentationDefinitionModel } from '..';
+const jp = require('jsonpath');
 
 /**
  * Enum for define the token type
@@ -28,7 +30,7 @@ export enum TokenType {
    * Token is SIOP token presentation request with attestation presentation protocol
    */
   siopPresentationAttestation = 'siopPresentationAttestation',
-  
+
   /**
    * Token is SIOP token presentation request with presentation exchange protocol
    */
@@ -53,7 +55,7 @@ export default class ClaimToken {
   private _rawToken: string = '';
   private _type: TokenType;
   private _decodedToken: { [key: string]: any } = {};
-  private _tokenHeader: { [key: string]: any } = {};  
+  private _tokenHeader: { [key: string]: any } = {};
 
   /**
    * Token type
@@ -112,11 +114,11 @@ export default class ClaimToken {
       throw new Error(`Type '${typeName} is not supported`);
     }
 
-    if( typeof token === 'string'){
+    if (typeof token === 'string') {
       this._rawToken = token as string;
       this.decode();
     }
-    else{
+    else {
       this._decodedToken = token;
     }
 
@@ -134,16 +136,16 @@ export default class ClaimToken {
     // Check type of token
     if (payload.iss === VerifiableCredentialConstants.TOKEN_SI_ISS) {
       if (payload.contract) {
-        return new ClaimToken(TokenType.siopIssuance, token, '');  
+        return new ClaimToken(TokenType.siopIssuance, token, '');
       } else if (payload.presentation_submission) {
-        return new ClaimToken(TokenType.siopPresentationExchange, token, '');  
+        return new ClaimToken(TokenType.siopPresentationExchange, token, '');
       } else if (payload.attestations) {
         return new ClaimToken(TokenType.siopPresentationAttestation, token, '');
       }
 
       throw new Error(`SIOP was not recognized.`);
     }
-    
+
     if (payload.vc) {
       return new ClaimToken(TokenType.verifiableCredential, token, '');
     }
@@ -163,24 +165,58 @@ export default class ClaimToken {
   * This algorithm will convert the attestations to a ClaimToken
   * @param attestations All presented claims
   */
- public static getClaimTokensFromAttestations(attestations: { [key: string]: string }): { [key: string]: ClaimToken } {
-  const decodedTokens: { [key: string]: ClaimToken } = {};
+  public static getClaimTokensFromAttestations(attestations: { [key: string]: string }): { [key: string]: ClaimToken } {
+    const decodedTokens: { [key: string]: ClaimToken } = {};
 
-  for (let key in attestations) {
-    const token: any = attestations[key];
+    for (let key in attestations) {
+      const token: any = attestations[key];
 
-    if (key === VerifiableCredentialConstants.CLAIMS_SELFISSUED) {
-      decodedTokens[VerifiableCredentialConstants.CLAIMS_SELFISSUED] = new ClaimToken(TokenType.selfIssued, token, '');
-    }
-    else {
-      for (let tokenKey in token) {
-        const claimToken = ClaimToken.create(token[tokenKey]);
-        decodedTokens[tokenKey] = claimToken;
+      if (key === VerifiableCredentialConstants.CLAIMS_SELFISSUED) {
+        decodedTokens[VerifiableCredentialConstants.CLAIMS_SELFISSUED] = new ClaimToken(TokenType.selfIssued, token, '');
+      }
+      else {
+        for (let tokenKey in token) {
+          const claimToken = ClaimToken.create(token[tokenKey]);
+          decodedTokens[tokenKey] = claimToken;
+        }
+      }
+    };
+    return decodedTokens;
+  }
+
+  /**
+  * Attestations contain the tokens and VCs in the input.
+  * This algorithm will convert the attestations to a ClaimToken
+  * @param attestations All presented claims
+  */
+  public static getClaimTokensFromPresentationExchange(payload: PresentationDefinitionModel): { [key: string]: ClaimToken } {
+    const decodedTokens: { [key: string]: ClaimToken } = {};
+    // Get descriptor map
+    const descriptorMap: any[] = jp.query(payload, `$.presentation_submission.descriptor_map.*`);
+
+    for (let inx = 0; inx < descriptorMap.length; inx++) {
+      const item = descriptorMap[inx];
+      if (item.path) {
+        const tokenFinder = jp.query(payload, item.path);
+        console.log(tokenFinder);
+        if (tokenFinder.length > 0) {
+          if (typeof tokenFinder[0] === 'object') {
+            const foundToken = tokenFinder[0];
+            const tokenName = Object.keys(foundToken)[0];
+            const claimToken = ClaimToken.create(foundToken[tokenName]);
+            decodedTokens[tokenName] = claimToken;
+          } else {
+            throw new Error(`The SIOP presentation exchange response has descriptor_map with id '${item.id}'. This path '${item.path}' did not return a token object in the style e.g. {vc: 'ey...'}`);
+          }
+        } else
+          throw new Error(`The SIOP presentation exchange response has descriptor_map with id '${item.id}'. This path '${item.path}' did not return any tokens.`);
+      } else {
+        throw new Error(`The SIOP presentation exchange response has descriptor_map with id '${item.id}'. No path property found.`);
       }
     }
-  };
-  return decodedTokens;
-}
+
+    return decodedTokens;
+  }
 
 
   /**

@@ -15,6 +15,35 @@ import RequestOnceVcResponseOk from './models/RequestOnceVcResponseOk'
 const jp = require('jsonpath');
 const clone = require('clone');
 
+
+describe('Rule processor', () => {
+    fit('should process RequestOnceVcResponseOk', async () => {
+        try {
+            const model = new RequestOnceVcResponseOk();
+            const requestor = new RequestorHelper(model);
+            await requestor.setup();
+            const request = await requestor.createPresentationExchangeRequest();
+            console.log(`=====> Request: ${request.rawToken}`);
+
+            const responder = new ResponderHelper(requestor, model);
+            await responder.setup();
+            const response = await responder.createResponse();
+            console.log(`=====> Response: ${response.rawToken}`);
+
+            const validator = new ValidatorBuilder(requestor.crypto)
+                .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!] })
+                .build();
+            let result = await validator.validate(response.rawToken);
+            expect(result.result).toBeTruthy();
+
+
+        } finally {
+            TokenGenerator.fetchMock.reset();
+        }
+
+    });
+});
+
 describe('PresentationExchange', () => {
     const requestor = new RequestorHelper(PresentationDefinition.presentationExchangeDefinition);
     let responder: ResponderHelper;
@@ -22,7 +51,7 @@ describe('PresentationExchange', () => {
     beforeAll(async () => {
         await requestor.setup();
 
-        responder = new ResponderHelper(requestor, {});
+        responder = new ResponderHelper(requestor, <any>{});
         await responder.setup();
     });
 
@@ -48,14 +77,14 @@ describe('PresentationExchange', () => {
     });
 
     it('should create a request', async () => {
-        const request: any = await requestor.createPresentationExchangeRequest(RequestOnceVcResponseOk.presentationExchangeRequest);
+        const request: any = await requestor.createPresentationExchangeRequest();
         expect(request.rawToken).toBeDefined();
         console.log(request.rawToken);
     });
 
-    fit('should create a response and validate', async () => {
+    it('should create a response and validate', async () => {
 
-        const request: any = await requestor.createPresentationExchangeRequest(RequestOnceVcResponseOk.presentationExchangeRequest);
+        const request: any = await requestor.createPresentationExchangeRequest();
         expect(request.rawToken).toBeDefined();
         console.log(request.rawToken);
 
@@ -92,24 +121,6 @@ describe('PresentationExchange', () => {
         result = await validator.validate(siop);
         expect(result.result).toBeFalsy();
         expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. No path property found.`);
-    });
-
-    xit('should check status on vp', async () => {
-        /*
-                const response = await responder.createResponse();
-                const validator = new ValidatorBuilder(requestor.crypto)
-                    .useTrustedIssuersForVerifiableCredentials({ BusinessCardCredential: [Siop.did] })
-                    .useAudienceUrl('https://test-relyingparty.azurewebsites.net/verify')
-                    .build();
-                TokenGenerator.fetchMock.reset();
-                let result = await validator.validate(Siop.response);
-                expect(result.result).toBeTruthy();
-                for (let vpName in result.validationResult?.verifiablePresentations) {
-                    const vp = result.validationResult?.verifiablePresentations[vpName];
-                    console.log(vp);
-                    result = await validator.checkVpStatus(vp);
-                }
-                */
     });
 
     it('should not validate siop with only selfissued', async () => {
@@ -155,21 +166,5 @@ describe('PresentationExchange', () => {
         expect(requestor.presentationExchangeRequestor.presentationDefinition.purpose).toEqual(model.purpose);
         expect(requestor.presentationExchangeRequestor.presentationDefinition.input_descriptors![0].id).toEqual(model.input_descriptors![0].id);
         expect(requestor.presentationExchangeRequestor.presentationDefinition.input_descriptors![0].issuance![0].manifest).toEqual(model.input_descriptors[0].issuance![0].manifest);
-    });
-});
-
-describe('Rule processor', () => {
-    it('should process RequestOnceVcResponseOk', async () => {
-        try {
-            const requestor = new RequestorHelper(PresentationDefinition.presentationExchangeDefinition);
-            await requestor.setup();
-
-            const responder = new ResponderHelper(requestor, {});
-            await responder.setup();
-
-        } finally {
-            TokenGenerator.fetchMock.reset();
-        }
-
     });
 });

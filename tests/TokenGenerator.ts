@@ -8,6 +8,7 @@ import RequestorHelper from './RequestorHelper';
 import { KeyStoreOptions, JsonWebKey, Crypto } from 'verifiablecredentials-crypto-sdk-typescript';
 import ResponderHelper from './ResponderHelper';
 import { v4 as uuidv4 } from 'uuid';
+import ITestModel from './models/ITestModel';
 
 
 export default class TokenGenerator {
@@ -77,6 +78,26 @@ export default class TokenGenerator {
         const resolverUrl = `${TokenGenerator.resolverUrl}/${crypto.builder.did!}`;
         TokenGenerator.fetchMock.get(resolverUrl, didDocument, { overwriteRoutes: true });
         console.log(`Set mock for ${resolverUrl}`);
+    }
+
+    public async setVcs(): Promise<void> {
+        const presentations = (<ITestModel>this.responder.responseDefinition).getPresentations();
+        for (let presentation in presentations) {
+            const vcPayload: any = presentations[presentation];
+
+            // Set status mock
+            const statusUrl = vcPayload.vc.credentialStatus.id;
+            TokenGenerator.fetchMock.post(statusUrl, this.responder.responseDefinition.responseStatus[presentation], { overwriteRoutes: true });
+            console.log(`Set mock for ${statusUrl}`);
+
+            // Additional props
+            vcPayload.sub = `${this.responder.crypto.builder.did}`;
+            vcPayload.iss = `${this.crypto.builder.did}`;
+
+            // Sign
+            await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(vcPayload)));
+            presentations[presentation] = this.crypto.signingProtocol.serialize();
+        }
     }
 
     /**

@@ -2,15 +2,20 @@
  * Class to model your presentation exchange request
  */
 
-import { PresentationDefinitionModel } from '../../lib';
+import ITestModel from "./ITestModel";
 
-export default class RequestOnceVcResponseOk {
-    public static clientId = 'https://requestor.example.com';
-    public static presentationExchangeRequest: any = {
-        clientId: RequestOnceVcResponseOk.clientId,
+
+export default class RequestOnceVcResponseOk implements ITestModel {
+    public clientId = 'https://requestor.example.com';
+
+    /**
+     * Define the model for the request
+     */
+    public presentationExchangeRequest: any = {
+        clientId: this.clientId,
         clientName: 'My relying party',
         clientPurpose: 'Need your VC to provide access',
-        redirectUri: RequestOnceVcResponseOk.clientId,
+        redirectUri: this.clientId,
         tosUri: 'https://tosUri.example.com',
         logoUri: 'https://logoUri.example.com',
 
@@ -36,17 +41,12 @@ export default class RequestOnceVcResponseOk {
     }
 
 
-    public static presentationExchangeResponse: any = {
-        fills: {
-            did: '$.did',
-            state: '$.state',
-            nonce: '$.nonce',
-            status: {
-                
-            }
-        },
+    /**
+     * Define the model for the response
+     */
+    public presentationExchangeResponse: any = {
         iss: 'https://self-issued.me',
-        aud: RequestOnceVcResponseOk.clientId,
+        aud: this.clientId,
         nonce: '',
         state: '',
         did: '',
@@ -63,13 +63,49 @@ export default class RequestOnceVcResponseOk {
         },
         attestations: {
             presentations: {
-                Identity_card: ''
-            },
-            status: {
                 Identity_card: {
-                    'urn:pic:1': ''
+                    'jti': `urn:pic:1`,
+                    'vc': {
+                        '\@context': [
+                            'https://www.w3.org/2018/credentials/v1',
+                            'https://portableidentitycards.azure-api.net/42b39d9d-0cdd-4ae0-b251-b7b39a561f91/api/portable/v1.0/contracts/test/schema'
+                        ],
+                        'type': [
+                            'VerifiableCredential',
+                            'IdentityCard'
+                        ],
+                        'credentialSubject': {
+                            givenName: 'Jules',
+                            familyName: 'Winnfield',
+                            profession: 'hitman'
+                        },
+                        'credentialStatus': {
+                            'id': `https://status.example.com`,
+                            'type': 'PortableIdentityCardServiceCredentialStatus2020'
+                        }
+                    },
+                },
+            },
+        }
+    }
+
+    public responseStatus = {
+            Identity_card: {
+                'urn:pic:1': {
+                    'aud': 'did:ion:EiBcPY...',
+                    'credentialStatus': {
+                        'id': 'urn:pic:1',
+                        'status': 'valid',
+                        'reason': `I don't like them`
+                    }
                 }
             }
-        }
+    };
+
+    /**
+     * Return all presentations
+     */
+    public getPresentations(): { [key: string]: any } {
+        return this.presentationExchangeResponse.attestations.presentations;
     }
 }

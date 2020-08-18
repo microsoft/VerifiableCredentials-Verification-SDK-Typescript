@@ -7,9 +7,10 @@ import { CryptoBuilder, KeyReference, LongFormDid, KeyUse, TokenType, ClaimToken
 import RequestorHelper from './RequestorHelper'
 import TokenGenerator from './TokenGenerator';
 import VerifiableCredentialConstants from '../lib/verifiable_credential/VerifiableCredentialConstants';
+import ITestModel from './models/ITestModel';
 
 export default class ResponderHelper {
-    constructor(public requestor: RequestorHelper, public responseDefinition: any) {
+    constructor(public requestor: RequestorHelper, public responseDefinition: ITestModel) {
     }
 
     public crypto = new CryptoBuilder()
@@ -37,24 +38,9 @@ export default class ResponderHelper {
     }
 
     public async createResponse(): Promise<ClaimToken> {
-        const vc = await this.generator.createVc(this.vcPayload);
-        const payload = {
-            presentation_submission: {
-                descriptor_map: [{
-                    id: this.requestor.inputDescriptorId,
-                    format: 'jwt',
-                    encoding: 'base64url',
-                    path: '$.tokens.presentations'
-                }]
-            },
-            tokens: {
-                presentations: {
-                    IdentityCard: (await this.generator.createPresentation([vc])).rawToken
-                }
-            },
-            iss: `${VerifiableCredentialConstants.TOKEN_SI_ISS}`,
-            aud: `${this.requestor.audience}`
-        };
+        
+        await this.generator.setVcs();
+        const payload = this.responseDefinition.presentationExchangeResponse;
 
         const token = (await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(payload)))).serialize();
         return new ClaimToken(TokenType.siopPresentationAttestation, token, '');
