@@ -36,7 +36,7 @@ export default class ResponderHelper {
         await this.generator.setup();
     }
 
-    public async createRequest(): Promise<ClaimToken> {
+    public async createResponse(): Promise<ClaimToken> {
         const vc = await this.generator.createVc(this.vcPayload);
         const payload = {
             presentation_submission: {
@@ -59,4 +59,5 @@ export default class ResponderHelper {
         const token = (await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(payload)))).serialize();
         return new ClaimToken(TokenType.siopPresentationAttestation, token, '');
     }
+
 }

@@ -3,10 +3,17 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IRequestorPresentationExchange, PresentationDefinitionModel, PresentationExchangeInputDescriptorModel, PresentationExchangeIssuanceModel, PresentationExchangeSchemaModel, RequestorBuilder, CryptoBuilder, KeyReference, KeyUse, LongFormDid } from '../lib/index';
+import { IRequestorPresentationExchange, PresentationDefinitionModel, PresentationExchangeInputDescriptorModel, PresentationExchangeIssuanceModel, PresentationExchangeSchemaModel, RequestorBuilder, CryptoBuilder, KeyReference, KeyUse, LongFormDid, IRequestor, ClaimToken, TokenType } from '../lib/index';
 import TokenGenerator from './TokenGenerator';
 
 export default class RequestorHelper {
+
+    constructor(requestorModel: IRequestorPresentationExchange) {
+        this.presentationExchangeRequestor = requestorModel;
+        this.builder = new RequestorBuilder(this.presentationExchangeRequestor, this.crypto)
+        .useOidcRequestExpiry(7*3600*24);
+        this.requestor = this.builder.build();
+    }
 
     /**
      * the name of the requestor (Relying Party)
@@ -152,5 +159,11 @@ export default class RequestorHelper {
 
         // setup mock to resolve this did
         TokenGenerator.mockResolver(this.crypto);
+    }
+
+    public async createPresentationExchangeRequest(requestDefinition: IRequestorPresentationExchange): Promise<ClaimToken> {
+        const requestor = new RequestorBuilder(requestDefinition, this.crypto).build();
+        
+        return new ClaimToken(TokenType.siopPresentationExchange, (await requestor.create()).request!, '');
     }
 }

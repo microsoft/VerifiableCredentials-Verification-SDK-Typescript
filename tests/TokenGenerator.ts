@@ -7,6 +7,8 @@ import { CryptoBuilder, KeyReference, LongFormDid, KeyUse, ClaimToken, DidDocume
 import RequestorHelper from './RequestorHelper';
 import { KeyStoreOptions, JsonWebKey, Crypto } from 'verifiablecredentials-crypto-sdk-typescript';
 import ResponderHelper from './ResponderHelper';
+import { v4 as uuidv4 } from 'uuid';
+
 
 export default class TokenGenerator {
     constructor(public responder: ResponderHelper) {
@@ -49,6 +51,8 @@ export default class TokenGenerator {
         TokenGenerator.mockResolver(this.crypto);
     }
 
+    
+
     /**
      * Mock the resolver
      */
@@ -87,7 +91,7 @@ export default class TokenGenerator {
         console.log(`Set mock for ${statusUrl}`);
 
         let vcTemplate = {
-            "jti": "urn:pic:80a509d2-99d4-4d6c-86a7-7b2636944080",
+            "jti": `urn:pic:${uuidv4()}`,
             "vc": {
                 "@context": [
                     "https://www.w3.org/2018/credentials/v1",
