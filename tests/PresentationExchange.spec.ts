@@ -22,7 +22,7 @@ describe('PresentationExchange', () => {
     beforeAll(async () => {
         await requestor.setup();
 
-        responder = new ResponderHelper(requestor);
+        responder = new ResponderHelper(requestor, {});
         await responder.setup();
     });
 
@@ -53,7 +53,7 @@ describe('PresentationExchange', () => {
         console.log(request.rawToken);
     });
 
-    it('should create a response and validate', async () => {
+    fit('should create a response and validate', async () => {
 
         const request: any = await requestor.createPresentationExchangeRequest(RequestOnceVcResponseOk.presentationExchangeRequest);
         expect(request.rawToken).toBeDefined();
@@ -164,7 +164,7 @@ describe('Rule processor', () => {
             const requestor = new RequestorHelper(PresentationDefinition.presentationExchangeDefinition);
             await requestor.setup();
 
-            const responder = new ResponderHelper(requestor);
+            const responder = new ResponderHelper(requestor, {});
             await responder.setup();
 
         } finally {

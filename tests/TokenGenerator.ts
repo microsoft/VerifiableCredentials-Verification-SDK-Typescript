@@ -99,7 +99,7 @@ export default class TokenGenerator {
                 ],
                 "type": [
                     "VerifiableCredential",
-                    "DrivingLicense"
+                    "IdentityCard"
                 ],
                 "credentialSubject": {
                 },

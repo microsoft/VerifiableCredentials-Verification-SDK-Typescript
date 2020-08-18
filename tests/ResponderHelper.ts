@@ -9,7 +9,7 @@ import TokenGenerator from './TokenGenerator';
 import VerifiableCredentialConstants from '../lib/verifiable_credential/VerifiableCredentialConstants';
 
 export default class ResponderHelper {
-    constructor(public requestor: RequestorHelper) {
+    constructor(public requestor: RequestorHelper, public responseDefinition: any) {
     }
 
     public crypto = new CryptoBuilder()

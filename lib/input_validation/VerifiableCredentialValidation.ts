@@ -143,7 +143,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       return {
         result: false,
         status: 500,
-        detailedError: `Expected should have contractIssuers issuers set for verifyableCredential`
+        detailedError: `Expected should have contractIssuers set for verifyableCredential`
       };
     }
 
@@ -155,7 +155,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
         return {
           result: false,
           status: 500,
-          detailedError: `Expected should have contractIssuers issuers set for verifiableCredential. Empty array presented.`
+          detailedError: `Expected should have contractIssuers set for verifiableCredential. Empty array presented.`
         };
       }
       issuers = <string[]>expected.contractIssuers;
@@ -173,7 +173,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
         return {
           result: false,
           status: 403,
-          detailedError: `Expected should have contractIssuers issuers set for verifiableCredential. Missing contractIssuers for '${credentialType}'.`
+          detailedError: `Expected should have contractIssuers set for verifiableCredential. Missing contractIssuers for '${credentialType}'.`
         };
       }
       issuers = <string[]>expected.contractIssuers[credentialType]
