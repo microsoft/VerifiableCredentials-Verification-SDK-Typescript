@@ -69,7 +69,7 @@ export default class RequestorHelper {
     public schema = new PresentationExchangeSchemaModel([this.schemaUri], this.schemaName, this.schemaPurpose);
 
     // presentation definition
-    public presentationDefinitionName = 'Get driving license';
+    public presentationDefinitionName = 'Get identity card';
     public presentationDefinitionPurpose = 'Needed to provide you access to the site';
 
     public presentationDefinition = new PresentationDefinitionModel(

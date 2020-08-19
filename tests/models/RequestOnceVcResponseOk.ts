@@ -54,16 +54,16 @@ export default class RequestOnceVcResponseOk implements ITestModel {
         presentation_submission: {
             descriptor_map: [
                 {
-                    id: 'Identity_card ',
+                    id: 'IdentityCard',
                     format: 'jwt',
                     encoding: 'base64Url',
-                    path: '$.attestations.presentations'
+                    path: '$.tokens.presentations'
                 }
             ]
         },
-        attestations: {
+        tokens: {
             presentations: {
-                Identity_card: {
+                IdentityCard: {
                     'jti': `urn:pic:1`,
                     'vc': {
                         '\@context': [
@@ -90,22 +90,22 @@ export default class RequestOnceVcResponseOk implements ITestModel {
     }
 
     public responseStatus = {
-            Identity_card: {
-                'urn:pic:1': {
-                    'aud': 'did:ion:EiBcPY...',
-                    'credentialStatus': {
-                        'id': 'urn:pic:1',
-                        'status': 'valid',
-                        'reason': `I don't like them`
-                    }
+        'IdentityCard': {
+            'urn:pic:1': {
+                'aud': 'did:ion:EiBcPY...',
+                'credentialStatus': {
+                    'id': 'urn:pic:1',
+                    'status': 'valid',
+                    'reason': `I don't like them`
                 }
             }
+        }
     };
 
     /**
      * Return all presentations
      */
     public getPresentations(): { [key: string]: any } {
-        return this.presentationExchangeResponse.attestations.presentations;
+        return this.presentationExchangeResponse.tokens.presentations;
     }
 }

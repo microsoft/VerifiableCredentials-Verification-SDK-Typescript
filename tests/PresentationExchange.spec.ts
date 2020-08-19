@@ -17,7 +17,7 @@ const clone = require('clone');
 
 
 describe('Rule processor', () => {
-    fit('should process RequestOnceVcResponseOk', async () => {
+    it('should process RequestOnceVcResponseOk', async () => {
         try {
             const model = new RequestOnceVcResponseOk();
             const requestor = new RequestorHelper(model);
@@ -35,8 +35,7 @@ describe('Rule processor', () => {
                 .build();
             let result = await validator.validate(response.rawToken);
             expect(result.result).toBeTruthy();
-
-
+            expect(result.validationResult!.verifiableCredentials!['IdentityCard']).toBeDefined();
         } finally {
             TokenGenerator.fetchMock.reset();
         }
@@ -45,13 +44,14 @@ describe('Rule processor', () => {
 });
 
 describe('PresentationExchange', () => {
-    const requestor = new RequestorHelper(PresentationDefinition.presentationExchangeDefinition);
-    let responder: ResponderHelper;
+    const model = new RequestOnceVcResponseOk();
+    const requestor = new RequestorHelper(model);
+let responder: ResponderHelper;
 
     beforeAll(async () => {
         await requestor.setup();
 
-        responder = new ResponderHelper(requestor, <any>{});
+        responder = new ResponderHelper(requestor, model);
         await responder.setup();
     });
 
@@ -60,20 +60,12 @@ describe('PresentationExchange', () => {
     });
 
     it('should create a requestor', () => {
-        const requestor = new RequestorHelper(PresentationDefinition.presentationExchangeDefinition);
-        expect(requestor.clientId).toEqual(requestor.clientId);
-        expect(requestor.clientName).toEqual(requestor.clientName);
-        expect(requestor.clientPurpose).toEqual(requestor.clientPurpose);
-        expect(requestor.presentationExchangeRequestor.clientId).toEqual(requestor.clientId);
-        expect(requestor.presentationExchangeRequestor.clientName).toEqual(requestor.clientName);
-        expect(requestor.presentationExchangeRequestor.clientPurpose).toEqual(requestor.clientPurpose);
-        expect(requestor.presentationExchangeRequestor.logoUri).toEqual(requestor.logoUri);
-        expect(requestor.presentationExchangeRequestor.redirectUri).toEqual(requestor.redirectUri);
-        expect(requestor.presentationExchangeRequestor.tosUri).toEqual(requestor.tosUri);
-        expect(requestor.presentationExchangeRequestor.presentationDefinition.name).toEqual(requestor.presentationDefinitionName);
-        expect(requestor.presentationExchangeRequestor.presentationDefinition.purpose).toEqual(requestor.presentationDefinitionPurpose);
-        expect(requestor.presentationExchangeRequestor.presentationDefinition.input_descriptors![0].id).toEqual(requestor.inputDescriptorId);
-        expect(requestor.presentationExchangeRequestor.presentationDefinition.input_descriptors![0].issuance![0].manifest).toEqual(requestor.manifest);
+        const model = new RequestOnceVcResponseOk();
+        const requestor = new RequestorHelper(model);
+        expect(requestor.presentationExchangeRequestor.presentationDefinition.name).toEqual(model.presentationExchangeRequest.presentationDefinition.name);
+        expect(requestor.presentationExchangeRequestor.presentationDefinition.purpose).toEqual(model.presentationExchangeRequest.presentationDefinition.purpose);
+        expect(requestor.presentationExchangeRequestor.presentationDefinition.input_descriptors![0].id).toEqual(model.presentationExchangeRequest.presentationDefinition.input_descriptors![0].id);
+        expect(requestor.presentationExchangeRequestor.presentationDefinition.input_descriptors![0].issuance![0].manifest).toEqual(model.presentationExchangeRequest.presentationDefinition.input_descriptors![0].issuance![0].manifest);
     });
 
     it('should create a request', async () => {
@@ -161,7 +153,7 @@ describe('PresentationExchange', () => {
 
     it('should populate the model', () => {
         const model: any = new PresentationDefinitionModel().populateFrom(PresentationDefinition.presentationExchangeDefinition.presentationDefinition);
-        const requestor = new RequestorHelper(PresentationDefinition.presentationExchangeDefinition);
+        const requestor = new RequestorHelper(new RequestOnceVcResponseOk());
         expect(requestor.presentationExchangeRequestor.presentationDefinition.name).toEqual(model.name);
         expect(requestor.presentationExchangeRequestor.presentationDefinition.purpose).toEqual(model.purpose);
         expect(requestor.presentationExchangeRequestor.presentationDefinition.input_descriptors![0].id).toEqual(model.input_descriptors![0].id);
