@@ -3,6 +3,7 @@
  */
 
 import ITestModel from "./ITestModel";
+import { ClaimToken, TokenType } from "../../lib";
 
 
 export default class RequestOnceVcResponseOk implements ITestModel {
@@ -57,36 +58,37 @@ export default class RequestOnceVcResponseOk implements ITestModel {
                     id: 'IdentityCard',
                     format: 'jwt',
                     encoding: 'base64Url',
-                    path: '$.tokens.presentations'
+                    path: '$.presentation_submission.attestations.presentations'
                 }
-            ]
-        },
-        tokens: {
-            presentations: {
-                IdentityCard: {
-                    'jti': `urn:pic:1`,
-                    'vc': {
-                        '\@context': [
-                            'https://www.w3.org/2018/credentials/v1',
-                            'https://portableidentitycards.azure-api.net/42b39d9d-0cdd-4ae0-b251-b7b39a561f91/api/portable/v1.0/contracts/test/schema'
-                        ],
-                        'type': [
-                            'VerifiableCredential',
-                            'IdentityCard'
-                        ],
-                        'credentialSubject': {
-                            givenName: 'Jules',
-                            familyName: 'Winnfield',
-                            profession: 'hitman'
+            ],
+            attestations: {
+                presentations: {
+                    IdentityCard: {
+                        'jti': `urn:pic:1`,
+                        'vc': {
+                            '\@context': [
+                                'https://www.w3.org/2018/credentials/v1',
+                                'https://portableidentitycards.azure-api.net/42b39d9d-0cdd-4ae0-b251-b7b39a561f91/api/portable/v1.0/contracts/test/schema'
+                            ],
+                            'type': [
+                                'VerifiableCredential',
+                                'IdentityCard'
+                            ],
+                            'credentialSubject': {
+                                givenName: 'Jules',
+                                familyName: 'Winnfield',
+                                profession: 'hitman'
+                            },
+                            'credentialStatus': {
+                                'id': `https://status.example.com`,
+                                'type': 'PortableIdentityCardServiceCredentialStatus2020'
+                            }
                         },
-                        'credentialStatus': {
-                            'id': `https://status.example.com`,
-                            'type': 'PortableIdentityCardServiceCredentialStatus2020'
-                        }
                     },
                 },
-            },
-        }
+            }
+    
+        },
     }
 
     public responseStatus = {
@@ -103,9 +105,17 @@ export default class RequestOnceVcResponseOk implements ITestModel {
     };
 
     /**
+     * Return a specific VC
+     * @param key Name for the vc
+     */
+    public getVcFromResponse(key: string): ClaimToken {
+        return new ClaimToken(TokenType.verifiableCredential, this.presentationExchangeResponse.presentation_submission.attestations.presentations[key], '');
+    }
+
+    /**
      * Return all presentations
      */
     public getPresentations(): { [key: string]: any } {
-        return this.presentationExchangeResponse.tokens.presentations;
+        return this.presentationExchangeResponse.presentation_submission.attestations.presentations;
     }
 }

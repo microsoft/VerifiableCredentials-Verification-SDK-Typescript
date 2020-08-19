@@ -128,15 +128,26 @@ export default class Validator {
     // Set output
     response = queue.getResult();
     if (response.result) {
+      const validationResult = this.setValidationResult(queue);
+
+      // Check status of VCs
+
       // set claims
       response = {
         result: true,
         status: 200,
-        validationResult: this.setValidationResult(queue)
+        validationResult
       };
     }
     return response;
   }
+
+  /**
+   * Validate status on verifiable presentation
+   */
+ // public async checkVcsStatus(validationResult: IValidationResult): Promise<IValidationResponse> {
+
+  //}
 
   /**
    * Validate status on verifiable presentation

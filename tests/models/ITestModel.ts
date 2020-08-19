@@ -2,7 +2,7 @@
  * Interface to model your presentation exchange request
  */
 
-import { IRequestorPresentationExchange } from "../../lib";
+import { IRequestorPresentationExchange, ClaimToken } from "../../lib";
 
 
 export default interface ITestModel {
@@ -19,6 +19,12 @@ export default interface ITestModel {
     presentationExchangeResponse: any;
 
     responseStatus: any;
+
+    /**
+     * Retrieve VC
+     * @param key of the VC
+     */
+    getVcFromResponse(key: string): ClaimToken;
 
     /**
      * Return all presentations

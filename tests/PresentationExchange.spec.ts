@@ -23,6 +23,8 @@ describe('Rule processor', () => {
             const requestor = new RequestorHelper(model);
             await requestor.setup();
             const request = await requestor.createPresentationExchangeRequest();
+
+            console.log(`Model: ${model.constructor.name}`);
             console.log(`=====> Request: ${request.rawToken}`);
 
             const responder = new ResponderHelper(requestor, model);
@@ -35,7 +37,7 @@ describe('Rule processor', () => {
                 .build();
             let result = await validator.validate(response.rawToken);
             expect(result.result).toBeTruthy();
-            expect(result.validationResult!.verifiableCredentials!['IdentityCard']).toBeDefined();
+            expect(result.validationResult!.verifiableCredentials!['IdentityCard'].decodedToken.jti).toEqual(model.getVcFromResponse('IdentityCard').decodedToken.jti);
         } finally {
             TokenGenerator.fetchMock.reset();
         }
@@ -100,11 +102,11 @@ let responder: ResponderHelper;
 
         //Remove tokens
         responsePayload = clone(response.decodedToken);
-        delete responsePayload.tokens;
+        delete responsePayload.presentation_submission.attestations;
         siop = (await responder.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(responsePayload)))).serialize();
         result = await validator.validate(siop);
         expect(result.result).toBeFalsy();
-        expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. This path '$.tokens.presentations' did not return any tokens.`);
+        expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. This path '$.presentation_submission.attestations.presentations' did not return any tokens.`);
 
         //Remove path
         responsePayload = clone(response.decodedToken);
