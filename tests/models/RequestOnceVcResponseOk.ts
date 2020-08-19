@@ -58,7 +58,7 @@ export default class RequestOnceVcResponseOk implements ITestModel {
                     id: 'IdentityCard',
                     format: 'jwt',
                     encoding: 'base64Url',
-                    path: '$.presentation_submission.attestations.presentations'
+                    path: '$.presentation_submission.attestations.presentations.IdentityCard'
                 }
             ],
             attestations: {

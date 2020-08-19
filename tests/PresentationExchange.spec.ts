@@ -106,7 +106,7 @@ let responder: ResponderHelper;
         siop = (await responder.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(responsePayload)))).serialize();
         result = await validator.validate(siop);
         expect(result.result).toBeFalsy();
-        expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. This path '$.presentation_submission.attestations.presentations' did not return any tokens.`);
+        expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. This path '$.presentation_submission.attestations.presentations.IdentityCard' did not return a token.`);
 
         //Remove path
         responsePayload = clone(response.decodedToken);
