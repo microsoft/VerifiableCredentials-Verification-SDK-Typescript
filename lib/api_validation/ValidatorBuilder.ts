@@ -172,5 +172,17 @@ export default class ValidatorBuilder {
   public get audienceUrl(): string | undefined {
     return this._audienceUrl;
   }
+
+  // Feature flags. Used temporary to introduce a new feature
+  private _enableVerifiedCredentialsStatusCheck = false;
+  public get featureVerifiedCredentialsStatusCheckEnabled(): boolean {
+    return this._enableVerifiedCredentialsStatusCheck;
+  }
+
+  public enableFeatureVerifiedCredentialsStatusCheck(enable: boolean): ValidatorBuilder {
+    this._enableVerifiedCredentialsStatusCheck = enable;
+    return this;
+  }
+
 }
 

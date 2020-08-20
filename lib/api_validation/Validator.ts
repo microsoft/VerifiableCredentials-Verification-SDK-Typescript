@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ClaimToken, IDidResolver, ISiopValidationResponse, ITokenValidator, ValidatorBuilder } from '../index';
+import { ClaimToken, IDidResolver, ISiopValidationResponse, ITokenValidator, ValidatorBuilder, IValidatorOptions, IExpectedSiop, ValidationOptions } from '../index';
 import { IValidationResponse } from '../input_validation/IValidationResponse';
 import ValidationQueue from '../input_validation/ValidationQueue';
 import ValidationQueueItem from '../input_validation/ValidationQueueItem';
@@ -11,6 +11,7 @@ import { TokenType } from '../verifiable_credential/ClaimToken';
 import IValidationResult from './IValidationResult';
 import { KeyStoreOptions } from 'verifiablecredentials-crypto-sdk-typescript';
 import { VerifiablePresentationValidationResponse } from '../input_validation/VerifiablePresentationValidationResponse';
+import VeriffiablePresentationStatusReceipt from './VeriffiablePresentationStatusReceipt';
 
 /**
  * Class model the token validator
@@ -131,6 +132,7 @@ export default class Validator {
       const validationResult = this.setValidationResult(queue);
 
       // Check status of VCs
+      await this.checkVcsStatus(validationResult);
 
       // set claims
       response = {
@@ -145,14 +147,59 @@ export default class Validator {
   /**
    * Validate status on verifiable presentation
    */
- // public async checkVcsStatus(validationResult: IValidationResult): Promise<IValidationResponse> {
+ public async checkVcsStatus(validationResult: IValidationResult): Promise<IValidationResponse> {
+  if (!this.builder.featureVerifiedCredentialsStatusCheckEnabled) {
+    return {
+      result: true,
+      status: 200
+    }; 
+  }
+  
+  if (!validationResult.verifiablePresentations) {
+    return {
+      result: false,
+      status: 403,
+      detailedError: 'No presentations to tests'
+    };
+  }
 
-  //}
+  if (!validationResult.verifiableCredentials) {
+    return {
+      result: false,
+      status: 403,
+      detailedError: 'No verifiable credentials to tests'
+    };
+  }
+
+// Get the VC that need to be validated
+    const vcsToValidate: {validated: boolean, id: string, statusUrl: string | undefined}[] = Object.keys(validationResult.verifiableCredentials).map((key: string) => {
+      const statusUrl: string | undefined = validationResult.verifiableCredentials![key]?.decodedToken?.vc?.credentialStatus?.id; 
+      return {
+        validated: false,
+        id: key,
+        statusUrl
+      };
+    });
+
+    for (let vp in validationResult.verifiablePresentations) {
+      const response = await this.checkVpStatus(validationResult.verifiablePresentations[vp]);
+    }
+
+    return {
+      result: true,
+      status: 200
+    }; 
+  }
 
   /**
    * Validate status on verifiable presentation
    */
   public async checkVpStatus(verifiablePresentationToken: ClaimToken): Promise<VerifiablePresentationValidationResponse> {
+
+    let validationResponse = {
+      result: true,
+      status: 200
+    }
 
     //construct payload
     const publicKey = await (await this.builder.crypto.builder.keyStore.get(this.builder.crypto.builder.signingKeyReference, new KeyStoreOptions({ publicKeyOnly: true }))).getKey<JsonWebKey>();
@@ -163,19 +210,13 @@ export default class Validator {
       sub_jwk: publicKey
     };
 
-    let validationResponse = {
-      result: true,
-      status: 200
-    }
 
     // get vcs to obtain status url
     const vcs = verifiablePresentationToken.decodedToken.vp?.verifiableCredential;
     if (vcs) {
       for (let vc in vcs) {
         const vcToValidate: any = new ClaimToken(TokenType.verifiableCredential, vcs[vc], '');
-        const statusUrl = vcToValidate.decodedToken.vc.credentialStatus && vcToValidate.decodedToken.vc.credentialStatus.id ?
-          vcToValidate.decodedToken.vc.credentialStatus.id :
-          undefined;
+        const statusUrl = vcToValidate.decodedToken?.vc?.credentialStatus?.id;
 
         if (statusUrl) {
           // send the payload
@@ -186,10 +227,6 @@ export default class Validator {
             method: 'POST',
             body: siop.serialize()
           });
-          const status = response.status;
-          //const body = await response.body;
-          //const text = await response.text();
-          const json = await response.json();
           if (!response.ok) {
             return {
               result: false,
@@ -197,11 +234,29 @@ export default class Validator {
               detailedError: `status check could not fetch response from ${statusUrl}`
             };
           }
+
+          // Validate receipt
+          const receipt = await response.text();
+          const validatorOption: IValidatorOptions = this.setValidatorOptions();
+          const options = new ValidationOptions(validatorOption, TokenType.siopPresentationExchange);
+          const receiptValidator = new VeriffiablePresentationStatusReceipt(receipt, options, <IExpectedSiop>{audience: ''});
+          const receiptValidation = await receiptValidator.validate();
+          console.log(receiptValidation.detailedError);
         }
       }
     }
 
     return validationResponse;
+  }
+
+  /**
+   * Set the validator options
+   */
+  private setValidatorOptions(): IValidatorOptions {
+    return {
+      resolver: this.builder.resolver,
+      crypto: this.builder.crypto
+    }
   }
 
   private isSiop(type: TokenType | undefined) {

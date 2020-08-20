@@ -6,8 +6,8 @@
 import { CryptoBuilder, KeyReference, LongFormDid, KeyUse, TokenType, ClaimToken } from '../lib/index';
 import RequestorHelper from './RequestorHelper'
 import TokenGenerator from './TokenGenerator';
-import VerifiableCredentialConstants from '../lib/verifiable_credential/VerifiableCredentialConstants';
 import ITestModel from './models/ITestModel';
+import { v4 as uuidv4 } from 'uuid';
 
 export default class ResponderHelper {
     constructor(public requestor: RequestorHelper, public responseDefinition: ITestModel) {
@@ -38,9 +38,51 @@ export default class ResponderHelper {
     }
 
     public async createResponse(): Promise<ClaimToken> {
-        
+
         await this.generator.setVcs();
         const payload = this.responseDefinition.presentationExchangeResponse;
+
+        // Present the VCs
+        const presentations = (<ITestModel>this.responseDefinition).getPresentations();
+        for (let presentation in presentations) {
+            const jti = uuidv4();
+            const vcs: ClaimToken = presentations[presentation];
+
+            // Set status mock
+            const statusReceipts: any = {
+                receipt: {
+                }
+            };
+            
+            // Set id as jti
+            this.responseDefinition.responseStatus[presentation].credentialStatus.id = jti;
+            statusReceipts.receipt[jti] = this.responseDefinition.responseStatus[presentation];
+
+            await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(statusReceipts)));
+            const statusResponse = this.crypto.signingProtocol.serialize();
+            const statusUrl = vcs.decodedToken.vc.credentialStatus.id;
+            TokenGenerator.fetchMock.post(statusUrl, statusResponse, { overwriteRoutes: true });
+            console.log(`Set mock for ${statusUrl}`);
+
+            const vpPayload: any = {
+                jti,
+                vp: {
+                    '\@context': [
+                        'https://www.w3.org/2018/credentials/v1',
+                        'https://www.w3.org/2018/credentials/examples/v1'
+                    ],
+                    type: ['VerifiablePresentation'],
+                    verifiableCredential: [vcs.rawToken],
+                },
+                sub: `${this.requestor.crypto.builder.did}`,
+                iss: `${this.crypto.builder.did}`,
+                aud: `${this.requestor.crypto.builder.did}`
+            }
+
+            // Sign
+            await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(vpPayload)));
+            presentations[presentation] = this.crypto.signingProtocol.serialize();
+        }
 
         const token = (await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(payload)))).serialize();
         return new ClaimToken(TokenType.siopPresentationAttestation, token, '');

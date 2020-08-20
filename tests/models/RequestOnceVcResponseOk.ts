@@ -87,19 +87,16 @@ export default class RequestOnceVcResponseOk implements ITestModel {
                     },
                 },
             }
-    
+
         },
     }
 
     public responseStatus = {
         'IdentityCard': {
-            'urn:pic:1': {
-                'aud': 'did:ion:EiBcPY...',
-                'credentialStatus': {
-                    'id': 'urn:pic:1',
-                    'status': 'valid',
-                    'reason': `I don't like them`
-                }
+            'aud': 'did:ion:EiBcPY...',
+            'credentialStatus': {
+                'status': 'valid',
+                'reason': `I don't like them`
             }
         }
     };
@@ -109,8 +106,13 @@ export default class RequestOnceVcResponseOk implements ITestModel {
      * @param key Name for the vc
      */
     public getVcFromResponse(key: string): ClaimToken {
-        return new ClaimToken(TokenType.verifiableCredential, this.presentationExchangeResponse.presentation_submission.attestations.presentations[key], '');
+        // Decode de presentation
+        let claimToken = ClaimToken.create(this.presentationExchangeResponse.presentation_submission.attestations.presentations[key]);
+
+        claimToken =  ClaimToken.create(claimToken.decodedToken.vp.verifiableCredential[0]);
+        return claimToken;
     }
+
 
     /**
      * Return all presentations
