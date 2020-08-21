@@ -44,7 +44,17 @@ export enum TokenType {
   /**
    * Token is verifiable credential
    */
-  verifiableCredential = 'verifiableCredential'
+  verifiableCredential = 'verifiableCredential',
+
+  /**
+   * Token is SIOP status check request
+   */
+  siopStatusCheck = 'siopStatusCheck',
+
+  /**
+   * Token is SIOP status check receipt
+   */
+  statusCheckReceipt = 'statusCheckReceipt'
 }
 
 /**
@@ -106,7 +116,7 @@ export default class ClaimToken {
    * @param token The raw token
    * @param configuration The configuration endpoint
    */
-  constructor(typeName: string, token: string, configuration: string) {
+  constructor(typeName: string, token: string, configuration?: string) {
     const tokentypeValues: string[] = Object.values(TokenType);
     if (tokentypeValues.includes(typeName)) {
       this._type = typeName as TokenType;
@@ -122,7 +132,7 @@ export default class ClaimToken {
       this._decodedToken = token;
     }
 
-    this._configuration = configuration;
+    this._configuration = configuration || '';
   }
 
   /**
@@ -136,28 +146,31 @@ export default class ClaimToken {
     // Check type of token
     if (payload.iss === VerifiableCredentialConstants.TOKEN_SI_ISS) {
       if (payload.contract) {
-        return new ClaimToken(TokenType.siopIssuance, token, '');
+        return new ClaimToken(TokenType.siopIssuance, token);
       } else if (payload.presentation_submission) {
-        return new ClaimToken(TokenType.siopPresentationExchange, token, '');
+        return new ClaimToken(TokenType.siopPresentationExchange, token);
       } else if (payload.attestations) {
-        return new ClaimToken(TokenType.siopPresentationAttestation, token, '');
+        return new ClaimToken(TokenType.siopPresentationAttestation, token);
+      } else if (payload.receipt) {
+        return new ClaimToken(TokenType.siopStatusCheck, token);
+      } else {
+        throw new Error(`SIOP was not recognized.`);
       }
-
-      throw new Error(`SIOP was not recognized.`);
     }
 
     if (payload.vc) {
-      return new ClaimToken(TokenType.verifiableCredential, token, '');
+      return new ClaimToken(TokenType.verifiableCredential, token);
     }
     if (payload.vp) {
-      return new ClaimToken(TokenType.verifiablePresentation, token, '');
-    }
-    // Check for signature
-    if (ClaimToken.tokenSignature(token)) {
-      return new ClaimToken(TokenType.idToken, token, '');
+      return new ClaimToken(TokenType.verifiablePresentation, token);
     }
 
-    return new ClaimToken(TokenType.selfIssued, token, '');
+    // Check for signature
+    if (ClaimToken.tokenSignature(token)) {
+      return new ClaimToken(TokenType.idToken, token);
+    }
+
+    return new ClaimToken(TokenType.selfIssued, token);
   }
 
   /**
@@ -172,7 +185,7 @@ export default class ClaimToken {
       const token: any = attestations[key];
 
       if (key === VerifiableCredentialConstants.CLAIMS_SELFISSUED) {
-        decodedTokens[VerifiableCredentialConstants.CLAIMS_SELFISSUED] = new ClaimToken(TokenType.selfIssued, token, '');
+        decodedTokens[VerifiableCredentialConstants.CLAIMS_SELFISSUED] = new ClaimToken(TokenType.selfIssued, token);
       }
       else {
         for (let tokenKey in token) {
@@ -187,7 +200,7 @@ export default class ClaimToken {
   /**
   * Attestations contain the tokens and VCs in the input.
   * This algorithm will convert the attestations to a ClaimToken
-  * @param attestations All presented claims
+  * @param payload The presentaiton exchange payload 
   */
   public static getClaimTokensFromPresentationExchange(payload: PresentationDefinitionModel): { [key: string]: ClaimToken } {
     const decodedTokens: { [key: string]: ClaimToken } = {};
@@ -212,10 +225,30 @@ export default class ClaimToken {
         }
       } else {
         throw new Error(`The SIOP presentation exchange response has descriptor_map with id '${item.id}'. No path property found.`);
-      }    
+      }
     }
     return decodedTokens;
   }
+
+
+  /**
+  * Attestations contain the tokens and VCs in the input.
+  * This algorithm will convert the attestations to a ClaimToken
+  * @param payload The status response payload
+  */
+ public static getClaimTokensFromReceipt(payload: any): { [key: string]: ClaimToken } {
+  const decodedTokens: { [key: string]: ClaimToken } = {};
+
+  if (!payload.receipt) {
+    throw new Error(`The SIOP status response has no receipt property.`);
+  }
+
+  for (let id in payload.receipt) {
+    decodedTokens[id] = ClaimToken.create(payload.receipt[id]);
+  }
+
+  return decodedTokens;
+}
 
 
   /**

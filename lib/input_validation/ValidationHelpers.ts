@@ -543,13 +543,45 @@ export class ValidationHelpers {
     const self: any = this;
 
     // Check type of SIOP
-    const type = validationResponse.payloadObject[VerifiableCredentialConstants.ATTESTATIONS] ? TokenType.siopPresentationAttestation : TokenType.siopPresentationExchange;
-    if (type === TokenType.siopPresentationAttestation) {
-      const attestations = validationResponse.payloadObject[VerifiableCredentialConstants.ATTESTATIONS];
-      if (attestations) {
+    let type: TokenType;
+    if (validationResponse.payloadObject[VerifiableCredentialConstants.ATTESTATIONS]) {
+      type = TokenType.siopPresentationAttestation;
+    } else if (validationResponse.payloadObject[VerifiableCredentialConstants.PRESENTATION_SUBMISSION]) {
+      type = TokenType.siopPresentationExchange;
+    } else if (validationResponse.payloadObject[VerifiableCredentialConstants.RECEIPT]) {
+      type = TokenType.siopStatusCheck;
+    } else {
+      return {
+        result: false,
+        status: 403,
+        detailedError: 'Could not get tokens from SIOP. Unrecognized format.'
+      }
+    }
+
+    switch (type) {
+      case TokenType.siopPresentationAttestation:
+        const attestations = validationResponse.payloadObject[VerifiableCredentialConstants.ATTESTATIONS];
+        if (attestations) {
+          // Decode tokens
+          try {
+            validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromAttestations(attestations);
+          } catch (err) {
+            console.error(err);
+            return {
+              result: false,
+              status: 403,
+              detailedError: err.message
+            };
+          }
+        }
+        break;
+
+      case TokenType.siopPresentationExchange:
+        // Get presentation exchange tokens
+
         // Decode tokens
         try {
-          validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromAttestations(attestations);
+          validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromPresentationExchange(validationResponse.payloadObject);
         } catch (err) {
           console.error(err);
           return {
@@ -558,21 +590,19 @@ export class ValidationHelpers {
             detailedError: err.message
           };
         }
-      }
-    } else {
-      // Get presentation exchange tokens
-
-      // Decode tokens
-      try {
-        validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromPresentationExchange(validationResponse.payloadObject);
-      } catch (err) {
-        console.error(err);
-        return {
-          result: false,
-          status: 403,
-          detailedError: err.message
-        };
-      }
+        break;
+      case TokenType.siopStatusCheck:
+        try {
+          validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromReceipt(validationResponse.payloadObject);
+        } catch (err) {
+          console.error(err);
+          return {
+            result: false,
+            status: 403,
+            detailedError: err.message
+          };
+        }
+        break;
     }
 
     return validationResponse;

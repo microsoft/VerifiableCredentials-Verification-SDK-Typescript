@@ -14,7 +14,7 @@ export default class ResponderHelper {
     }
 
     public crypto = new CryptoBuilder()
-        .useSigningKeyReference(new KeyReference('signing'))
+        .useSigningKeyReference(new KeyReference('signingResponder'))
         .useRecoveryKeyReference(new KeyReference('recovery'))
         .build();
 
@@ -50,13 +50,18 @@ export default class ResponderHelper {
 
             // Set status mock
             const statusReceipts: any = {
+                iss: 'https://self-issued.me',
+                aud: `${this.requestor.crypto.builder.did}`,
                 receipt: {
                 }
             };
             
             // Set id as jti
             this.responseDefinition.responseStatus[presentation].credentialStatus.id = jti;
-            statusReceipts.receipt[jti] = this.responseDefinition.responseStatus[presentation];
+
+            // Sign the receipts
+            await this.generator.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(this.responseDefinition.responseStatus[presentation])));
+            statusReceipts.receipt[jti] = this.generator.crypto.signingProtocol.serialize();
 
             await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(statusReceipts)));
             const statusResponse = this.crypto.signingProtocol.serialize();

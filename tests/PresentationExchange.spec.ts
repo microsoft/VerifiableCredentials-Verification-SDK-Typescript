@@ -34,6 +34,7 @@ describe('Rule processor', () => {
 
             const validator = new ValidatorBuilder(requestor.crypto)
                 .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!] })
+                .enableFeatureVerifiedCredentialsStatusCheck(true)
                 .build();
             let result = await validator.validate(response.rawToken);
             expect(result.result).toBeTruthy();

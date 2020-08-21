@@ -11,7 +11,7 @@ import { TokenType } from '../verifiable_credential/ClaimToken';
 import IValidationResult from './IValidationResult';
 import { KeyStoreOptions } from 'verifiablecredentials-crypto-sdk-typescript';
 import { VerifiablePresentationValidationResponse } from '../input_validation/VerifiablePresentationValidationResponse';
-import VeriffiablePresentationStatusReceipt from './VeriffiablePresentationStatusReceipt';
+import VerifiablePresentationStatusReceipt from './VerifiablePresentationStatusReceipt';
 
 /**
  * Class model the token validator
@@ -112,6 +112,9 @@ export default class Validator {
         case TokenType.selfIssued:
           response = await validator.validate(queue, queueItem!);
           break;
+        case TokenType.siopStatusCheck:
+          response = await validator.validate(queue, queueItem!);
+          break;
         default:
           return {
             detailedError: `${claimToken.type} is not supported`,
@@ -147,33 +150,33 @@ export default class Validator {
   /**
    * Validate status on verifiable presentation
    */
- public async checkVcsStatus(validationResult: IValidationResult): Promise<IValidationResponse> {
-  if (!this.builder.featureVerifiedCredentialsStatusCheckEnabled) {
-    return {
-      result: true,
-      status: 200
-    }; 
-  }
-  
-  if (!validationResult.verifiablePresentations) {
-    return {
-      result: false,
-      status: 403,
-      detailedError: 'No presentations to tests'
-    };
-  }
+  public async checkVcsStatus(validationResult: IValidationResult): Promise<IValidationResponse> {
+    if (!this.builder.featureVerifiedCredentialsStatusCheckEnabled) {
+      return {
+        result: true,
+        status: 200
+      };
+    }
 
-  if (!validationResult.verifiableCredentials) {
-    return {
-      result: false,
-      status: 403,
-      detailedError: 'No verifiable credentials to tests'
-    };
-  }
+    if (!validationResult.verifiablePresentations) {
+      return {
+        result: false,
+        status: 403,
+        detailedError: 'No presentations to tests'
+      };
+    }
 
-// Get the VC that need to be validated
-    const vcsToValidate: {validated: boolean, id: string, statusUrl: string | undefined}[] = Object.keys(validationResult.verifiableCredentials).map((key: string) => {
-      const statusUrl: string | undefined = validationResult.verifiableCredentials![key]?.decodedToken?.vc?.credentialStatus?.id; 
+    if (!validationResult.verifiableCredentials) {
+      return {
+        result: false,
+        status: 403,
+        detailedError: 'No verifiable credentials to tests'
+      };
+    }
+
+    // Get the VC that need to be validated
+    const vcsToValidate: { validated: boolean, id: string, statusUrl: string | undefined }[] = Object.keys(validationResult.verifiableCredentials).map((key: string) => {
+      const statusUrl: string | undefined = validationResult.verifiableCredentials![key]?.decodedToken?.vc?.credentialStatus?.id;
       return {
         validated: false,
         id: key,
@@ -183,12 +186,13 @@ export default class Validator {
 
     for (let vp in validationResult.verifiablePresentations) {
       const response = await this.checkVpStatus(validationResult.verifiablePresentations[vp]);
+      console.log((await response).result);
     }
 
     return {
       result: true,
       status: 200
-    }; 
+    };
   }
 
   /**
@@ -215,7 +219,7 @@ export default class Validator {
     const vcs = verifiablePresentationToken.decodedToken.vp?.verifiableCredential;
     if (vcs) {
       for (let vc in vcs) {
-        const vcToValidate: any = new ClaimToken(TokenType.verifiableCredential, vcs[vc], '');
+        const vcToValidate: any = ClaimToken.create(vcs[vc]);
         const statusUrl = vcToValidate.decodedToken?.vc?.credentialStatus?.id;
 
         if (statusUrl) {
@@ -239,7 +243,7 @@ export default class Validator {
           const receipt = await response.text();
           const validatorOption: IValidatorOptions = this.setValidatorOptions();
           const options = new ValidationOptions(validatorOption, TokenType.siopPresentationExchange);
-          const receiptValidator = new VeriffiablePresentationStatusReceipt(receipt, options, <IExpectedSiop>{audience: ''});
+          const receiptValidator = new VerifiablePresentationStatusReceipt(receipt, this.builder, options, <IExpectedSiop>{ audience: '' });
           const receiptValidation = await receiptValidator.validate();
           console.log(receiptValidation.detailedError);
         }

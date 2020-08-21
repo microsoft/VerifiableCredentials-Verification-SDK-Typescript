@@ -145,7 +145,7 @@ export default class RequestorHelper {
     };
 
     public crypto = new CryptoBuilder()
-        .useSigningKeyReference(new KeyReference('signing'))
+        .useSigningKeyReference(new KeyReference('signingRequestor'))
         .useRecoveryKeyReference(new KeyReference('recovery'))
         .build();
 

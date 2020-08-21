@@ -34,7 +34,7 @@ export default class TokenGenerator {
 
    
 
-    public signingKeyReference = new KeyReference('signing');
+    public signingKeyReference = new KeyReference('signingTokenGeneration');
 
     public crypto = new CryptoBuilder()
         .useSigningKeyReference(this.signingKeyReference)

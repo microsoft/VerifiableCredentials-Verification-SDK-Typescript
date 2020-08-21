@@ -13,6 +13,16 @@ export default class VerifiableCredentialConstants {
   public static ATTESTATIONS = 'attestations';
 
   /**
+   * Constant for presentation exchange claims
+   */
+  public static PRESENTATION_SUBMISSION = 'presentation_submission';
+
+  /**
+   * Constant for status request receipts
+   */
+  public static RECEIPT = 'receipt';
+
+  /**
    * Constant for  context
    */
   public static CLAIM_CONTEXT = '@context';
