@@ -15,7 +15,7 @@ export default class PresentationDefinition {
         logoUri: 'https://logoUri.example.com',
 
         presentationDefinition: {
-            name: 'Get driving license',
+            name: 'Get identity card',
             purpose: 'Needed to provide you access to the site',
             input_descriptors: [
                 {

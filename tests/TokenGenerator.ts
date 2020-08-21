@@ -7,6 +7,8 @@ import { CryptoBuilder, KeyReference, LongFormDid, KeyUse, ClaimToken, DidDocume
 import RequestorHelper from './RequestorHelper';
 import { KeyStoreOptions, JsonWebKey, Crypto } from 'verifiablecredentials-crypto-sdk-typescript';
 import ResponderHelper from './ResponderHelper';
+import ITestModel from './models/ITestModel';
+
 
 export default class TokenGenerator {
     constructor(public responder: ResponderHelper) {
@@ -32,7 +34,7 @@ export default class TokenGenerator {
 
    
 
-    public signingKeyReference = new KeyReference('signing');
+    public signingKeyReference = new KeyReference('signingTokenGeneration');
 
     public crypto = new CryptoBuilder()
         .useSigningKeyReference(this.signingKeyReference)
@@ -48,6 +50,8 @@ export default class TokenGenerator {
         // setup mock to resolve this did
         TokenGenerator.mockResolver(this.crypto);
     }
+
+    
 
     /**
      * Mock the resolver
@@ -75,41 +79,19 @@ export default class TokenGenerator {
         console.log(`Set mock for ${resolverUrl}`);
     }
 
-    /**
-     * Create a verifiable credential
-     * @param claims Token claims
-     */
-    public async createVc(credentialSubject: { [claim: string]: any }): Promise<ClaimToken> {
-        const statusUrl = 'https://portableidentitycards.azure-api.net/42b39d9d-0cdd-4ae0-b251-b7b39a561f91/api/portable/v1.0/status';
+    public async setVcs(): Promise<void> {
+        const presentations = (<ITestModel>this.responder.responseDefinition).getPresentations();
+        for (let presentation in presentations) {
+            const vcPayload: any = presentations[presentation];
 
-        // Status mock
-        TokenGenerator.fetchMock.post(statusUrl, {}, { overwriteRoutes: true });
-        console.log(`Set mock for ${statusUrl}`);
+            // Additional props
+            vcPayload.sub = `${this.responder.crypto.builder.did}`;
+            vcPayload.iss = `${this.crypto.builder.did}`;
 
-        let vcTemplate = {
-            "jti": "urn:pic:80a509d2-99d4-4d6c-86a7-7b2636944080",
-            "vc": {
-                "@context": [
-                    "https://www.w3.org/2018/credentials/v1",
-                    "https://portableidentitycards.azure-api.net/42b39d9d-0cdd-4ae0-b251-b7b39a561f91/api/portable/v1.0/contracts/test/schema"
-                ],
-                "type": [
-                    "VerifiableCredential",
-                    "DrivingLicense"
-                ],
-                "credentialSubject": {
-                },
-                "credentialStatus": {
-                    "id": `${statusUrl}`,
-                    "type": "PortableIdentityCardServiceCredentialStatus2020"
-                }
-            },
-            iss: `${this.crypto.builder.did}`,
-            sub: `${this.responder.crypto.builder.did}`
-        };
-        vcTemplate.vc.credentialSubject = credentialSubject;
-        const token = (await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(vcTemplate)))).serialize();
-        return new ClaimToken(TokenType.verifiableCredential, token, this.vcSchema.uri![0])
+            // Sign
+            await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(vcPayload)));
+            presentations[presentation] = ClaimToken.create(this.crypto.signingProtocol.serialize());
+        }
     }
 
     public async createPresentation(vc: ClaimToken[]): Promise<ClaimToken> {

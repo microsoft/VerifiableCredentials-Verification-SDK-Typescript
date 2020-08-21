@@ -182,7 +182,7 @@ describe('Validator', () => {
     queue.enqueueToken('siopPresentationAttestation', request.rawToken);
     result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeFalsy();
-    expect(result.detailedError).toEqual(`Expected should have contractIssuers issuers set for verifiableCredential. Missing contractIssuers for 'DrivingLicense'.`);
+    expect(result.detailedError).toEqual(`Expected should have contractIssuers set for verifiableCredential. Missing contractIssuers for 'DrivingLicense'.`);
     expect(result.status).toEqual(403);
   });
 

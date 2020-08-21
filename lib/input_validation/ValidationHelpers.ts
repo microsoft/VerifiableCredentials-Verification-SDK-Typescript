@@ -543,60 +543,66 @@ export class ValidationHelpers {
     const self: any = this;
 
     // Check type of SIOP
-    const type = validationResponse.payloadObject[VerifiableCredentialConstants.ATTESTATIONS] ? TokenType.siopPresentationAttestation : TokenType.siopPresentationExchange;
-    if (type === TokenType.siopPresentationAttestation) {
-      const attestations = validationResponse.payloadObject[VerifiableCredentialConstants.ATTESTATIONS];
-      if (attestations) {
+    let type: TokenType;
+    if (validationResponse.payloadObject[VerifiableCredentialConstants.ATTESTATIONS]) {
+      type = TokenType.siopPresentationAttestation;
+    } else if (validationResponse.payloadObject[VerifiableCredentialConstants.PRESENTATION_SUBMISSION]) {
+      type = TokenType.siopPresentationExchange;
+    } else if (validationResponse.payloadObject[VerifiableCredentialConstants.RECEIPT]) {
+      type = TokenType.siopStatusCheck;
+    } else {
+      return {
+        result: false,
+        status: 403,
+        detailedError: 'Could not get tokens from SIOP. Unrecognized format.'
+      }
+    }
+
+    switch (type) {
+      case TokenType.siopPresentationAttestation:
+        const attestations = validationResponse.payloadObject[VerifiableCredentialConstants.ATTESTATIONS];
+        if (attestations) {
+          // Decode tokens
+          try {
+            validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromAttestations(attestations);
+          } catch (err) {
+            console.error(err);
+            return {
+              result: false,
+              status: 403,
+              detailedError: err.message
+            };
+          }
+        }
+        break;
+
+      case TokenType.siopPresentationExchange:
+        // Get presentation exchange tokens
+
         // Decode tokens
         try {
-          validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromAttestations(attestations);
+          validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromPresentationExchange(validationResponse.payloadObject);
         } catch (err) {
           console.error(err);
           return {
             result: false,
             status: 403,
-            detailedError: `Failed to decode input tokens`
+            detailedError: err.message
           };
         }
-      }
-    } else {
-      // Get descriptor map
-      const descriptorMap: any[] = jp.query(validationResponse.payloadObject, `$.presentation_submission.descriptor_map.*`);
-      validationResponse.tokensToValidate = {};
-
-      for(let inx = 0; inx < descriptorMap.length; inx++) {
-        const item = descriptorMap[inx];
-        if (item.path) {
-          const tokenFinder = jp.query(validationResponse.payloadObject, item.path);
-          console.log(tokenFinder);
-          if (tokenFinder.length > 0) {
-            if (typeof tokenFinder[0] === 'object') {
-              const foundToken = tokenFinder[0];
-              const tokenName = Object.keys(foundToken)[0];
-              const claimToken = ClaimToken.create(foundToken[tokenName]);
-              validationResponse.tokensToValidate[tokenName] = claimToken;
-            } else {
-              return {
-                result: false,
-                status: 403,
-                detailedError: `The SIOP presentation exchange response has descriptor_map with id '${item.id}'. This path '${item.path}' did not return a token object in the style e.g. {vc: 'ey...'}.`
-              };
-            }
-          } else {
-            return {
-              result: false,
-              status: 403,
-              detailedError: `The SIOP presentation exchange response has descriptor_map with id '${item.id}'. This path '${item.path}' did not return any tokens.`
-            };
-          }
-        } else {
+        break;
+      case TokenType.siopStatusCheck:
+        try {
+          validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromReceipt(validationResponse.payloadObject);
+        } catch (err) {
+          console.error(err);
           return {
             result: false,
             status: 403,
-            detailedError: `The SIOP presentation exchange response has descriptor_map with id '${item.id}'. No path property found.`
+            detailedError: err.message
           };
         }
-      }
+        break;
     }
 
     return validationResponse;
