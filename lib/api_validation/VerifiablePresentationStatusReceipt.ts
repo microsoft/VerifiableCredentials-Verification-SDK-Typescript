@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { IValidationResponse, SiopValidation, IValidationOptions, IExpectedSiop, ValidatorBuilder } from '../index';
+import { resolve } from 'dns';
 
 export interface IVerifiablePresentationStatus {
     id: string;
@@ -11,7 +12,7 @@ export interface IVerifiablePresentationStatus {
 }
 
 export default class VerifiablePresentationStatusReceipt {
-    constructor(public receipt: string, private validationBuilder: ValidatorBuilder, private options: IValidationOptions, private expected: IExpectedSiop) {
+    constructor(public receipts: any, private validationBuilder: ValidatorBuilder, private options: IValidationOptions, private expected: IExpectedSiop) {
     }
 
     private _verifiablePresentationStatus: IVerifiablePresentationStatus[] | undefined;
@@ -22,17 +23,7 @@ export default class VerifiablePresentationStatusReceipt {
 
     public async validate(): Promise<IValidationResponse> {
         // create new validator for receipt
-        const validator = this.validationBuilder.build();
-        const response = await validator.validate(this.receipt);
-        return response;
-        /*
-                const siopValidator = new SiopValidation(this.options, this.expected);
-                const receiptResponse = await siopValidator.validate(this.receipt);
-                if (!receiptResponse.result) {
-                    return receiptResponse;
-                }
-        
-                if (!receiptResponse.payloadObject?.receipt) {
+                if (!this.receipts?.receipt) {
                     return {
                         result: false,
                         status: 403,
@@ -41,14 +32,20 @@ export default class VerifiablePresentationStatusReceipt {
                 }
                 // Check each entry in the receipt
                 this._verifiablePresentationStatus = [];
-                for (let jti in receiptResponse.payloadObject?.receipt) {
-                    console.log(jti);
+                for (let jti in this.receipts.receipt) {
+                    const receipt = this.receipts.receipt[jti];
+                    const siopValidator = new SiopValidation(this.options, this.expected);
+                    const receiptResponse = await siopValidator.validate(receipt);
+                    if (!receiptResponse.result) {
+                        return receiptResponse;
+                    }
+    
                 }
         
                 // aud must match the did of the status request
         
         
-                return receiptResponse;
-                */
+                
+               return new Promise<any>((resolve) => resolve({}));
     }
 }

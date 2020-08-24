@@ -12,7 +12,6 @@ import TokenGenerator from './TokenGenerator';
 import PresentationDefinition from './models/PresentationDefinitionSample1'
 import RequestOnceVcResponseOk from './models/RequestOnceVcResponseOk'
 
-const jp = require('jsonpath');
 const clone = require('clone');
 
 
