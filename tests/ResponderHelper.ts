@@ -50,8 +50,6 @@ export default class ResponderHelper {
 
             // Set status mock
             const statusReceipts: any = {
-                iss: 'https://self-issued.me',
-                aud: `${this.requestor.crypto.builder.did}`,
                 receipt: {
                 }
             };
@@ -63,10 +61,8 @@ export default class ResponderHelper {
             await this.generator.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(this.responseDefinition.responseStatus[presentation])));
             statusReceipts.receipt[jti] = this.generator.crypto.signingProtocol.serialize();
 
-            await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(statusReceipts)));
-            const statusResponse = this.crypto.signingProtocol.serialize();
             const statusUrl = vcs.decodedToken.vc.credentialStatus.id;
-            TokenGenerator.fetchMock.post(statusUrl, statusResponse, { overwriteRoutes: true });
+            TokenGenerator.fetchMock.post(statusUrl, statusReceipts, { overwriteRoutes: true });
             console.log(`Set mock for ${statusUrl}`);
 
             const vpPayload: any = {

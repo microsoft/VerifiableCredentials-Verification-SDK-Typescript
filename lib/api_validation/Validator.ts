@@ -240,7 +240,7 @@ export default class Validator {
           }
 
           // Validate receipt
-          const receipt = await response.text();
+          const receipt = await response.json();
           const validatorOption: IValidatorOptions = this.setValidatorOptions();
           const options = new ValidationOptions(validatorOption, TokenType.siopPresentationExchange);
           const receiptValidator = new VerifiablePresentationStatusReceipt(receipt, this.builder, options, <IExpectedSiop>{ audience: '' });
