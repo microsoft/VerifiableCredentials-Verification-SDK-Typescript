@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ClaimToken, IDidResolver, ISiopValidationResponse, ITokenValidator, ValidatorBuilder, IValidatorOptions, IExpectedSiop, ValidationOptions } from '../index';
+import { ClaimToken, IDidResolver, ISiopValidationResponse, ITokenValidator, ValidatorBuilder, IValidatorOptions, IExpectedStatusReceipt, ValidationOptions } from '../index';
 import { IValidationResponse } from '../input_validation/IValidationResponse';
 import ValidationQueue from '../input_validation/ValidationQueue';
 import ValidationQueueItem from '../input_validation/ValidationQueueItem';
@@ -112,9 +112,6 @@ export default class Validator {
         case TokenType.selfIssued:
           response = await validator.validate(queue, queueItem!);
           break;
-        case TokenType.siopStatusCheck:
-          response = await validator.validate(queue, queueItem!);
-          break;
         default:
           return {
             detailedError: `${claimToken.type} is not supported`,
@@ -214,13 +211,13 @@ export default class Validator {
       sub_jwk: publicKey
     };
 
-
     // get vcs to obtain status url
     const vcs = verifiablePresentationToken.decodedToken.vp?.verifiableCredential;
     if (vcs) {
       for (let vc in vcs) {
         const vcToValidate: any = ClaimToken.create(vcs[vc]);
         const statusUrl = vcToValidate.decodedToken?.vc?.credentialStatus?.id;
+        const vcIssuerDid = vcToValidate.decodedToken.iss;
 
         if (statusUrl) {
           // send the payload
@@ -243,7 +240,7 @@ export default class Validator {
           const receipt = await response.json();
           const validatorOption: IValidatorOptions = this.setValidatorOptions();
           const options = new ValidationOptions(validatorOption, TokenType.siopPresentationExchange);
-          const receiptValidator = new VerifiablePresentationStatusReceipt(receipt, this.builder, options, <IExpectedSiop>{ audience: '' });
+          const receiptValidator = new VerifiablePresentationStatusReceipt(receipt, this.builder, options, <IExpectedStatusReceipt>{ didIssuer: vcIssuerDid, didAudience: this.builder.crypto.builder.did });
           const receiptValidation = await receiptValidator.validate();
           console.log(receiptValidation.detailedError);
         }

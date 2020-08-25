@@ -45,16 +45,6 @@ export enum TokenType {
    * Token is verifiable credential
    */
   verifiableCredential = 'verifiableCredential',
-
-  /**
-   * Token is SIOP status check request
-   */
-  siopStatusCheck = 'siopStatusCheck',
-
-  /**
-   * Token is SIOP status check receipt
-   */
-  statusCheckReceipt = 'statusCheckReceipt'
 }
 
 /**
@@ -151,8 +141,6 @@ export default class ClaimToken {
         return new ClaimToken(TokenType.siopPresentationExchange, token);
       } else if (payload.attestations) {
         return new ClaimToken(TokenType.siopPresentationAttestation, token);
-      } else if (payload.receipt) {
-        return new ClaimToken(TokenType.siopStatusCheck, token);
       } else {
         throw new Error(`SIOP was not recognized.`);
       }

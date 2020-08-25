@@ -57,6 +57,12 @@ export default class ResponderHelper {
             // Set id as jti
             this.responseDefinition.responseStatus[presentation].credentialStatus.id = jti;
 
+            // Set aud
+            this.responseDefinition.responseStatus[presentation].aud = this.requestor.crypto.builder.did;
+
+            // Set iss
+            this.responseDefinition.responseStatus[presentation].iss = this.generator.crypto.builder.did;
+
             // Sign the receipts
             await this.generator.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(this.responseDefinition.responseStatus[presentation])));
             statusReceipts.receipt[jti] = this.generator.crypto.signingProtocol.serialize();
