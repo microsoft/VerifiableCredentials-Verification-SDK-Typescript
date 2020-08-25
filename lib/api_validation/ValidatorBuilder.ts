@@ -74,9 +74,7 @@ export default class ValidatorBuilder {
         verifiablePresentation: new VerifiablePresentationTokenValidator(validatorOptions, this.crypto, <IExpectedVerifiablePresentation> {type: TokenType.verifiablePresentation, didAudience: this.crypto.builder.did}),
         siopPresentationAttestation: new SiopTokenValidator(validatorOptions, <IExpectedSiop> {type: TokenType.siopPresentationAttestation, audience: this._audienceUrl}),
         siopPresentationExchange: new SiopTokenValidator(validatorOptions, <IExpectedSiop> {type: TokenType.siopPresentationExchange, audience: this._audienceUrl}),
-        siopIssuance: new SiopTokenValidator(validatorOptions, <IExpectedSiop> {type: TokenType.siopIssuance, audience: this._audienceUrl}),
-        siopStatusCheck: new SiopTokenValidator(validatorOptions, <IExpectedSiop> {type: TokenType.siopStatusCheck, audience: this.crypto.builder.did}),
-        statusCheckReceipt: new SiopTokenValidator(validatorOptions, <IExpectedSiop> {type: TokenType.statusCheckReceipt, audience: this._audienceUrl}),
+        siopIssuance: new SiopTokenValidator(validatorOptions, <IExpectedSiop> {type: TokenType.siopIssuance, audience: this._audienceUrl})
       };
     }
 

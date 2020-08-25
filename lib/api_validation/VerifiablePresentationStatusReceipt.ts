@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { IValidationResponse, SiopValidation, IValidationOptions, IExpectedSiop, ValidatorBuilder } from '../index';
+import { IValidationResponse, SiopValidation, IValidationOptions, IExpectedSiop, ValidatorBuilder, DidValidation, IExpectedStatusReceipt } from '../index';
 import { resolve } from 'dns';
 
 export interface IVerifiablePresentationStatus {
@@ -12,7 +12,7 @@ export interface IVerifiablePresentationStatus {
 }
 
 export default class VerifiablePresentationStatusReceipt {
-    constructor(public receipts: any, private validationBuilder: ValidatorBuilder, private options: IValidationOptions, private expected: IExpectedSiop) {
+    constructor(public receipts: any, private validationBuilder: ValidatorBuilder, private options: IValidationOptions, private expected: IExpectedStatusReceipt) {
     }
 
     private _verifiablePresentationStatus: IVerifiablePresentationStatus[] | undefined;
@@ -34,18 +34,35 @@ export default class VerifiablePresentationStatusReceipt {
                 this._verifiablePresentationStatus = [];
                 for (let jti in this.receipts.receipt) {
                     const receipt = this.receipts.receipt[jti];
-                    const siopValidator = new SiopValidation(this.options, this.expected);
-                    const receiptResponse = await siopValidator.validate(receipt);
+                    const didValidation = new DidValidation(this.options, this.expected);
+                    const receiptResponse = await didValidation.validate(receipt);
                     if (!receiptResponse.result) {
                         return receiptResponse;
                     }
+
+                    // aud should correspond requestor
+                    if (receiptResponse.payloadObject.aud !== this.expected.didAudience) {
+                        return {
+                            result: false,
+                            status: 403,
+                            detailedError: `The status receipt aud '${receiptResponse.payloadObject.aud}' is wrong. Expected '${this.expected.didAudience}'`
+                        }
+                    }
+
+                    // iss should correspond issuer VC
+                    if (receiptResponse.payloadObject.iss !== this.expected.didIssuer) {
+                        return {
+                            result: false,
+                            status: 403,
+                            detailedError: `The status receipt iss '${receiptResponse.payloadObject.iss}' is wrong. Expected '${this.expected.didIssuer}'`
+                        }
+                    }
     
                 }
-        
-                // aud must match the did of the status request
-        
-        
                 
-               return new Promise<any>((resolve) => resolve({}));
+               return {
+                   result: true,
+                   status: 200
+               };
     }
 }

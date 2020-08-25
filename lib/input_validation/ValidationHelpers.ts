@@ -548,8 +548,6 @@ export class ValidationHelpers {
       type = TokenType.siopPresentationAttestation;
     } else if (validationResponse.payloadObject[VerifiableCredentialConstants.PRESENTATION_SUBMISSION]) {
       type = TokenType.siopPresentationExchange;
-    } else if (validationResponse.payloadObject[VerifiableCredentialConstants.RECEIPT]) {
-      type = TokenType.siopStatusCheck;
     } else {
       return {
         result: false,
@@ -582,18 +580,6 @@ export class ValidationHelpers {
         // Decode tokens
         try {
           validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromPresentationExchange(validationResponse.payloadObject);
-        } catch (err) {
-          console.error(err);
-          return {
-            result: false,
-            status: 403,
-            detailedError: err.message
-          };
-        }
-        break;
-      case TokenType.siopStatusCheck:
-        try {
-          validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromReceipt(validationResponse.payloadObject);
         } catch (err) {
           console.error(err);
           return {

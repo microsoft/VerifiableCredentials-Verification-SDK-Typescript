@@ -47,6 +47,23 @@ export interface IExpectedVerifiablePresentation extends IExpectedBase {
 }
 
 /**
+ * Expected values for status receipts
+ */
+export interface IExpectedStatusReceipt extends IExpectedBase {
+
+  /**
+   * Expected audience DID for the receipt
+   */
+  didAudience: string,
+
+  /**
+   * Expected issuer DID of the receipt
+   */
+  didIssuer: string
+  
+}
+
+/**
  * Expected values for verifiable credentials
  */
 export interface IExpectedVerifiableCredential extends IExpectedBase {
