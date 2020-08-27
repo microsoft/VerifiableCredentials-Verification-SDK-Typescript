@@ -78,7 +78,7 @@ describe('Rule processor', () => {
         }
     });
 
-    it('should process RequestTwoVcResponseOne', async () => {
+    xit('should process RequestTwoVcResponseOne', async () => {
         try {
             const model = new RequestTwoVcResponseOne();
             const requestor = new RequestorHelper(model);
