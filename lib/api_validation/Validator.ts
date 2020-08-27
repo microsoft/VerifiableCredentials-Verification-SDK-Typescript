@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ClaimToken, IDidResolver, ISiopValidationResponse, ITokenValidator, ValidatorBuilder, IValidatorOptions, IExpectedStatusReceipt, ValidationOptions } from '../index';
+import { IVerifiablePresentationStatus, ClaimToken, IDidResolver, ISiopValidationResponse, ITokenValidator, ValidatorBuilder, IValidatorOptions, IExpectedStatusReceipt, ValidationOptions, VerifiablePresentationStatusReceipt } from '../index';
 import { IValidationResponse } from '../input_validation/IValidationResponse';
 import ValidationQueue from '../input_validation/ValidationQueue';
 import ValidationQueueItem from '../input_validation/ValidationQueueItem';
@@ -11,7 +11,6 @@ import { TokenType } from '../verifiable_credential/ClaimToken';
 import IValidationResult from './IValidationResult';
 import { KeyStoreOptions } from 'verifiablecredentials-crypto-sdk-typescript';
 import { VerifiablePresentationValidationResponse } from '../input_validation/VerifiablePresentationValidationResponse';
-import VerifiablePresentationStatusReceipt from './VerifiablePresentationStatusReceipt';
 
 /**
  * Class model the token validator
@@ -132,8 +131,9 @@ export default class Validator {
       const validationResult = this.setValidationResult(queue);
 
       // Check status of VCs
-      await this.checkVcsStatus(validationResult);
-
+      const statusResponse = await this.checkVcsStatus(validationResult);
+      validationResult.verifiablePresentationStatus = statusResponse.validationResult?.verifiablePresentationStatus;
+      
       // set claims
       response = {
         result: true,
@@ -181,14 +181,21 @@ export default class Validator {
       };
     });
 
+    const receipts: { [key: string]: IVerifiablePresentationStatus } = {}; 
     for (let vp in validationResult.verifiablePresentations) {
       const response = await this.checkVpStatus(validationResult.verifiablePresentations[vp]);
-      console.log((await response).result);
+      if (response.validationResult?.verifiablePresentationStatus) {
+        for (let id in response.validationResult.verifiablePresentationStatus) {
+          receipts[id] = response.validationResult.verifiablePresentationStatus[id];
+        }
+      }
+      console.log(`Status request for ${vp}, result: ${response.result} ===> ${validationResult.verifiablePresentations[vp]}`);
     }
 
     return {
       result: true,
-      status: 200
+      status: 200,
+      validationResult: { verifiablePresentationStatus: receipts }
     };
   }
 
@@ -199,7 +206,8 @@ export default class Validator {
 
     let validationResponse = {
       result: true,
-      status: 200
+      status: 200,
+      validationResult: { verifiablePresentationStatus: <{ [key: string]: IVerifiablePresentationStatus }>{} }
     }
 
     //construct payload
@@ -241,8 +249,14 @@ export default class Validator {
           const validatorOption: IValidatorOptions = this.setValidatorOptions();
           const options = new ValidationOptions(validatorOption, TokenType.siopPresentationExchange);
           const receiptValidator = new VerifiablePresentationStatusReceipt(receipt, this.builder, options, <IExpectedStatusReceipt>{ didIssuer: vcIssuerDid, didAudience: this.builder.crypto.builder.did });
-          const receiptValidation = await receiptValidator.validate();
-          console.log(receiptValidation.detailedError);
+          const receipts = await receiptValidator.validate();
+          if (!receipts.result) {
+            return receipts;
+          }
+          
+          for (let jti in receipts.validationResult?.verifiablePresentationStatus) {
+            validationResponse.validationResult!.verifiablePresentationStatus![jti] = receipts.validationResult!.verifiablePresentationStatus[jti];
+          }
         }
       }
     }

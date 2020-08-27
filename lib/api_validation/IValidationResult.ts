@@ -1,13 +1,20 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+ import { IVerifiablePresentationStatus } from '../index';
+
 export default interface IValidationResult {
 /**
  * Gets the DID of the requestor
  */
-  did: string,
+  did?: string,
 
   /**
    * Gets the contract of the requestor
    */
-  contract: string,
+  contract?: string,
 
   /**
    * Claims found in the input verifiable credentials
@@ -37,5 +44,7 @@ export default interface IValidationResult {
   /**
    * The jti of the incoming siop token
    */
-  siopJti: string,
+  siopJti?: string,
+
+  verifiablePresentationStatus?: { [jti: string]: IVerifiablePresentationStatus }
 }

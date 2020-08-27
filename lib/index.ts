@@ -44,8 +44,9 @@ import { OpenIdTokenValidation } from './input_validation/OpenIdTokenValidation'
 import { VerifiablePresentationValidation } from './input_validation/VerifiablePresentationValidation';
 import { DidValidation } from './input_validation/DidValidation'
 import { SiopValidation } from './input_validation/SiopValidation'
-import { VerifiableCredentialValidation } from './input_validation/VerifiableCredentialValidation'
-export { IValidationResponse, IdTokenValidationResponse, ISiopValidationResponse, IdTokenValidation, VerifiablePresentationValidation, DidValidation, SiopValidation, VerifiableCredentialValidation, BaseIdTokenValidation, OpenIdTokenValidation };
+import { VerifiableCredentialValidation } from './input_validation/VerifiableCredentialValidation';
+import VerifiablePresentationStatusReceipt, { IVerifiablePresentationStatus }  from './api_validation/VerifiablePresentationStatusReceipt';
+export { VerifiablePresentationStatusReceipt, IVerifiablePresentationStatus, IValidationResponse, IdTokenValidationResponse, ISiopValidationResponse, IdTokenValidation, VerifiablePresentationValidation, DidValidation, SiopValidation, VerifiableCredentialValidation, BaseIdTokenValidation, OpenIdTokenValidation };
 
 import IRevocedCard from './revocation/IRevokedCard';
 export { IRevocedCard };

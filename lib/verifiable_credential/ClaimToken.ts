@@ -45,6 +45,11 @@ export enum TokenType {
    * Token is verifiable credential
    */
   verifiableCredential = 'verifiableCredential',
+
+  /**
+   * Token is verifiable credential
+   */
+  verifiablePresentationStatus = 'verifiablePresentationStatus',
 }
 
 /**
@@ -197,22 +202,24 @@ export default class ClaimToken {
 
     for (let inx = 0; inx < descriptorMap.length; inx++) {
       const item = descriptorMap[inx];
-      if (!item.id) {
-        throw new Error(`The SIOP presentation exchange response has descriptor_map without id property`);
-      } else if (item.path) {
-        const tokenFinder = jp.query(payload, item.path);
-        console.log(tokenFinder);
-        if (tokenFinder.length == 0) {
-          throw new Error(`The SIOP presentation exchange response has descriptor_map with id '${item.id}'. This path '${item.path}' did not return a token.`);
-        } else if (tokenFinder.length > 1) {
-          throw new Error(`The SIOP presentation exchange response has descriptor_map with id '${item.id}'. This path '${item.path}' points to multiple credentails and should only point to one credential.`);
-        } else if (typeof tokenFinder[0] === 'string') {
-          const foundToken = tokenFinder[0];
-          const claimToken = ClaimToken.create(foundToken);
-          decodedTokens[item.id] = claimToken;
-        }
-      } else {
-        throw new Error(`The SIOP presentation exchange response has descriptor_map with id '${item.id}'. No path property found.`);
+      if (item) {
+        if (!item.id) {
+          throw new Error(`The SIOP presentation exchange response has descriptor_map without id property`);
+        } else if (item.path) {
+          const tokenFinder = jp.query(payload, item.path);
+          console.log(tokenFinder);
+          if (tokenFinder.length == 0) {
+            throw new Error(`The SIOP presentation exchange response has descriptor_map with id '${item.id}'. This path '${item.path}' did not return a token.`);
+          } else if (tokenFinder.length > 1) {
+            throw new Error(`The SIOP presentation exchange response has descriptor_map with id '${item.id}'. This path '${item.path}' points to multiple credentails and should only point to one credential.`);
+          } else if (typeof tokenFinder[0] === 'string') {
+            const foundToken = tokenFinder[0];
+            const claimToken = ClaimToken.create(foundToken);
+            decodedTokens[item.id] = claimToken;
+          }
+        } else {
+          throw new Error(`The SIOP presentation exchange response has descriptor_map with id '${item.id}'. No path property found.`);
+        }  
       }
     }
     return decodedTokens;

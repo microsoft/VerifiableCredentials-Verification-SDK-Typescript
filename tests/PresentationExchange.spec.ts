@@ -6,47 +6,16 @@
 import base64url from 'base64url';
 import RequestorHelper from './RequestorHelper';
 import ResponderHelper from './ResponderHelper';
-import { ValidatorBuilder, ClaimToken, TokenType, PresentationDefinitionModel, IRequestorPresentationExchange, Requestor } from '../lib';
+import { ValidatorBuilder, PresentationDefinitionModel } from '../lib';
 import VerifiableCredentialConstants from '../lib/verifiable_credential/VerifiableCredentialConstants';
 import TokenGenerator from './TokenGenerator';
 import PresentationDefinition from './models/PresentationDefinitionSample1'
-import RequestOnceVcResponseOk from './models/RequestOnceVcResponseOk'
+import RequestOneVcResponseOk from './models/RequestOneVcResponseOk'
+
 
 const clone = require('clone');
-
-
-describe('Rule processor', () => {
-    it('should process RequestOnceVcResponseOk', async () => {
-        try {
-            const model = new RequestOnceVcResponseOk();
-            const requestor = new RequestorHelper(model);
-            await requestor.setup();
-            const request = await requestor.createPresentationExchangeRequest();
-
-            console.log(`Model: ${model.constructor.name}`);
-            console.log(`=====> Request: ${request.rawToken}`);
-
-            const responder = new ResponderHelper(requestor, model);
-            await responder.setup();
-            const response = await responder.createResponse();
-            console.log(`=====> Response: ${response.rawToken}`);
-
-            const validator = new ValidatorBuilder(requestor.crypto)
-                .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!] })
-                .enableFeatureVerifiedCredentialsStatusCheck(true)
-                .build();
-            let result = await validator.validate(response.rawToken);
-            expect(result.result).toBeTruthy();
-            expect(result.validationResult!.verifiableCredentials!['IdentityCard'].decodedToken.jti).toEqual(model.getVcFromResponse('IdentityCard').decodedToken.jti);
-        } finally {
-            TokenGenerator.fetchMock.reset();
-        }
-
-    });
-});
-
 describe('PresentationExchange', () => {
-    const model = new RequestOnceVcResponseOk();
+    const model = new RequestOneVcResponseOk();
     const requestor = new RequestorHelper(model);
 let responder: ResponderHelper;
 
@@ -62,7 +31,7 @@ let responder: ResponderHelper;
     });
 
     it('should create a requestor', () => {
-        const model = new RequestOnceVcResponseOk();
+        const model = new RequestOneVcResponseOk();
         const requestor = new RequestorHelper(model);
         expect(requestor.presentationExchangeRequestor.presentationDefinition.name).toEqual(model.presentationExchangeRequest.presentationDefinition.name);
         expect(requestor.presentationExchangeRequestor.presentationDefinition.purpose).toEqual(model.presentationExchangeRequest.presentationDefinition.purpose);
@@ -155,7 +124,7 @@ let responder: ResponderHelper;
 
     it('should populate the model', () => {
         const model: any = new PresentationDefinitionModel().populateFrom(PresentationDefinition.presentationExchangeDefinition.presentationDefinition);
-        const requestor = new RequestorHelper(new RequestOnceVcResponseOk());
+        const requestor = new RequestorHelper(new RequestOneVcResponseOk());
         expect(requestor.presentationExchangeRequestor.presentationDefinition.name).toEqual(model.name);
         expect(requestor.presentationExchangeRequestor.presentationDefinition.purpose).toEqual(model.purpose);
         expect(requestor.presentationExchangeRequestor.presentationDefinition.input_descriptors![0].id).toEqual(model.input_descriptors![0].id);
