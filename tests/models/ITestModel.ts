@@ -18,7 +18,15 @@ export default interface ITestModel {
      */
     presentationExchangeResponse: any;
 
+    /**
+     * Define the status response
+     */
     responseStatus: any;
+
+    /**
+     * Define a set of operations to perform on response payload
+     */
+    responseOperations?: any[];
 
     /**
      * Retrieve VC

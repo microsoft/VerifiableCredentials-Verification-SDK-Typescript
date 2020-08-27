@@ -8,6 +8,7 @@ import RequestorHelper from './RequestorHelper'
 import TokenGenerator from './TokenGenerator';
 import ITestModel from './models/ITestModel';
 import { v4 as uuidv4 } from 'uuid';
+const jp = require('jsonpath');
 
 export default class ResponderHelper {
     constructor(public requestor: RequestorHelper, public responseDefinition: ITestModel) {
@@ -89,6 +90,13 @@ export default class ResponderHelper {
             // Sign
             await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(vpPayload)));
             presentations[presentation] = this.crypto.signingProtocol.serialize();
+        }
+
+        // Check for any payload operations
+        if (this.responseDefinition.responseOperations) {
+            for (let inx in this.responseDefinition.responseOperations) {
+                jp.apply(payload, this.responseDefinition!.responseOperations![inx].path, this.responseDefinition!.responseOperations![inx].operation);
+            }
         }
 
         const token = (await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(payload)))).serialize();

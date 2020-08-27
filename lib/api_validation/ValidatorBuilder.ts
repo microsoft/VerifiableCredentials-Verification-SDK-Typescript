@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ITokenValidator, Validator, IDidResolver, ManagedHttpResolver, VerifiablePresentationTokenValidator, VerifiableCredentialTokenValidator, IdTokenTokenValidator, SiopTokenValidator, SelfIssuedTokenValidator, TokenType, IValidatorOptions } from '../index';
+import { ITokenValidator, Validator, IDidResolver, ManagedHttpResolver, VerifiablePresentationTokenValidator, VerifiableCredentialTokenValidator, IdTokenTokenValidator, SiopTokenValidator, SelfIssuedTokenValidator, TokenType, IValidatorOptions, IRequestor, Requestor } from '../index';
 import VerifiableCredentialConstants from '../verifiable_credential/VerifiableCredentialConstants';
 import { Crypto } from '../index';
 import { IExpectedIdToken, IExpectedSelfIssued, IExpectedVerifiableCredential, IExpectedVerifiablePresentation, IExpectedSiop, IssuerMap } from '../options/IExpected';
@@ -18,6 +18,7 @@ export default class ValidatorBuilder {
   private _trustedIssuersForVerifiableCredentials:  {[credentialType: string]: string[]} | undefined;
   private _trustedIssuerConfigurationsForIdTokens: IssuerMap | undefined;
   private _audienceUrl: string | undefined;
+  private _requestor: Requestor | undefined;
 
   constructor(private _crypto: Crypto) {
   }
@@ -34,6 +35,24 @@ export default class ValidatorBuilder {
    */
   public build(): Validator {
     return new Validator(this);
+  }
+
+  /**
+   * Feed the request definition to automatically define the validation rules
+   * @param requestor The request definition
+   */
+  public useRequestor(requestor: Requestor): ValidatorBuilder {
+    this._requestor = requestor;
+    this._audienceUrl = requestor.audienceUrl();
+    this._trustedIssuersForVerifiableCredentials = requestor.trustedIssuersForVerifiableCredentials();
+    return this;
+  }
+
+  /**
+   * Gets the requestor
+   */
+  public get requestor() {
+    return this._requestor;
   }
 
   /**
