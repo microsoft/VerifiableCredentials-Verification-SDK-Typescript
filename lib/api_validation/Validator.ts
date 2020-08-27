@@ -133,13 +133,17 @@ export default class Validator {
       // Check status of VCs
       const statusResponse = await this.checkVcsStatus(validationResult);
       validationResult.verifiablePresentationStatus = statusResponse.validationResult?.verifiablePresentationStatus;
-      
+
+      if (statusResponse.result) {
       // set claims
-      response = {
+      return {
         result: true,
         status: 200,
         validationResult
       };
+      } else {
+        return statusResponse;
+      }
     }
     return response;
   }
@@ -181,9 +185,13 @@ export default class Validator {
       };
     });
 
-    const receipts: { [key: string]: IVerifiablePresentationStatus } = {}; 
+    const receipts: { [key: string]: IVerifiablePresentationStatus } = {};
     for (let vp in validationResult.verifiablePresentations) {
       const response = await this.checkVpStatus(validationResult.verifiablePresentations[vp]);
+      if (!response.result) {
+        return response;
+      }
+
       if (response.validationResult?.verifiablePresentationStatus) {
         for (let id in response.validationResult.verifiablePresentationStatus) {
           receipts[id] = response.validationResult.verifiablePresentationStatus[id];
@@ -204,7 +212,7 @@ export default class Validator {
    */
   public async checkVpStatus(verifiablePresentationToken: ClaimToken): Promise<VerifiablePresentationValidationResponse> {
 
-    let validationResponse = {
+    let validationResponse: VerifiablePresentationValidationResponse = {
       result: true,
       status: 200,
       validationResult: { verifiablePresentationStatus: <{ [key: string]: IVerifiablePresentationStatus }>{} }
@@ -251,9 +259,14 @@ export default class Validator {
           const receiptValidator = new VerifiablePresentationStatusReceipt(receipt, this.builder, options, <IExpectedStatusReceipt>{ didIssuer: vcIssuerDid, didAudience: this.builder.crypto.builder.did });
           const receipts = await receiptValidator.validate();
           if (!receipts.result) {
-            return receipts;
+            validationResponse = {
+              result: false,
+              status: 403,
+              detailedError: receipts.detailedError
+            };
+            break;
           }
-          
+
           for (let jti in receipts.validationResult?.verifiablePresentationStatus) {
             validationResponse.validationResult!.verifiablePresentationStatus![jti] = receipts.validationResult!.verifiablePresentationStatus[jti];
           }

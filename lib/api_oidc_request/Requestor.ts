@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { RequestorBuilder, IRequestorAttestation, IRequestorPresentationExchange } from '../index';
+import { RequestorBuilder, IRequestorAttestation, IRequestorPresentationExchange, IssuerMap, IssuanceAttestationsModel, IdTokenAttestationModel, VerifiablePresentationAttestationModel } from '../index';
 import { PresentationProtocol } from './RequestorBuilder';
 import { IRequestorResult } from './IRequestorResult';
 
@@ -104,6 +104,80 @@ export default class Requestor {
   public createAttestationPresentationRequest(payload: any): any {
     payload.attestations = (<IRequestorAttestation>this.builder.requestor).attestation;
     return payload;
+  }
+
+  /**
+   * Get the audience url from the requestor
+   */
+  public audienceUrl(): string {
+    return this.builder.redirectUri || this.builder.clientId;
+  }
+
+  /**
+   * Get the trusted issuer's configuration urls from the requestor
+   */
+  public trustedIssuerConfigurationsForIdTokens(): IssuerMap {
+    const attestations: IssuanceAttestationsModel = (<IRequestorAttestation>this.builder.requestor).attestation;
+    if (attestations) {
+      if (!attestations.idTokens) {
+        return [];
+      } else {
+        const configurations = attestations.idTokens.map((idToken: IdTokenAttestationModel) => {
+          return idToken.configuration;
+        });
+
+        return <string[]>configurations.filter((config: string | undefined) => config);
+      }
+    } else {
+      throw new Error('Id Tokens only supported in Attestation Requestor model.');
+    }
+  }
+
+  /**
+   * Get the trusted issuer's configuration urls from the requestor
+   */
+  public trustedIssuersForVerifiableCredentials(): { [credentialType: string]: string[] } | undefined {
+    const issuers: { [credentialType: string]: string[] } = {};
+
+    if (this.isPresentationExchange()) {
+      return { undefined: [] };
+
+      /*
+      // const presentationDefinition = (<IRequestorPresentationExchange>this.builder.requestor).presentationDefinition;
+      if (!presentationDefinition.input_descriptors) {
+        return { undefined: [] };
+      }
+      for (let definition in presentationDefinition.input_descriptors) {
+        if (!presentationDefinition.input_descriptors[definition]) {
+          throw new Error('Missing id in input_descriptor');
+        }
+      */
+
+    } else {
+      const attestations = (<IRequestorAttestation>this.builder.requestor).attestation;
+      if (!attestations.presentations) {
+        return { undefined: [] };
+      } else {
+        attestations.presentations.forEach((presentation) => {
+
+          if (!presentation.credentialType) {
+            throw new Error('Missing credentialType for presentation.');
+          }
+          if (!issuers[presentation.credentialType]) {
+            issuers[presentation.credentialType] = [];
+          }
+
+          presentation.issuers?.forEach((issuer) => issuers[presentation.credentialType!].push(<string>issuer.iss));
+        });
+
+        return issuers;
+      }
+    }
+  }
+
+
+  public isPresentationExchange(): boolean {
+    return (<IRequestorAttestation>this.builder.requestor).attestation === undefined;
   }
 }
 

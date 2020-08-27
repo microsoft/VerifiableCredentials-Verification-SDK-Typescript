@@ -11,6 +11,7 @@ import TokenGenerator from './TokenGenerator';
 import RequestOneVcResponseOk from './models/RequestOneVcResponseOk'
 import RequestTwoVcResponseOk from './models/RequestTwoVcResponseOk'
 import RequestTwoVcResponseOne from './models/RequestTwoVcResponseOne';
+import RequestTwoVcResponseRevoked from './models/RequestTwoVcResponseRevoked';
 
 
 describe('Rule processor', () => {
@@ -35,7 +36,7 @@ describe('Rule processor', () => {
                 .build();
             let result = await validator.validate(response.rawToken);
             expect(result.result).toBeTruthy();
-            
+
             expect(result.validationResult!.verifiableCredentials!['IdentityCard'].decodedToken.jti).toEqual(model.getVcFromResponse('IdentityCard').decodedToken.jti);
             const jti = result.validationResult!.verifiablePresentations!['IdentityCard'].decodedToken.jti;
             expect(result.validationResult!.verifiablePresentationStatus![jti].status).toEqual('valid');
@@ -43,7 +44,7 @@ describe('Rule processor', () => {
             TokenGenerator.fetchMock.reset();
         }
     });
-    
+
     it('should process RequestTwoVcResponseOk', async () => {
         try {
             const model = new RequestTwoVcResponseOk();
@@ -65,7 +66,7 @@ describe('Rule processor', () => {
                 .build();
             let result = await validator.validate(response.rawToken);
             expect(result.result).toBeTruthy();
-            
+
             expect(result.validationResult!.verifiableCredentials!['IdentityCard'].decodedToken.jti).toEqual(model.getVcFromResponse('IdentityCard').decodedToken.jti);
             const jtiIdentity = result.validationResult!.verifiablePresentations!['IdentityCard'].decodedToken.jti;
             const jtiDiploma = result.validationResult!.verifiablePresentations!['Diploma'].decodedToken.jti;
@@ -76,8 +77,8 @@ describe('Rule processor', () => {
             TokenGenerator.fetchMock.reset();
         }
     });
-    
-    xit('should process RequestTwoVcResponseOne', async () => {
+
+    it('should process RequestTwoVcResponseOne', async () => {
         try {
             const model = new RequestTwoVcResponseOne();
             const requestor = new RequestorHelper(model);
@@ -93,11 +94,36 @@ describe('Rule processor', () => {
             console.log(`=====> Response: ${response.rawToken}`);
 
             const validator = new ValidatorBuilder(requestor.crypto)
-                .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!], Diploma: [responder.generator.crypto.builder.did!] })
-                .enableFeatureVerifiedCredentialsStatusCheck(true)
+                .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!], Diploma: [responder.generator.crypto.builder.did!] }).enableFeatureVerifiedCredentialsStatusCheck(true)
                 .build();
             let result = await validator.validate(response.rawToken);
             expect(result.result).toBeFalsy();
+        } finally {
+            TokenGenerator.fetchMock.reset();
+        }
+    });
+
+    it('should process RequestTwoVcResponseRevoked', async () => {
+        try {
+            const model = new RequestTwoVcResponseRevoked();
+            const requestor = new RequestorHelper(model);
+            await requestor.setup();
+            const request = await requestor.createPresentationExchangeRequest();
+
+            console.log(`Model: ${model.constructor.name}`);
+            console.log(`=====> Request: ${request.rawToken}`);
+
+            const responder = new ResponderHelper(requestor, model);
+            await responder.setup();
+            const response = await responder.createResponse();
+            console.log(`=====> Response: ${response.rawToken}`);
+
+            const validator = new ValidatorBuilder(requestor.crypto)
+                .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!], Diploma: [responder.generator.crypto.builder.did!] }).enableFeatureVerifiedCredentialsStatusCheck(true)
+                .build();
+            let result = await validator.validate(response.rawToken);
+            expect(result.result).toBeFalsy();
+            expect(result.detailedError?.startsWith('The status receipt for jti ') && result.detailedError?.endsWith(' failed with status revoked.')).toBeTruthy();
         } finally {
             TokenGenerator.fetchMock.reset();
         }
