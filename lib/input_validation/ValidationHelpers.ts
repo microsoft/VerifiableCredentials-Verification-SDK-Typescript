@@ -282,7 +282,7 @@ export class ValidationHelpers {
       if (validationResponse.payloadObject.aud !== expected.didAudience) {
         return {
           result: false,
-          detailedError: `Wrong aud property in verifiablePresentation. Expected '${expected.didAudience}'`,
+          detailedError: `Wrong aud property in verifiablePresentation. Expected '${expected.didAudience}'. Found '${validationResponse.payloadObject.aud}'`,
           status: 403
         };
       }

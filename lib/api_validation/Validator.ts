@@ -11,6 +11,7 @@ import { TokenType } from '../verifiable_credential/ClaimToken';
 import IValidationResult from './IValidationResult';
 import { KeyStoreOptions } from 'verifiablecredentials-crypto-sdk-typescript';
 import { VerifiablePresentationValidationResponse } from '../input_validation/VerifiablePresentationValidationResponse';
+import { v4 as uuid } from 'uuid';
 
 /**
  * Class model the token validator
@@ -159,19 +160,10 @@ export default class Validator {
       };
     }
 
-    if (!validationResult.verifiablePresentations) {
+    if (!validationResult.verifiablePresentations || !validationResult.verifiableCredentials) {
       return {
-        result: false,
-        status: 403,
-        detailedError: 'No presentations to tests'
-      };
-    }
-
-    if (!validationResult.verifiableCredentials) {
-      return {
-        result: false,
-        status: 403,
-        detailedError: 'No verifiable credentials to tests'
+        result: true,
+        status: 200
       };
     }
 
@@ -222,9 +214,11 @@ export default class Validator {
     const publicKey = await (await this.builder.crypto.builder.keyStore.get(this.builder.crypto.builder.signingKeyReference, new KeyStoreOptions({ publicKeyOnly: true }))).getKey<JsonWebKey>();
     const payload: any = {
       did: this.builder.crypto.builder.did,
-      kid: `${this.builder.crypto.builder.did}#${this.builder.crypto.builder.signingKeyReference}`,
-      vp: verifiablePresentationToken,
-      sub_jwk: publicKey
+      kid: `${this.builder.crypto.builder.did}#${this.builder.crypto.builder.signingKeyReference.keyReference}`,
+      vp: verifiablePresentationToken.rawToken,
+      sub_jwk: publicKey,
+      iss: 'https://self-issued.me',
+      jti:  uuid()
     };
 
     // get vcs to obtain status url
@@ -237,18 +231,23 @@ export default class Validator {
 
         if (statusUrl) {
           // send the payload
+          payload.aud = statusUrl;
           const siop = await this.builder.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(payload)));
+          const serialized = siop.serialize();
 
-          console.log(`verifiablePresentation status check`);
+          console.log(`verifiablePresentation status check on ${statusUrl} ====> ${serialized}`);
           let response = await fetch(statusUrl, {
             method: 'POST',
-            body: siop.serialize()
+            headers: {
+              'Content-Type': 'text/plain'
+            },            
+            body: serialized
           });
           if (!response.ok) {
             return {
               result: false,
               status: 403,
-              detailedError: `status check could not fetch response from ${statusUrl}`
+              detailedError: `status check could not fetch response from ${statusUrl} with status ${response.status}. Message ${JSON.stringify(await response.json())}`
             };
           }
 
