@@ -25,7 +25,7 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
    * @param expected Expected properties of the verifiable presentation
    * @param siopDid needs to be equal to audience of VC
    */
-  constructor(private options: IValidationOptions, private expected: IExpectedVerifiablePresentation, private siopDid: string, private id: string, private crypto: Crypto) {
+  constructor(private options: IValidationOptions, private expected: IExpectedVerifiablePresentation, private siopDid: string, private id: string) {
   }
 
   /**

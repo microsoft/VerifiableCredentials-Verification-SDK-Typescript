@@ -29,12 +29,12 @@ describe('VerifiablePresentationValidation', () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentation, true);
     const expected = siop.expected.filter((token: IExpectedVerifiablePresentation) => token.type === TokenType.verifiablePresentation)[0];
 
-    let validator = new VerifiablePresentationValidation(options, expected, setup.defaultUserDid, 'id', crypto);
+    let validator = new VerifiablePresentationValidation(options, expected, setup.defaultUserDid, 'id');
     let response = await validator.validate(siop.vp.rawToken);
     expect(response.result).toBeTruthy();
 
     // Negative cases
-    validator = new VerifiablePresentationValidation(options, expected, 'abcdef', 'id', crypto);
+    validator = new VerifiablePresentationValidation(options, expected, 'abcdef', 'id');
     response = await validator.validate(siop.vp.rawToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
@@ -50,7 +50,7 @@ describe('VerifiablePresentationValidation', () => {
     let payload: any = {
     };
     let siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
-    validator = new VerifiablePresentationValidation(options, expected, setup.defaultUserDid, 'id', crypto);
+    validator = new VerifiablePresentationValidation(options, expected, setup.defaultUserDid, 'id');
     response = await validator.validate(siopRequest.rawToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);

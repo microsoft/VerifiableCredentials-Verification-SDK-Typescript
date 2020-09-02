@@ -59,7 +59,7 @@ import IRequestorAttestation from './api_oidc_request/IRequestorAttestation';
 import IRequestorPresentationExchange from './api_oidc_request/IRequestorPresentationExchange';
 export { PresentationProtocol, IResponse, RequestorBuilder, Requestor, IRequestor, IRequestorAttestation, IRequestorPresentationExchange };
 
-export { KeyStoreFactory, SubtleCryptoNode, KeyUse, JoseBuilder, IPayloadProtectionSigning, LongFormDid, Subtle, Crypto, CryptoBuilder, IKeyContainer, IKeyStore, KeyReference, CryptoFactory } from 'verifiablecredentials-crypto-sdk-typescript';
+export { KeyStoreFactory, SubtleCryptoNode, CryptoFactoryManager, CryptographicKey, KeyType, KeyUse, JoseBuilder, IPayloadProtectionSigning, LongFormDid, Subtle, Crypto, CryptoBuilder, IKeyContainer, IKeyStore, KeyReference, CryptoFactory } from 'verifiablecredentials-crypto-sdk-typescript';
 
 import { BaseAttestationModel } from './rules_model/BaseAttestationModel';
 import { BaseIssuanceModel } from './rules_model/BaseIssuanceModel';
