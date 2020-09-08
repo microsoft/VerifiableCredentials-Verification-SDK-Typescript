@@ -174,7 +174,7 @@ export default class RequestorHelper {
      */
     public async createPresentationExchangeRequest(): Promise<ClaimToken> {
         const requestor = new RequestorBuilder(this.presentationExchangeRequestor, this.crypto).build();
-        
-        return new ClaimToken(TokenType.siopPresentationExchange, (await requestor.create()).request!, '');
+        const request = (await requestor.create()).request!;
+        return new ClaimToken(TokenType.siopPresentationExchange, request);
     }
 }

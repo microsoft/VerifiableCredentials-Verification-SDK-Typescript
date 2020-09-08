@@ -128,26 +128,57 @@ export default class Validator {
 
     // Set output
     response = queue.getResult();
-    if (response.result) {
-      const validationResult = this.setValidationResult(queue);
+    if (!response.result) {
+      return response;
+    }
+    const validationResult = this.setValidationResult(queue);
 
-      // Check status of VCs
-      const statusResponse = await this.checkVcsStatus(validationResult);
-      validationResult.verifiablePresentationStatus = statusResponse.validationResult?.verifiablePresentationStatus;
+    // Check if inputs are available
+    response = this.validateAllRequiredInputs(validationResult);
+    if (!response.result) {
+      return response;
+    }
 
-      if (statusResponse.result) {
+    // Check status of VCs
+    const statusResponse = await this.checkVcsStatus(validationResult);
+    validationResult.verifiablePresentationStatus = statusResponse.validationResult?.verifiablePresentationStatus;
+
+    if (statusResponse.result) {
       // set claims
       return {
         result: true,
         status: 200,
         validationResult
       };
-      } else {
-        return statusResponse;
-      }
+    } else {
+      return statusResponse;
     }
+
     return response;
   }
+
+  private validateAllRequiredInputs(validationResult: IValidationResult): IValidationResponse {
+    // Check required VC's
+    const requiredVCs = this.builder.trustedIssuersForVerifiableCredentials;
+    if (requiredVCs) {
+      for (let vc in requiredVCs) {
+        const presentedVc = validationResult.verifiableCredentials && validationResult.verifiableCredentials[vc];
+        if (!presentedVc) {
+          return {
+            detailedError: `Verifiable credential '${vc}' is missing from the input request`,
+            status: 403,
+            result: false
+          };
+        }
+      }
+    }
+
+    return {
+      result: true,
+      status: 200,
+      validationResult
+    };
+  } 
 
   /**
    * Validate status on verifiable presentation
@@ -218,7 +249,7 @@ export default class Validator {
       vp: verifiablePresentationToken.rawToken,
       sub_jwk: publicKey,
       iss: 'https://self-issued.me',
-      jti:  uuid()
+      jti: uuid()
     };
 
     // get vcs to obtain status url
@@ -240,7 +271,7 @@ export default class Validator {
             method: 'POST',
             headers: {
               'Content-Type': 'text/plain'
-            },            
+            },
             body: serialized
           });
           if (!response.ok) {

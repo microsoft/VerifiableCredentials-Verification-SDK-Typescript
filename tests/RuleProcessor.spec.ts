@@ -12,6 +12,7 @@ import RequestTwoVcResponseOk from './models/RequestTwoVcResponseOk'
 import RequestTwoVcResponseOne from './models/RequestTwoVcResponseOne';
 import RequestTwoVcResponseRevoked from './models/RequestTwoVcResponseRevoked';
 import RequestAttestationsOneVcSaIdtokenResponseOk from './models/RequestAttestationsOneVcSaIdtokenResponseOk';
+import RequestAttestationsOneVcSaIdtokenResponseOne from './models/RequestAttestationsOneVcSaIdtokenResponseOne';
 
 describe('Rule processor', () => {
     it('should process RequestOneVcResponseOk', async () => {
@@ -128,7 +129,7 @@ describe('Rule processor', () => {
         }
     });
 
-    fit('should process RequestAttestationsOneVcSaIdtokenResponseOk', async () => {
+    it('should process RequestAttestationsOneVcSaIdtokenResponseOk', async () => {
         try {
             const model = new RequestAttestationsOneVcSaIdtokenResponseOk();
             const requestor = new RequestorHelper(model);
@@ -144,18 +145,45 @@ describe('Rule processor', () => {
             console.log(`=====> Response: ${response.rawToken}`);
 
             const validator = new ValidatorBuilder(requestor.crypto)
-                .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!], Diploma: [responder.generator.crypto.builder.did!] })
+                .useTrustedIssuersForVerifiableCredentials({ InsuranceCredential: [responder.generator.crypto.builder.did!], DriversLicenseCredential: [responder.generator.crypto.builder.did!] })
                 .enableFeatureVerifiedCredentialsStatusCheck(true)
                 .build();
             let result = await validator.validate(response.rawToken);
             expect(result.result).toBeTruthy();
 
-            expect(result.validationResult!.verifiableCredentials!['IdentityCard'].decodedToken.jti).toEqual(model.getVcFromResponse('IdentityCard').decodedToken.jti);
-            const jtiIdentity = result.validationResult!.verifiablePresentations!['IdentityCard'].decodedToken.jti;
-            const jtiDiploma = result.validationResult!.verifiablePresentations!['Diploma'].decodedToken.jti;
+            expect(result.validationResult!.verifiableCredentials!['InsuranceCredential'].decodedToken.jti).toEqual(model.getVcFromResponse('InsuranceCredential').decodedToken.jti);
+            const jtiIdentity = result.validationResult!.verifiablePresentations!['InsuranceCredential'].decodedToken.jti;
+            const jtiDiploma = result.validationResult!.verifiablePresentations!['DriversLicenseCredential'].decodedToken.jti;
             expect(jtiDiploma === jtiIdentity).toBeFalsy();
             expect(result.validationResult!.verifiablePresentationStatus![jtiIdentity].status).toEqual('valid');
             expect(result.validationResult!.verifiablePresentationStatus![jtiDiploma].status).toEqual('valid');
+        } finally {
+            TokenGenerator.fetchMock.reset();
+        }
+    });
+
+    it('should process RequestAttestationsOneVcSaIdtokenResponseOne', async () => {
+        try {
+            const model = new RequestAttestationsOneVcSaIdtokenResponseOne();
+            const requestor = new RequestorHelper(model);
+            await requestor.setup();
+            const request = await requestor.createPresentationExchangeRequest();
+
+            console.log(`Model: ${model.constructor.name}`);
+            console.log(`=====> Request: ${request.rawToken}`);
+
+            const responder = new ResponderHelper(requestor, model);
+            await responder.setup();
+            const response = await responder.createResponse();
+            console.log(`=====> Response: ${response.rawToken}`);
+
+            const validator = new ValidatorBuilder(requestor.crypto)
+                .useTrustedIssuersForVerifiableCredentials({ InsuranceCredential: [responder.generator.crypto.builder.did!], DriversLicenseCredential: [responder.generator.crypto.builder.did!] })
+                .enableFeatureVerifiedCredentialsStatusCheck(true)
+                .build();
+            let result = await validator.validate(response.rawToken);
+            expect(result.result).toBeFalsy();
+            expect(result.detailedError).toEqual(`Verifiable credential 'DriversLicenseCredential' is missing from the input request`);
         } finally {
             TokenGenerator.fetchMock.reset();
         }

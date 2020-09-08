@@ -7,5 +7,5 @@ export default interface IRequestorAttestation extends IRequestor {
   /**
    * claims being asked for
    */
-  attestation: IssuanceAttestationsModel
+  attestations: IssuanceAttestationsModel
 }
