@@ -1,22 +1,22 @@
 /**
- * Interface to model your presentation exchange request
+ * Interface to model your attestation request
  */
 
-import { IRequestorPresentationExchange, ClaimToken, IRequestorAttestation } from "../../lib";
+import { ClaimToken, IRequestorAttestation } from "../../lib";
 
 
-export default interface ITestModel {
+export default interface ITestModelAttestations {
     clientId: string;
 
     /**
      * Define the model for the request
      */
-    request: IRequestorPresentationExchange | IRequestorAttestation;
+    presentationAttestationRequest: IRequestorAttestation;
 
     /**
      * Define the model for the response
      */
-    response: any;
+    presentationAttestationResponse: any;
 
     /**
      * Define the status response

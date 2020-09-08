@@ -41,7 +41,7 @@ export default class ResponderHelper {
     public async createResponse(): Promise<ClaimToken> {
 
         await this.generator.setVcs();
-        const payload = this.responseDefinition.presentationExchangeResponse;
+        const payload = this.responseDefinition.response;
 
         // Present the VCs
         const presentations = (<ITestModel>this.responseDefinition).getPresentations();

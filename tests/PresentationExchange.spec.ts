@@ -6,7 +6,7 @@
 import base64url from 'base64url';
 import RequestorHelper from './RequestorHelper';
 import ResponderHelper from './ResponderHelper';
-import { ValidatorBuilder, PresentationDefinitionModel } from '../lib';
+import { ValidatorBuilder, PresentationDefinitionModel, IRequestorPresentationExchange } from '../lib';
 import VerifiableCredentialConstants from '../lib/verifiable_credential/VerifiableCredentialConstants';
 import TokenGenerator from './TokenGenerator';
 import PresentationDefinition from './models/PresentationDefinitionSample1'
@@ -17,7 +17,7 @@ const clone = require('clone');
 describe('PresentationExchange', () => {
     const model = new RequestOneVcResponseOk();
     const requestor = new RequestorHelper(model);
-let responder: ResponderHelper;
+    let responder: ResponderHelper;
 
     beforeAll(async () => {
         await requestor.setup();
@@ -33,10 +33,10 @@ let responder: ResponderHelper;
     it('should create a requestor', () => {
         const model = new RequestOneVcResponseOk();
         const requestor = new RequestorHelper(model);
-        expect(requestor.presentationExchangeRequestor.presentationDefinition.name).toEqual(model.presentationExchangeRequest.presentationDefinition.name);
-        expect(requestor.presentationExchangeRequestor.presentationDefinition.purpose).toEqual(model.presentationExchangeRequest.presentationDefinition.purpose);
-        expect(requestor.presentationExchangeRequestor.presentationDefinition.input_descriptors![0].id).toEqual(model.presentationExchangeRequest.presentationDefinition.input_descriptors![0].id);
-        expect(requestor.presentationExchangeRequestor.presentationDefinition.input_descriptors![0].issuance![0].manifest).toEqual(model.presentationExchangeRequest.presentationDefinition.input_descriptors![0].issuance![0].manifest);
+        expect((<IRequestorPresentationExchange>requestor.presentationExchangeRequestor).presentationDefinition.name).toEqual(model.request.presentationDefinition.name);
+        expect((<IRequestorPresentationExchange>requestor.presentationExchangeRequestor).presentationDefinition.purpose).toEqual(model.request.presentationDefinition.purpose);
+        expect((<IRequestorPresentationExchange>requestor.presentationExchangeRequestor).presentationDefinition.input_descriptors![0].id).toEqual(model.request.presentationDefinition.input_descriptors![0].id);
+        expect((<IRequestorPresentationExchange>requestor.presentationExchangeRequestor).presentationDefinition.input_descriptors![0].issuance![0].manifest).toEqual(model.request.presentationDefinition.input_descriptors![0].issuance![0].manifest);
     });
 
     it('should create a request', async () => {
@@ -125,9 +125,9 @@ let responder: ResponderHelper;
     it('should populate the model', () => {
         const model: any = new PresentationDefinitionModel().populateFrom(PresentationDefinition.presentationExchangeDefinition.presentationDefinition);
         const requestor = new RequestorHelper(new RequestOneVcResponseOk());
-        expect(requestor.presentationExchangeRequestor.presentationDefinition.name).toEqual(model.name);
-        expect(requestor.presentationExchangeRequestor.presentationDefinition.purpose).toEqual(model.purpose);
-        expect(requestor.presentationExchangeRequestor.presentationDefinition.input_descriptors![0].id).toEqual(model.input_descriptors![0].id);
-        expect(requestor.presentationExchangeRequestor.presentationDefinition.input_descriptors![0].issuance![0].manifest).toEqual(model.input_descriptors[0].issuance![0].manifest);
+        expect((<IRequestorPresentationExchange>requestor.presentationExchangeRequestor).presentationDefinition.name).toEqual(model.name);
+        expect((<IRequestorPresentationExchange>requestor.presentationExchangeRequestor).presentationDefinition.purpose).toEqual(model.purpose);
+        expect((<IRequestorPresentationExchange>requestor.presentationExchangeRequestor).presentationDefinition.input_descriptors![0].id).toEqual(model.input_descriptors![0].id);
+        expect((<IRequestorPresentationExchange>requestor.presentationExchangeRequestor).presentationDefinition.input_descriptors![0].issuance![0].manifest).toEqual(model.input_descriptors[0].issuance![0].manifest);
     });
 });

@@ -12,7 +12,7 @@ export default class RequestTwoVcResponseOk implements ITestModel {
     /**
      * Define the model for the request
      */
-    public presentationExchangeRequest: any = {
+    public request: any = {
         clientId: this.clientId,
         clientName: 'My relying party',
         clientPurpose: 'Need your VC to provide access',
@@ -58,7 +58,7 @@ export default class RequestTwoVcResponseOk implements ITestModel {
     /**
      * Define the model for the response
      */
-    public presentationExchangeResponse: any = {
+    public response: any = {
         iss: 'https://self-issued.me',
         aud: this.clientId,
         nonce: '',
@@ -152,7 +152,7 @@ export default class RequestTwoVcResponseOk implements ITestModel {
      */
     public getVcFromResponse(key: string): ClaimToken {
         // Decode de presentation
-        let claimToken = ClaimToken.create(this.presentationExchangeResponse.presentation_submission.attestations.presentations[key]);
+        let claimToken = ClaimToken.create(this.response.presentation_submission.attestations.presentations[key]);
 
         claimToken =  ClaimToken.create(claimToken.decodedToken.vp.verifiableCredential[0]);
         return claimToken;
@@ -163,6 +163,6 @@ export default class RequestTwoVcResponseOk implements ITestModel {
      * Return all presentations
      */
     public getPresentations(): { [key: string]: any } {
-        return this.presentationExchangeResponse.presentation_submission.attestations.presentations;
+        return this.response.presentation_submission.attestations.presentations;
     }
 }
