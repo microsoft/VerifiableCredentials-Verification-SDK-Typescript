@@ -32,7 +32,7 @@ export default class TokenGenerator {
 
     public vcSchema = this.responder.requestor.schema;
 
-   
+    public static configKeysCounter = 1;
 
     public signingKeyReference = new KeyReference('signingTokenGeneration');
 
@@ -50,8 +50,6 @@ export default class TokenGenerator {
         // setup mock to resolve this did
         TokenGenerator.mockResolver(this.crypto);
     }
-
-    
 
     /**
      * Mock the resolver
@@ -79,8 +77,40 @@ export default class TokenGenerator {
         console.log(`Set mock for ${resolverUrl}`);
     }
 
+    /**
+     * Mock the configuration
+     */
+    public static async mockConfiguration(crypto: Crypto, configuration: string) {
+        const jwks = await (await crypto.builder.keyStore.get(crypto.builder.signingKeyReference!, new KeyStoreOptions({ publicKeyOnly: true })));
+        const jwksUrl = `https://jwks.example.com/${TokenGenerator.configKeysCounter++}`
+        TokenGenerator.fetchMock.get(configuration, { "jwks_uri": `${jwksUrl}`, "issuer": `${crypto.builder.did!}` }, { overwriteRoutes: true });
+        const serialized = JSON.stringify(jwks);
+        TokenGenerator.fetchMock.get(jwksUrl, serialized, { overwriteRoutes: true });
+        console.log(`Set mock for ${configuration}`);
+    }
+
+    public async setIdTokens(): Promise<void> {
+        const idTokens = (<ITestModel>this.responder.responseDefinition).getIdTokensFromModel();
+        if (idTokens) {
+            for (let configuration in idTokens) {
+                const payload: any = idTokens[configuration];
+
+                TokenGenerator.mockConfiguration(this.crypto, configuration);
+
+                // Additional props
+                payload.sub = `${this.responder.crypto.builder.did}`;
+                payload.iss = `${this.crypto.builder.did}`;
+
+                // Sign
+                await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(payload)));
+                idTokens[configuration] = this.crypto.signingProtocol.serialize();
+            }
+        }
+    }
+
+
     public async setVcs(): Promise<void> {
-        const presentations = (<ITestModel>this.responder.responseDefinition).getPresentations();
+        const presentations = (<ITestModel>this.responder.responseDefinition).getPresentationsFromModel();
         for (let presentation in presentations) {
             const vcPayload: any = presentations[presentation];
 
@@ -99,22 +129,22 @@ export default class TokenGenerator {
             "jti": "baab2cdccb38408d8f1179071fe37dbe",
             "scope": "openid did_authn verify",
             "vp": {
-              "@context": [
-                "https://www.w3.org/2018/credentials/v1"
-              ],
-              "type": [
-                "VerifiablePresentation"
-              ],
-              "verifiableCredential": []
+                "@context": [
+                    "https://www.w3.org/2018/credentials/v1"
+                ],
+                "type": [
+                    "VerifiablePresentation"
+                ],
+                "verifiableCredential": []
             },
             iss: `${this.responder.crypto.builder.did}`,
             aud: `${this.responder.requestor.crypto.builder.did}`,
-          };
-      
-          for (let inx = 0; inx < vc.length; inx++) {
+        };
+
+        for (let inx = 0; inx < vc.length; inx++) {
             (vpTemplate.vp.verifiableCredential as string[]).push(vc[inx].rawToken);
-          }
-          const token = (await this.responder.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(vpTemplate)))).serialize();
-          return new ClaimToken(TokenType.verifiablePresentation, token, '');
+        }
+        const token = (await this.responder.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(vpTemplate)))).serialize();
+        return new ClaimToken(TokenType.verifiablePresentation, token, '');
     }
 }

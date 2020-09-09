@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IRequestorPresentationExchange, PresentationDefinitionModel, PresentationExchangeInputDescriptorModel, PresentationExchangeIssuanceModel, PresentationExchangeSchemaModel, RequestorBuilder, Crypto, CryptoBuilder, KeyReference, KeyUse, LongFormDid, IRequestor, ClaimToken, TokenType } from '../lib/index';
+import { IRequestorPresentationExchange, PresentationDefinitionModel, PresentationExchangeInputDescriptorModel, PresentationExchangeIssuanceModel, PresentationExchangeSchemaModel, RequestorBuilder, Crypto, CryptoBuilder, KeyReference, KeyUse, LongFormDid, IRequestor, ClaimToken, TokenType, IRequestorAttestation } from '../lib/index';
 import TokenGenerator from './TokenGenerator';
 import ITestModel from './models/ITestModel';
 
 export default class RequestorHelper {
 
     constructor(requestDefinition: ITestModel, crypto?: Crypto) {
-        this.presentationExchangeRequestor = requestDefinition.presentationExchangeRequest;
+        this.presentationExchangeRequestor = requestDefinition.request;
         if (crypto) {
             this.crypto = crypto;
         }
@@ -106,7 +106,7 @@ export default class RequestorHelper {
     /**
      * Define the presentation exchange requestor
      */
-    public presentationExchangeRequestor: IRequestorPresentationExchange = {
+    public presentationExchangeRequestor: IRequestorPresentationExchange | IRequestorAttestation = {
 
         /**
          * the name of the requestor (Relying Party)
@@ -174,7 +174,7 @@ export default class RequestorHelper {
      */
     public async createPresentationExchangeRequest(): Promise<ClaimToken> {
         const requestor = new RequestorBuilder(this.presentationExchangeRequestor, this.crypto).build();
-        
-        return new ClaimToken(TokenType.siopPresentationExchange, (await requestor.create()).request!, '');
+        const request = (await requestor.create()).request!;
+        return new ClaimToken(TokenType.siopPresentationExchange, request);
     }
 }

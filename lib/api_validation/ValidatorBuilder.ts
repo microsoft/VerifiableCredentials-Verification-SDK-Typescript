@@ -193,7 +193,7 @@ export default class ValidatorBuilder {
   }
 
   // Feature flags. Used temporary to introduce a new feature
-  private _enableVerifiedCredentialsStatusCheck = false;
+  private _enableVerifiedCredentialsStatusCheck = true;
   public get featureVerifiedCredentialsStatusCheckEnabled(): boolean {
     return this._enableVerifiedCredentialsStatusCheck;
   }

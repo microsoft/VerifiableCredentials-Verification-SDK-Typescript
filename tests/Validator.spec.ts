@@ -30,6 +30,7 @@ describe('Validator', () => {
     let tokenValidator = new IdTokenTokenValidator(setup.validatorOptions, expected);
     let validator = new ValidatorBuilder(crypto)
       .useValidators(tokenValidator)
+      .useTrustedIssuerConfigurationsForIdTokens([setup.defaultIdTokenConfiguration])
       .build();
 
     let result = await validator.validate(siop.idToken.rawToken);
@@ -38,7 +39,6 @@ describe('Validator', () => {
 
     validator = new ValidatorBuilder(crypto)
       .useTrustedIssuerConfigurationsForIdTokens([setup.defaultIdTokenConfiguration])
-      .useTrustedIssuersForVerifiableCredentials({ DrivingLicense: [ 'did:test:issuer' ] })
       .build();
     result = await validator.validate(siop.idToken.rawToken);
     expect(result.result).toBeTruthy(); 
@@ -46,11 +46,9 @@ describe('Validator', () => {
 
     //Redefine the urls
     validator = validator.builder.useTrustedIssuerConfigurationsForIdTokens([setup.defaultIdTokenConfiguration])
-    .useTrustedIssuersForVerifiableCredentials({ DrivingLicense: [ 'did:test:issuer' ] })
     .build();
     result = await validator.validate(siop.idToken.rawToken);
     expect(result.result).toBeTruthy(); 
-    expect(validator.builder.trustedIssuersForVerifiableCredentials).toEqual({ DrivingLicense: [ 'did:test:issuer' ] });
     expect(validator.builder.trustedIssuerConfigurationsForIdTokens).toEqual([setup.defaultIdTokenConfiguration]);
     expect(result.validationResult?.verifiablePresentations).toBeUndefined();
 
@@ -98,6 +96,7 @@ describe('Validator', () => {
     const vcValidator = new VerifiableCredentialTokenValidator(setup.validatorOptions, map);
     let validator = new ValidatorBuilder(crypto)
       .useValidators([vcValidator, vpValidator])
+      .enableFeatureVerifiedCredentialsStatusCheck(false)
       .build();
 
     // Check validator types
@@ -138,6 +137,7 @@ describe('Validator', () => {
     // Test validator with missing VC validator
     validator = new ValidatorBuilder(crypto)
       .useValidators(vpValidator)
+      .enableFeatureVerifiedCredentialsStatusCheck(false)
       .build();
     queue = new ValidationQueue();
     queue.enqueueToken('vp', siop.vp.rawToken);
@@ -156,6 +156,7 @@ describe('Validator', () => {
     let validator = new ValidatorBuilder(crypto)
       .useAudienceUrl(siopExpected.audience)
       .useTrustedIssuersForVerifiableCredentials(vcExpected.contractIssuers)
+      .enableFeatureVerifiedCredentialsStatusCheck(false)
       .build();
 
     expect(validator.builder.audienceUrl).toEqual(siopExpected.audience);
@@ -174,7 +175,7 @@ describe('Validator', () => {
     expect(result.validationResult?.idTokens).toBeUndefined();
     expect(result.validationResult?.selfIssued).toBeUndefined();
     expect(result.validationResult?.verifiableCredentials).toBeDefined();
-    expect(result.validationResult?.verifiableCredentials!['VerifiableCredential'].decodedToken.vc.credentialSubject.givenName).toEqual('Jules');
+    expect(result.validationResult?.verifiableCredentials!['DrivingLicense'].decodedToken.vc.credentialSubject.givenName).toEqual('Jules');
 
     // Negative cases
     // map issuer to other credential type
@@ -202,6 +203,7 @@ describe('Validator', () => {
       .useTrustedIssuerConfigurationsForIdTokens(idTokenExpected.configuration)
       .useTrustedIssuersForVerifiableCredentials(vcExpected.contractIssuers)
       .useResolver(new ManagedHttpResolver(VerifiableCredentialConstants.UNIVERSAL_RESOLVER_URL))
+      .enableFeatureVerifiedCredentialsStatusCheck(false)
       .build();
 
     expect(validator.resolver).toBeDefined();
@@ -224,7 +226,7 @@ describe('Validator', () => {
     expect(result.validationResult?.selfIssued).toBeDefined();
     expect(result.validationResult?.selfIssued.decodedToken.name).toEqual('jules');
     expect(result.validationResult?.verifiableCredentials).toBeDefined();
-    expect(result.validationResult?.verifiableCredentials!['VerifiableCredential'].decodedToken.vc.credentialSubject.givenName).toEqual('Jules');
+    expect(result.validationResult?.verifiableCredentials!['DrivingLicense'].decodedToken.vc.credentialSubject.givenName).toEqual('Jules');
 
     // Negative cases
 

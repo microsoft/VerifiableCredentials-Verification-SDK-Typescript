@@ -85,6 +85,9 @@ export default class Validator {
       switch (claimToken.type) {
         case TokenType.idToken:
           response = await validator.validate(queue, queueItem!, '', siopContractId);
+          if (response.result) {
+            claimToken = response.validationResult?.idTokens![0];
+          }
           break;
         case TokenType.verifiableCredential:
           response = await validator.validate(queue, queueItem!, siopDid!);
@@ -128,26 +131,69 @@ export default class Validator {
 
     // Set output
     response = queue.getResult();
-    if (response.result) {
-      const validationResult = this.setValidationResult(queue);
+    if (!response.result) {
+      return response;
+    }
+    const validationResult = this.setValidationResult(queue);
 
-      // Check status of VCs
-      const statusResponse = await this.checkVcsStatus(validationResult);
-      validationResult.verifiablePresentationStatus = statusResponse.validationResult?.verifiablePresentationStatus;
+    // Check if inputs are available
+    response = this.validateAllRequiredInputs(validationResult);
+    if (!response.result) {
+      return response;
+    }
 
-      if (statusResponse.result) {
+    // Check status of VCs
+    const statusResponse = await this.checkVcsStatus(validationResult);
+    validationResult.verifiablePresentationStatus = statusResponse.validationResult?.verifiablePresentationStatus;
+
+    if (statusResponse.result) {
       // set claims
       return {
         result: true,
         status: 200,
         validationResult
       };
-      } else {
-        return statusResponse;
-      }
+    } else {
+      return statusResponse;
     }
+
     return response;
   }
+
+  private validateAllRequiredInputs(validationResult: IValidationResult): IValidationResponse {
+    // Check required VC's
+    const requiredVCs = this.builder.trustedIssuersForVerifiableCredentials;
+    if (requiredVCs) {
+      for (let vc in requiredVCs) {
+        const presentedVc = validationResult.verifiableCredentials && validationResult.verifiableCredentials[vc];
+        if (!presentedVc) {
+          return {
+            detailedError: `Verifiable credential '${vc}' is missing from the input request`,
+            status: 403,
+            result: false
+          };
+        }
+      }
+    }
+
+    // Check required id tokens
+    const requiredidTokens = this.builder.trustedIssuerConfigurationsForIdTokens;
+    if (requiredidTokens) {
+      if (!validationResult.idTokens) {
+        return {
+          detailedError: `The id token is missing from the input request`,
+          status: 403,
+          result: false
+        };
+      }
+    }
+
+    return {
+      result: true,
+      status: 200,
+      validationResult
+    };
+  } 
 
   /**
    * Validate status on verifiable presentation
@@ -166,16 +212,6 @@ export default class Validator {
         status: 200
       };
     }
-
-    // Get the VC that need to be validated
-    const vcsToValidate: { validated: boolean, id: string, statusUrl: string | undefined }[] = Object.keys(validationResult.verifiableCredentials).map((key: string) => {
-      const statusUrl: string | undefined = validationResult.verifiableCredentials![key]?.decodedToken?.vc?.credentialStatus?.id;
-      return {
-        validated: false,
-        id: key,
-        statusUrl
-      };
-    });
 
     const receipts: { [key: string]: IVerifiablePresentationStatus } = {};
     for (let vp in validationResult.verifiablePresentations) {
@@ -218,7 +254,7 @@ export default class Validator {
       vp: verifiablePresentationToken.rawToken,
       sub_jwk: publicKey,
       iss: 'https://self-issued.me',
-      jti:  uuid()
+      jti: uuid()
     };
 
     // get vcs to obtain status url
@@ -240,7 +276,7 @@ export default class Validator {
             method: 'POST',
             headers: {
               'Content-Type': 'text/plain'
-            },            
+            },
             body: serialized
           });
           if (!response.ok) {
@@ -318,9 +354,13 @@ export default class Validator {
     }
 
     // get id tokens
-    let tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.idToken)
+    let tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.idToken);
     if (tokens && tokens.length > 0) {
-      validationResult.idTokens = tokens.map((token: any) => token.validatedToken);
+      validationResult.idTokens = {};
+      for (let token in tokens){
+        const id = tokens[token].validatedToken?.configuration;
+        validationResult.idTokens[id || token] = tokens[token].validatedToken;   
+      }
     }
 
     // get verifiable credentials

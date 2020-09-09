@@ -73,13 +73,13 @@ describe('RequestorBuilder', () => {
     redirectUri: 'https://example.com/login',
     tosUri: 'https://example.com/tos',
     logoUri: 'https://example.com/mylogo.png',
-    attestation: getAttestations()
+    attestations: getAttestations()
   };
 
   it('should build RequestorBuilder', () => {
     const builder = new RequestorBuilder(initializer, crypto);
     expect(builder.crypto).toEqual(crypto);
-    expect((<IRequestorAttestation>builder.requestor).attestation).toEqual(getAttestations());
+    expect((<IRequestorAttestation>builder.requestor).attestations).toEqual(getAttestations());
     expect(builder.clientId).toEqual(initializer.clientId);
     expect(builder.clientName).toEqual(initializer.clientName);
     expect(builder.clientPurpose).toEqual(initializer.clientPurpose);

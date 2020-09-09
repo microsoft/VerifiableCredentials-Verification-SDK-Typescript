@@ -102,7 +102,7 @@ export default class Requestor {
    * Create the attestation presentation request
    */
   public createAttestationPresentationRequest(payload: any): any {
-    payload.attestations = (<IRequestorAttestation>this.builder.requestor).attestation;
+    payload.attestations = (<IRequestorAttestation>this.builder.requestor).attestations;
     return payload;
   }
 
@@ -117,7 +117,7 @@ export default class Requestor {
    * Get the trusted issuer's configuration urls from the requestor
    */
   public trustedIssuerConfigurationsForIdTokens(): IssuerMap {
-    const attestations: IssuanceAttestationsModel = (<IRequestorAttestation>this.builder.requestor).attestation;
+    const attestations: IssuanceAttestationsModel = (<IRequestorAttestation>this.builder.requestor).attestations;
     if (attestations) {
       if (!attestations.idTokens) {
         return [];
@@ -154,7 +154,7 @@ export default class Requestor {
       */
 
     } else {
-      const attestations = (<IRequestorAttestation>this.builder.requestor).attestation;
+      const attestations = (<IRequestorAttestation>this.builder.requestor).attestations;
       if (!attestations.presentations) {
         return { undefined: [] };
       } else {
@@ -177,7 +177,7 @@ export default class Requestor {
 
 
   public isPresentationExchange(): boolean {
-    return (<IRequestorAttestation>this.builder.requestor).attestation === undefined;
+    return (<IRequestorAttestation>this.builder.requestor).attestations === undefined;
   }
 }
 

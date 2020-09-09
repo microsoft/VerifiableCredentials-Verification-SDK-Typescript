@@ -61,7 +61,7 @@ export default class RequestorBuilder {
    * Gets the presentation protocol
    */
   public get presentationProtocol() {
-    return (<IRequestorAttestation>this.requestor).attestation ? PresentationProtocol.attestation : PresentationProtocol.presentationExchange;
+    return (<IRequestorAttestation>this.requestor).attestations ? PresentationProtocol.attestation : PresentationProtocol.presentationExchange;
   }
 
   /**

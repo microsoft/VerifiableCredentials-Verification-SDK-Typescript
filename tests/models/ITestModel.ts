@@ -2,7 +2,7 @@
  * Interface to model your presentation exchange request
  */
 
-import { IRequestorPresentationExchange, ClaimToken } from "../../lib";
+import { IRequestorPresentationExchange, ClaimToken, IRequestorAttestation } from "../../lib";
 
 
 export default interface ITestModel {
@@ -11,12 +11,12 @@ export default interface ITestModel {
     /**
      * Define the model for the request
      */
-    presentationExchangeRequest: IRequestorPresentationExchange;
+    request: IRequestorPresentationExchange | IRequestorAttestation;
 
     /**
      * Define the model for the response
      */
-    presentationExchangeResponse: any;
+    response: any;
 
     /**
      * Define the status response
@@ -37,5 +37,10 @@ export default interface ITestModel {
     /**
      * Return all presentations
      */
-    getPresentations(): {[key: string]: any};
+    getPresentationsFromModel(): {[key: string]: any};
+    
+    /**
+     * Return all id tokens from model
+     */
+    getIdTokensFromModel(): {[key: string]: any};
 }
