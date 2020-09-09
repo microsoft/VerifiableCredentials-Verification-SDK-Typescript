@@ -85,6 +85,9 @@ export default class Validator {
       switch (claimToken.type) {
         case TokenType.idToken:
           response = await validator.validate(queue, queueItem!, '', siopContractId);
+          if (response.result) {
+            claimToken = response.validationResult?.idTokens![0];
+          }
           break;
         case TokenType.verifiableCredential:
           response = await validator.validate(queue, queueItem!, siopDid!);
@@ -173,6 +176,18 @@ export default class Validator {
       }
     }
 
+    // Check required id tokens
+    const requiredidTokens = this.builder.trustedIssuerConfigurationsForIdTokens;
+    if (requiredidTokens) {
+      if (!validationResult.idTokens) {
+        return {
+          detailedError: `The id token is missing from the input request`,
+          status: 403,
+          result: false
+        };
+      }
+    }
+
     return {
       result: true,
       status: 200,
@@ -197,16 +212,6 @@ export default class Validator {
         status: 200
       };
     }
-
-    // Get the VC that need to be validated
-    const vcsToValidate: { validated: boolean, id: string, statusUrl: string | undefined }[] = Object.keys(validationResult.verifiableCredentials).map((key: string) => {
-      const statusUrl: string | undefined = validationResult.verifiableCredentials![key]?.decodedToken?.vc?.credentialStatus?.id;
-      return {
-        validated: false,
-        id: key,
-        statusUrl
-      };
-    });
 
     const receipts: { [key: string]: IVerifiablePresentationStatus } = {};
     for (let vp in validationResult.verifiablePresentations) {
@@ -349,9 +354,13 @@ export default class Validator {
     }
 
     // get id tokens
-    let tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.idToken)
+    let tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.idToken);
     if (tokens && tokens.length > 0) {
-      validationResult.idTokens = tokens.map((token: any) => token.validatedToken);
+      validationResult.idTokens = {};
+      for (let token in tokens){
+        const id = tokens[token].validatedToken?.configuration;
+        validationResult.idTokens[id || token] = tokens[token].validatedToken;   
+      }
     }
 
     // get verifiable credentials

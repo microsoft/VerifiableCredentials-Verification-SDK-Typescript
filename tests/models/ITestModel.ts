@@ -37,5 +37,10 @@ export default interface ITestModel {
     /**
      * Return all presentations
      */
-    getPresentations(): {[key: string]: any};
+    getPresentationsFromModel(): {[key: string]: any};
+    
+    /**
+     * Return all id tokens from model
+     */
+    getIdTokensFromModel(): {[key: string]: any};
 }

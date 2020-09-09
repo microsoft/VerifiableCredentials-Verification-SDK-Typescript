@@ -86,42 +86,6 @@ describe('PresentationExchange', () => {
         expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. No path property found.`);
     });
 
-    it('should not validate siop with only selfissued', async () => {
-        const header = { typ: "JWT" };
-        const payload = {
-            firstName: 'Vincent',
-            lastName: 'Vega'
-        };
-        const token = base64url.encode(JSON.stringify(header)) + '.' + base64url.encode(JSON.stringify(payload)) + '.';
-
-
-        const request = {
-            presentation_submission: {
-                descriptor_map: [{
-                    id: requestor.inputDescriptorId,
-                    format: 'jwt',
-                    encoding: 'base64url',
-                    path: '$.tokens.presentations'
-                }]
-            },
-            tokens: {
-                presentations: {
-                    DrivingLicense: token
-                }
-            },
-            iss: `${VerifiableCredentialConstants.TOKEN_SI_ISS}`,
-            aud: `${requestor.audience}`
-        };
-
-        const siop = (await requestor.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(request)))).serialize();
-        const validator = new ValidatorBuilder(requestor.crypto)
-            .useTrustedIssuersForVerifiableCredentials({ DrivingLicense: [responder.generator.crypto.builder.did!] })
-            .build();
-        let result = await validator.validate(siop);
-        expect(result.result).toBeFalsy();
-        expect(result.detailedError).toEqual('No signed token found during validation');
-    });
-
     it('should populate the model', () => {
         const model: any = new PresentationDefinitionModel().populateFrom(PresentationDefinition.presentationExchangeDefinition.presentationDefinition);
         const requestor = new RequestorHelper(new RequestOneVcResponseOk());

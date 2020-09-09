@@ -162,7 +162,14 @@ export default class RequestTwoVcResponseOk implements ITestModel {
     /**
      * Return all presentations
      */
-    public getPresentations(): { [key: string]: any } {
+    public getPresentationsFromModel(): { [key: string]: any } {
         return this.response.presentation_submission.attestations.presentations;
+    }
+
+    /**
+     * Return all id tokens from model
+     */
+    public getIdTokensFromModel(): { [key: string]: any } {
+        return {};
     }
 }

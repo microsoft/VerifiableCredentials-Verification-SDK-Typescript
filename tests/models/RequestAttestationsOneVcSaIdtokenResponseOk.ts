@@ -150,7 +150,6 @@ export default class RequestAttestationsOneVcSaIdtokenResponseOk implements ITes
                     aud: 'did:ion:test:EiCAvQuaAu5awq_e_hXyJImdQ5-xJsZzzQvvd9a2EAphtQ',
                 }
             },
-            /*
             idTokens: {
                 'https://pics-linux.azurewebsites.net/test/oidc/openid-configuration': {
                     firstName: 'Jules',
@@ -159,13 +158,9 @@ export default class RequestAttestationsOneVcSaIdtokenResponseOk implements ITes
                     email: 'jules@pulpfiction.com',
                     role: 'hitman',
                     telephone: '4258058247',
-                    iss: 'https://pics-linux.azurewebsites.net',
-                    iat: 1585242925,
-                    nbf: 1585242925,
-                    exp: 1585329325
+                    iss: 'https://pics-linux.azurewebsites.net'
                 }
             }
-            */
         },
     }
 
@@ -196,11 +191,17 @@ export default class RequestAttestationsOneVcSaIdtokenResponseOk implements ITes
         return claimToken;
     }
 
+    /**
+     * Return all presentations from model
+     */
+    public getPresentationsFromModel(): { [key: string]: any } {
+        return this.response.attestations.presentations;
+    }
 
     /**
-     * Return all presentations
+     * Return all id tokens from model
      */
-    public getPresentations(): { [key: string]: any } {
-        return this.response.attestations.presentations;
+    public getIdTokensFromModel(): { [key: string]: any } {
+        return this.response.attestations.idTokens;
     }
 }

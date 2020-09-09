@@ -44,53 +44,58 @@ export default class ResponderHelper {
         const payload = this.responseDefinition.response;
 
         // Present the VCs
-        const presentations = (<ITestModel>this.responseDefinition).getPresentations();
-        for (let presentation in presentations) {
-            const jti = uuidv4();
-            const vcs: ClaimToken = presentations[presentation];
+        const presentations = (<ITestModel>this.responseDefinition).getPresentationsFromModel();
+        if (presentations) {
+            for (let presentation in presentations) {
+                const jti = uuidv4();
+                const vcs: ClaimToken = presentations[presentation];
 
-            // Set status mock
-            const statusReceipts: any = {
-                receipt: {
+                // Set status mock
+                const statusReceipts: any = {
+                    receipt: {
+                    }
+                };
+
+                // Set id as jti
+                this.responseDefinition.responseStatus[presentation].credentialStatus.id = jti;
+
+                // Set aud
+                this.responseDefinition.responseStatus[presentation].aud = this.requestor.crypto.builder.did;
+
+                // Set iss
+                this.responseDefinition.responseStatus[presentation].iss = this.generator.crypto.builder.did;
+
+                // Sign the receipts
+                await this.generator.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(this.responseDefinition.responseStatus[presentation])));
+                statusReceipts.receipt[jti] = this.generator.crypto.signingProtocol.serialize();
+
+                const statusUrl = vcs.decodedToken.vc.credentialStatus.id;
+                TokenGenerator.fetchMock.post(statusUrl, statusReceipts, { overwriteRoutes: true });
+                console.log(`Set mock for ${statusUrl}`);
+
+                const vpPayload: any = {
+                    jti,
+                    vp: {
+                        '\@context': [
+                            'https://www.w3.org/2018/credentials/v1',
+                            'https://www.w3.org/2018/credentials/examples/v1'
+                        ],
+                        type: ['VerifiablePresentation'],
+                        verifiableCredential: [vcs.rawToken],
+                    },
+                    sub: `${this.requestor.crypto.builder.did}`,
+                    iss: `${this.crypto.builder.did}`,
+                    aud: `${this.requestor.crypto.builder.did}`
                 }
-            };
-            
-            // Set id as jti
-            this.responseDefinition.responseStatus[presentation].credentialStatus.id = jti;
 
-            // Set aud
-            this.responseDefinition.responseStatus[presentation].aud = this.requestor.crypto.builder.did;
-
-            // Set iss
-            this.responseDefinition.responseStatus[presentation].iss = this.generator.crypto.builder.did;
-
-            // Sign the receipts
-            await this.generator.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(this.responseDefinition.responseStatus[presentation])));
-            statusReceipts.receipt[jti] = this.generator.crypto.signingProtocol.serialize();
-
-            const statusUrl = vcs.decodedToken.vc.credentialStatus.id;
-            TokenGenerator.fetchMock.post(statusUrl, statusReceipts, { overwriteRoutes: true });
-            console.log(`Set mock for ${statusUrl}`);
-
-            const vpPayload: any = {
-                jti,
-                vp: {
-                    '\@context': [
-                        'https://www.w3.org/2018/credentials/v1',
-                        'https://www.w3.org/2018/credentials/examples/v1'
-                    ],
-                    type: ['VerifiablePresentation'],
-                    verifiableCredential: [vcs.rawToken],
-                },
-                sub: `${this.requestor.crypto.builder.did}`,
-                iss: `${this.crypto.builder.did}`,
-                aud: `${this.requestor.crypto.builder.did}`
+                // Sign
+                await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(vpPayload)));
+                presentations[presentation] = this.crypto.signingProtocol.serialize();
             }
-
-            // Sign
-            await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(vpPayload)));
-            presentations[presentation] = this.crypto.signingProtocol.serialize();
         }
+
+        // Present the id tokens
+        await this.generator.setIdTokens();
 
         // Check for any payload operations
         if (this.responseDefinition.responseOperations) {
