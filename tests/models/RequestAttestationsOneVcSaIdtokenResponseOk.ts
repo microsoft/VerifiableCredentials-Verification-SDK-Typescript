@@ -94,12 +94,10 @@ export default class RequestAttestationsOneVcSaIdtokenResponseOk implements ITes
         did: '',
         jti: 'fa8fdc8f-d95b-4237-9c90-9696112f4e19',
         attestations: {
-            /*
             selfIssued: {
                 name: 'Jules Winnfield',
                 birthDate: '1948-21-21T00:00:00'
             },
-            */
             presentations: {
                 DriversLicenseCredential: {
                     'jti': `urn:pic:IdentityCard`,
