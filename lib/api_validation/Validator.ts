@@ -178,7 +178,7 @@ export default class Validator {
 
     // Check required id tokens
     const requiredidTokens = this.builder.trustedIssuerConfigurationsForIdTokens;
-    if (requiredidTokens) {
+    if (requiredidTokens && (Object.keys(requiredidTokens).length !== 0 || requiredidTokens.length > 0)) {
       if (!validationResult.idTokens) {
         return {
           detailedError: `The id token is missing from the input request`,

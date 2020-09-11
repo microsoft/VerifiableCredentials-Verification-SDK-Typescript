@@ -32,7 +32,7 @@ export default interface ITestModel {
      * Retrieve VC
      * @param key of the VC
      */
-    getVcFromResponse(key: string): ClaimToken;
+    getVcFromResponse(key: string): ClaimToken | undefined;
 
     /**
      * Return all presentations
