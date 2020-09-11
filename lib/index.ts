@@ -33,10 +33,10 @@ export { ValidationOptions, IValidationOptions, IValidatorOptions, BasicValidato
 
 import TestSetup from '../tests/TestSetup';
 import { IssuanceHelpers } from '../tests/IssuanceHelpers';
-import RequestorHelper from '../tests/RequestorHelper';
-import ResponderHelper from '../tests/ResponderHelper';
-import TokenGenerator from '../tests/TokenGenerator';
-export { TestSetup, IssuanceHelpers, ResponderHelper, RequestorHelper,  TokenGenerator }
+//import RequestorHelper from '../tests/RequestorHelper';
+//import ResponderHelper from '../tests/ResponderHelper';
+//import TokenGenerator from '../tests/TokenGenerator';
+export { TestSetup, IssuanceHelpers }
 
 import { IdTokenValidationResponse } from './input_validation/IdTokenValidationResponse';
 import { IValidationResponse } from './input_validation/IValidationResponse';
