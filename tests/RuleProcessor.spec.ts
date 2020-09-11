@@ -244,6 +244,8 @@ describe('Rule processor', () => {
             let result = await validator.validate(response.rawToken);
             expect(result.result).toBeTruthy();
             expect(result.validationResult?.selfIssued.decodedToken.name).toEqual('Jules Winnfield');
+            expect(result.validationResult?.idTokens).toBeUndefined();
+            expect(result.validationResult?.verifiableCredentials).toBeUndefined();
         } finally {
             TokenGenerator.fetchMock.reset();
         }
