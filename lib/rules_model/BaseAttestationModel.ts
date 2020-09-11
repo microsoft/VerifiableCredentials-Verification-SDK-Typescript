@@ -26,6 +26,11 @@ export abstract class BaseAttestationModel {
   }
 
   /**
+   * Gets the name of the attestation
+   */
+  abstract get name(): string;
+
+  /**
    * Populate an instance of BaseAttestationModel from any instance
    * @param input object instance to populate from
    */
