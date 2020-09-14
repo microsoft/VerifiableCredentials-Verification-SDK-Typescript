@@ -36,6 +36,13 @@ export class IdTokenAttestationModel extends BaseAttestationModel {
   }
 
   /**
+   * Gets the name of the attestation
+   */
+  get name(): string {
+    return this.configuration!;
+  }
+
+  /**
    * Populate an instance of IdTokenAttestationModel from any instance
    * @param input object instance to populate from
    */

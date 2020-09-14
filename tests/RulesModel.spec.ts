@@ -187,6 +187,7 @@ describe('TenantSourceFactory', () => {
       const rulesSelfIssuedAttestation = <SelfIssuedAttestationModel>rulesAttestations.selfIssued;
       expect(inputSelfIssuedAttestation).toBeDefined();
       expect(inputSelfIssuedAttestation.encrypted).toEqual(rulesSelfIssuedAttestation.encrypted);
+      expect(inputSelfIssuedAttestation.name).toEqual(SelfIssuedAttestationModel.attestationName);
 
       // we are going to build a set of input and rules maps for comparison
       const allMaps = [];
@@ -207,6 +208,7 @@ describe('TenantSourceFactory', () => {
         expect(inputIdTokens[i].encrypted).toEqual(rulesIdTokens[i].encrypted);
         expect(inputIdTokens[i].scope).toBeDefined();
         expect(inputIdTokens[i].scope).toEqual(rulesIdTokens[i].scope);
+        expect(inputIdTokens[i].name).toEqual(rulesIdTokens[i].configuration!);
 
         rulesMap = rulesIdTokens[i].mapping;
         claims = <InputClaimModel[]>inputIdTokens[i].claims;
@@ -222,6 +224,7 @@ describe('TenantSourceFactory', () => {
 
       for (let i = 0; i < rulesPresentations.length; i++) {
         expect(inputPresentations[i].encrypted).toEqual(rulesPresentations[i].encrypted);
+        expect(inputPresentations[i].name).toEqual(rulesPresentations[i].credentialType!);
 
         rulesMap = rulesPresentations[i].mapping;
         claims = <InputClaimModel[]>inputPresentations[i].claims;

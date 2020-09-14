@@ -10,6 +10,9 @@ import { BaseAttestationModel } from './BaseAttestationModel';
  * Model for defining Self Issued claims
  */
 export class SelfIssuedAttestationModel extends BaseAttestationModel {
+
+  public static readonly attestationName: string = 'selfAttested';
+
   /**
    *
    * @param mapping a map of string to InputClaimModel instances
@@ -19,6 +22,13 @@ export class SelfIssuedAttestationModel extends BaseAttestationModel {
    */
   constructor(mapping?: { [map: string]: InputClaimModel }, encrypted: boolean = false, claims?: InputClaimModel[], required: boolean = false) {
     super(mapping, encrypted, claims, required);
+  }
+
+  /**
+   * Gets the name of the attestation
+   */
+  get name(): string {
+    return SelfIssuedAttestationModel.attestationName;
   }
 
   /**

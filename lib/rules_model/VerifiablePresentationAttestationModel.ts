@@ -37,6 +37,13 @@ export class VerifiablePresentationAttestationModel extends BaseAttestationModel
   }
 
   /**
+   * Gets the name of the attestation
+   */
+  get name(): string {
+    return this.credentialType!;
+  }
+
+  /**
    * Populate an instance of VerifiablePresentationModel from any instance
    * @param input object instance to populate from
    */
