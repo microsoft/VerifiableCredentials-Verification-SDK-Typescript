@@ -425,8 +425,8 @@ export class ValidationHelpers {
     let keys: any;
     try {
       if (token.type === TokenType.idToken) {
-        console.log(`Id token configuration token '${token.configuration}'`);
-        let response = await fetch(token.configuration);
+        console.log(`Id token configuration token '${token.id}'`);
+        let response = await fetch(token.id);
         if (!response.ok) {
           return {
             result: false,
@@ -523,7 +523,7 @@ export class ValidationHelpers {
       validationResponse.result = true;
       validationResponse.detailedError = '';
       
-      validationResponse.validationResult = {idTokens: [token]};
+      validationResponse.validationResult = {idTokens: token};
       return validationResponse;
     } catch (err) {
       console.error(err);

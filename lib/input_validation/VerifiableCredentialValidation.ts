@@ -5,7 +5,7 @@
 import { IValidationOptions } from '../options/IValidationOptions';
 import { IVerifiableCredentialValidation, VerifiableCredentialValidationResponse } from './VerifiableCredentialValidationResponse';
 import { DidValidation } from './DidValidation';
-import { IExpectedVerifiableCredential } from '../index';
+import { IExpectedVerifiableCredential, ClaimToken } from '../index';
 import VerifiableCredentialConstants from '../verifiable_credential/VerifiableCredentialConstants';
 import { isContext } from 'vm';
 
@@ -129,7 +129,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
         };
       }
     }
-
+    validationResponse.validationResult = { verifiableCredentials: ClaimToken.create(verifiableCredential, credentialType) };
     return validationResponse;
   }
 

@@ -86,11 +86,14 @@ export default class Validator {
         case TokenType.idToken:
           response = await validator.validate(queue, queueItem!, '', siopContractId);
           if (response.result) {
-            claimToken = response.validationResult?.idTokens![0];
+            claimToken = <ClaimToken>response.validationResult?.idTokens;
           }
           break;
         case TokenType.verifiableCredential:
           response = await validator.validate(queue, queueItem!, siopDid!);
+          if (response.result) {
+            claimToken = <ClaimToken>response.validationResult?.verifiableCredentials;
+          }
           break;
         case TokenType.verifiablePresentation:
           response = await validator.validate(queue, queueItem!, siopDid!);
@@ -247,10 +250,10 @@ export default class Validator {
     }
 
     //construct payload
-    const publicKey = await (await this.builder.crypto.builder.keyStore.get(this.builder.crypto.builder.signingKeyReference, new KeyStoreOptions({ publicKeyOnly: true }))).getKey<JsonWebKey>();
+    const publicKey = await (await this.builder.crypto.builder.keyStore.get(this.builder.crypto.builder.signingKeyReference!, new KeyStoreOptions({ publicKeyOnly: true }))).getKey<JsonWebKey>();
     const payload: any = {
       did: this.builder.crypto.builder.did,
-      kid: `${this.builder.crypto.builder.did}#${this.builder.crypto.builder.signingKeyReference.keyReference}`,
+      kid: `${this.builder.crypto.builder.did}#${this.builder.crypto.builder.signingKeyReference!.keyReference}`,
       vp: verifiablePresentationToken.rawToken,
       sub_jwk: publicKey,
       iss: 'https://self-issued.me',
@@ -358,7 +361,7 @@ export default class Validator {
     if (tokens && tokens.length > 0) {
       validationResult.idTokens = {};
       for (let token in tokens){
-        const id = tokens[token].validatedToken?.configuration;
+        const id = tokens[token].validatedToken?.id;
         validationResult.idTokens[id || token] = tokens[token].validatedToken;   
       }
     }
@@ -368,7 +371,7 @@ export default class Validator {
     if (tokens && tokens.length > 0) {
       validationResult.verifiableCredentials = {};
       for (let inx = 0; inx < tokens.length; inx++) {
-        validationResult.verifiableCredentials[tokens[inx].id] = tokens[inx].validatedToken;
+        validationResult.verifiableCredentials[tokens[inx].validatedToken!.id] = tokens[inx].validatedToken;
       }
     }
 

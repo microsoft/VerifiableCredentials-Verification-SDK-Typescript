@@ -38,6 +38,11 @@ export default interface ITestModel {
      * Return all presentations
      */
     getPresentationsFromModel(): {[key: string]: any};
+
+    /**
+     * Return all non presented VCs
+     */
+    getNonPresentedVcFromModel(): {[key: string]: any};
     
     /**
      * Return all id tokens from model
