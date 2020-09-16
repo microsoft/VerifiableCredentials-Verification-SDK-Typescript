@@ -6,7 +6,7 @@ import ITestModel from "./ITestModel";
 import { ClaimToken, TokenType } from "../../lib";
 
 
-export default class RequestOnceVcResponseOk implements ITestModel {
+export default class RequestOneVcNoPresentationResponseOk implements ITestModel {
     public clientId = 'https://requestor.example.com';
 
     /**
@@ -58,33 +58,29 @@ export default class RequestOnceVcResponseOk implements ITestModel {
                     id: 'IdentityCard',
                     format: 'jwt',
                     encoding: 'base64Url',
-                    path: '$.presentation_submission.attestations.presentations.IdentityCard'
+                    path: '$.presentation_submission.attestations'
                 }
             ],
             attestations: {
-                presentations: {
-                    IdentityCard: {
-                        'jti': `urn:pic:1`,
-                        'vc': {
-                            '\@context': [
-                                'https://www.w3.org/2018/credentials/v1',
-                                'https://portableidentitycards.azure-api.net/42b39d9d-0cdd-4ae0-b251-b7b39a561f91/api/portable/v1.0/contracts/test/schema'
-                            ],
-                            'type': [
-                                'VerifiableCredential',
-                                'IdentityCard'
-                            ],
-                            'credentialSubject': {
-                                givenName: 'Jules',
-                                familyName: 'Winnfield',
-                                profession: 'hitman'
-                            },
-                            'credentialStatus': {
-                                'id': `https://status.example.com`,
-                                'type': 'PortableIdentityCardServiceCredentialStatus2020'
-                            }
-                        },
+                'jti': `urn:pic:1`,
+                'vc': {
+                    '\@context': [
+                        'https://www.w3.org/2018/credentials/v1',
+                        'https://portableidentitycards.azure-api.net/42b39d9d-0cdd-4ae0-b251-b7b39a561f91/api/portable/v1.0/contracts/test/schema'
+                    ],
+                    'type': [
+                        'VerifiableCredential',
+                        'IdentityCard'
+                    ],
+                    'credentialSubject': {
+                        givenName: 'Jules',
+                        familyName: 'Winnfield',
+                        profession: 'hitman'
                     },
+                    'credentialStatus': {
+                        'id': `https://status.example.com`,
+                        'type': 'PortableIdentityCardServiceCredentialStatus2020'
+                    }
                 },
             }
 
@@ -109,7 +105,7 @@ export default class RequestOnceVcResponseOk implements ITestModel {
         // Decode de presentation
         let claimToken = ClaimToken.create(this.response.presentation_submission.attestations.presentations[key]);
 
-        claimToken =  ClaimToken.create(claimToken.decodedToken.vp.verifiableCredential[0]);
+        claimToken = ClaimToken.create(claimToken.decodedToken.vp.verifiableCredential[0]);
         return claimToken;
     }
 
@@ -125,9 +121,9 @@ export default class RequestOnceVcResponseOk implements ITestModel {
      * Return all non presented VCs
      */
     public getNonPresentedVcFromModel(): { [key: string]: any } {
-        return {};
+        return {vc: this.response.presentation_submission.attestations};
     }
-        
+    
     /**
      * Return all id tokens from model
      */

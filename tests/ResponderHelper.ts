@@ -40,7 +40,7 @@ export default class ResponderHelper {
 
     public async createResponse(): Promise<ClaimToken> {
 
-        await this.generator.setVcs();
+        await this.generator.setVcsInPresentations();
         const payload = this.responseDefinition.response;
 
         // Present the VCs
@@ -96,6 +96,9 @@ export default class ResponderHelper {
 
         // Present the id tokens
         await this.generator.setIdTokens();
+
+        // Add VCs without presentation
+
 
         // Check for any payload operations
         if (this.responseDefinition.responseOperations) {

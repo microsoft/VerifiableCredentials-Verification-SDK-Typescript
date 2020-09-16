@@ -167,6 +167,13 @@ export default class RequestTwoVcResponseOk implements ITestModel {
     }
 
     /**
+     * Return all non presented VCs
+     */
+    public getNonPresentedVcFromModel(): { [key: string]: any } {
+        return {};
+    }
+    
+    /**
      * Return all id tokens from model
      */
     public getIdTokensFromModel(): { [key: string]: any } {

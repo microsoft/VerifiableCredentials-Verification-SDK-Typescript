@@ -42,6 +42,11 @@ describe('Rule processor', () => {
             expect(result.validationResult!.verifiableCredentials!['IdentityCard'].decodedToken.jti).toEqual(model.getVcFromResponse('IdentityCard').decodedToken.jti);
             const jti = result.validationResult!.verifiablePresentations!['IdentityCard'].decodedToken.jti;
             expect(result.validationResult!.verifiablePresentationStatus![jti].status).toEqual('valid');
+
+            const vc = result.validationResult!.verifiableCredentials!['IdentityCard'];
+            result = await validator.validate(vc.rawToken);
+            expect(result.result).toBeTruthy();
+
         } finally {
             TokenGenerator.fetchMock.reset();
         }
@@ -146,7 +151,7 @@ describe('Rule processor', () => {
             const response = await responder.createResponse();
             console.log(`=====> Response: ${response.rawToken}`);
 
-            const validator = new ValidatorBuilder(requestor.crypto)
+            let validator = new ValidatorBuilder(requestor.crypto)
                 .useTrustedIssuersForVerifiableCredentials({ InsuranceCredential: [responder.generator.crypto.builder.did!], DriversLicenseCredential: [responder.generator.crypto.builder.did!] })
                 .useTrustedIssuerConfigurationsForIdTokens(['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'])
                 .enableFeatureVerifiedCredentialsStatusCheck(true)
@@ -162,6 +167,15 @@ describe('Rule processor', () => {
             expect(result.validationResult!.verifiablePresentationStatus![jtiLicense].status).toEqual('valid');
             expect(result.validationResult!.idTokens!['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'].decodedToken.firstName).toEqual('Jules');
             expect(result.validationResult?.selfIssued.decodedToken.name).toEqual('Jules Winnfield');
+            
+            // present id token
+            validator = new ValidatorBuilder(requestor.crypto)
+                .useTrustedIssuerConfigurationsForIdTokens(['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'])
+                .build();
+            result = await validator.validate(result.validationResult!.idTokens!['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'].rawToken);
+            expect(result.result).toBeTruthy();
+            expect(result.validationResult!.idTokens!['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'].decodedToken.firstName).toEqual('Jules');
+
         } finally {
             TokenGenerator.fetchMock.reset();
         }
@@ -194,7 +208,7 @@ describe('Rule processor', () => {
             TokenGenerator.fetchMock.reset();
         }
     });
-    
+
     it('should process RequestAttestationsOneVcSaIdtokenResponseNoIdToken', async () => {
         try {
             const model = new RequestAttestationsOneVcSaIdtokenResponseNoIdToken();
@@ -222,7 +236,7 @@ describe('Rule processor', () => {
             TokenGenerator.fetchMock.reset();
         }
     });
-    
+
 
     it('should process RequestAttestationsOneSelfAssertedResponseOk', async () => {
         try {

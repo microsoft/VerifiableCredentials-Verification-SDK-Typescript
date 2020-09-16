@@ -56,7 +56,7 @@ export enum TokenType {
  * Model for the claim token in compact format
  */
 export default class ClaimToken {
-  private _configuration: string = '';
+  private _id: string = '';
   private _rawToken: string = '';
   private _type: TokenType;
   private _decodedToken: { [key: string]: any } = {};
@@ -72,8 +72,8 @@ export default class ClaimToken {
   /**
    * Token configuration endpoint
    */
-  public get configuration(): string {
-    return this._configuration;
+  public get id(): string {
+    return this._id;
   }
 
   /**
@@ -109,14 +109,14 @@ export default class ClaimToken {
    * Create a new instance of <see @ClaimToken>
    * @param typeName Name of the token in _claimNames
    * @param token The raw token
-   * @param configuration The configuration endpoint
+   * @param id The id of the token (configuration endpoint for id tokens)
    */
-  constructor(typeName: string, token: string, configuration?: string) {
+  constructor(typeName: string, token: string, id?: string) {
     const tokentypeValues: string[] = Object.values(TokenType);
     if (tokentypeValues.includes(typeName)) {
       this._type = typeName as TokenType;
     } else {
-      throw new Error(`Type '${typeName} is not supported`);
+      throw new Error(`Type '${typeName}' is not supported`);
     }
 
     if (typeof token === 'string') {
@@ -127,43 +127,43 @@ export default class ClaimToken {
       this._decodedToken = token;
     }
 
-    this._configuration = configuration || '';
+    this._id = id || '';
   }
 
   /**
    * Factory class to create a ClaimToken containing the token type, raw token and decoded payload
    * @param token to check for type
    */
-  public static create(token: string): ClaimToken {
+  public static create(token: string, id?: string): ClaimToken {
     // Deserialize the token
     const payload = ClaimToken.getTokenPayload(token);
 
     // Check type of token
     if (payload.iss === VerifiableCredentialConstants.TOKEN_SI_ISS) {
       if (payload.contract) {
-        return new ClaimToken(TokenType.siopIssuance, token);
+        return new ClaimToken(TokenType.siopIssuance, token, id);
       } else if (payload.presentation_submission) {
-        return new ClaimToken(TokenType.siopPresentationExchange, token);
+        return new ClaimToken(TokenType.siopPresentationExchange, token, id);
       } else if (payload.attestations) {
-        return new ClaimToken(TokenType.siopPresentationAttestation, token);
+        return new ClaimToken(TokenType.siopPresentationAttestation, token, id);
       } else {
         throw new Error(`SIOP was not recognized.`);
       }
     }
 
     if (payload.vc) {
-      return new ClaimToken(TokenType.verifiableCredential, token);
+      return new ClaimToken(TokenType.verifiableCredential, token, id);
     }
     if (payload.vp) {
-      return new ClaimToken(TokenType.verifiablePresentation, token);
+      return new ClaimToken(TokenType.verifiablePresentation, token, id);
     }
 
     // Check for signature
     if (ClaimToken.tokenSignature(token)) {
-      return new ClaimToken(TokenType.idToken, token);
+      return new ClaimToken(TokenType.idToken, token, id);
     }
 
-    return new ClaimToken(TokenType.selfIssued, token);
+    return new ClaimToken(TokenType.selfIssued, token, id);
   }
 
   /**
@@ -224,26 +224,6 @@ export default class ClaimToken {
     }
     return decodedTokens;
   }
-
-
-  /**
-  * Attestations contain the tokens and VCs in the input.
-  * This algorithm will convert the attestations to a ClaimToken
-  * @param payload The status response payload
-  */
- public static getClaimTokensFromReceipt(payload: any): { [key: string]: ClaimToken } {
-  const decodedTokens: { [key: string]: ClaimToken } = {};
-
-  if (!payload.receipt) {
-    throw new Error(`The SIOP status response has no receipt property.`);
-  }
-
-  for (let id in payload.receipt) {
-    decodedTokens[id] = ClaimToken.create(payload.receipt[id]);
-  }
-
-  return decodedTokens;
-}
 
 
   /**

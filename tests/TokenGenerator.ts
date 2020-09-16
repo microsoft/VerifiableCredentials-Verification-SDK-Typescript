@@ -109,18 +109,22 @@ export default class TokenGenerator {
     }
 
 
-    public async setVcs(): Promise<void> {
+    public async getVC(vcPayload: any): Promise<ClaimToken> {
+
+        // Additional props
+        vcPayload.sub = `${this.responder.crypto.builder.did}`;
+        vcPayload.iss = `${this.crypto.builder.did}`;
+
+        // Sign
+        await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(vcPayload)));
+        return ClaimToken.create(this.crypto.signingProtocol.serialize());
+    }
+
+    public async setVcsInPresentations(): Promise<void> {
         const presentations = (<ITestModel>this.responder.responseDefinition).getPresentationsFromModel();
         for (let presentation in presentations) {
             const vcPayload: any = presentations[presentation];
-
-            // Additional props
-            vcPayload.sub = `${this.responder.crypto.builder.did}`;
-            vcPayload.iss = `${this.crypto.builder.did}`;
-
-            // Sign
-            await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(vcPayload)));
-            presentations[presentation] = ClaimToken.create(this.crypto.signingProtocol.serialize());
+            presentations[presentation] = await this.getVC(vcPayload);
         }
     }
 
