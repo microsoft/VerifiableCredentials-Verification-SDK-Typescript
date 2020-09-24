@@ -37,7 +37,7 @@ export default interface ITestModel {
     /**
      * Return all presentations
      */
-    getPresentationsFromModel(): {[key: string]: any};
+    getPresentationsFromModel(): {[key: string]: any} | undefined;
 
     /**
      * Return all non presented VCs

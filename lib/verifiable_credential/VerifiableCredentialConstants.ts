@@ -85,5 +85,5 @@ export default class VerifiableCredentialConstants {
   /**
    * Default resolver url
    */
-  public static UNIVERSAL_RESOLVER_URL = 'https://portableidentitycards.azure-api.net';
+  public static UNIVERSAL_RESOLVER_URL = 'https://portableidentitycards.azure-api.net/1.0/identifiers/';
 }

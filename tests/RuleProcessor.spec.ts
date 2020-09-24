@@ -15,6 +15,7 @@ import RequestAttestationsOneVcSaIdtokenResponseOk from './models/RequestAttesta
 import RequestAttestationsOneVcSaIdtokenResponseOne from './models/RequestAttestationsOneVcSaIdtokenResponseOne';
 import RequestAttestationsOneVcSaIdtokenResponseNoIdToken from './models/RequestAttestationsOneVcSaIdtokenResponseNoIdToken';
 import RequestAttestationsOneSelfAssertedResponseOk from './models/RequestAttestationsOneSelfAssertedResponseOk ';
+import RequestAttestationsNameTagOk from './models/RequestAttestationsNameTagOk';
 
 describe('Rule processor', () => {
     it('should process RequestOneVcResponseOk', async () => {
@@ -166,7 +167,7 @@ describe('Rule processor', () => {
             expect(result.validationResult!.verifiablePresentationStatus![jtiInsurance].status).toEqual('valid');
             expect(result.validationResult!.verifiablePresentationStatus![jtiLicense].status).toEqual('valid');
             expect(result.validationResult!.idTokens!['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'].decodedToken.firstName).toEqual('Jules');
-            expect(result.validationResult?.selfIssued.decodedToken.name).toEqual('Jules Winnfield');
+            expect(result.validationResult?.selfIssued!.decodedToken.name).toEqual('Jules Winnfield');
             
             // present id token
             validator = new ValidatorBuilder(requestor.crypto)
@@ -257,7 +258,35 @@ describe('Rule processor', () => {
                 .build();
             let result = await validator.validate(response.rawToken);
             expect(result.result).toBeTruthy();
-            expect(result.validationResult?.selfIssued.decodedToken.name).toEqual('Jules Winnfield');
+            expect(result.validationResult?.selfIssued!.decodedToken.name).toEqual('Jules Winnfield');
+            expect(result.validationResult?.idTokens).toBeUndefined();
+            expect(result.validationResult?.verifiableCredentials).toBeUndefined();
+        } finally {
+            TokenGenerator.fetchMock.reset();
+        }
+    });
+
+
+    it('should process RequestAttestationsNameTagOk', async () => {
+        try {
+            const model = new RequestAttestationsNameTagOk();
+            const requestor = new RequestorHelper(model);
+            await requestor.setup();
+            const request = await requestor.createPresentationExchangeRequest();
+
+            console.log(`Model: ${model.constructor.name}`);
+            console.log(`=====> Request: ${request.rawToken}`);
+
+            const responder = new ResponderHelper(requestor, model);
+            await responder.setup();
+            const response = await responder.createResponse();
+            console.log(`=====> Response: ${response.rawToken}`);
+
+            const validator = new ValidatorBuilder(requestor.crypto)
+                .build();
+            let result = await validator.validate(response.rawToken);
+            expect(result.result).toBeTruthy();
+            expect(result.validationResult?.selfIssued!.decodedToken.name).toEqual('Jules Winnfield');
             expect(result.validationResult?.idTokens).toBeUndefined();
             expect(result.validationResult?.verifiableCredentials).toBeUndefined();
         } finally {
