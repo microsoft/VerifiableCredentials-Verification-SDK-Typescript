@@ -523,7 +523,7 @@ export class ValidationHelpers {
       validationResponse.result = true;
       validationResponse.detailedError = '';
       
-      validationResponse.validationResult = {idTokens: token};
+      validationResponse.validationResult = {idTokens: <any>token};
       return validationResponse;
     } catch (err) {
       console.error(err);

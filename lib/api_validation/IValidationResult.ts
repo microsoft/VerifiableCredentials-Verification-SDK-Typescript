@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
- import { IVerifiablePresentationStatus } from '../index';
+ import { ClaimToken, IVerifiablePresentationStatus } from '../index';
 
 export default interface IValidationResult {
 /**
@@ -19,27 +19,27 @@ export default interface IValidationResult {
   /**
    * Claims found in the input verifiable credentials
    */
-  verifiableCredentials?: { [type: string]: any },
+  verifiableCredentials?: { [type: string]: ClaimToken },
 
   /**
    * Claims found in the input verifiable presentations
    */
-  verifiablePresentations?:  { [type: string]: any },
+  verifiablePresentations?:  { [type: string]: ClaimToken },
 
   /**
    * Claims found in the input id tokens
    */
-  idTokens?: { [id: string]: any },
+  idTokens?: { [id: string]: ClaimToken },
 
   /**
    * Claims found in the input self issued token
    */
-  selfIssued?: any
+  selfIssued?: ClaimToken
 
   /**
    * Claims found in the input SIOP
    */
-  siop?: any
+  siop?: ClaimToken
 
   /**
    * The jti of the incoming siop token

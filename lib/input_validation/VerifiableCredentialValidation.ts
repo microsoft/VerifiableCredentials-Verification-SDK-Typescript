@@ -129,7 +129,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
         };
       }
     }
-    validationResponse.validationResult = { verifiableCredentials: ClaimToken.create(verifiableCredential, credentialType) };
+    validationResponse.validationResult = { verifiableCredentials: <any>ClaimToken.create(verifiableCredential, credentialType) };
     return validationResponse;
   }
 

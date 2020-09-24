@@ -224,11 +224,38 @@ describe('Validator', () => {
       expect(result.validationResult?.idTokens[idtoken].decodedToken.upn).toEqual('jules@pulpfiction.com');
     }
     expect(result.validationResult?.selfIssued).toBeDefined();
-    expect(result.validationResult?.selfIssued.decodedToken.name).toEqual('jules');
+    expect(result.validationResult?.selfIssued!.decodedToken.name).toEqual('jules');
     expect(result.validationResult?.verifiableCredentials).toBeDefined();
     expect(result.validationResult?.verifiableCredentials!['DrivingLicense'].decodedToken.vc.credentialSubject.givenName).toEqual('Jules');
 
     // Negative cases
+
+  });
+
+  xit('should validate siop with default validators', async () => {
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentation, true);
+    const siopExpected = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siopIssuance)[0];
+    const vpExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiablePresentation)[0];
+    const vcExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
+    const idTokenExpected = siop.expected.filter((token: IExpectedIdToken) => token.type === TokenType.idToken)[0];
+    const siExpected = siop.expected.filter((token: IExpectedSelfIssued) => token.type === TokenType.selfIssued)[0];
+
+
+    // Check validator
+    let validator = new ValidatorBuilder(crypto)
+      .useAudienceUrl(siopExpected.audience)
+      .useResolver(new ManagedHttpResolver(VerifiableCredentialConstants.UNIVERSAL_RESOLVER_URL))
+      .enableFeatureVerifiedCredentialsStatusCheck(false)
+      .build();
+
+    expect(validator.resolver).toBeDefined();
+    
+    const queue = new ValidationQueue();
+    const ct = ClaimToken.create(request.rawToken);
+    queue.enqueueToken('siop', ct.rawToken);
+    const result = await validator.validate(queue.getNextToken()!.tokenToValidate);
+    expect(result.result).toBeTruthy();
+    expect(result.status).toEqual(200);
 
   });
 

@@ -86,13 +86,13 @@ export default class Validator {
         case TokenType.idToken:
           response = await validator.validate(queue, queueItem!, '', siopContractId);
           if (response.result) {
-            claimToken = <ClaimToken>response.validationResult?.idTokens;
+            claimToken = <ClaimToken>(<any>response.validationResult)?.idTokens;
           }
           break;
         case TokenType.verifiableCredential:
           response = await validator.validate(queue, queueItem!, siopDid!);
           if (response.result) {
-            claimToken = <ClaimToken>response.validationResult?.verifiableCredentials;
+            claimToken = <ClaimToken>(<any>response.validationResult)?.verifiableCredentials;
           }
           break;
         case TokenType.verifiablePresentation:
@@ -362,7 +362,7 @@ export default class Validator {
       validationResult.idTokens = {};
       for (let token in tokens){
         const id = tokens[token].validatedToken?.id;
-        validationResult.idTokens[id || token] = tokens[token].validatedToken;   
+        validationResult.idTokens[id || token] = tokens[token].validatedToken!;   
       }
     }
 
@@ -371,7 +371,7 @@ export default class Validator {
     if (tokens && tokens.length > 0) {
       validationResult.verifiableCredentials = {};
       for (let inx = 0; inx < tokens.length; inx++) {
-        validationResult.verifiableCredentials[tokens[inx].validatedToken!.id] = tokens[inx].validatedToken;
+        validationResult.verifiableCredentials[tokens[inx].validatedToken!.id] = tokens[inx].validatedToken!;
       }
     }
 
@@ -380,7 +380,7 @@ export default class Validator {
     if (tokens && tokens.length > 0) {
       validationResult.verifiablePresentations = {};
       for (let inx = 0; inx < tokens.length; inx++) {
-        validationResult.verifiablePresentations[tokens[inx].id] = tokens[inx].validatedToken;
+        validationResult.verifiablePresentations[tokens[inx].id] = tokens[inx].validatedToken!;
       }
     }
 
