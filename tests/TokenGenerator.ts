@@ -23,11 +23,6 @@ export default class TokenGenerator {
     /**
      * Resolver url
      */
-    public static universalResolverUrl = `https://portableidentitycards.azure-api.net`;
-
-    /**
-     * Resolver url
-     */
     public static resolverUrl = `https://portableidentitycards.azure-api.net/1.0/identifiers`;
 
     public vcSchema = this.responder.requestor.schema;

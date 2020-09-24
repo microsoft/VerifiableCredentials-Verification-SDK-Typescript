@@ -24,17 +24,12 @@ export default class TestSetup {
   /**
    * Resolver url
    */
-  public universalResolverUrl = `https://portableidentitycards.azure-api.net`;
-
-  /**
-   * Resolver url
-   */
   public resolverUrl = `https://portableidentitycards.azure-api.net/1.0/identifiers`;
 
   /**
    * TestSetup environment
    */
-  public resolver = new ManagedHttpResolver(this.universalResolverUrl);
+  public resolver = new ManagedHttpResolver(this.resolverUrl);
 
   /**
    * Constant for default id token configuration

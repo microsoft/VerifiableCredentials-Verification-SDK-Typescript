@@ -20,7 +20,7 @@ export default class ManagedHttpResolver implements IDidResolver {
   constructor (universalResolverUrl: string) {
     // Format and set the property for the
     const slash = universalResolverUrl.endsWith('/') ? '' : '/';
-    this.resolverUrl = `${universalResolverUrl}${slash}1.0/identifiers/`;
+    this.resolverUrl = `${universalResolverUrl}${slash}`;
   }
 
   /**
