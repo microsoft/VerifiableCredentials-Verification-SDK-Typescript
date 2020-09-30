@@ -2,9 +2,9 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { IDidResolveResult } from '@decentralized-identity/did-common-typescript';
-import { IPayloadProtectionSigning, JoseConstants, ProtectionFormat } from 'verifiablecredentials-crypto-sdk-typescript';
-import base64url from "base64url";
+import { DidDocument, IDidResolveResult } from '@decentralized-identity/did-common-typescript';
+import { IPayloadProtectionSigning } from 'verifiablecredentials-crypto-sdk-typescript';
+import { PublicKey } from 'verifiablecredentials-crypto-keys-typescript';
 import { IValidationOptions } from '../options/IValidationOptions';
 import IValidatorOptions from '../options/IValidatorOptions';
 import ValidationOptions from '../options/ValidationOptions';
@@ -152,6 +152,22 @@ export class ValidationHelpers {
     return validationResponse;
   }
 
+  private getPublicKeyFromDidDocument(validationResponse: IValidationResponse) {
+    const publicKey = validationResponse.didDocument!.getPublicKey(validationResponse.didKid!);
+    let signingKey: PublicKey;
+    if (publicKey) {
+      signingKey = publicKey.publicKeyJwk;
+    }
+
+    //  use jwk in request if did is not registered
+    if (!signingKey) {
+      return {
+        result: false,
+        detailedError: `The did '${validationResponse.did}' does not have a public key with kid '${validationResponse.didKid}'`,
+        status: 403
+      };
+    }
+  }
   /**
    * Check the time validity of the token
    * @param validationResponse The response for the requestor
