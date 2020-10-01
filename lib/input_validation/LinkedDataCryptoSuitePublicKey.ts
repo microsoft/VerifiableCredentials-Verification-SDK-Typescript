@@ -8,7 +8,7 @@ import { IExpectedSiop } from '../index';
  * Class to model the Linked Data crypto suites public keys
  * Suites: https://w3c-ccg.github.io/ld-cryptosuite-registry/
  */
-export class LinkedDataCryptoSuitePublicKey {
+export default class LinkedDataCryptoSuitePublicKey {
   /**
    * Set of supported suites
    */
@@ -30,24 +30,17 @@ export class LinkedDataCryptoSuitePublicKey {
         x: LinkedDataCryptoSuitePublicKey.decodeBase58To64Url(rawPublicKey.publicKeyBase58)
       }
     },
-    Ed25519VerificationKey2018: (rawPublicKey: any): object => {
+    Secp256k1VerificationKey2018: (rawPublicKey: any): object => {
       if (!rawPublicKey) {
         throw new Error('Pass in the public key. Undefined.');
       }
 
-      if (!rawPublicKey.publicKeyBase58) {
-        throw new Error('publicKeyBase58 not defined in the public key.');
+      if (!rawPublicKey.publicKeyJwk) {
+        throw new Error('publicKeyJwk not defined in the public key.');
       }
 
-      return {
-        kty: 'OKP',
-        use: 'sig',
-        alg: 'EdDSA',
-        crv: 'ed25519',
-        x: LinkedDataCryptoSuitePublicKey.decodeBase58To64Url(rawPublicKey.publicKeyBase58)
-      }
+      return rawPublicKey.publicKeyJwk;
     }
-
   };
 
 

@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 import { DidDocument, IDidResolveResult } from '@decentralized-identity/did-common-typescript';
 import { IPayloadProtectionSigning } from 'verifiablecredentials-crypto-sdk-typescript';
-import { PublicKey } from 'verifiablecredentials-crypto-keys-typescript';
 import { IValidationOptions } from '../options/IValidationOptions';
 import IValidatorOptions from '../options/IValidatorOptions';
 import ValidationOptions from '../options/ValidationOptions';
@@ -151,10 +150,10 @@ export class ValidationHelpers {
     validationResponse.didSigningPublicKey = signingKey;
     return validationResponse;
   }
-
+/*
   private getPublicKeyFromDidDocument(validationResponse: IValidationResponse) {
     const publicKey = validationResponse.didDocument!.getPublicKey(validationResponse.didKid!);
-    let signingKey: PublicKey;
+    let signingKey: any;
     if (publicKey) {
       signingKey = publicKey.publicKeyJwk;
     }
@@ -168,6 +167,7 @@ export class ValidationHelpers {
       };
     }
   }
+*/
   /**
    * Check the time validity of the token
    * @param validationResponse The response for the requestor

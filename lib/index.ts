@@ -106,3 +106,6 @@ export {
   TrustedIssuerModel,
   VerifiablePresentationAttestationModel
 };
+
+import LinkedDataCryptoSuitePublicKey from './input_validation/LinkedDataCryptoSuitePublicKey';
+export { LinkedDataCryptoSuitePublicKey };
