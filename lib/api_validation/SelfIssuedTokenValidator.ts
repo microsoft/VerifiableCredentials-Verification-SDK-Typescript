@@ -39,7 +39,16 @@ export default class SelfIssuedTokenValidator implements ITokenValidator {
     
     return validationResponse;
   }
-  
+
+  /**
+   * Get tokens from current item and add them to the queue.
+   * @param validationResponse The response for the requestor
+   * @param queue with tokens to validate
+   */
+  public getTokens(_validationResponse: IValidationResponse, _queue: ValidationQueue ): IValidationResponse {
+    throw new Error('Not implemented');
+  }
+
   /**
    * Gets the type of token to validate
    */

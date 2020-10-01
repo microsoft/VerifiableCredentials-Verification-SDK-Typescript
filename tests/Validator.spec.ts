@@ -28,6 +28,11 @@ describe('Validator', () => {
     //expected.configuration = (<{ [contract: string]: string[]}>expected.configuration)[Validator.getContractIdFromSiop(siop.contract)];
 
     let tokenValidator = new IdTokenTokenValidator(setup.validatorOptions, expected);
+    expect(()=> tokenValidator.getTokens(<any>undefined, <any>undefined)).toThrowError('Not implemented');
+
+    let selfIssuedValidator = new SelfIssuedTokenValidator(setup.validatorOptions, expected);
+    expect(()=> selfIssuedValidator.getTokens(<any>undefined, <any>undefined)).toThrowError('Not implemented');
+
     let validator = new ValidatorBuilder(crypto)
       .useValidators(tokenValidator)
       .useTrustedIssuerConfigurationsForIdTokens([setup.defaultIdTokenConfiguration])
@@ -71,6 +76,8 @@ describe('Validator', () => {
     const expected: any = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
 
     const tokenValidator = new VerifiableCredentialTokenValidator(setup.validatorOptions, expected);
+    expect(()=> tokenValidator.getTokens(<any>undefined, <any>undefined)).toThrowError('Not implemented');
+
     const validator = new ValidatorBuilder(crypto)
       .useValidators(tokenValidator)
       .build();
@@ -105,20 +112,20 @@ describe('Validator', () => {
 
     // Check VP validator
     let queue = new ValidationQueue();
-    queue.enqueueToken('vp', siop.vp.rawToken);
+    queue.enqueueToken('vp', siop.vp);
     let result = await vpValidator.validate(queue, queue.getNextToken()!, setup.defaultUserDid);
     expect(result.result).toBeTruthy('vpValidator succeeded');
-    expect(result.tokensToValidate![`vp`].rawToken).toEqual(siop.vc.rawToken);
+    expect(result.tokensToValidate![`DrivingLicense`].rawToken).toEqual(siop.vc.rawToken);
 
     // Check VC validator
     queue = new ValidationQueue();
-    queue.enqueueToken(vcAttestationName, siop.vc.rawToken);
+    queue.enqueueToken(vcAttestationName, siop.vc);
     result = await vcValidator.validate(queue, queue.getNextToken()!, setup.defaultUserDid);
     expect(result.result).toBeTruthy('vcValidator succeeded');
 
     // Check validator
     queue = new ValidationQueue();
-    queue.enqueueToken('vp', siop.vp.rawToken);
+    queue.enqueueToken('vp', siop.vp);
     result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeTruthy('check validator');
     expect(result.validationResult?.verifiableCredentials).toBeDefined();
@@ -129,7 +136,7 @@ describe('Validator', () => {
       .useValidators([])
       .build();
     queue = new ValidationQueue();
-    queue.enqueueToken('vp', siop.vp.rawToken);
+    queue.enqueueToken('vp', siop.vp);
     result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeFalsy();
     expect(result.detailedError).toEqual('verifiablePresentation does not has a TokenValidator');
@@ -140,7 +147,7 @@ describe('Validator', () => {
       .enableFeatureVerifiedCredentialsStatusCheck(false)
       .build();
     queue = new ValidationQueue();
-    queue.enqueueToken('vp', siop.vp.rawToken);
+    queue.enqueueToken('vp', siop.vp);
     result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeFalsy();
     expect(result.detailedError).toEqual('verifiableCredential does not has a TokenValidator');
@@ -162,7 +169,7 @@ describe('Validator', () => {
     expect(validator.builder.audienceUrl).toEqual(siopExpected.audience);
     
     const queue = new ValidationQueue();
-    queue.enqueueToken('siopPresentationAttestation', request.rawToken);
+    queue.enqueueToken('siopPresentationAttestation', request);
     let result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeTruthy();
     expect(result.status).toEqual(200);
@@ -180,7 +187,7 @@ describe('Validator', () => {
     // Negative cases
     // map issuer to other credential type
     validator = validator.builder.useTrustedIssuersForVerifiableCredentials({ someCredential: vcExpected.contractIssuers.DrivingLicense }).build();
-    queue.enqueueToken('siopPresentationAttestation', request.rawToken);
+    queue.enqueueToken('siopPresentationAttestation', request);
     result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeFalsy();
     expect(result.detailedError).toEqual(`Expected should have contractIssuers set for verifiableCredential. Missing contractIssuers for 'DrivingLicense'.`);
@@ -209,7 +216,7 @@ describe('Validator', () => {
     expect(validator.resolver).toBeDefined();
     
     const queue = new ValidationQueue();
-    queue.enqueueToken('siop', request.rawToken);
+    queue.enqueueToken('siop', request);
     const result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeTruthy();
     expect(result.status).toEqual(200);
@@ -252,7 +259,7 @@ describe('Validator', () => {
     
     const queue = new ValidationQueue();
     const ct = ClaimToken.create(request.rawToken);
-    queue.enqueueToken('siop', ct.rawToken);
+    queue.enqueueToken('siop', ct);
     const result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeTruthy();
     expect(result.status).toEqual(200);

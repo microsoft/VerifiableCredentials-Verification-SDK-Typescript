@@ -552,67 +552,6 @@ export class ValidationHelpers {
   }
 
   /**
-   * Decode the tokens from the SIOP request
-   * @param validationResponse The response for the requestor
-   * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
-   * @returns validationResponse.tokensToValidate List of tokens found in the SIOP
-   */
-  public getTokensFromSiop(validationResponse: IValidationResponse): IValidationResponse {
-    const self: any = this;
-
-    // Check type of SIOP
-    let type: TokenType;
-    if (validationResponse.payloadObject[VerifiableCredentialConstants.ATTESTATIONS]) {
-      type = TokenType.siopPresentationAttestation;
-    } else if (validationResponse.payloadObject[VerifiableCredentialConstants.PRESENTATION_SUBMISSION]) {
-      type = TokenType.siopPresentationExchange;
-    } else {
-      return {
-        result: false,
-        status: 403,
-        detailedError: 'Could not get tokens from SIOP. Unrecognized format.'
-      }
-    }
-
-    switch (type) {
-      case TokenType.siopPresentationAttestation:
-        const attestations = validationResponse.payloadObject[VerifiableCredentialConstants.ATTESTATIONS];
-        if (attestations) {
-          // Decode tokens
-          try {
-            validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromAttestations(attestations);
-          } catch (err) {
-            console.error(err);
-            return {
-              result: false,
-              status: 403,
-              detailedError: err.message
-            };
-          }
-        }
-        break;
-
-      case TokenType.siopPresentationExchange:
-        // Get presentation exchange tokens
-
-        // Decode tokens
-        try {
-          validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromPresentationExchange(validationResponse.payloadObject);
-        } catch (err) {
-          console.error(err);
-          return {
-            result: false,
-            status: 403,
-            detailedError: err.message
-          };
-        }
-        break;
-    }
-
-    return validationResponse;
-  }
-
-  /**
    * Validation a signed token 
    * @param validationResponse The response for the requestor
    * @param token Token to validate

@@ -13,21 +13,4 @@ describe('SiopValidationSimulation', () => {
   afterEach(async () => {
     setup.fetchMock.reset();
   });
-  xit('should validate the WoodgroveIdentityCredential', async () =>{
-        // Token to test - WoodgroveIdentityCredential
-        const token = SiopValidationSimulation.token;
-           
-    // Check validator
-    let validator = new ValidatorBuilder(setup.crypto)
-      .useTrustedIssuerConfigurationsForIdTokens(['https://login.microsoftonline.com/woodgrove.ms/.well-known/openid-configuration'])    
-      .useAudienceUrl(SiopValidationSimulation.siopExpected.audience!)
-      .build();
-
-    const queue = new ValidationQueue();
-    queue.enqueueToken('siopPresentationAttestation', token);
-    const result = await validator.validate(queue.getNextToken()!.tokenToValidate);
-    expect(result.result).toBeTruthy();
-
-  });
-
 });
