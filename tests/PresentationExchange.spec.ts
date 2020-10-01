@@ -57,7 +57,7 @@ describe('PresentationExchange', () => {
             .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!] })
             .build();
         let result = await validator.validate(response.rawToken);
-        expect(result.result).toBeTruthy();
+        expect(result.result).toBeTruthy();        
 
         // Negative cases
 

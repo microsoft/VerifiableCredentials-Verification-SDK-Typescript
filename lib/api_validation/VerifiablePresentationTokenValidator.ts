@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TokenType, IExpectedVerifiablePresentation, ITokenValidator, ClaimToken } from '../index';
+import { TokenType, IExpectedVerifiablePresentation, ITokenValidator, ClaimToken, VerifiableCredentialValidation } from '../index';
 import { IValidationResponse } from '../input_validation/IValidationResponse';
 import ValidationOptions from '../options/ValidationOptions';
 import { VerifiablePresentationValidation } from '../input_validation/VerifiablePresentationValidation';
@@ -34,16 +34,41 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
   public async validate(queue: ValidationQueue, queueItem: ValidationQueueItem, siopDid: string): Promise<IValidationResponse> { 
     const options = new ValidationOptions(this.validatorOption, TokenType.verifiablePresentation);
     const validator = new VerifiablePresentationValidation(options, this.expected, siopDid, queueItem.id);
-    const validationResult = await validator.validate(queueItem.tokenToValidate);
+    let validationResult = await validator.validate(queueItem.tokenToValidate);
 
-    if (validationResult.tokensToValidate) {
-      for (let key in validationResult.tokensToValidate) {
-        queue.enqueueToken(key, validationResult.tokensToValidate[key].rawToken);
-      }
+    if (validationResult.result) {
+      validationResult = this.getTokens(validationResult, queue);
     }
-    return validationResult;
+
+    return validationResult as IValidationResponse;
   }
   
+  /**
+   * Get tokens from current item and add them to the queue.
+   * @param validationResponse The response for the requestor
+   * @param queue with tokens to validate
+   */
+  public getTokens(validationResponse: IValidationResponse, queue: ValidationQueue ): IValidationResponse {
+    if (!validationResponse.payloadObject.vp || !validationResponse.payloadObject.vp.verifiableCredential) {
+      return {
+        result: false,
+        status: 403,
+        detailedError: 'No verifiable credential'
+      };
+    }
+
+    const vc = validationResponse.payloadObject.vp.verifiableCredential;
+    validationResponse.tokensToValidate = {};
+    for (let token in vc) {
+      const claimToken = ClaimToken.create(vc[token]);
+      const vcType = VerifiableCredentialValidation.getVerifiableCredentialType(claimToken.decodedToken.vc);
+      validationResponse.tokensToValidate[vcType] = claimToken; 
+      queue.enqueueToken(vcType, claimToken);    
+    }
+
+    return validationResponse;
+  }
+
   /**
    * Gets the type of token to validate
    */

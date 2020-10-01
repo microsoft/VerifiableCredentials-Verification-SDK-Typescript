@@ -38,7 +38,16 @@ export default class IdTokenTokenValidator implements ITokenValidator {
     const validationResult = await validator.validate(queueItem.tokenToValidate);
     return validationResult as IValidationResponse;    
   }
-  
+
+  /**
+   * Get tokens from current item and add them to the queue.
+   * @param validationResponse The response for the requestor
+   * @param queue with tokens to validate
+   */
+  public getTokens(_validationResponse: IValidationResponse, _queue: ValidationQueue ): IValidationResponse {
+    throw new Error('Not implemented');
+  }
+
   /**
    * Gets the type of token to validate
    */

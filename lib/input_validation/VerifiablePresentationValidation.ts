@@ -86,29 +86,13 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
         detailedError: `Missing or wrong default type in vp of presentation. Should be ${VerifiableCredentialConstants.DEFAULT_VERIFIABLEPRESENTATION_TYPE}`
       };
     }
-
-
-    validationResponse.tokensToValidate = this.setVcTokens(validationResponse.payloadObject.vp.verifiableCredential);
-    if (!validationResponse.tokensToValidate) {
+    if (!validationResponse.payloadObject.vp['verifiableCredential']) {
       return {
         result: false,
         status: 403,
         detailedError: `Missing verifiableCredential in presentation`
       };
     }
-
     return validationResponse;
-  }
-
-  private setVcTokens(vc: string[]) {
-    if (!vc) {
-      return undefined;
-    }
-    const decodedToken: { [key: string]: ClaimToken } = {};
-    for (let token in vc) {
-      const claimToken = ClaimToken.create(vc[token]);
-      decodedToken[this.id] = claimToken;
-    }
-    return decodedToken;
   }
 }

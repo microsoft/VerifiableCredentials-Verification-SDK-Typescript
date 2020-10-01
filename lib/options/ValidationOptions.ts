@@ -30,7 +30,6 @@ constructor (public validatorOptions: IValidatorOptions, public tokenType: Token
   this.checkScopeValidityOnVcTokenDelegate = this.validationHelpers.checkScopeValidityOnVcToken;
   this.fetchKeyAndValidateSignatureOnIdTokenDelegate = this.validationHelpers.fetchKeyAndValidateSignatureOnIdToken;
   this.validateSignatureOnTokenDelegate = this.validationHelpers.validateSignatureOnToken;
-  this.getTokensFromSiopDelegate = this.validationHelpers.getTokensFromSiop;
 }
 
 /**
@@ -87,9 +86,4 @@ public getTokenObjectDelegate: GetTokenObject;
    * Signature validation
    */
   public validateSignatureOnTokenDelegate: ValidateSignatureOnToken;
-  
-  /**
-   * Retrieve tokens from SIOP
-   */
-  public getTokensFromSiopDelegate: GetTokensFromSiop;
 }

@@ -5,7 +5,7 @@
 
 import ValidationQueueItem from './ValidationQueueItem';
 import { IValidationResponse } from './IValidationResponse';
-import { TokenType } from '../verifiable_credential/ClaimToken';
+import ClaimToken, { TokenType } from '../verifiable_credential/ClaimToken';
 
 export default class ValidationQueue {
 
@@ -18,7 +18,7 @@ export default class ValidationQueue {
    * Add token to validation queue
    * @param token to add to queue
    */
-  public enqueueToken(id: string, token: string) {
+  public enqueueToken(id: string, token: ClaimToken) {
     this.queue.push(new ValidationQueueItem(id, token));
   }
 
