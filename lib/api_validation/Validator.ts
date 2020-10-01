@@ -58,7 +58,15 @@ export default class Validator {
     let siopContractId: string | undefined;
     const queue = new ValidationQueue();
     if (typeof token === 'string') {
-      claimToken = ClaimToken.create(token);
+      try {
+        claimToken = ClaimToken.create(token);
+      } catch (exception) {
+        return {
+          status: 400,
+          detailedError: exception.message,
+          result: false
+        }
+      }
     } else if (token instanceof ClaimToken) {
       claimToken = token;
     } else {

@@ -112,20 +112,20 @@ describe('Validator', () => {
 
     // Check VP validator
     let queue = new ValidationQueue();
-    queue.enqueueToken('vp', siop.vp.rawToken);
+    queue.enqueueToken('vp', siop.vp);
     let result = await vpValidator.validate(queue, queue.getNextToken()!, setup.defaultUserDid);
     expect(result.result).toBeTruthy('vpValidator succeeded');
     expect(result.tokensToValidate![`DrivingLicense`].rawToken).toEqual(siop.vc.rawToken);
 
     // Check VC validator
     queue = new ValidationQueue();
-    queue.enqueueToken(vcAttestationName, siop.vc.rawToken);
+    queue.enqueueToken(vcAttestationName, siop.vc);
     result = await vcValidator.validate(queue, queue.getNextToken()!, setup.defaultUserDid);
     expect(result.result).toBeTruthy('vcValidator succeeded');
 
     // Check validator
     queue = new ValidationQueue();
-    queue.enqueueToken('vp', siop.vp.rawToken);
+    queue.enqueueToken('vp', siop.vp);
     result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeTruthy('check validator');
     expect(result.validationResult?.verifiableCredentials).toBeDefined();
@@ -136,7 +136,7 @@ describe('Validator', () => {
       .useValidators([])
       .build();
     queue = new ValidationQueue();
-    queue.enqueueToken('vp', siop.vp.rawToken);
+    queue.enqueueToken('vp', siop.vp);
     result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeFalsy();
     expect(result.detailedError).toEqual('verifiablePresentation does not has a TokenValidator');
@@ -147,7 +147,7 @@ describe('Validator', () => {
       .enableFeatureVerifiedCredentialsStatusCheck(false)
       .build();
     queue = new ValidationQueue();
-    queue.enqueueToken('vp', siop.vp.rawToken);
+    queue.enqueueToken('vp', siop.vp);
     result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeFalsy();
     expect(result.detailedError).toEqual('verifiableCredential does not has a TokenValidator');
