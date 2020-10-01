@@ -85,9 +85,4 @@ getTokenObjectDelegate: GetTokenObject;
    * Signature validation
    */
   validateSignatureOnTokenDelegate: ValidateSignatureOnToken,
-
-  /**
-   * Retrieve tokens from SIOP
-   */
-  getTokensFromSiopDelegate: GetTokensFromSiop,
 }

@@ -23,5 +23,13 @@ export default interface ITokenValidator {
    * @param queueItem under validation
    */
   validate(queue: ValidationQueue, queueItem: ValidationQueueItem, siopDid?: string, siopContract?: string): Promise<IValidationResponse>;
+  
+
+  /**
+   * Get tokens from current items and add them to the queue.
+   * @param validationResponse The response for the requestor
+   * @param queue with tokens to validate
+   */
+  getTokens(validationResponse: IValidationResponse, queue: ValidationQueue): IValidationResponse;
 }
 

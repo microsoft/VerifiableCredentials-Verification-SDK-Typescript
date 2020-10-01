@@ -34,16 +34,35 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
   public async validate(queue: ValidationQueue, queueItem: ValidationQueueItem, siopDid: string): Promise<IValidationResponse> { 
     const options = new ValidationOptions(this.validatorOption, TokenType.verifiablePresentation);
     const validator = new VerifiablePresentationValidation(options, this.expected, siopDid, queueItem.id);
-    const validationResult = await validator.validate(queueItem.tokenToValidate);
+    let validationResult = await validator.validate(queueItem.tokenToValidate);
 
-    if (validationResult.tokensToValidate) {
-      for (let key in validationResult.tokensToValidate) {
-        queue.enqueueToken(key, validationResult.tokensToValidate[key].rawToken);
-      }
+    if (validationResult.result) {
+      validationResult = this.getTokens(validationResult, queue);
     }
-    return validationResult;
+
+    return validationResult as IValidationResponse;
   }
   
+  /**
+   * Get tokens from current item and add them to the queue.
+   * @param validationResponse The response for the requestor
+   * @param queue with tokens to validate
+   */
+  public getTokens(validationResponse: IValidationResponse, queue: ValidationQueue ): IValidationResponse {
+    if (!validationResponse.payloadObject.vp || !validationResponse.payloadObject.vp.verifiableCredential) {
+      throw new Error('No verifiable credential ')
+    }
+
+    const vc = validationResponse.payloadObject.vp.verifiableCredential;
+    validationResponse.tokensToValidate = {};
+    for (let token in vc) {
+      validationResponse.tokensToValidate[token] = ClaimToken.create(vc[token]);
+      queue.enqueueToken(token, validationResponse.tokensToValidate[token].rawToken);    
+    }
+
+    return validationResponse;
+  }
+
   /**
    * Gets the type of token to validate
    */

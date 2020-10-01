@@ -44,13 +44,7 @@ export class SiopValidation implements ISiopValidation {
     if (!validationResponse.result) {
       return validationResponse;
     }
-
-    // Get input for the requested VC
-    validationResponse = await this.options.getTokensFromSiopDelegate(validationResponse);
-    if (!validationResponse.result) {
-      return validationResponse;
-    }
-
+    
     console.log(`The SIOP signature is verified with DID ${validationResponse.did}`);
     return validationResponse;
   }

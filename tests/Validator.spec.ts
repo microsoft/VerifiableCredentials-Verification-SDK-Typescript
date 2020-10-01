@@ -28,6 +28,11 @@ describe('Validator', () => {
     //expected.configuration = (<{ [contract: string]: string[]}>expected.configuration)[Validator.getContractIdFromSiop(siop.contract)];
 
     let tokenValidator = new IdTokenTokenValidator(setup.validatorOptions, expected);
+    expect(()=> tokenValidator.getTokens(<any>undefined, <any>undefined)).toThrowError('Not implemented');
+
+    let selfIssuedValidator = new SelfIssuedTokenValidator(setup.validatorOptions, expected);
+    expect(()=> selfIssuedValidator.getTokens(<any>undefined, <any>undefined)).toThrowError('Not implemented');
+
     let validator = new ValidatorBuilder(crypto)
       .useValidators(tokenValidator)
       .useTrustedIssuerConfigurationsForIdTokens([setup.defaultIdTokenConfiguration])
@@ -71,6 +76,8 @@ describe('Validator', () => {
     const expected: any = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
 
     const tokenValidator = new VerifiableCredentialTokenValidator(setup.validatorOptions, expected);
+    expect(()=> tokenValidator.getTokens(<any>undefined, <any>undefined)).toThrowError('Not implemented');
+
     const validator = new ValidatorBuilder(crypto)
       .useValidators(tokenValidator)
       .build();
@@ -80,7 +87,7 @@ describe('Validator', () => {
   
   });
 
-  it('should validate verifiable presentations', async () => {
+  fit('should validate verifiable presentations', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentation, true);
     const vcExpected: IExpectedVerifiableCredential = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
     const vpExpected: IExpectedVerifiablePresentation = siop.expected.filter((token: IExpectedVerifiablePresentation) => token.type === TokenType.verifiablePresentation)[0];
