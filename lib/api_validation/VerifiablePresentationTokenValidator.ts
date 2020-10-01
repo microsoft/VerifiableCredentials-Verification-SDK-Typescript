@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TokenType, IExpectedVerifiablePresentation, ITokenValidator, ClaimToken } from '../index';
+import { TokenType, IExpectedVerifiablePresentation, ITokenValidator, ClaimToken, VerifiableCredentialValidation } from '../index';
 import { IValidationResponse } from '../input_validation/IValidationResponse';
 import ValidationOptions from '../options/ValidationOptions';
 import { VerifiablePresentationValidation } from '../input_validation/VerifiablePresentationValidation';
@@ -50,14 +50,20 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
    */
   public getTokens(validationResponse: IValidationResponse, queue: ValidationQueue ): IValidationResponse {
     if (!validationResponse.payloadObject.vp || !validationResponse.payloadObject.vp.verifiableCredential) {
-      throw new Error('No verifiable credential ')
+      return {
+        result: false,
+        status: 403,
+        detailedError: 'No verifiable credential'
+      };
     }
 
     const vc = validationResponse.payloadObject.vp.verifiableCredential;
     validationResponse.tokensToValidate = {};
     for (let token in vc) {
-      validationResponse.tokensToValidate[token] = ClaimToken.create(vc[token]);
-      queue.enqueueToken(token, validationResponse.tokensToValidate[token].rawToken);    
+      const claimToken = ClaimToken.create(vc[token]);
+      const vcType = VerifiableCredentialValidation.getVerifiableCredentialType(claimToken.decodedToken.vc);
+      validationResponse.tokensToValidate[vcType] = claimToken; 
+      queue.enqueueToken(vcType, claimToken);    
     }
 
     return validationResponse;

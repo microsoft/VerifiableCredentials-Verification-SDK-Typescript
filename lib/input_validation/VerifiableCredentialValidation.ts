@@ -68,33 +68,18 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       };
     }
 
-    const types: string[] = validationResponse.payloadObject.vc.type;
-    if (!types || types.length === 0) {
-      return {
-        result: false,
-        detailedError: `The vc property does not contain type`,
-        status: 403
-      };
-    }
-
-    if (types.length < 2) {
-      return {
-        result: false,
-        detailedError: `The verifiable credential type property should have two elements`,
-        status: 403
-      };
-    }
-
-    if (types[0] !== VerifiableCredentialConstants.DEFAULT_VERIFIABLECREDENTIAL_TYPE) {
-      return {
-        result: false,
-        detailedError: `The verifiable credential type first element should be ${VerifiableCredentialConstants.DEFAULT_VERIFIABLECREDENTIAL_TYPE}`,
-        status: 403
-      };
-    }
-
     // Get credential type from context
-    const credentialType = types[1];
+    let credentialType: string;
+    try {
+      credentialType = VerifiableCredentialValidation.getVerifiableCredentialType(validationResponse.payloadObject.vc);
+    } catch (exception) {
+      console.error(exception.message);
+      return {
+        result: false,
+        detailedError: exception.message,
+        status: 403
+      };
+    }
 
     // Check token scope (aud and iss)
     validationResponse = await this.options.checkScopeValidityOnVcTokenDelegate(validationResponse, this.expected, siopDid);
@@ -110,7 +95,6 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
         // Error in issuers
         return <VerifiableCredentialValidationResponse>contractIssuers;
       }
-        
       
       // Check if the we found a matching contract.
       if (!contractIssuers) {
@@ -131,6 +115,29 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
     }
     validationResponse.validationResult = { verifiableCredentials: <any>ClaimToken.create(verifiableCredential, credentialType) };
     return validationResponse;
+  }
+
+  /**
+   * Get the type from the payload of the verifiable credential
+   * @param vc The payload of the verifiable credential
+   */
+  public static getVerifiableCredentialType(vc: any): string {
+
+    const types: string[] = vc.type;
+    if (!types || types.length === 0) {
+      throw new Error(`The vc property does not contain type`);
+    }
+
+    if (types.length < 2) {
+      throw new Error(`The verifiable credential type property should have two elements`);
+    }
+
+    if (types[0] !== VerifiableCredentialConstants.DEFAULT_VERIFIABLECREDENTIAL_TYPE) {
+      throw new Error(`The verifiable credential type first element should be ${VerifiableCredentialConstants.DEFAULT_VERIFIABLECREDENTIAL_TYPE}`);
+    }
+
+    // Get credential type from context
+    return types[1];
   }
 
   /**

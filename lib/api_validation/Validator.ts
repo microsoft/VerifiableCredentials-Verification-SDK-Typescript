@@ -48,7 +48,7 @@ export default class Validator {
    * The validation handler
    * @param token to validate
    */
-  public async validate(token: string): Promise<IValidationResponse> {
+  public async validate(token: string | ClaimToken): Promise<IValidationResponse> {
     let response: IValidationResponse = {
       result: true,
       status: 200,
@@ -57,7 +57,19 @@ export default class Validator {
     let siopDid: string | undefined;
     let siopContractId: string | undefined;
     const queue = new ValidationQueue();
-    queue.enqueueToken('siop', token);
+    if (typeof token === 'string') {
+      claimToken = ClaimToken.create(token);
+    } else if (token instanceof ClaimToken) {
+      claimToken = token;
+    } else {
+      return {
+        result: false,
+        status: 500,
+        detailedError: 'Wrong token type. Expected string or ClaimToken'
+      }
+    }
+
+    queue.enqueueToken('siop', claimToken);
     let queueItem = queue.getNextToken();
     do {
       try {
