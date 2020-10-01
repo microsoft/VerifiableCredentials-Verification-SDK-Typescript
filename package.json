@@ -1,6 +1,6 @@
 {
   "name": "verifiablecredentials-verification-sdk-typescript",
-  "version": "0.10.0-preview.29",
+  "version": "0.10.0-preview.30",
   "description": "Typescript SDK for verifiable credentials",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -47,7 +47,7 @@
     "jsonpath": "1.0.2",
     "multihashes": "0.4.14",
     "uuid": "7.0.1",
-    "verifiablecredentials-crypto-sdk-typescript": "1.1.10-preview.5"
+    "verifiablecredentials-crypto-sdk-typescript": "1.1.10"
   },
   "nyc": {
     "extension": [
