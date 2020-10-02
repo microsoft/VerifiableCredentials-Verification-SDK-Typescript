@@ -12,6 +12,7 @@ import VerifiableCredentialConstants from '../verifiable_credential/VerifiableCr
 import { IdTokenValidationResponse } from './IdTokenValidationResponse';
 import { IValidationResponse } from './IValidationResponse';
 import { IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSiop, IExpectedAudience } from '../options/IExpected';
+import { LinkedDataCryptoSuitePublicKey } from '..';
 const jp = require('jsonpath');
 
 require('es6-promise').polyfill();
@@ -133,41 +134,34 @@ export class ValidationHelpers {
       };
     }
 
-    let signingKey: any;
-    const publicKey = validationResponse.didDocument.getPublicKey(validationResponse.didKid);
-    if (publicKey) {
-      signingKey = publicKey.publicKeyJwk;
-    }
-
-    //  use jwk in request if did is not registered
-    if (!signingKey) {
-      return {
-        result: false,
-        detailedError: `The did '${validationResponse.did}' does not have a public key with kid '${validationResponse.didKid}'`,
-        status: 403
-      };
-    }
+    let signingKey = ValidationHelpers.getPublicKeyFromDidDocument(validationResponse);
     validationResponse.didSigningPublicKey = signingKey;
     return validationResponse;
   }
-/*
-  private getPublicKeyFromDidDocument(validationResponse: IValidationResponse) {
+
+  /**
+   * Retireve public key from did document
+   * @param validationResponse The response for the requestor
+   */
+  private static getPublicKeyFromDidDocument(validationResponse: IValidationResponse): any {
     const publicKey = validationResponse.didDocument!.getPublicKey(validationResponse.didKid!);
     let signingKey: any;
     if (publicKey) {
-      signingKey = publicKey.publicKeyJwk;
+      signingKey = LinkedDataCryptoSuitePublicKey.getPublicKey(publicKey);
     }
 
     //  use jwk in request if did is not registered
     if (!signingKey) {
       return {
         result: false,
-        detailedError: `The did '${validationResponse.did}' does not have a public key with kid '${validationResponse.didKid}'`,
+        detailedError: `The did '${validationResponse.did}' does not have a public key with kid '${validationResponse.didKid}'. Public key : '${publicKey ? JSON.stringify(publicKey) : 'undefined'}'`,
         status: 403
       };
     }
+
+    return signingKey;
   }
-*/
+
   /**
    * Check the time validity of the token
    * @param validationResponse The response for the requestor

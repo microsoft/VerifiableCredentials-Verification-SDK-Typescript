@@ -45,7 +45,7 @@ describe('PresentationExchange', () => {
         console.log(request.rawToken);
     });
 
-    it('should create a response and validate', async () => {
+    fit('should create a response and validate', async () => {
 
         const request: any = await requestor.createPresentationExchangeRequest();
         expect(request.rawToken).toBeDefined();

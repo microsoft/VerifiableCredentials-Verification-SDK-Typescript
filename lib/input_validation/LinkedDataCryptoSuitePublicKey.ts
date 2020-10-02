@@ -1,3 +1,4 @@
+import base64url from 'base64url';
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
@@ -14,32 +15,58 @@ export default class LinkedDataCryptoSuitePublicKey {
    */
   public static suites: { [suite: string]: any } = {
     Ed25519VerificationKey2018: (rawPublicKey: any): object => {
-      if (!rawPublicKey) {
-        throw new Error('Pass in the public key. Undefined.');
+      let publicKey = LinkedDataCryptoSuitePublicKey.parsePublicKey(rawPublicKey);
+      if (!publicKey) {
+        throw new Error(`${JSON.stringify(rawPublicKey)} public key type is not supported.`);
       }
 
-      if (!rawPublicKey.publicKeyBase58) {
-        throw new Error('publicKeyBase58 not defined in the public key.');
+      if (typeof publicKey === 'string') {
+        return {
+          kty: 'OKP',
+          use: 'sig',
+          alg: 'EdDSA',
+          crv: 'ed25519',
+          x: publicKey
+        };
       }
 
-      return {
-        kty: 'OKP',
-        use: 'sig',
-        alg: 'EdDSA',
-        crv: 'ed25519',
-        x: LinkedDataCryptoSuitePublicKey.decodeBase58To64Url(rawPublicKey.publicKeyBase58)
-      }
+      return publicKey;
     },
     Secp256k1VerificationKey2018: (rawPublicKey: any): object => {
-      if (!rawPublicKey) {
-        throw new Error('Pass in the public key. Undefined.');
+      let publicKey = LinkedDataCryptoSuitePublicKey.parsePublicKey(rawPublicKey);
+      if (!publicKey) {
+        throw new Error(`${JSON.stringify(rawPublicKey)} public key type is not supported.`);
       }
 
-      if (!rawPublicKey.publicKeyJwk) {
-        throw new Error('publicKeyJwk not defined in the public key.');
+      if (typeof publicKey === 'string') {
+        throw new Error(`${JSON.stringify(rawPublicKey)} public key type is not supported.`);
       }
 
-      return rawPublicKey.publicKeyJwk;
+      return publicKey;
+    },
+    EcdsaSecp256k1VerificationKey2019: (rawPublicKey: any): object => {
+      let publicKey = LinkedDataCryptoSuitePublicKey.parsePublicKey(rawPublicKey);
+      if (!publicKey) {
+        throw new Error(`${JSON.stringify(rawPublicKey)} public key type is not supported.`);
+      }
+
+      if (typeof publicKey === 'string') {
+        throw new Error(`${JSON.stringify(rawPublicKey)} public key type is not supported.`);
+      }
+
+      return publicKey;
+    },
+    RsaVerificationKey2018: (rawPublicKey: any): object => {
+      let publicKey = LinkedDataCryptoSuitePublicKey.parsePublicKey(rawPublicKey);
+      if (!publicKey) {
+        throw new Error(`${JSON.stringify(rawPublicKey)} public key type is not supported.`);
+      }
+
+      if (typeof publicKey === 'string') {
+        throw new Error(`${JSON.stringify(rawPublicKey)} public key type is not supported.`);
+      }
+
+      return publicKey;
     }
   };
 
@@ -64,6 +91,26 @@ export default class LinkedDataCryptoSuitePublicKey {
     }
 
     return suite(rawPublicKey);
+  }
+
+  private static parsePublicKey(rawPublicKey: any): any {
+    if (!rawPublicKey) {
+      throw new Error('Pass in the public key. Undefined.');
+    }
+
+    let publicKey: any;
+    if (rawPublicKey.publicKeyJwk) {
+      return rawPublicKey.publicKeyJwk;
+    } else if (rawPublicKey.publicKeyBase58) {
+      publicKey = LinkedDataCryptoSuitePublicKey.decodeBase58To64Url(rawPublicKey.publicKeyBase58);
+    } else if (rawPublicKey.publicKeyHex) {
+      publicKey = base64url.encode(Buffer.from((rawPublicKey.publicKeyHex), 'hex'));
+    }
+    if (!publicKey) {
+      throw new Error(`${JSON.stringify(rawPublicKey)} public key type is not supported.`);
+    }
+
+    return publicKey;
   }
 
   /**
