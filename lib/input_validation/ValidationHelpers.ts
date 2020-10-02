@@ -2,9 +2,8 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { IDidResolveResult } from '@decentralized-identity/did-common-typescript';
-import { IPayloadProtectionSigning, JoseConstants, ProtectionFormat } from 'verifiablecredentials-crypto-sdk-typescript';
-import base64url from "base64url";
+import { DidDocument, IDidResolveResult } from '@decentralized-identity/did-common-typescript';
+import { IPayloadProtectionSigning } from 'verifiablecredentials-crypto-sdk-typescript';
 import { IValidationOptions } from '../options/IValidationOptions';
 import IValidatorOptions from '../options/IValidatorOptions';
 import ValidationOptions from '../options/ValidationOptions';
@@ -13,6 +12,7 @@ import VerifiableCredentialConstants from '../verifiable_credential/VerifiableCr
 import { IdTokenValidationResponse } from './IdTokenValidationResponse';
 import { IValidationResponse } from './IValidationResponse';
 import { IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSiop, IExpectedAudience } from '../options/IExpected';
+import LinkedDataCryptoSuitePublicKey from './LinkedDataCryptoSuitePublicKey';
 const jp = require('jsonpath');
 
 require('es6-promise').polyfill();
@@ -134,22 +134,38 @@ export class ValidationHelpers {
       };
     }
 
+    let signingKey: any
+    try {
+      signingKey = ValidationHelpers.getPublicKeyFromDidDocument(validationResponse);
+    } catch (exception) {
+      return {
+        result: false,
+        detailedError: exception.message,
+        status: 403
+      };
+    }
+
+    validationResponse.didSigningPublicKey = signingKey;
+    return validationResponse;
+  }
+
+  /**
+   * Retireve public key from did document
+   * @param validationResponse The response for the requestor
+   */
+  private static getPublicKeyFromDidDocument(validationResponse: IValidationResponse): any {
+    const publicKey = validationResponse.didDocument!.getPublicKey(validationResponse.didKid!);
     let signingKey: any;
-    const publicKey = validationResponse.didDocument.getPublicKey(validationResponse.didKid);
     if (publicKey) {
-      signingKey = publicKey.publicKeyJwk;
+      signingKey = LinkedDataCryptoSuitePublicKey.getPublicKey(publicKey);
     }
 
     //  use jwk in request if did is not registered
     if (!signingKey) {
-      return {
-        result: false,
-        detailedError: `The did '${validationResponse.did}' does not have a public key with kid '${validationResponse.didKid}'`,
-        status: 403
-      };
+      throw new Error(`The did '${validationResponse.did}' does not have a public key with kid '${validationResponse.didKid}'. Public key : '${publicKey ? JSON.stringify(publicKey) : 'undefined'}'`);
     }
-    validationResponse.didSigningPublicKey = signingKey;
-    return validationResponse;
+
+    return signingKey;
   }
 
   /**
