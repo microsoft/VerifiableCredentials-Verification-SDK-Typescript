@@ -93,7 +93,7 @@ export default class LinkedDataCryptoSuitePublicKey {
     return suite(rawPublicKey);
   }
 
-  private static parsePublicKey(rawPublicKey: any): any {
+  public static parsePublicKey(rawPublicKey: any): any {
     if (!rawPublicKey) {
       throw new Error('Pass in the public key. Undefined.');
     }

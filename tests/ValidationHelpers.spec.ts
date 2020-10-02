@@ -74,7 +74,7 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
     response = await options.resolveDidAndGetKeysDelegate(validationResponse);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`The did '${setup.defaultUserDid}' does not have a public key with kid '${validationResponse.didKid}'`);
+    expect(response.detailedError).toEqual(`The did 'did:test:user' does not have a public key with kid 'abcd'. Public key : 'undefined'`);
     validationResponse.didKid = setup.defaulUserDidKid;
 
     // No did document

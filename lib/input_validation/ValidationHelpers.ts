@@ -12,7 +12,7 @@ import VerifiableCredentialConstants from '../verifiable_credential/VerifiableCr
 import { IdTokenValidationResponse } from './IdTokenValidationResponse';
 import { IValidationResponse } from './IValidationResponse';
 import { IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSiop, IExpectedAudience } from '../options/IExpected';
-import { LinkedDataCryptoSuitePublicKey } from '..';
+import LinkedDataCryptoSuitePublicKey from './LinkedDataCryptoSuitePublicKey';
 const jp = require('jsonpath');
 
 require('es6-promise').polyfill();
@@ -134,7 +134,17 @@ export class ValidationHelpers {
       };
     }
 
-    let signingKey = ValidationHelpers.getPublicKeyFromDidDocument(validationResponse);
+    let signingKey: any
+    try {
+      signingKey = ValidationHelpers.getPublicKeyFromDidDocument(validationResponse);
+    } catch (exception) {
+      return {
+        result: false,
+        detailedError: exception.message,
+        status: 403
+      };
+    }
+
     validationResponse.didSigningPublicKey = signingKey;
     return validationResponse;
   }
@@ -152,11 +162,7 @@ export class ValidationHelpers {
 
     //  use jwk in request if did is not registered
     if (!signingKey) {
-      return {
-        result: false,
-        detailedError: `The did '${validationResponse.did}' does not have a public key with kid '${validationResponse.didKid}'. Public key : '${publicKey ? JSON.stringify(publicKey) : 'undefined'}'`,
-        status: 403
-      };
+      throw new Error(`The did '${validationResponse.did}' does not have a public key with kid '${validationResponse.didKid}'. Public key : '${publicKey ? JSON.stringify(publicKey) : 'undefined'}'`);
     }
 
     return signingKey;
