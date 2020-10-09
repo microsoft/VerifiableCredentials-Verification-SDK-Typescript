@@ -98,7 +98,7 @@ export default class TokenGenerator {
 
                 // Sign
                 await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(payload)));
-                idTokens[configuration] = this.crypto.signingProtocol.serialize();
+                idTokens[configuration] = await this.crypto.signingProtocol.serialize();
             }
         }
     }
@@ -111,8 +111,9 @@ export default class TokenGenerator {
         vcPayload.iss = `${this.crypto.builder.did}`;
 
         // Sign
-        await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(vcPayload)));
-        return ClaimToken.create(this.crypto.signingProtocol.serialize());
+        await this.crypto.signingProtocol.sign(vcPayload);
+        const token = await this.crypto.signingProtocol.serialize();
+        return ClaimToken.create(token);
     }
 
     public async setVcsInPresentations(): Promise<void> {
@@ -143,7 +144,7 @@ export default class TokenGenerator {
         for (let inx = 0; inx < vc.length; inx++) {
             (vpTemplate.vp.verifiableCredential as string[]).push(vc[inx].rawToken);
         }
-        const token = (await this.responder.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(vpTemplate)))).serialize();
+        const token = await (await this.responder.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(vpTemplate)))).serialize();
         return new ClaimToken(TokenType.verifiablePresentation, token, '');
     }
 }

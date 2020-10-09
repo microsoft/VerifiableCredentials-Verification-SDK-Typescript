@@ -9,7 +9,7 @@ import { ValidationHelpers } from '../input_validation/ValidationHelpers';
 import IValidatorOptions from './IValidatorOptions';
 import { IExpectedBase, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedAudience } from './IExpected';
 
- export type GetTokenObject = (validationResponse: IValidationResponse, token: string) => IValidationResponse;
+ export type GetTokenObject = (validationResponse: IValidationResponse, token: string) => Promise<IValidationResponse>;
  export type ResolveDidAndGetKeys = (validationResponse: IValidationResponse) => Promise<IValidationResponse>;
  export type ValidateDidSignature = (validationResponse: IValidationResponse, token: IPayloadProtectionSigning) => Promise<IValidationResponse>;
  export type CheckTimeValidityOnIdToken = (validationResponse: IValidationResponse, driftInSec?: number) => IValidationResponse;

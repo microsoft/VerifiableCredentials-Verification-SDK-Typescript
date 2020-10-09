@@ -6,7 +6,7 @@ import ITestModel from "./ITestModel";
 import { ClaimToken, TokenType } from "../../lib";
 
 
-export default class RequestOnceVcResponseOk implements ITestModel {
+export default class RequestOneVcResponseOk implements ITestModel {
     public clientId = 'https://requestor.example.com';
 
     /**
