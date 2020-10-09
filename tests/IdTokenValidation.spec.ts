@@ -21,7 +21,7 @@ import { IExpectedIdToken, Validator } from '../lib';
     setup.fetchMock.reset();
   });
 
-  it('should test validate', async () => {
+  fit('should test validate', async () => {
     
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.idToken, true);   
     const expected = siop.expected.filter((token: IExpectedIdToken) => token.type === TokenType.idToken)[0];

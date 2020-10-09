@@ -33,7 +33,7 @@ export class DidValidation implements IDidValidation {
     };
 
     // Deserialize the token
-    validationResponse = this.options.getTokenObjectDelegate(validationResponse, token);
+    validationResponse = await this.options.validationHelpers.getTokenObject(validationResponse, token);
     if (!validationResponse.result) {
       return validationResponse;
     }

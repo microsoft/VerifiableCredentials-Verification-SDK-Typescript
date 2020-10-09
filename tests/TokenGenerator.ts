@@ -112,7 +112,7 @@ export default class TokenGenerator {
 
         // Sign
         await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(vcPayload)));
-        return ClaimToken.create(this.crypto.signingProtocol.serialize());
+        return ClaimToken.create(await this.crypto.signingProtocol.serialize());
     }
 
     public async setVcsInPresentations(): Promise<void> {
@@ -143,7 +143,7 @@ export default class TokenGenerator {
         for (let inx = 0; inx < vc.length; inx++) {
             (vpTemplate.vp.verifiableCredential as string[]).push(vc[inx].rawToken);
         }
-        const token = (await this.responder.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(vpTemplate)))).serialize();
+        const token = await (await this.responder.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(vpTemplate)))).serialize();
         return new ClaimToken(TokenType.verifiablePresentation, token, '');
     }
 }

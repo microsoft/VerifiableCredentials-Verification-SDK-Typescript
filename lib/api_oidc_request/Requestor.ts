@@ -84,7 +84,7 @@ export default class Requestor {
     const response = {
       result: true,
       status: 200,
-      request: signature.serialize()
+      request: await signature.serialize()
     };
 
     return response;

@@ -107,7 +107,7 @@ export default class ResponderHelper {
             }
         }
 
-        const token = (await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(payload)))).serialize();
+        const token = await (await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(payload)))).serialize();
         return new ClaimToken(TokenType.siopPresentationAttestation, token);
     }
 

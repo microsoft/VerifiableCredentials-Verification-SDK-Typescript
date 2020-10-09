@@ -19,7 +19,6 @@ export default class ValidationOptions implements IValidationOptions {
  */
 constructor (public validatorOptions: IValidatorOptions, public tokenType: TokenType) {
   this.validationHelpers = new ValidationHelpers(validatorOptions, this, tokenType);
-  this.getTokenObjectDelegate = this.validationHelpers.getTokenObject;
     
   this.resolveDidAndGetKeysDelegate = this.validationHelpers.resolveDidAndGetKeys;
   this.validateDidSignatureDelegate = this.validationHelpers.validateDidSignature;
@@ -36,11 +35,6 @@ constructor (public validatorOptions: IValidatorOptions, public tokenType: Token
  * Gets the helpers
  */
 public validationHelpers: ValidationHelpers;
-
-/**
- * Get the token object from the request body
- */
-public getTokenObjectDelegate: GetTokenObject;
 
 /**
   * Resolve the DID and get public keys

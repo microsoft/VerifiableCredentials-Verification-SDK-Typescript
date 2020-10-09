@@ -27,14 +27,14 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
       status: 200,
       result: true
     }
-    let response = options.getTokenObjectDelegate(validationResponse, request.rawToken);
+    let response = await options.validationHelpers.getTokenObject(validationResponse, request.rawToken);
     expect(response.result).toBeTruthy();
     expect(response.status).toEqual(200);    
 
     // negative cases
     // malformed token
     let splitToken = request.rawToken.split('.');
-    response = options.getTokenObjectDelegate(validationResponse, splitToken[0]);
+    response = await options.validationHelpers.getTokenObject(validationResponse, splitToken[0]);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(400);    
     expect(response.detailedError).toEqual('The verifiableCredential could not be deserialized');
@@ -42,7 +42,7 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
     // missing kid
     const header: any = JSON.parse(base64url.decode(splitToken[0]));
     header.kid = '';
-    response = options.getTokenObjectDelegate(validationResponse, `${base64url.encode(JSON.stringify(header))}.${splitToken[1]}.${splitToken[2]}`);
+    response = await options.validationHelpers.getTokenObject(validationResponse, `${base64url.encode(JSON.stringify(header))}.${splitToken[1]}.${splitToken[2]}`);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);    
     expect(response.detailedError).toEqual('The protected header in the verifiableCredential does not contain the kid');
@@ -104,7 +104,7 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
       result: true,
       did: setup.defaultUserDid
     };
-    validationResponse = options.getTokenObjectDelegate(validationResponse, request.rawToken);
+    validationResponse = await options.validationHelpers.getTokenObject(validationResponse, request.rawToken);
     validationResponse.didSigningPublicKey = siopRequest.didJwkPublic;
     const token = validationResponse.didSignature as IPayloadProtectionSigning;
     let response = await options.validateDidSignatureDelegate(validationResponse, token);
@@ -113,7 +113,7 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
     
     // negative cases
     // Bad signature
-    validationResponse = options.getTokenObjectDelegate(validationResponse, request.rawToken + 1);    
+    validationResponse = await options.validationHelpers.getTokenObject(validationResponse, request.rawToken + 1);    
     response = await options.validateDidSignatureDelegate(validationResponse, validationResponse.didSignature as IPayloadProtectionSigning);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403); 
@@ -121,21 +121,21 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
 
     // No signature
     const splitToken = request.rawToken.split('.');
-    validationResponse = options.getTokenObjectDelegate(validationResponse, `${splitToken[0]}.${splitToken[1]}`);    
+    validationResponse = await options.validationHelpers.getTokenObject(validationResponse, `${splitToken[0]}.${splitToken[1]}`);    
     response = await options.validateDidSignatureDelegate(validationResponse, validationResponse.didSignature as IPayloadProtectionSigning);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403); 
     expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredential is invalid');
 
     // no header
-    validationResponse = options.getTokenObjectDelegate(validationResponse, `.${splitToken[1]}.${splitToken[2]}`);    
+    validationResponse = await options.validationHelpers.getTokenObject(validationResponse, `.${splitToken[1]}.${splitToken[2]}`);    
     response = await options.validateDidSignatureDelegate(validationResponse, validationResponse.didSignature as IPayloadProtectionSigning);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403); 
     expect(response.detailedError).toEqual('Failed to validate signature');
 
     // no payload
-    validationResponse = options.getTokenObjectDelegate(validationResponse, `${splitToken[0]}..${splitToken[2]}`);    
+    validationResponse = await options.validationHelpers.getTokenObject(validationResponse, `${splitToken[0]}..${splitToken[2]}`);    
     response = await options.validateDidSignatureDelegate(validationResponse, validationResponse.didSignature as IPayloadProtectionSigning);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403); 

@@ -189,7 +189,7 @@ export class IssuanceHelpers {
     setup.validatorOptions.crypto.builder.useSigningKeyReference(keyId);
     setup.validatorOptions.crypto.signingProtocol.builder.useKid(keyId.keyReference);
     const signature = await setup.validatorOptions.crypto.signingProtocol.sign(Buffer.from(payload));
-    const token = setup.validatorOptions.crypto.signingProtocol.serialize();
+    const token = await setup.validatorOptions.crypto.signingProtocol.serialize();
     let claimToken = new ClaimToken(TokenType.idToken, token, configuration);
     return claimToken;
   }

@@ -42,11 +42,11 @@ export class ValidationHelpers {
    * @returns validationResponse.did The DID used to sign the token
    * @returns validationResponse.payloadObject The parsed payload
    */
-  public getTokenObject(validationResponse: IValidationResponse, token: string): IValidationResponse {
+  public async getTokenObject(validationResponse: IValidationResponse, token: string): Promise<IValidationResponse> {
     let tokenPayload: Buffer;
     const self: any = this;
     try {
-      validationResponse.didSignature = (self as ValidationOptions).validatorOptions.crypto.signingProtocol.deserialize(token);
+      validationResponse.didSignature = await (self as ValidationOptions).validatorOptions.crypto.signingProtocol.deserialize(token);
       if (!validationResponse.didSignature) {
         return {
           result: false,
@@ -562,7 +562,7 @@ export class ValidationHelpers {
     const self: any = this;
     try {
       // Get token and check signature
-      validationResponse = (self as IValidationOptions).getTokenObjectDelegate(validationResponse, token.rawToken);
+      validationResponse = await (self as IValidationOptions).validationHelpers.getTokenObject(validationResponse, token.rawToken);
       const validation = await (self as ValidationOptions).validatorOptions.crypto.signingProtocol.verify([key]);
       if (!validation) {
         return {
