@@ -291,7 +291,7 @@ export default class Validator {
         if (statusUrl) {
           // send the payload
           payload.aud = statusUrl;
-          const siop = await this.builder.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(payload)));
+          const siop = await this.builder.crypto.signingProtocol.sign(payload);
           const serialized = await siop.serialize();
 
           console.log(`verifiablePresentation status check on ${statusUrl} ====> ${serialized}`);

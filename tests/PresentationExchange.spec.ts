@@ -45,7 +45,7 @@ describe('PresentationExchange', () => {
         console.log(request.rawToken);
     });
 
-    fit('should create a response and validate', async () => {
+    it('should create a response and validate', async () => {
 
         const request: any = await requestor.createPresentationExchangeRequest();
         expect(request.rawToken).toBeDefined();
@@ -64,7 +64,7 @@ describe('PresentationExchange', () => {
         //Remove presentation_submission
         let responsePayload = clone(response.decodedToken);
         delete responsePayload.presentation_submission;
-        let siop = await (await responder.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(responsePayload)))).serialize();
+        let siop = await (await responder.crypto.signingProtocol.sign(responsePayload)).serialize();
         result = await validator.validate(siop);
         expect(result.result).toBeFalsy();
         expect(result.detailedError).toEqual('SIOP was not recognized.');
@@ -72,7 +72,7 @@ describe('PresentationExchange', () => {
         //Remove tokens
         responsePayload = clone(response.decodedToken);
         delete responsePayload.presentation_submission.attestations;
-        siop = await (await responder.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(responsePayload)))).serialize();
+        siop = await (await responder.crypto.signingProtocol.sign(responsePayload)).serialize();
         result = await validator.validate(siop);
         expect(result.result).toBeFalsy();
         expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. This path '$.presentation_submission.attestations.presentations.IdentityCard' did not return a token.`);
@@ -80,7 +80,7 @@ describe('PresentationExchange', () => {
         //Remove path
         responsePayload = clone(response.decodedToken);
         delete responsePayload.presentation_submission.descriptor_map[0].path;
-        siop = await (await responder.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(responsePayload)))).serialize();
+        siop = await (await responder.crypto.signingProtocol.sign(responsePayload)).serialize();
         result = await validator.validate(siop);
         expect(result.result).toBeFalsy();
         expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. No path property found.`);

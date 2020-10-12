@@ -97,7 +97,7 @@ export default class TokenGenerator {
                 payload.iss = `${this.crypto.builder.did}`;
 
                 // Sign
-                await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(payload)));
+                await this.crypto.signingProtocol.sign(payload);
                 idTokens[configuration] = await this.crypto.signingProtocol.serialize();
             }
         }
@@ -144,7 +144,7 @@ export default class TokenGenerator {
         for (let inx = 0; inx < vc.length; inx++) {
             (vpTemplate.vp.verifiableCredential as string[]).push(vc[inx].rawToken);
         }
-        const token = await (await this.responder.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(vpTemplate)))).serialize();
+        const token = await (await this.responder.crypto.signingProtocol.sign(vpTemplate)).serialize();
         return new ClaimToken(TokenType.verifiablePresentation, token, '');
     }
 }

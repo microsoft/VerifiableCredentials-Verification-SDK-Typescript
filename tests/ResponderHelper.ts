@@ -66,7 +66,7 @@ export default class ResponderHelper {
                 this.responseDefinition.responseStatus[presentation].iss = this.generator.crypto.builder.did;
 
                 // Sign the receipts
-                await this.generator.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(this.responseDefinition.responseStatus[presentation])));
+                await this.generator.crypto.signingProtocol.sign(this.responseDefinition.responseStatus[presentation]);
                 statusReceipts.receipt[jti] = await this.generator.crypto.signingProtocol.serialize();
 
                 const statusUrl = vcs.decodedToken.vc.credentialStatus.id;
@@ -89,7 +89,7 @@ export default class ResponderHelper {
                 }
 
                 // Sign
-                await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(vpPayload)));
+                await this.crypto.signingProtocol.sign(vpPayload);
                 presentations[presentation] = await this.crypto.signingProtocol.serialize();
             }
         }
@@ -107,7 +107,7 @@ export default class ResponderHelper {
             }
         }
 
-        const token = await (await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(payload)))).serialize();
+        const token = await (await this.crypto.signingProtocol.sign(payload)).serialize();
         return new ClaimToken(TokenType.siopPresentationAttestation, token);
     }
 
