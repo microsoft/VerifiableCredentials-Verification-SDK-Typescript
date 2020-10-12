@@ -257,7 +257,7 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
         jti: 'jti'
       };
 
-      const idToken = await IssuanceHelpers.signAToken(setup, JSON.stringify(payload), tokenConfiguration, tokenJwkPrivate);
+      const idToken = await IssuanceHelpers.signAToken(setup, payload, tokenConfiguration, tokenJwkPrivate);
 
       let response = await options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, idToken);
       expect(response.result).toBeTruthy();

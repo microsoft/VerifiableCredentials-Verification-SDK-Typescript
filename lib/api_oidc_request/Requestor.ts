@@ -79,7 +79,7 @@ export default class Requestor {
       this.createPresentationExchangeRequest(this._payload);
 
     const key = crypto.signingKeyReference;
-    const signature = await this.builder.signingProtocol.sign(Buffer.from(JSON.stringify(this._payload)));
+    const signature = await this.builder.signingProtocol.sign(this._payload);
     const token = await signature.serialize();
     const response = {
       result: true,
