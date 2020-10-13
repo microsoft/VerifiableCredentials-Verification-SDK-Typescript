@@ -4,19 +4,22 @@ import TestSetup from './TestSetup';
 import ValidationQueue from '../lib/input_validation/ValidationQueue';
 import { Crypto, SiopTokenValidator, SelfIssuedTokenValidator } from '../lib/index';
 import VerifiableCredentialConstants from '../lib/verifiable_credential/VerifiableCredentialConstants';
-import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript';
+import { JoseBuilder, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript';
 
 describe('Validator', () => {
   let crypto: Crypto;
   let signingKeyReference: KeyReference;
   let setup: TestSetup;
+  let originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
   beforeEach(async () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;    
     setup = new TestSetup();
     signingKeyReference = setup.defaulSigKey;
     crypto = setup.crypto
     await setup.generateKeys();
   });
   afterEach(async () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
     setup.fetchMock.reset();
   });
 
@@ -239,28 +242,28 @@ describe('Validator', () => {
 
   });
 
-  xit('should validate siop with default validators', async () => {
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentation, true);
-    const siopExpected = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siopIssuance)[0];
-    const vpExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiablePresentation)[0];
-    const vcExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
-    const idTokenExpected = siop.expected.filter((token: IExpectedIdToken) => token.type === TokenType.idToken)[0];
-    const siExpected = siop.expected.filter((token: IExpectedSelfIssued) => token.type === TokenType.selfIssued)[0];
+  xit('should validate a siop', async () => {
 
+    const  crypto = new CryptoBuilder()
+      .build();
+    const jsonldProofProtocol = new JoseBuilder(crypto)
+      .uselinkedDataProofsProtocol('JcsEd25519Signature2020')
+      .build();
+    crypto.useSigningProtocol(jsonldProofProtocol);
 
     // Check validator
     let validator = new ValidatorBuilder(crypto)
-      .useAudienceUrl(siopExpected.audience)
-      .useResolver(new ManagedHttpResolver(VerifiableCredentialConstants.UNIVERSAL_RESOLVER_URL))
+      .useAudienceUrl('https://verify.vc.capptoso.com:443/presentation-response')
       .enableFeatureVerifiedCredentialsStatusCheck(false)
       .build();
 
     expect(validator.resolver).toBeDefined();
     
     const queue = new ValidationQueue();
-    const ct = ClaimToken.create(request.rawToken);
-    queue.enqueueToken('siop', ct);
-    const result = await validator.validate(queue.getNextToken()!.tokenToValidate);
+    setup.fetchMock.reset();
+    const req = '';
+    console.log(req);
+    const result = await validator.validate(req);
     expect(result.result).toBeTruthy();
     expect(result.status).toEqual(200);
 
