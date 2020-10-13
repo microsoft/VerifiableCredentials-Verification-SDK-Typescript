@@ -32,7 +32,17 @@ export interface IExpectedSiop extends IExpectedBase {
  /**
    * Expected audience url to where the siop was presented
    */
-  audience?: string
+  audience?: string,
+
+ /**
+   * Expected state in the siop
+   */
+  state?: string,
+
+ /**
+   * Expected nonce in the siop
+   */
+  nonce?: string
 }
 
 /**

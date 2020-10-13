@@ -2,7 +2,7 @@ import { TokenType, ValidatorBuilder, IdTokenTokenValidator, VerifiableCredentia
 import { IssuanceHelpers } from './IssuanceHelpers';
 import TestSetup from './TestSetup';
 import ValidationQueue from '../lib/input_validation/ValidationQueue';
-import { Crypto, SiopTokenValidator, SelfIssuedTokenValidator } from '../lib/index';
+import { Crypto, SelfIssuedTokenValidator } from '../lib/index';
 import VerifiableCredentialConstants from '../lib/verifiable_credential/VerifiableCredentialConstants';
 import { JoseBuilder, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript';
 

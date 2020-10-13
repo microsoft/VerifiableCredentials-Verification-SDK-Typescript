@@ -38,7 +38,35 @@ export default class SiopTokenValidator implements ITokenValidator {
       validationResult = this.getTokens(validationResult, queue);
     }
 
+    validationResult = this.validateReplayProtection(validationResult);
     return validationResult as IValidationResponse;
+  }
+
+  /**
+   * Check state and nonce
+   * @param validationResponse The response for the requestor
+   */
+  private validateReplayProtection(validationResponse: IValidationResponse): IValidationResponse {
+    if (this.expected.nonce) {
+      if (this.expected.nonce !== validationResponse.payloadObject.nonce) {
+        return {
+          result: false,
+          status: 403,
+          detailedError: `Expect nonce '${this.expected.nonce}' does not match '${validationResponse.payloadObject.nonce}'.`
+        }
+      }
+    }
+    if (this.expected.state) {
+      if (this.expected.state !== validationResponse.payloadObject.state) {
+        return {
+          result: false,
+          status: 403,
+          detailedError: `Expect state '${this.expected.state}' does not match '${validationResponse.payloadObject.state}'.`
+        }
+      }
+    }
+
+    return validationResponse;
   }
 
   /**
@@ -46,7 +74,7 @@ export default class SiopTokenValidator implements ITokenValidator {
    * @param validationResponse The response for the requestor
    * @param queue with tokens to validate
    */
-  public getTokens(validationResponse: IValidationResponse, queue: ValidationQueue ): IValidationResponse {
+  public getTokens(validationResponse: IValidationResponse, queue: ValidationQueue): IValidationResponse {
 
     // Check type of SIOP
     let type: TokenType;
@@ -92,7 +120,7 @@ export default class SiopTokenValidator implements ITokenValidator {
             status: 403,
             detailedError: err.message
           };
-      }
+        }
         break;
     }
     if (validationResponse.tokensToValidate) {
