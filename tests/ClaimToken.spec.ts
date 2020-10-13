@@ -40,5 +40,6 @@ import base64url from 'base64url';
 
     // negative cases
     expect(() => new ClaimToken(<any>'', token, configuration)).toThrowError(`Type '' is not supported`);
+    expect(() => new ClaimToken(TokenType.siopIssuance, 'token')).toThrowError('Cannot decode. Invalid input token');
   });
  });

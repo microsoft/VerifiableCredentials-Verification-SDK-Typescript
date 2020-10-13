@@ -19,7 +19,13 @@ export default class ValidatorBuilder {
   private _trustedIssuerConfigurationsForIdTokens: IssuerMap | undefined;
   private _audienceUrl: string | undefined;
   private _requestor: Requestor | undefined;
+  private _state: string | undefined;
+  private _nonce: string | undefined;
 
+  /**
+   * Create a new instance of ValidatorBuilder
+   * @param _crypto The crypto object
+   */
   constructor(private _crypto: Crypto) {
   }
 
@@ -36,6 +42,40 @@ export default class ValidatorBuilder {
   public build(): Validator {
     return new Validator(this);
   }
+  
+ /**
+   * Sets the state
+   * @param state The state for the request
+   * @returns The validator builder
+   */
+  public useState(state: string): ValidatorBuilder {
+    this._state = state;
+    return this;
+  }
+
+  /**
+   * Get the state for the request
+   */
+  public get state() {
+    return this._state;
+  }
+
+  /**
+    * Sets the nonce
+    * @param nonce The nonce for the request
+    * @returns The validator builder
+    */
+   public useNonce(nonce: string): ValidatorBuilder {
+    this._nonce = nonce;
+    return this;
+  }
+
+  /**
+   * Get the nonce for the request
+   */
+  public get nonce() {
+    return this._nonce;
+  }
 
   /**
    * Feed the request definition to automatically define the validation rules
@@ -45,6 +85,15 @@ export default class ValidatorBuilder {
     this._requestor = requestor;
     this._audienceUrl = requestor.audienceUrl();
     this._trustedIssuersForVerifiableCredentials = requestor.trustedIssuersForVerifiableCredentials();
+
+    if (!this._state && requestor.builder.state) {
+      this._state = requestor.builder.state;
+    }
+
+    if (!this._nonce && requestor.builder.nonce) {
+      this._nonce = requestor.builder.nonce;
+    }
+    
     return this;
   }
 

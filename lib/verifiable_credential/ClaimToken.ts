@@ -262,14 +262,4 @@ export default class ClaimToken {
     const split = token.split('.');
     return split[2] !== undefined && split[2].trim() !== '';
   }
-
-  /**
-  * Attestations contain the tokens and VCs in the input.
-  * This algorithm will convert the attestations to a ClaimToken
-  * @param attestation The attestation
-  */
-  private static fromAttestation(attestation: string): ClaimToken {
-    const token = ClaimToken.create(attestation);
-    return token;
-  }
 }
