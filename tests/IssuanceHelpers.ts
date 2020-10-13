@@ -19,7 +19,7 @@ export class IssuanceHelpers {
    * Create siop request
    */
   public static async createSiopRequestWithPayload(setup: TestSetup, siop: any, key: any): Promise<ClaimToken> {
-    const claimToken = await IssuanceHelpers.signAToken(setup, JSON.stringify(siop), '', key);
+    const claimToken = await IssuanceHelpers.signAToken(setup, siop, '', key);
     return claimToken;
   }
 
@@ -87,7 +87,7 @@ export class IssuanceHelpers {
       sub: `${setup.defaultUserDid}`
     };
     vcTemplate.vc.credentialSubject = credentialSubject;
-    return IssuanceHelpers.signAToken(setup, JSON.stringify(vcTemplate), configuration, jwkPrivate);
+    return IssuanceHelpers.signAToken(setup, vcTemplate, configuration, jwkPrivate);
   }
 
   /**
@@ -114,7 +114,7 @@ export class IssuanceHelpers {
     for (let inx = 0; inx < vcs.length; inx++) {
       (vpTemplate.vp.verifiableCredential as string[]).push(vcs[inx].rawToken);
     }
-    return IssuanceHelpers.signAToken(setup, JSON.stringify(vpTemplate), '', jwkPrivate);
+    return IssuanceHelpers.signAToken(setup, vpTemplate, '', jwkPrivate);
   }
 
   /**
@@ -183,13 +183,13 @@ export class IssuanceHelpers {
   }
 
   // Sign a token
-  public static async signAToken(setup: TestSetup, payload: string, configuration: string, jwkPrivate: any): Promise<ClaimToken> {
+  public static async signAToken(setup: TestSetup, payload: object, configuration: string, jwkPrivate: any): Promise<ClaimToken> {
     const keyId = new KeyReference(jwkPrivate.kid);
     await setup.keyStore.save(keyId, <any>jwkPrivate);
     setup.validatorOptions.crypto.builder.useSigningKeyReference(keyId);
     setup.validatorOptions.crypto.signingProtocol.builder.useKid(keyId.keyReference);
-    const signature = await setup.validatorOptions.crypto.signingProtocol.sign(Buffer.from(payload));
-    const token = setup.validatorOptions.crypto.signingProtocol.serialize();
+    const signature = await setup.validatorOptions.crypto.signingProtocol.sign(payload);
+    const token = await setup.validatorOptions.crypto.signingProtocol.serialize();
     let claimToken = new ClaimToken(TokenType.idToken, token, configuration);
     return claimToken;
   }
@@ -216,7 +216,7 @@ export class IssuanceHelpers {
 
     const idToken = await IssuanceHelpers.signAToken(
       setup,
-      JSON.stringify(idTokenPayload),
+      idTokenPayload,
       tokenConfiguration,
       tokenJwkPrivate);
 

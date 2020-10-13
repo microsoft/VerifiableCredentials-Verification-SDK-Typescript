@@ -31,7 +31,7 @@ export abstract class BaseIdTokenValidation implements IIdTokenValidation {
     };
 
     // Deserialize id token token
-    validationResponse = this.options.getTokenObjectDelegate(validationResponse, idToken);
+    validationResponse = await this.options.getTokenObjectDelegate(validationResponse, idToken);
     if (!validationResponse.result) {
       return validationResponse;
     }

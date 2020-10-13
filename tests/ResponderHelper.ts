@@ -29,7 +29,7 @@ export default class ResponderHelper {
     public async setup(): Promise<void> {
         this.crypto = await this.crypto.generateKey(KeyUse.Signature, 'signing');
         this.crypto = await this.crypto.generateKey(KeyUse.Signature, 'recovery');
-        let did = await new LongFormDid(this.crypto).serialize();
+        let did = await (new LongFormDid(this.crypto)).serialize();
         this.crypto.builder.useDid(did);
 
         // setup mock so requestor can resolve this did
@@ -66,8 +66,8 @@ export default class ResponderHelper {
                 this.responseDefinition.responseStatus[presentation].iss = this.generator.crypto.builder.did;
 
                 // Sign the receipts
-                await this.generator.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(this.responseDefinition.responseStatus[presentation])));
-                statusReceipts.receipt[jti] = this.generator.crypto.signingProtocol.serialize();
+                await this.generator.crypto.signingProtocol.sign(this.responseDefinition.responseStatus[presentation]);
+                statusReceipts.receipt[jti] = await this.generator.crypto.signingProtocol.serialize();
 
                 const statusUrl = vcs.decodedToken.vc.credentialStatus.id;
                 TokenGenerator.fetchMock.post(statusUrl, statusReceipts, { overwriteRoutes: true });
@@ -89,8 +89,8 @@ export default class ResponderHelper {
                 }
 
                 // Sign
-                await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(vpPayload)));
-                presentations[presentation] = this.crypto.signingProtocol.serialize();
+                await this.crypto.signingProtocol.sign(vpPayload);
+                presentations[presentation] = await this.crypto.signingProtocol.serialize();
             }
         }
 
@@ -107,7 +107,7 @@ export default class ResponderHelper {
             }
         }
 
-        const token = (await this.crypto.signingProtocol.sign(Buffer.from(JSON.stringify(payload)))).serialize();
+        const token = await (await this.crypto.signingProtocol.sign(payload)).serialize();
         return new ClaimToken(TokenType.siopPresentationAttestation, token);
     }
 
