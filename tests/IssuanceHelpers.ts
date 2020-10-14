@@ -9,8 +9,6 @@ import ClaimToken, { TokenType } from '../lib/verifiable_credential/ClaimToken';
 import base64url from "base64url";
 import ValidationOptions from '../lib/options/ValidationOptions';
 import { KeyReference, IExpectedBase, IExpectedSelfIssued, IExpectedIdToken, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, Validator } from '../lib/index';
-import VerifiableCredentialConstants from '../lib/verifiable_credential/VerifiableCredentialConstants';
-import { stat } from 'fs';
 
 export class IssuanceHelpers {
   public static readonly jti: string = 'testJti';
@@ -190,7 +188,7 @@ export class IssuanceHelpers {
     setup.validatorOptions.crypto.signingProtocol.builder.useKid(keyId.keyReference);
     const signature = await setup.validatorOptions.crypto.signingProtocol.sign(payload);
     const token = await setup.validatorOptions.crypto.signingProtocol.serialize();
-    let claimToken = new ClaimToken(TokenType.idToken, token, configuration);
+    let claimToken = ClaimToken.create(token, configuration);
     return claimToken;
   }
 

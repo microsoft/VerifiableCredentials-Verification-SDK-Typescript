@@ -33,7 +33,7 @@ export default class SiopTokenValidator implements ITokenValidator {
   public async validate(queue: ValidationQueue, queueItem: ValidationQueueItem): Promise<IValidationResponse> {
     const options = new ValidationOptions(this.validatorOption, this.expected.type);
     const validator = new SiopValidation(options, this.expected);
-    let validationResult = await validator.validate(queueItem.tokenToValidate);
+    let validationResult = await validator.validate(queueItem.tokenToValidate.rawToken);
     if (validationResult.result) {
       validationResult = this.getTokens(validationResult, queue);
     }
@@ -83,11 +83,7 @@ export default class SiopTokenValidator implements ITokenValidator {
     } else if (validationResponse.payloadObject[VerifiableCredentialConstants.PRESENTATION_SUBMISSION]) {
       type = TokenType.siopPresentationExchange;
     } else {
-      return {
-        result: false,
-        status: 403,
-        detailedError: 'Could not get tokens from SIOP. Unrecognized format.'
-      }
+      type = TokenType.siop;
     }
     switch (type) {
       case TokenType.siopPresentationAttestation:

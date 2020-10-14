@@ -36,7 +36,7 @@ export default class VerifiableCredentialTokenValidator implements ITokenValidat
     const options = new ValidationOptions(this.validatorOption, TokenType.verifiableCredential);
 
     const validator = new VerifiableCredentialValidation(options, this.expected);
-    const validationResult = await validator.validate(queueItem.tokenToValidate, siopDid);
+    const validationResult = await validator.validate(queueItem.tokenToValidate.rawToken, siopDid);
     return validationResult as IValidationResponse;
   }
   

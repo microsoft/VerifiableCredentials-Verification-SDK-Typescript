@@ -34,7 +34,7 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
   public async validate(queue: ValidationQueue, queueItem: ValidationQueueItem, siopDid: string): Promise<IValidationResponse> { 
     const options = new ValidationOptions(this.validatorOption, TokenType.verifiablePresentation);
     const validator = new VerifiablePresentationValidation(options, this.expected, siopDid, queueItem.id);
-    let validationResult = await validator.validate(queueItem.tokenToValidate);
+    let validationResult = await validator.validate(queueItem.tokenToValidate.rawToken);
 
     if (validationResult.result) {
       validationResult = this.getTokens(validationResult, queue);

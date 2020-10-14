@@ -129,7 +129,8 @@ describe('Validator', () => {
     // Check validator
     queue = new ValidationQueue();
     queue.enqueueToken('vp', siop.vp);
-    result = await validator.validate(queue.getNextToken()!.tokenToValidate);
+    let token = queue.getNextToken()!.tokenToValidate;
+    result = await validator.validate(token);
     expect(result.result).toBeTruthy('check validator');
     expect(result.validationResult?.verifiableCredentials).toBeDefined();
 

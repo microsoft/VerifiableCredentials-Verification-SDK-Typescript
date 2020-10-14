@@ -27,6 +27,11 @@ export enum TokenType {
   siopIssuance = 'siopIssuance',
 
   /**
+   * Token is SIOP token
+   */
+  siop = 'siop',
+
+  /**
    * Token is SIOP token presentation request with attestation presentation protocol
    */
   siopPresentationAttestation = 'siopPresentationAttestation',
@@ -147,7 +152,7 @@ export default class ClaimToken {
       } else if (payload.attestations) {
         return new ClaimToken(TokenType.siopPresentationAttestation, token, id);
       } else {
-        throw new Error(`SIOP was not recognized.`);
+        return new ClaimToken(TokenType.siop, token, id);
       }
     }
 

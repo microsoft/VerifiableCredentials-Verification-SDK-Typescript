@@ -45,7 +45,7 @@ describe('PresentationExchange', () => {
         console.log(request.rawToken);
     });
 
-    it('should create a response and validate', async () => {
+    fit('should create a response and validate', async () => {
 
         const request: any = await requestor.createPresentationExchangeRequest();
         expect(request.rawToken).toBeDefined();
@@ -67,7 +67,7 @@ describe('PresentationExchange', () => {
         let siop = await (await responder.crypto.signingProtocol.sign(responsePayload)).serialize();
         result = await validator.validate(siop);
         expect(result.result).toBeFalsy();
-        expect(result.detailedError).toEqual('SIOP was not recognized.');
+        expect(result.detailedError).toEqual('siop does not has a TokenValidator');
 
         //Remove tokens
         responsePayload = clone(response.decodedToken);
@@ -84,6 +84,8 @@ describe('PresentationExchange', () => {
         result = await validator.validate(siop);
         expect(result.result).toBeFalsy();
         expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. No path property found.`);
+
+
     });
 
     it('should populate the model', () => {
