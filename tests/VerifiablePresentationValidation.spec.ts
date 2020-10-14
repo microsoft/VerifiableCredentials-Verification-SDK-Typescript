@@ -26,8 +26,8 @@ describe('VerifiablePresentationValidation', () => {
   });
 
   it('should test validate', async () => {
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentation, true);
-    const expected = siop.expected.filter((token: IExpectedVerifiablePresentation) => token.type === TokenType.verifiablePresentation)[0];
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentationJwt, true);
+    const expected = siop.expected.filter((token: IExpectedVerifiablePresentation) => token.type === TokenType.verifiablePresentationJwt)[0];
 
     let validator = new VerifiablePresentationValidation(options, expected, setup.defaultUserDid, 'id');
     let response = await validator.validate(siop.vp.rawToken);
@@ -44,7 +44,7 @@ describe('VerifiablePresentationValidation', () => {
     response = await validator.validate(siop.vp.rawToken + 'a');
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual('The signature on the payload in the verifiablePresentation is invalid');
+    expect(response.detailedError).toEqual('The signature on the payload in the verifiablePresentationJwt is invalid');
 
     // Missing iss
     let payload: any = {

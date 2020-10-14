@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Subtle } from 'verifiablecredentials-crypto-sdk-typescript';
+import { JoseBuilder, Subtle } from 'verifiablecredentials-crypto-sdk-typescript';
 import TestSetup from './TestSetup';
 import { DidDocument } from '@decentralized-identity/did-common-typescript';
 import ClaimToken, { TokenType } from '../lib/verifiable_credential/ClaimToken';
@@ -185,9 +185,9 @@ export class IssuanceHelpers {
     const keyId = new KeyReference(jwkPrivate.kid);
     await setup.keyStore.save(keyId, <any>jwkPrivate);
     setup.validatorOptions.crypto.builder.useSigningKeyReference(keyId);
-    setup.validatorOptions.crypto.signingProtocol.builder.useKid(keyId.keyReference);
-    const signature = await setup.validatorOptions.crypto.signingProtocol.sign(payload);
-    const token = await setup.validatorOptions.crypto.signingProtocol.serialize();
+    setup.validatorOptions.crypto.signingProtocol(JoseBuilder.JWT).builder.useKid(keyId.keyReference);
+    const signature = await setup.validatorOptions.crypto.signingProtocol(JoseBuilder.JWT).sign(payload);
+    const token = await setup.validatorOptions.crypto.signingProtocol(JoseBuilder.JWT).serialize();
     let claimToken = ClaimToken.create(token, configuration);
     return claimToken;
   }
@@ -267,8 +267,8 @@ export class IssuanceHelpers {
       <IExpectedIdToken>{ type: TokenType.idToken, configuration: idTokenConfiguration, audience: setup.AUDIENCE },
       <IExpectedSiop>{ type: TokenType.siopIssuance, audience: setup.AUDIENCE },
       <IExpectedSiop>{ type: TokenType.siopPresentationAttestation, audience: setup.AUDIENCE },
-      <IExpectedVerifiablePresentation>{ type: TokenType.verifiablePresentation, didAudience: setup.defaultIssuerDid },
-      <IExpectedVerifiableCredential>{ type: TokenType.verifiableCredential, contractIssuers: vcContractIssuers }
+      <IExpectedVerifiablePresentation>{ type: TokenType.verifiablePresentationJwt, didAudience: setup.defaultIssuerDid },
+      <IExpectedVerifiableCredential>{ type: TokenType.verifiableCredentialJwt, contractIssuers: vcContractIssuers }
     ];
 
     const siopRequest = {

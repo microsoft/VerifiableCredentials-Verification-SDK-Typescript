@@ -32,7 +32,7 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
    * @param siopDid needs to be equal to audience of VP
    */
   public async validate(queue: ValidationQueue, queueItem: ValidationQueueItem, siopDid: string): Promise<IValidationResponse> { 
-    const options = new ValidationOptions(this.validatorOption, TokenType.verifiablePresentation);
+    const options = new ValidationOptions(this.validatorOption, TokenType.verifiablePresentationJwt);
     const validator = new VerifiablePresentationValidation(options, this.expected, siopDid, queueItem.id);
     let validationResult = await validator.validate(queueItem.tokenToValidate.rawToken);
 
@@ -73,7 +73,7 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
    * Gets the type of token to validate
    */
   public get isType(): TokenType {
-    return TokenType.verifiablePresentation;
+    return TokenType.verifiablePresentationJwt;
   }
 }
 

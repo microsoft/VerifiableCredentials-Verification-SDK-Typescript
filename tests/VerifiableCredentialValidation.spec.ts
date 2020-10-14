@@ -18,8 +18,8 @@ import { TokenType, IExpectedVerifiableCredential, Validator } from '../lib';
   });
 
   it('should test validate', async () => {
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential, true);   
-    const expected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredentialJwt, true);   
+    const expected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredentialJwt)[0];
 
     let validator = new VerifiableCredentialValidation(options, expected);
     let response = await validator.validate(siop.vc.rawToken, setup.defaultUserDid);
@@ -31,7 +31,7 @@ import { TokenType, IExpectedVerifiableCredential, Validator } from '../lib';
     response = await validator.validate(siop.vc.rawToken + 'a', setup.defaultUserDid);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredential is invalid');
+    expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredentialJwt is invalid');
 
     // Missing vc
     let payload: any = {

@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { DidDocument, IDidResolveResult } from '@decentralized-identity/did-common-typescript';
-import { IPayloadProtectionSigning } from 'verifiablecredentials-crypto-sdk-typescript';
+import { IPayloadProtectionSigning, JoseBuilder } from 'verifiablecredentials-crypto-sdk-typescript';
 import { IValidationOptions } from '../options/IValidationOptions';
 import IValidatorOptions from '../options/IValidatorOptions';
 import ValidationOptions from '../options/ValidationOptions';
@@ -43,33 +43,49 @@ export class ValidationHelpers {
    * @returns validationResponse.payloadObject The parsed payload
    */
   public async getTokenObject(validationResponse: IValidationResponse, token: string): Promise<IValidationResponse> {
-    let tokenPayload: Buffer;
     const self: any = this;
+    validationResponse.didSignature = undefined;
+    // check for json ld proofs
     try {
-      validationResponse.didSignature = await (self as ValidationOptions).validatorOptions.crypto.signingProtocol.deserialize(token);
-      if (!validationResponse.didSignature) {
-        return {
-          result: false,
-          detailedError: `The signature in the ${(self as ValidationOptions).tokenType} has an invalid format`,
-          status: 403
-        };
-      }
+      JSON.parse(token);
 
-      const kid = validationResponse.didSignature.signatureProtectedHeader?.kid;
-      validationResponse.didKid = kid;
-      if (!validationResponse.didKid) {
+      // instantiate IPayloadProtectionSigning
+      validationResponse.didSignature = await (self as ValidationOptions).validatorOptions.crypto.signingProtocol(JoseBuilder.JSONLDProofs).deserialize(token);
+      validationResponse.payloadProtectionProtocol = JoseBuilder.JSONLDProofs;
+    } catch (exception) {
+      console.log('Failing to decode json ld proof');
+    }
+
+    if (!validationResponse.didSignature) {
+      // check for compact JWT tokens
+      try {
+        // instantiate IPayloadProtectionSigning
+        validationResponse.didSignature = await (self as ValidationOptions).validatorOptions.crypto.signingProtocol(JoseBuilder.JWT).deserialize(token);
+        validationResponse.payloadProtectionProtocol = JoseBuilder.JWT;
+      } catch (exception) {
         return {
           result: false,
-          detailedError: `The protected header in the ${(self as ValidationOptions).tokenType} does not contain the kid`,
-          status: 403
-        };
+          detailedError: `The ${(self as ValidationOptions).tokenType} could not be deserialized`,
+          status: 400
+        };      
       }
-    } catch (err) {
-      console.error(err);
+    }
+
+    if (!validationResponse.didSignature) {
       return {
         result: false,
-        detailedError: `The ${(self as ValidationOptions).tokenType} could not be deserialized`,
-        status: 400
+        detailedError: `The signature in the ${(self as ValidationOptions).tokenType} has an invalid format`,
+        status: 403
+      };
+    }
+
+    const kid = validationResponse.didSignature.signatureProtectedHeader?.kid;
+    validationResponse.didKid = kid;
+    if (!validationResponse.didKid) {
+      return {
+        result: false,
+        detailedError: `The protected header in the ${(self as ValidationOptions).tokenType} does not contain the kid`,
+        status: 403
       };
     }
     try {
@@ -538,8 +554,8 @@ export class ValidationHelpers {
 
       validationResponse.result = true;
       validationResponse.detailedError = '';
-      
-      validationResponse.validationResult = {idTokens: <any>token};
+
+      validationResponse.validationResult = { idTokens: <any>token };
       return validationResponse;
     } catch (err) {
       console.error(err);
@@ -563,7 +579,7 @@ export class ValidationHelpers {
     try {
       // Get token and check signature
       validationResponse = await (self as IValidationOptions).getTokenObjectDelegate(validationResponse, token.rawToken);
-      const validation = await (self as ValidationOptions).validatorOptions.crypto.signingProtocol.verify([key]);
+      const validation = await (self as ValidationOptions).validatorOptions.crypto.signingProtocol(validationResponse.payloadProtectionProtocol!).verify([key]);
       if (!validation) {
         return {
           result: false,

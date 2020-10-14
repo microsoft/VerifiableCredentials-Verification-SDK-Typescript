@@ -5,7 +5,7 @@
 
 import { CryptoBuilder, KeyReference, LongFormDid, KeyUse, ClaimToken, DidDocument, TokenType } from '../lib/index';
 import RequestorHelper from './RequestorHelper';
-import { KeyStoreOptions, JsonWebKey, Crypto } from 'verifiablecredentials-crypto-sdk-typescript';
+import { KeyStoreOptions, JsonWebKey, Crypto, JoseBuilder } from 'verifiablecredentials-crypto-sdk-typescript';
 import ResponderHelper from './ResponderHelper';
 import ITestModel from './models/ITestModel';
 
@@ -97,8 +97,8 @@ export default class TokenGenerator {
                 payload.iss = `${this.crypto.builder.did}`;
 
                 // Sign
-                await this.crypto.signingProtocol.sign(payload);
-                idTokens[configuration] = await this.crypto.signingProtocol.serialize();
+                await this.crypto.signingProtocol(JoseBuilder.JWT).sign(payload);
+                idTokens[configuration] = await this.crypto.signingProtocol(JoseBuilder.JWT).serialize();
             }
         }
     }
@@ -111,8 +111,8 @@ export default class TokenGenerator {
         vcPayload.iss = `${this.crypto.builder.did}`;
 
         // Sign
-        await this.crypto.signingProtocol.sign(vcPayload);
-        const token = await this.crypto.signingProtocol.serialize();
+        await this.crypto.signingProtocol(JoseBuilder.JWT).sign(vcPayload);
+        const token = await this.crypto.signingProtocol(JoseBuilder.JWT).serialize();
         return ClaimToken.create(token);
     }
 
@@ -144,7 +144,7 @@ export default class TokenGenerator {
         for (let inx = 0; inx < vc.length; inx++) {
             (vpTemplate.vp.verifiableCredential as string[]).push(vc[inx].rawToken);
         }
-        const token = await (await this.responder.crypto.signingProtocol.sign(vpTemplate)).serialize();
-        return new ClaimToken(TokenType.verifiablePresentation, token, '');
+        const token = await (await this.responder.crypto.signingProtocol(JoseBuilder.JWT).sign(vpTemplate)).serialize();
+        return new ClaimToken(TokenType.verifiablePresentationJwt, token, '');
     }
 }

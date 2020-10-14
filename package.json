@@ -28,7 +28,7 @@
     "jasmine-spec-reporter": "^4.2.1",
     "jasmine-ts": "0.3.0",
     "node-fetch": "2.6.0",
-    "nyc": "^14.1.1",
+    "nyc": "^15.1.0",
     "source-map-support": "0.5.12",
     "ts-node": "8.1.0",
     "tslint": "5.16.0",
@@ -40,6 +40,7 @@
     "@azure/identity": "1.0.0",
     "@decentralized-identity/did-common-typescript": "0.1.19",
     "base64url": "3.0.1",
+    "bs58": "4.0.1",
     "clone": "2.1.2",
     "deep-property-access": "1.0.1",
     "es6-promise": "^4.2.8",
@@ -47,7 +48,7 @@
     "jsonpath": "1.0.2",
     "multihashes": "0.4.14",
     "uuid": "7.0.1",
-    "verifiablecredentials-crypto-sdk-typescript": "1.1.11-preview.5"
+    "verifiablecredentials-crypto-sdk-typescript": "1.1.11-preview.6"
   },
   "nyc": {
     "extension": [

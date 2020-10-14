@@ -44,12 +44,17 @@ export enum TokenType {
   /**
    * Token is verifiable presentation
    */
-  verifiablePresentation = 'verifiablePresentation',
+  verifiablePresentationJwt = 'verifiablePresentationJwt',
 
   /**
-   * Token is verifiable credential
+   * Token is verifiable credential in JWT format
    */
-  verifiableCredential = 'verifiableCredential',
+  verifiableCredentialJwt = 'verifiableCredentialJwt',
+
+  /**
+   * Token is verifiable credential in json ld format
+   */
+  verifiableCredentialjsonLd = 'verifiableCredentialjsonLd',
 
   /**
    * Token is verifiable credential
@@ -139,36 +144,44 @@ export default class ClaimToken {
    * Factory class to create a ClaimToken containing the token type, raw token and decoded payload
    * @param token to check for type
    */
-  public static create(token: string, id?: string): ClaimToken {
-    // Deserialize the token
-    const payload = ClaimToken.getTokenPayload(token);
+  public static create(token: string | object, id?: string): ClaimToken {
 
-    // Check type of token
-    if (payload.iss === VerifiableCredentialConstants.TOKEN_SI_ISS) {
-      if (payload.contract) {
-        return new ClaimToken(TokenType.siopIssuance, token, id);
-      } else if (payload.presentation_submission) {
-        return new ClaimToken(TokenType.siopPresentationExchange, token, id);
-      } else if (payload.attestations) {
-        return new ClaimToken(TokenType.siopPresentationAttestation, token, id);
-      } else {
-        return new ClaimToken(TokenType.siop, token, id);
+    // check for json LD
+    if ((<any>token)['\@context']) {
+      throw new Error();
+      return new ClaimToken(TokenType.verifiableCredentialjsonLd, <any>'');
+    } else {
+      // compact jwt      
+      // Deserialize the token
+      const payload = ClaimToken.getTokenPayload(<string>token);
+
+      // Check type of token
+      if (payload.iss === VerifiableCredentialConstants.TOKEN_SI_ISS) {
+        if (payload.contract) {
+          return new ClaimToken(TokenType.siopIssuance, <string>token, id);
+        } else if (payload.presentation_submission) {
+          return new ClaimToken(TokenType.siopPresentationExchange, <string>token, id);
+        } else if (payload.attestations) {
+          return new ClaimToken(TokenType.siopPresentationAttestation, <string>token, id);
+        } else {
+          return new ClaimToken(TokenType.siop, <string>token, id);
+        }
       }
-    }
 
-    if (payload.vc) {
-      return new ClaimToken(TokenType.verifiableCredential, token, id);
-    }
-    if (payload.vp) {
-      return new ClaimToken(TokenType.verifiablePresentation, token, id);
-    }
+      if (payload.vc) {
+        return new ClaimToken(TokenType.verifiableCredentialJwt, <string>token, id);
+      }
+      if (payload.vp) {
+        return new ClaimToken(TokenType.verifiablePresentationJwt, <string>token, id);
+      }
 
-    // Check for signature
-    if (ClaimToken.tokenSignature(token)) {
-      return new ClaimToken(TokenType.idToken, token, id);
-    }
+      // Check for signature
+      if (ClaimToken.tokenSignature(<string>token)) {
+        return new ClaimToken(TokenType.idToken, <string>token, id);
+      }
 
-    return new ClaimToken(TokenType.selfIssued, token, id);
+      return new ClaimToken(TokenType.selfIssued, <string>token, id);
+    }
   }
 
   /**
@@ -221,10 +234,14 @@ export default class ClaimToken {
             const foundToken = tokenFinder[0];
             const claimToken = ClaimToken.create(foundToken);
             decodedTokens[item.id] = claimToken;
+          } else if (tokenFinder[0]['\@context']) {
+            const foundToken = tokenFinder[0];
+            const claimToken = ClaimToken.create(foundToken);
+            decodedTokens[item.id] = claimToken;
           }
         } else {
           throw new Error(`The SIOP presentation exchange response has descriptor_map with id '${item.id}'. No path property found.`);
-        }  
+        }
       }
     }
     return decodedTokens;

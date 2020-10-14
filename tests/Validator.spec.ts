@@ -75,8 +75,8 @@ describe('Validator', () => {
   });
 
   it('should validate verifiable credentials', async () => {
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential, true);
-    const expected: any = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredentialJwt, true);
+    const expected: any = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredentialJwt)[0];
 
     const tokenValidator = new VerifiableCredentialTokenValidator(setup.validatorOptions, expected);
     expect(()=> tokenValidator.getTokens(<any>undefined, <any>undefined)).toThrowError('Not implemented');
@@ -91,9 +91,9 @@ describe('Validator', () => {
   });
 
   it('should validate verifiable presentations', async () => {
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentation, true);
-    const vcExpected: IExpectedVerifiableCredential = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
-    const vpExpected: IExpectedVerifiablePresentation = siop.expected.filter((token: IExpectedVerifiablePresentation) => token.type === TokenType.verifiablePresentation)[0];
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentationJwt, true);
+    const vcExpected: IExpectedVerifiableCredential = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredentialJwt)[0];
+    const vpExpected: IExpectedVerifiablePresentation = siop.expected.filter((token: IExpectedVerifiablePresentation) => token.type === TokenType.verifiablePresentationJwt)[0];
 
     // the map gets its key from the created request
     const vcAttestationName = Object.keys(siop.attestations.presentations)[0];
@@ -110,8 +110,8 @@ describe('Validator', () => {
       .build();
 
     // Check validator types
-    expect(vpValidator.isType).toEqual(TokenType.verifiablePresentation);
-    expect(vcValidator.isType).toEqual(TokenType.verifiableCredential);
+    expect(vpValidator.isType).toEqual(TokenType.verifiablePresentationJwt);
+    expect(vcValidator.isType).toEqual(TokenType.verifiableCredentialJwt);
 
     // Check VP validator
     let queue = new ValidationQueue();
@@ -143,7 +143,7 @@ describe('Validator', () => {
     queue.enqueueToken('vp', siop.vp);
     result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeFalsy();
-    expect(result.detailedError).toEqual('verifiablePresentation does not has a TokenValidator');
+    expect(result.detailedError).toEqual('verifiablePresentationJwt does not has a TokenValidator');
 
     // Test validator with missing VC validator
     validator = new ValidatorBuilder(crypto)
@@ -154,13 +154,13 @@ describe('Validator', () => {
     queue.enqueueToken('vp', siop.vp);
     result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeFalsy();
-    expect(result.detailedError).toEqual('verifiableCredential does not has a TokenValidator');
+    expect(result.detailedError).toEqual('verifiableCredentialJwt does not has a TokenValidator');
   });
 
   it('should validate presentation siop', async () => {
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentation, false);
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentationJwt, false);
     const siopExpected = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siopPresentationAttestation)[0];
-    const vcExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
+    const vcExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredentialJwt)[0];
     
 
     // Check validator, only VCs in presentations
@@ -200,10 +200,10 @@ describe('Validator', () => {
 
 
   it('should validate siop with default validators', async () => {
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentation, true);
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentationJwt, true);
     const siopExpected = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siopIssuance)[0];
-    const vpExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiablePresentation)[0];
-    const vcExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
+    const vpExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiablePresentationJwt)[0];
+    const vcExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredentialJwt)[0];
     const idTokenExpected = siop.expected.filter((token: IExpectedIdToken) => token.type === TokenType.idToken)[0];
     const siExpected = siop.expected.filter((token: IExpectedSelfIssued) => token.type === TokenType.selfIssued)[0];
 
@@ -250,12 +250,13 @@ describe('Validator', () => {
     const jsonldProofProtocol = new JoseBuilder(crypto)
       .uselinkedDataProofsProtocol('JcsEd25519Signature2020')
       .build();
-    crypto.useSigningProtocol(jsonldProofProtocol);
+    crypto.useSigningProtocol(JoseBuilder.JSONLDProofs, jsonldProofProtocol);
 
     // Check validator
     let validator = new ValidatorBuilder(crypto)
       .useAudienceUrl('https://verify.vc.capptoso.com:443/presentation-response')
       .enableFeatureVerifiedCredentialsStatusCheck(false)
+      .useResolver(new ManagedHttpResolver('https://resolver.identity.foundation/1.0/identifiers/'))
       .build();
 
     expect(validator.resolver).toBeDefined();
@@ -267,7 +268,6 @@ describe('Validator', () => {
     const result = await validator.validate(req);
     expect(result.result).toBeTruthy();
     expect(result.status).toEqual(200);
-
   });
 
 

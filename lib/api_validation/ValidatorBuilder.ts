@@ -138,8 +138,8 @@ export default class ValidatorBuilder {
       this._tokenValidators = {
         selfIssued: new SelfIssuedTokenValidator(validatorOptions, <IExpectedSelfIssued> {type: TokenType.selfIssued}),
         idToken: new IdTokenTokenValidator(validatorOptions, <IExpectedIdToken> {type: TokenType.idToken, configuration: this._trustedIssuerConfigurationsForIdTokens}),
-        verifiableCredential: new VerifiableCredentialTokenValidator(validatorOptions, <IExpectedVerifiableCredential> {type: TokenType.verifiableCredential, contractIssuers: this._trustedIssuersForVerifiableCredentials}),
-        verifiablePresentation: new VerifiablePresentationTokenValidator(validatorOptions, this.crypto, <IExpectedVerifiablePresentation> {type: TokenType.verifiablePresentation, didAudience: this.crypto.builder.did}),
+        verifiableCredentialJwt: new VerifiableCredentialTokenValidator(validatorOptions, <IExpectedVerifiableCredential> {type: TokenType.verifiableCredentialJwt, contractIssuers: this._trustedIssuersForVerifiableCredentials}),
+        verifiablePresentationJwt: new VerifiablePresentationTokenValidator(validatorOptions, this.crypto, <IExpectedVerifiablePresentation> {type: TokenType.verifiablePresentationJwt, didAudience: this.crypto.builder.did}),
         siopPresentationAttestation: new SiopTokenValidator(validatorOptions, <IExpectedSiop> {type: TokenType.siopPresentationAttestation, audience: this._audienceUrl}),
         siop: new SiopTokenValidator(validatorOptions, <IExpectedSiop> {type: TokenType.siop, audience: this._audienceUrl}),
         siopPresentationExchange: new SiopTokenValidator(validatorOptions, <IExpectedSiop> {type: TokenType.siopPresentationExchange, audience: this._audienceUrl}),
@@ -175,14 +175,14 @@ export default class ValidatorBuilder {
     this._trustedIssuersForVerifiableCredentials = issuers;
     if (this._tokenValidators) {
       // Make sure existing expected gets updated
-      const vcValidator = this._tokenValidators[TokenType.verifiableCredential];
+      const vcValidator = this._tokenValidators[TokenType.verifiableCredentialJwt];
       if (vcValidator) {
         const validatorOptions: IValidatorOptions = {
           resolver: this.resolver,
           crypto: this._crypto
         };
-        const expected: IExpectedVerifiableCredential = {type: TokenType.verifiableCredential, contractIssuers: issuers};
-        this._tokenValidators[TokenType.verifiableCredential] = new VerifiableCredentialTokenValidator(validatorOptions, expected);
+        const expected: IExpectedVerifiableCredential = {type: TokenType.verifiableCredentialJwt, contractIssuers: issuers};
+        this._tokenValidators[TokenType.verifiableCredentialJwt] = new VerifiableCredentialTokenValidator(validatorOptions, expected);
       }
     }
     return this;

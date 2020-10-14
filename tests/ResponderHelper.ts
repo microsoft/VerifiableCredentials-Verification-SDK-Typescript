@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CryptoBuilder, KeyReference, LongFormDid, KeyUse, TokenType, ClaimToken } from '../lib/index';
+import { CryptoBuilder, KeyReference, LongFormDid, KeyUse, TokenType, ClaimToken, JoseBuilder } from '../lib/index';
 import RequestorHelper from './RequestorHelper'
 import TokenGenerator from './TokenGenerator';
 import ITestModel from './models/ITestModel';
@@ -66,8 +66,8 @@ export default class ResponderHelper {
                 this.responseDefinition.responseStatus[presentation].iss = this.generator.crypto.builder.did;
 
                 // Sign the receipts
-                await this.generator.crypto.signingProtocol.sign(this.responseDefinition.responseStatus[presentation]);
-                statusReceipts.receipt[jti] = await this.generator.crypto.signingProtocol.serialize();
+                await this.generator.crypto.signingProtocol(JoseBuilder.JWT).sign(this.responseDefinition.responseStatus[presentation]);
+                statusReceipts.receipt[jti] = await this.generator.crypto.signingProtocol(JoseBuilder.JWT).serialize();
 
                 const statusUrl = vcs.decodedToken.vc.credentialStatus.id;
                 TokenGenerator.fetchMock.post(statusUrl, statusReceipts, { overwriteRoutes: true });
@@ -89,8 +89,8 @@ export default class ResponderHelper {
                 }
 
                 // Sign
-                await this.crypto.signingProtocol.sign(vpPayload);
-                presentations[presentation] = await this.crypto.signingProtocol.serialize();
+                await this.crypto.signingProtocol(JoseBuilder.JWT).sign(vpPayload);
+                presentations[presentation] = await this.crypto.signingProtocol(JoseBuilder.JWT).serialize();
             }
         }
 
@@ -107,7 +107,7 @@ export default class ResponderHelper {
             }
         }
 
-        const token = await (await this.crypto.signingProtocol.sign(payload)).serialize();
+        const token = await (await this.crypto.signingProtocol(JoseBuilder.JWT).sign(payload)).serialize();
         return new ClaimToken(TokenType.siopPresentationAttestation, token);
     }
 

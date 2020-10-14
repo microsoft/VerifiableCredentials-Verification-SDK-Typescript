@@ -23,7 +23,7 @@ describe('LinkedDataCryptoSuitePublicKey', () => {
     expect(jwk.crv).toEqual('ed25519');
     expect(jwk.kty).toEqual('OKP');
     expect(jwk.use).toEqual('sig');
-    expect(jwk.x).toEqual('H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV');
+    expect(jwk.x).toEqual('7kqc5NnojHJHZ11Ec5cGCLMIKgJVDBKhrAbu9YrfVFg');
 
     didDocumentPublicKey = {
       "@context": ["https://w3id.org/security/v1"],

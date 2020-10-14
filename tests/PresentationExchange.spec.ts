@@ -6,7 +6,7 @@
 import base64url from 'base64url';
 import RequestorHelper from './RequestorHelper';
 import ResponderHelper from './ResponderHelper';
-import { ValidatorBuilder, PresentationDefinitionModel, IRequestorPresentationExchange } from '../lib';
+import { ValidatorBuilder, PresentationDefinitionModel, IRequestorPresentationExchange, JoseBuilder } from '../lib';
 import VerifiableCredentialConstants from '../lib/verifiable_credential/VerifiableCredentialConstants';
 import TokenGenerator from './TokenGenerator';
 import PresentationDefinition from './models/PresentationDefinitionSample1'
@@ -45,7 +45,7 @@ describe('PresentationExchange', () => {
         console.log(request.rawToken);
     });
 
-    fit('should create a response and validate', async () => {
+    it('should create a response and validate', async () => {
 
         const request: any = await requestor.createPresentationExchangeRequest();
         expect(request.rawToken).toBeDefined();
@@ -57,35 +57,33 @@ describe('PresentationExchange', () => {
             .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!] })
             .build();
         let result = await validator.validate(response.rawToken);
-        expect(result.result).toBeTruthy();        
+        expect(result.result).toBeTruthy(result.detailedError);        
 
         // Negative cases
 
         //Remove presentation_submission
         let responsePayload = clone(response.decodedToken);
         delete responsePayload.presentation_submission;
-        let siop = await (await responder.crypto.signingProtocol.sign(responsePayload)).serialize();
+        let siop = await (await responder.crypto.signingProtocol(JoseBuilder.JWT).sign(responsePayload)).serialize();
         result = await validator.validate(siop);
-        expect(result.result).toBeFalsy();
-        expect(result.detailedError).toEqual('siop does not has a TokenValidator');
+        expect(result.result).toBeFalsy('Remove presentation_submission');
+        expect(result.detailedError).toEqual(`Verifiable credential 'IdentityCard' is missing from the input request`);
 
         //Remove tokens
         responsePayload = clone(response.decodedToken);
         delete responsePayload.presentation_submission.attestations;
-        siop = await (await responder.crypto.signingProtocol.sign(responsePayload)).serialize();
+        siop = await (await responder.crypto.signingProtocol(JoseBuilder.JWT).sign(responsePayload)).serialize();
         result = await validator.validate(siop);
-        expect(result.result).toBeFalsy();
+        expect(result.result).toBeFalsy('Remove tokens');
         expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. This path '$.presentation_submission.attestations.presentations.IdentityCard' did not return a token.`);
 
         //Remove path
         responsePayload = clone(response.decodedToken);
         delete responsePayload.presentation_submission.descriptor_map[0].path;
-        siop = await (await responder.crypto.signingProtocol.sign(responsePayload)).serialize();
+        siop = await (await responder.crypto.signingProtocol(JoseBuilder.JWT).sign(responsePayload)).serialize();
         result = await validator.validate(siop);
-        expect(result.result).toBeFalsy();
+        expect(result.result).toBeFalsy('Remove path');
         expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. No path property found.`);
-
-
     });
 
     it('should populate the model', () => {

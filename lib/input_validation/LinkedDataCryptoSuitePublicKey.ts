@@ -1,9 +1,9 @@
-import base64url from 'base64url';
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { IExpectedSiop } from '../index';
+import base64url from 'base64url';
+const bs58 = require('bs58')
 
 /**
  * Class to model the Linked Data crypto suites public keys
@@ -118,6 +118,6 @@ export default class LinkedDataCryptoSuitePublicKey {
    * @param data to convert.
    */
   private static decodeBase58To64Url(data: string): string {
-    return data;
+    return base64url.encode(bs58.decode(data));
   }
 }
