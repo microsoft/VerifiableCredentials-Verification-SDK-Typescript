@@ -67,7 +67,7 @@ export enum TokenType {
  */
 export default class ClaimToken {
   private _id: string = '';
-  private _rawToken: string = '';
+  private _rawToken: string | object = '';
   private _type: TokenType;
   private _decodedToken: { [key: string]: any } = {};
   private _tokenHeader: { [key: string]: any } = {};
@@ -89,12 +89,12 @@ export default class ClaimToken {
   /**
    * Gets the raw token
    */
-  public get rawToken(): string {
+  public get rawToken(): string | object {
     return this._rawToken;
   }
 
   /**
-   * Gets the token header
+   * Sets the raw token
    */
   public set rawToken(value) {
     this._rawToken = value;
@@ -121,7 +121,7 @@ export default class ClaimToken {
    * @param token The raw token
    * @param id The id of the token (configuration endpoint for id tokens)
    */
-  constructor(typeName: string, token: string, id?: string) {
+  constructor(typeName: string, token: string | object, id?: string) {
     const tokentypeValues: string[] = Object.values(TokenType);
     if (tokentypeValues.includes(typeName)) {
       this._type = typeName as TokenType;
@@ -134,7 +134,7 @@ export default class ClaimToken {
       this.decode();
     }
     else {
-      this._decodedToken = token;
+      this._rawToken = this._decodedToken = token;
     }
 
     this._id = id || '';
@@ -147,9 +147,8 @@ export default class ClaimToken {
   public static create(token: string | object, id?: string): ClaimToken {
 
     // check for json LD
-    if ((<any>token)['\@context']) {
-      throw new Error();
-      return new ClaimToken(TokenType.verifiableCredentialjsonLd, <any>'');
+    if ((<any>token)['\@context'] && (<any>token).type && (<any>token).type.length >= 1 && (<any>token).type.includes('VerifiableCredential') ) {
+      return new ClaimToken(TokenType.verifiableCredentialjsonLd, token);
     } else {
       // compact jwt      
       // Deserialize the token
@@ -254,7 +253,7 @@ export default class ClaimToken {
    * @param values Claim value
    */
   private decode(): void {
-    const parts = this.rawToken.split('.');
+    const parts = (<string>this.rawToken).split('.');
     if (parts.length < 2) {
       throw new Error(`Cannot decode. Invalid input token`);
     }

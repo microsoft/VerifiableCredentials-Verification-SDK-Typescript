@@ -110,6 +110,12 @@ export default class Validator {
             claimToken = <ClaimToken>(<any>response.validationResult)?.verifiableCredentials;
           }
           break;
+        case TokenType.verifiableCredentialjsonLd:
+          response = await validator.validate(queue, queueItem!, siopDid!);
+          if (response.result) {
+            claimToken = <ClaimToken>(<any>response.validationResult)?.verifiableCredentials;
+          }
+          break;
         case TokenType.verifiablePresentationJwt:
           response = await validator.validate(queue, queueItem!, siopDid!);
           break;

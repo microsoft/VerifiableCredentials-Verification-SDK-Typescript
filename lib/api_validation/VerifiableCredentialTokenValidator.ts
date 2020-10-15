@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TSMap } from "typescript-map";
 import { IExpectedVerifiableCredential, ITokenValidator, TokenType } from '../index';
 import { IValidationResponse } from '../input_validation/IValidationResponse';
 import ValidationQueue from '../input_validation/ValidationQueue';
 import ValidationQueueItem from '../input_validation/ValidationQueueItem';
 import { VerifiableCredentialValidation } from '../input_validation/VerifiableCredentialValidation';
+import { VerifiableCredentialValidationJsonLd } from '../input_validation/VerifiableCredentialValidationJsonLd';
 import IValidatorOptions from '../options/IValidatorOptions';
 import ValidationOptions from '../options/ValidationOptions';
 
@@ -35,17 +35,23 @@ export default class VerifiableCredentialTokenValidator implements ITokenValidat
   public async validate(_queue: ValidationQueue, queueItem: ValidationQueueItem, siopDid: string): Promise<IValidationResponse> {
     const options = new ValidationOptions(this.validatorOption, TokenType.verifiableCredentialJwt);
 
-    const validator = new VerifiableCredentialValidation(options, this.expected);
-    const validationResult = await validator.validate(queueItem.tokenToValidate.rawToken, siopDid);
+    if (typeof queueItem.tokenToValidate.rawToken === 'string') {
+      const validator = new VerifiableCredentialValidation(options, this.expected);
+      const validationResult = await validator.validate(<string>queueItem.tokenToValidate.rawToken, siopDid);
+      return validationResult as IValidationResponse;
+    }
+
+    const validator = new VerifiableCredentialValidationJsonLd(options, this.expected);
+    const validationResult = await validator.validate(<object>queueItem.tokenToValidate.rawToken, siopDid);
     return validationResult as IValidationResponse;
   }
-  
+
   /**
    * Get tokens from current item and add them to the queue.
    * @param validationResponse The response for the requestor
    * @param queue with tokens to validate
    */
-  public getTokens(_validationResponse: IValidationResponse, _queue: ValidationQueue ): IValidationResponse {
+  public getTokens(_validationResponse: IValidationResponse, _queue: ValidationQueue): IValidationResponse {
     throw new Error('Not implemented');
   }
 

@@ -39,7 +39,7 @@ describe('Rule processor', () => {
         .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!] })
         .enableFeatureVerifiedCredentialsStatusCheck(true)
         .build();
-      let result = await validator.validate(response.rawToken);
+      let result = await validator.validate(<string>response.rawToken);
       expect(result.result).toBeTruthy();
 
       expect(result.validationResult!.verifiableCredentials!['IdentityCard'].decodedToken.jti).toEqual(model.getVcFromResponse('IdentityCard').decodedToken.jti);
@@ -47,7 +47,7 @@ describe('Rule processor', () => {
       expect(result.validationResult!.verifiablePresentationStatus![jti].status).toEqual('valid');
 
       const vc = result.validationResult!.verifiableCredentials!['IdentityCard'];
-      result = await validator.validate(vc.rawToken);
+      result = await validator.validate(<string>vc.rawToken);
       expect(result.result).toBeTruthy();
 
     } finally {
@@ -74,7 +74,7 @@ describe('Rule processor', () => {
         .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!], Diploma: [responder.generator.crypto.builder.did!] })
         .enableFeatureVerifiedCredentialsStatusCheck(true)
         .build();
-      let result = await validator.validate(response.rawToken);
+      let result = await validator.validate(<string>response.rawToken);
       expect(result.result).toBeFalsy();
       expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map without id property`);
     } finally {
@@ -101,7 +101,7 @@ describe('Rule processor', () => {
         .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!], Diploma: [responder.generator.crypto.builder.did!] })
         .enableFeatureVerifiedCredentialsStatusCheck(true)
         .build();
-      let result = await validator.validate(response.rawToken);
+      let result = await validator.validate(<string>response.rawToken);
       expect(result.result).toBeTruthy();
 
       expect(result.validationResult!.verifiableCredentials!['IdentityCard'].decodedToken.jti).toEqual(model.getVcFromResponse('IdentityCard').decodedToken.jti);
@@ -134,7 +134,7 @@ describe('Rule processor', () => {
         .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!], Diploma: [responder.generator.crypto.builder.did!] })
         .enableFeatureVerifiedCredentialsStatusCheck(true)
         .build();
-      let result = await validator.validate(response.rawToken);
+      let result = await validator.validate(<string>response.rawToken);
       expect(result.result).toBeFalsy();
       expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. This path '$.presentation_submission.attestations.presentations.*' points to multiple credentails and should only point to one credential.`)
 
@@ -161,7 +161,7 @@ describe('Rule processor', () => {
       const validator = new ValidatorBuilder(requestor.crypto)
         .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!], Diploma: [responder.generator.crypto.builder.did!] }).enableFeatureVerifiedCredentialsStatusCheck(true)
         .build();
-      let result = await validator.validate(response.rawToken);
+      let result = await validator.validate(<string>response.rawToken);
       expect(result.result).toBeFalsy();
     } finally {
       TokenGenerator.fetchMock.reset();
@@ -186,7 +186,7 @@ describe('Rule processor', () => {
       const validator = new ValidatorBuilder(requestor.crypto)
         .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!], Diploma: [responder.generator.crypto.builder.did!] }).enableFeatureVerifiedCredentialsStatusCheck(true)
         .build();
-      let result = await validator.validate(response.rawToken);
+      let result = await validator.validate(<string>response.rawToken);
       expect(result.result).toBeFalsy();
       expect(result.detailedError?.startsWith('The status receipt for jti ') && result.detailedError?.endsWith(' failed with status revoked.')).toBeTruthy();
     } finally {
@@ -214,7 +214,7 @@ describe('Rule processor', () => {
         .useTrustedIssuerConfigurationsForIdTokens(['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'])
         .enableFeatureVerifiedCredentialsStatusCheck(true)
         .build();
-      let result = await validator.validate(response.rawToken);
+      let result = await validator.validate(<string>response.rawToken);
       expect(result.result).toBeTruthy();
 
       expect(result.validationResult!.verifiableCredentials!['InsuranceCredential'].decodedToken.jti).toEqual(model.getVcFromResponse('InsuranceCredential').decodedToken.jti);
@@ -230,7 +230,7 @@ describe('Rule processor', () => {
       validator = new ValidatorBuilder(requestor.crypto)
         .useTrustedIssuerConfigurationsForIdTokens(['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'])
         .build();
-      result = await validator.validate(result.validationResult!.idTokens!['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'].rawToken);
+      result = await validator.validate(<string>result.validationResult!.idTokens!['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'].rawToken);
       expect(result.result).toBeTruthy();
       expect(result.validationResult!.idTokens!['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'].decodedToken.firstName).toEqual('Jules');
 
@@ -259,7 +259,7 @@ describe('Rule processor', () => {
         .enableFeatureVerifiedCredentialsStatusCheck(true)
         .useTrustedIssuerConfigurationsForIdTokens(['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'])
         .build();
-      let result = await validator.validate(response.rawToken);
+      let result = await validator.validate(<string>response.rawToken);
       expect(result.result).toBeFalsy();
       expect(result.detailedError).toEqual(`Verifiable credential 'DriversLicenseCredential' is missing from the input request`);
     } finally {
@@ -287,7 +287,7 @@ describe('Rule processor', () => {
         .enableFeatureVerifiedCredentialsStatusCheck(true)
         .useTrustedIssuerConfigurationsForIdTokens(['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'])
         .build();
-      let result = await validator.validate(response.rawToken);
+      let result = await validator.validate(<string>response.rawToken);
       expect(result.result).toBeFalsy();
       expect(result.detailedError).toEqual(`The id token is missing from the input request`);
     } finally {
@@ -313,7 +313,7 @@ describe('Rule processor', () => {
 
       const validator = new ValidatorBuilder(requestor.crypto)
         .build();
-      let result = await validator.validate(response.rawToken);
+      let result = await validator.validate(<string>response.rawToken);
       expect(result.result).toBeTruthy();
       expect(result.validationResult?.selfIssued!.decodedToken.name).toEqual('Jules Winnfield');
       expect(result.validationResult?.idTokens).toBeUndefined();
@@ -341,7 +341,7 @@ describe('Rule processor', () => {
 
       const validator = new ValidatorBuilder(requestor.crypto)
         .build();
-      let result = await validator.validate(response.rawToken);
+      let result = await validator.validate(<string>response.rawToken);
       expect(result.result).toBeTruthy();
       expect(result.validationResult?.selfIssued!.decodedToken.name).toEqual('Jules Winnfield');
       expect(result.validationResult?.idTokens).toBeUndefined();

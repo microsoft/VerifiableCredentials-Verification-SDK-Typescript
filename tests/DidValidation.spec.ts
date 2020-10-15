@@ -26,7 +26,7 @@ describe('DidValidation', () =>
     const expected = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siopIssuance)[0];
 
     const validator = new DidValidation(options, expected);
-    let response = await validator.validate(request.rawToken);
+    let response = await validator.validate(<string>request.rawToken);
     expect(response.result).toBeTruthy();
     
     // Negative cases
@@ -37,7 +37,7 @@ describe('DidValidation', () =>
     expect(response.detailedError).toEqual('The signature on the payload in the siopIssuance is invalid');
 
     // invalid format
-    let tokenParts =  request.rawToken.split('.');
+    let tokenParts =  (<string>request.rawToken).split('.');
     response = await validator.validate(`.${tokenParts[1]}.${tokenParts[2]}`);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(400);
@@ -48,7 +48,7 @@ describe('DidValidation', () =>
       typ: 'JWT',
       alg: 'RS256'
     }
-    tokenParts =  request.rawToken.split('.');
+    tokenParts =  (<string>request.rawToken).split('.');
     response = await validator.validate(`${base64url.encode(JSON.stringify(header))}.${tokenParts[1]}.${tokenParts[2]}`);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
@@ -60,7 +60,7 @@ describe('DidValidation', () =>
       kid: 'abc',
       alg: 'RS256'
     }
-    tokenParts =  request.rawToken.split('.');
+    tokenParts =  (<string>request.rawToken).split('.');
     response = await validator.validate(`${base64url.encode(JSON.stringify(header))}.${tokenParts[1]}.${tokenParts[2]}`);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);

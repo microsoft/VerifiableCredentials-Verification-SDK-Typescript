@@ -110,7 +110,7 @@ export class IssuanceHelpers {
     };
 
     for (let inx = 0; inx < vcs.length; inx++) {
-      (vpTemplate.vp.verifiableCredential as string[]).push(vcs[inx].rawToken);
+      (vpTemplate.vp.verifiableCredential as string[]).push(<string>vcs[inx].rawToken);
     }
     return IssuanceHelpers.signAToken(setup, vpTemplate, '', jwkPrivate);
   }

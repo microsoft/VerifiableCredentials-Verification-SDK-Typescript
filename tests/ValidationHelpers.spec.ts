@@ -27,13 +27,13 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
       status: 200,
       result: true
     }
-    let response = await options.getTokenObjectDelegate(validationResponse, request.rawToken);
+    let response = await options.getTokenObjectDelegate(validationResponse, <string>request.rawToken);
     expect(response.result).toBeTruthy();
     expect(response.status).toEqual(200);    
 
     // negative cases
     // malformed token
-    let splitToken = request.rawToken.split('.');
+    let splitToken = (<string>request.rawToken).split('.');
     response = await options.getTokenObjectDelegate(validationResponse, splitToken[0]);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(400);    
@@ -104,7 +104,7 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
       result: true,
       did: setup.defaultUserDid
     };
-    validationResponse = await options.getTokenObjectDelegate(validationResponse, request.rawToken);
+    validationResponse = await options.getTokenObjectDelegate(validationResponse, <string>request.rawToken);
     validationResponse.didSigningPublicKey = siopRequest.didJwkPublic;
     const token = validationResponse.didSignature as IPayloadProtectionSigning;
     let response = await options.validateDidSignatureDelegate(validationResponse, token);
@@ -113,14 +113,14 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
     
     // negative cases
     // Bad signature
-    validationResponse = await options.getTokenObjectDelegate(validationResponse, request.rawToken + 1);    
+    validationResponse = await options.getTokenObjectDelegate(validationResponse, <string>request.rawToken + 1);    
     response = await options.validateDidSignatureDelegate(validationResponse, validationResponse.didSignature as IPayloadProtectionSigning);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403); 
     expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredentialJwt is invalid');
 
     // No signature
-    const splitToken = request.rawToken.split('.');
+    const splitToken = (<string>request.rawToken).split('.');
     validationResponse = await options.getTokenObjectDelegate(validationResponse, `${splitToken[0]}.${splitToken[1]}`);    
     response = await options.validateDidSignatureDelegate(validationResponse, validationResponse.didSignature as IPayloadProtectionSigning);
     expect(response.result).toBeFalsy();
@@ -158,17 +158,18 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
 
     // Add exp
     let exp = new Date().getTime() / 1000;
-    validationResponse.payloadObject = JSON.parse(`{"jti": "abcdefg", "exp": ${exp}}`);
-    response = options.checkTimeValidityOnTokenDelegate(validationResponse, 5);
+    validationResponse.expiration = exp + 5;
+    response = options.checkTimeValidityOnTokenDelegate(validationResponse, 10);
     expect(response.result).toBeTruthy(response.detailedError);
-    exp = (new Date().getTime() / 1000) - 10;
-    validationResponse.payloadObject = JSON.parse(`{"jti": "abcdefg", "exp": ${exp}}`);
+
+    validationResponse.expiration = exp - 1000;
     response = options.checkTimeValidityOnTokenDelegate(validationResponse, 5);
     expect(response.result).toBeFalsy('expired');
     expect(response.status).toEqual(403);
     expect(response.detailedError?.startsWith('The presented verifiableCredentialJwt is expired')).toBeTruthy();
-
+    
     // Add nbf
+    validationResponse.expiration = undefined;
     let nbf = new Date().getTime() / 1000;
     validationResponse.payloadObject = JSON.parse(`{"jti": "abcdefg", "nbf": ${nbf}}`);
     response = options.checkTimeValidityOnTokenDelegate(validationResponse, 5);
@@ -179,7 +180,6 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
     expect(response.result).toBeFalsy('not yet valid');
     expect(response.status).toEqual(403);
     expect(response.detailedError?.startsWith('The presented verifiableCredentialJwt is not yet valid')).toBeTruthy();
-
   });
 
   it('should test checkScopeValidityOnIdTokenDelegate', () => {
@@ -189,6 +189,7 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
     const audience = 'aud'
 
     const validationResponse: IdTokenValidationResponse = {
+      expectedIssuer: issuer,
       issuer,
       status: 200,
       result: true
@@ -209,12 +210,12 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
     expect(response.status).toEqual(200);
 
     // Negative cases
-    validationResponse.issuer = undefined;
+    validationResponse.expectedIssuer = undefined;
     response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, expected);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`The issuer in configuration was not found`);
-    validationResponse.issuer = issuer;
+    validationResponse.expectedIssuer = issuer;
 
     validationResponse.payloadObject.aud = undefined;
     response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, expected);
@@ -230,19 +231,12 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
     expect(response.detailedError).toEqual(`The audience xxx is invalid`);
     validationResponse.payloadObject.aud = audience;
 
-    validationResponse.payloadObject.iss = undefined;
-    response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, expected);
-    expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`Missing iss property in idToken. Expected '"iss"'`);
-    validationResponse.payloadObject.iss = issuer;
-
-    validationResponse.payloadObject.iss = 'xxx';
+    validationResponse.issuer = 'xxx';
     response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, expected);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`The issuer in configuration 'iss' does not correspond with the issuer in the payload xxx`);
-    validationResponse.payloadObject.iss = issuer;
+    validationResponse.issuer = issuer;
     });
     
   it('should test fetchKeyAndValidateSignatureOnIdTokenDelegate', async () => {

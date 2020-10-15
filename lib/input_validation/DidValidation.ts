@@ -76,7 +76,7 @@ export class DidValidation implements IDidValidation {
    }
 
    // once the token is validated, we can trust the jti
-   validationResponse.jti = validationResponse.payloadObject.jti;
+   validationResponse.tokenId = validationResponse.payloadObject.jti || validationResponse.payloadObject.id;
 
    console.log(`The signature is verified with DID ${validationResponse.did}`);
    return validationResponse;

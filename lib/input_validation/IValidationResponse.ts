@@ -75,10 +75,20 @@ export interface IValidationResponse extends IResponse {
   /**
    * the Json Web Token Id of the incoming token
    */
-  jti?: string;
+  tokenId?: string;
 
   /**
    * The used payload protection protocol
    */
   payloadProtectionProtocol?: string;
+
+  /**
+   * The issuer of the token
+   */
+  issuer?: string;
+
+  /**
+   * The epoch expiration time
+   */
+  expiration?: number;
 }

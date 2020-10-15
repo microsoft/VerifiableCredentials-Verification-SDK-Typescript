@@ -56,7 +56,7 @@ describe('PresentationExchange', () => {
         const validator = new ValidatorBuilder(requestor.crypto)
             .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!] })
             .build();
-        let result = await validator.validate(response.rawToken);
+        let result = await validator.validate(<string>response.rawToken);
         expect(result.result).toBeTruthy(result.detailedError);        
 
         // Negative cases

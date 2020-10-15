@@ -56,11 +56,11 @@ export default class VerifiablePresentationStatusReceipt {
             }
 
             // iss should correspond issuer VC
-            if (receiptResponse.payloadObject.iss !== this.expected.didIssuer) {
+            if (receiptResponse.issuer !== this.expected.didIssuer) {
                 return {
                     result: false,
                     status: 403,
-                    detailedError: `The status receipt iss '${receiptResponse.payloadObject.iss}' is wrong. Expected '${this.expected.didIssuer}'`
+                    detailedError: `The status receipt iss '${receiptResponse.issuer}' is wrong. Expected '${this.expected.didIssuer}'`
                 }
             }
 

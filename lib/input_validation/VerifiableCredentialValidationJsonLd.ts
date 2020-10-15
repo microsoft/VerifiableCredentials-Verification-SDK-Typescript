@@ -12,7 +12,7 @@ import { isContext } from 'vm';
 /**
  * Class for verifiable credential validation
  */
-export class VerifiableCredentialValidation implements IVerifiableCredentialValidation {
+export class VerifiableCredentialValidationJsonLd implements IVerifiableCredentialValidation {
 
   /**
    * Create a new instance of @see <VerifiableCredentialValidation>
@@ -28,11 +28,12 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
    * @param siopDid needs to be equal to audience of VC
    * @returns result is true if validation passes
    */
-  public async validate(verifiableCredential: string, siopDid: string): Promise<VerifiableCredentialValidationResponse> {
+  public async validate(_verifiableCredential: object, _siopDid: string): Promise<VerifiableCredentialValidationResponse> {
     let validationResponse: VerifiableCredentialValidationResponse = {
       result: true,
       status: 200
     };
+    /*
     // Check the DID parts of the VC
     const didValidation = new DidValidation(this.options, this.expected);
     validationResponse = await didValidation.validate(verifiableCredential);
@@ -41,7 +42,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
     }
 
     // Get issuer from verifiable credential payload
-    validationResponse.did = validationResponse.issuer;
+    validationResponse.did = validationResponse.payloadObject.iss;
 
     if (!validationResponse.payloadObject.vc) {
       return {
@@ -105,7 +106,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
         };
       }
 
-      if (!contractIssuers.includes(validationResponse.issuer!)) {
+      if (!contractIssuers.includes(validationResponse.payloadObject.iss)) {
         return {
           result: false,
           detailedError: `The verifiable credential with type '${credentialType}' is not from a trusted issuer '${JSON.stringify(this.expected.contractIssuers)}'`,
@@ -114,6 +115,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       }
     }
     validationResponse.validationResult = { verifiableCredentials: <any>ClaimToken.create(verifiableCredential, credentialType) };
+    */
     return validationResponse;
   }
 
