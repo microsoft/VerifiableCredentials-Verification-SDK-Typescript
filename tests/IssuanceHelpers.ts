@@ -268,7 +268,7 @@ export class IssuanceHelpers {
       <IExpectedSiop>{ type: TokenType.siopIssuance, audience: setup.AUDIENCE },
       <IExpectedSiop>{ type: TokenType.siopPresentationAttestation, audience: setup.AUDIENCE },
       <IExpectedVerifiablePresentation>{ type: TokenType.verifiablePresentationJwt, didAudience: setup.defaultIssuerDid },
-      <IExpectedVerifiableCredential>{ type: TokenType.verifiableCredentialJwt, contractIssuers: vcContractIssuers }
+      <IExpectedVerifiableCredential>{ type: TokenType.verifiableCredential, contractIssuers: vcContractIssuers }
     ];
 
     const siopRequest = {

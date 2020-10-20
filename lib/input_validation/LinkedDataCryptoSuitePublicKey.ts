@@ -14,6 +14,24 @@ export default class LinkedDataCryptoSuitePublicKey {
    * Set of supported suites
    */
   public static suites: { [suite: string]: any } = {
+    WorkEd25519VerificationKey2020: (rawPublicKey: any): object => {
+      let publicKey = LinkedDataCryptoSuitePublicKey.parsePublicKey(rawPublicKey);
+      if (!publicKey) {
+        throw new Error(`${JSON.stringify(rawPublicKey)} public key type is not supported.`);
+      }
+
+      if (typeof publicKey === 'string') {
+        return {
+          kty: 'OKP',
+          use: 'sig',
+          alg: 'EdDSA',
+          crv: 'ed25519',
+          x: publicKey
+        };
+      }
+
+      return publicKey;
+    },
     Ed25519VerificationKey2018: (rawPublicKey: any): object => {
       let publicKey = LinkedDataCryptoSuitePublicKey.parsePublicKey(rawPublicKey);
       if (!publicKey) {

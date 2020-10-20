@@ -104,13 +104,7 @@ export default class Validator {
             claimToken = <ClaimToken>(<any>response.validationResult)?.idTokens;
           }
           break;
-        case TokenType.verifiableCredentialJwt:
-          response = await validator.validate(queue, queueItem!, siopDid!);
-          if (response.result) {
-            claimToken = <ClaimToken>(<any>response.validationResult)?.verifiableCredentials;
-          }
-          break;
-        case TokenType.verifiableCredentialjsonLd:
+        case TokenType.verifiableCredential:
           response = await validator.validate(queue, queueItem!, siopDid!);
           if (response.result) {
             claimToken = <ClaimToken>(<any>response.validationResult)?.verifiableCredentials;
@@ -354,7 +348,7 @@ export default class Validator {
       return siop.validationResponse.did;
     })[0];
     if (!did) {
-      did = queue.items.filter((item) => item.validatedToken?.type === TokenType.verifiableCredentialJwt).map((vc) => {
+      did = queue.items.filter((item) => item.validatedToken?.type === TokenType.verifiableCredential).map((vc) => {
         return vc.validatedToken?.decodedToken.aud;
       })[0];
     }
@@ -366,7 +360,7 @@ export default class Validator {
 
     // Set the jti
     const jti = queue.items.filter((item) => this.isSiop(item.validatedToken?.type)).map((siop) => {
-      return (siop.validationResponse as ISiopValidationResponse).payloadObject.jti;
+      return (siop.validationResponse as ISiopValidationResponse).tokenId;
     })[0];
 
     const validationResult: IValidationResult = {
@@ -386,7 +380,7 @@ export default class Validator {
     }
 
     // get verifiable credentials
-    tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.verifiableCredentialJwt)
+    tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.verifiableCredential)
     if (tokens && tokens.length > 0) {
       validationResult.verifiableCredentials = {};
       for (let inx = 0; inx < tokens.length; inx++) {

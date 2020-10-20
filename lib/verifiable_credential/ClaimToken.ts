@@ -47,14 +47,9 @@ export enum TokenType {
   verifiablePresentationJwt = 'verifiablePresentationJwt',
 
   /**
-   * Token is verifiable credential in JWT format
+   * Token is verifiable credential
    */
-  verifiableCredentialJwt = 'verifiableCredentialJwt',
-
-  /**
-   * Token is verifiable credential in json ld format
-   */
-  verifiableCredentialjsonLd = 'verifiableCredentialjsonLd',
+  verifiableCredential = 'verifiableCredential',
 
   /**
    * Token is verifiable credential
@@ -148,7 +143,7 @@ export default class ClaimToken {
 
     // check for json LD
     if ((<any>token)['\@context'] && (<any>token).type && (<any>token).type.length >= 1 && (<any>token).type.includes('VerifiableCredential') ) {
-      return new ClaimToken(TokenType.verifiableCredentialjsonLd, token);
+      return new ClaimToken(TokenType.verifiableCredential, token, id);
     } else {
       // compact jwt      
       // Deserialize the token
@@ -168,7 +163,7 @@ export default class ClaimToken {
       }
 
       if (payload.vc) {
-        return new ClaimToken(TokenType.verifiableCredentialJwt, <string>token, id);
+        return new ClaimToken(TokenType.verifiableCredential, <string>token, id);
       }
       if (payload.vp) {
         return new ClaimToken(TokenType.verifiablePresentationJwt, <string>token, id);

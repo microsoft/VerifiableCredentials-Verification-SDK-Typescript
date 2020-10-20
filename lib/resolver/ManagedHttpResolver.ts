@@ -37,8 +37,6 @@ export default class ManagedHttpResolver implements IDidResolver {
         metadata: didDocument.resolverMetadata
       } as IDidResolveResult;
     }
-    return new Promise((_, reject) => {
-      reject(`Could not resolve ${query}`);
-    });
+    return Promise.reject(new Error(`Could not resolve ${query}`));
   }
 }

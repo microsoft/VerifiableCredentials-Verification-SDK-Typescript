@@ -1,10 +1,9 @@
-import base64url from 'base64url';
-import { listenerCount } from 'process';
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import LinkedDataCryptoSuitePublicKey from '../lib/input_validation/LinkedDataCryptoSuitePublicKey';
+import base64url from 'base64url';
 
 describe('LinkedDataCryptoSuitePublicKey', () => {
   it('should return a Ed25519VerificationKey2018 public key', () => {

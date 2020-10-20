@@ -75,8 +75,8 @@ describe('Validator', () => {
   });
 
   it('should validate verifiable credentials', async () => {
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredentialJwt, true);
-    const expected: any = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredentialJwt)[0];
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential, true);
+    const expected: any = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
 
     const tokenValidator = new VerifiableCredentialTokenValidator(setup.validatorOptions, expected);
     expect(()=> tokenValidator.getTokens(<any>undefined, <any>undefined)).toThrowError('Not implemented');
@@ -92,7 +92,7 @@ describe('Validator', () => {
 
   it('should validate verifiable presentations', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentationJwt, true);
-    const vcExpected: IExpectedVerifiableCredential = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredentialJwt)[0];
+    const vcExpected: IExpectedVerifiableCredential = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
     const vpExpected: IExpectedVerifiablePresentation = siop.expected.filter((token: IExpectedVerifiablePresentation) => token.type === TokenType.verifiablePresentationJwt)[0];
 
     // the map gets its key from the created request
@@ -111,7 +111,7 @@ describe('Validator', () => {
 
     // Check validator types
     expect(vpValidator.isType).toEqual(TokenType.verifiablePresentationJwt);
-    expect(vcValidator.isType).toEqual(TokenType.verifiableCredentialJwt);
+    expect(vcValidator.isType).toEqual(TokenType.verifiableCredential);
 
     // Check VP validator
     let queue = new ValidationQueue();
@@ -154,13 +154,13 @@ describe('Validator', () => {
     queue.enqueueToken('vp', siop.vp);
     result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeFalsy();
-    expect(result.detailedError).toEqual('verifiableCredentialJwt does not has a TokenValidator');
+    expect(result.detailedError).toEqual('verifiableCredential does not has a TokenValidator');
   });
 
   it('should validate presentation siop', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentationJwt, false);
     const siopExpected = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siopPresentationAttestation)[0];
-    const vcExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredentialJwt)[0];
+    const vcExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
     
 
     // Check validator, only VCs in presentations
@@ -203,7 +203,7 @@ describe('Validator', () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentationJwt, true);
     const siopExpected = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siopIssuance)[0];
     const vpExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiablePresentationJwt)[0];
-    const vcExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredentialJwt)[0];
+    const vcExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
     const idTokenExpected = siop.expected.filter((token: IExpectedIdToken) => token.type === TokenType.idToken)[0];
     const siExpected = siop.expected.filter((token: IExpectedSelfIssued) => token.type === TokenType.selfIssued)[0];
 
@@ -243,34 +243,6 @@ describe('Validator', () => {
 
   });
 
-  xit('should validate a siop', async () => {
-
-    const  crypto = new CryptoBuilder()
-      .build();
-    const jsonldProofProtocol = new JoseBuilder(crypto)
-      .uselinkedDataProofsProtocol('JcsEd25519Signature2020')
-      .build();
-    crypto.useSigningProtocol(JoseBuilder.JSONLDProofs, jsonldProofProtocol);
-
-    // Check validator
-    let validator = new ValidatorBuilder(crypto)
-      .useAudienceUrl('https://verify.vc.capptoso.com:443/presentation-response')
-      .enableFeatureVerifiedCredentialsStatusCheck(false)
-      .useResolver(new ManagedHttpResolver('https://resolver.identity.foundation/1.0/identifiers/'))
-      .build();
-
-    expect(validator.resolver).toBeDefined();
-    
-    const queue = new ValidationQueue();
-    setup.fetchMock.reset();
-    const req = '';
-    console.log(req);
-    const result = await validator.validate(req);
-    expect(result.result).toBeTruthy();
-    expect(result.status).toEqual(200);
-  });
-
-
   it('should read the contract id with no spaces', () => {
     const id = 'foo';
     const url = `https://test.com/v1.0/abc/def/contracts/${id}`;
@@ -292,5 +264,24 @@ describe('Validator', () => {
     expect(result).toEqual(id);
   });
 
+  xit('should validate a siop', async () => {
+    setup.fetchMock.reset();
+    const  crypto = new CryptoBuilder()
+      .build();
 
+    // Check validator
+    let validator = new ValidatorBuilder(crypto)
+      .useAudienceUrl('https://verify.vc.capptoso.com:443/presentation-response')
+      .useTrustedIssuersForVerifiableCredentials({'https://credentials.workday.com/docs/specification/v1.0/credential.json': ['did:work:CcZdQMaiwQyY2zA9njpx5p']})
+      //.useResolver(new ManagedHttpResolver('https://resolver.identity.foundation/1.0/identifiers/'))
+      .build();
+
+    expect(validator.resolver).toBeDefined();
+    
+    const req = 'your token here';
+    console.log(req);
+    const result = await validator.validate(req);
+    expect(result.result).toBeTruthy();
+    expect(result.status).toEqual(200);
+  });
 });

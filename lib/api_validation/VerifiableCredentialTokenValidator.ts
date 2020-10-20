@@ -33,7 +33,7 @@ export default class VerifiableCredentialTokenValidator implements ITokenValidat
    * @param siopDid needs to be equal to audience of VC
    */
   public async validate(_queue: ValidationQueue, queueItem: ValidationQueueItem, siopDid: string): Promise<IValidationResponse> {
-    const options = new ValidationOptions(this.validatorOption, TokenType.verifiableCredentialJwt);
+    const options = new ValidationOptions(this.validatorOption, TokenType.verifiableCredential);
 
     if (typeof queueItem.tokenToValidate.rawToken === 'string') {
       const validator = new VerifiableCredentialValidation(options, this.expected);
@@ -59,7 +59,7 @@ export default class VerifiableCredentialTokenValidator implements ITokenValidat
    * Gets the type of token to validate
    */
   public get isType(): TokenType {
-    return TokenType.verifiableCredentialJwt;
+    return TokenType.verifiableCredential;
   }
 }
 

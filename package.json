@@ -6,7 +6,6 @@
   "types": "dist/lib/index.d.ts",
   "scripts": {
     "build": "tsc --p tsconfig.json",
-    "start": "set JSON_CONFIGURATION=./config.json&& node dist/src/start.js",
     "test": "nyc jasmine-ts --config=./tests/jasmine.json",
     "lint": "tslint --fix --project . --config node_modules/ad-did-services-common/tslint.json"
   },
@@ -27,7 +26,7 @@
     "jasmine-reporters": "^2.3.2",
     "jasmine-spec-reporter": "^4.2.1",
     "jasmine-ts": "0.3.0",
-    "node-fetch": "2.6.0",
+    "node-fetch": "^2.6.1",
     "nyc": "^15.1.0",
     "source-map-support": "0.5.12",
     "ts-node": "8.1.0",

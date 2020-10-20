@@ -34,7 +34,7 @@ console.log(`VCs claims: ${JSON.stringify(validationResult.claims.vcs[0].vc)}`);
 
 ```javascript
 const vcValidator = new ValidationBuilder()
-                    .inputIs(TokenType.verifiableCredentialJwt)
+                    .inputIs(TokenType.verifiableCredential)
                     .build();
 const validationResult = await validator.validate(vc: string, expectedAudience: string, expectedIssuers: string[]);
 ```

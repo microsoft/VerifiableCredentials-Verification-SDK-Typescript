@@ -7,7 +7,6 @@ import { IVerifiableCredentialValidation, VerifiableCredentialValidationResponse
 import { DidValidation } from './DidValidation';
 import { IExpectedVerifiableCredential, ClaimToken } from '../index';
 import VerifiableCredentialConstants from '../verifiable_credential/VerifiableCredentialConstants';
-import { isContext } from 'vm';
 
 /**
  * Class for verifiable credential validation
@@ -28,11 +27,12 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
    * @param siopDid needs to be equal to audience of VC
    * @returns result is true if validation passes
    */
-  public async validate(verifiableCredential: string, siopDid: string): Promise<VerifiableCredentialValidationResponse> {
+  public async validate(verifiableCredential: string | object, siopDid: string): Promise<VerifiableCredentialValidationResponse> {
     let validationResponse: VerifiableCredentialValidationResponse = {
       result: true,
       status: 200
     };
+
     // Check the DID parts of the VC
     const didValidation = new DidValidation(this.options, this.expected);
     validationResponse = await didValidation.validate(verifiableCredential);
@@ -40,18 +40,21 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       return validationResponse;
     }
 
-    // Get issuer from verifiable credential payload
-    validationResponse.did = validationResponse.issuer;
-
-    if (!validationResponse.payloadObject.vc) {
-      return {
-        result: false,
-        detailedError: `The verifiable credential does not has the vc property`,
-        status: 403
-      };
+    const isJwt = typeof verifiableCredential === 'string';
+    let sub: string | undefined;
+    if (isJwt) {
+      sub = validationResponse.payloadObject.sub;
+      if (!validationResponse.payloadObject.vc) {
+        return {
+          result: false,
+          detailedError: `The verifiable credential vc property does not contain ${VerifiableCredentialConstants.CLAIM_CONTEXT}`,
+          status: 403
+        };
+      }
+      validationResponse.payloadObject = validationResponse.payloadObject.vc;
     }
 
-    const context: string[] = validationResponse.payloadObject.vc[VerifiableCredentialConstants.CLAIM_CONTEXT];
+    const context: string[] = validationResponse.payloadObject[VerifiableCredentialConstants.CLAIM_CONTEXT];
     if (!context || context.length === 0) {
       return {
         result: false,
@@ -71,7 +74,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
     // Get credential type from context
     let credentialType: string;
     try {
-      credentialType = VerifiableCredentialValidation.getVerifiableCredentialType(validationResponse.payloadObject.vc);
+      credentialType = VerifiableCredentialValidation.getVerifiableCredentialType(validationResponse.payloadObject);
     } catch (exception) {
       console.error(exception.message);
       return {
@@ -81,10 +84,47 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       };
     }
 
-    // Check token scope (aud and iss)
-    validationResponse = await this.options.checkScopeValidityOnVcTokenDelegate(validationResponse, this.expected, siopDid);
-    if (!validationResponse.result) {
-      return validationResponse;
+    // Check token subject
+    if (!validationResponse.payloadObject.credentialSubject) {
+      return {
+        result: false,
+        detailedError: `The verifiable credential with type '${credentialType}' does not has a credentialSubject property`,
+        status: 403
+      };
+    }
+
+    if (isJwt) {
+      // Check token sub
+      if (!sub) {
+        return {
+          result: false,
+          detailedError: `Missing sub property in verifiableCredential. Expected '${siopDid}'`,
+          status: 403
+        };
+      }
+
+      // check sub value
+      if (siopDid && sub !== siopDid) {
+        return {
+          result: false,
+          detailedError: `Wrong sub property in verifiableCredential. Expected '${siopDid}'`,
+          status: 403
+        };
+      }
+    } else {
+      let subjects = [];
+      if (!Array.isArray(validationResponse.payloadObject.credentialSubject)) {
+        subjects.push(validationResponse.payloadObject.credentialSubject.id);
+      } else {
+        subjects = validationResponse.payloadObject.credentialSubject.map((subject: any) => subject.id);
+      }
+      if (!subjects.includes(siopDid)) {
+        return {
+          result: false,
+          detailedError: `The verifiable credential with type '${credentialType}', the id in the credentialSubject property does not match the presenter DID: ${siopDid}`,
+          status: 403
+        };
+      }
     }
 
     // Check if the VC matches the contract and its issuers
@@ -95,7 +135,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
         // Error in issuers
         return <VerifiableCredentialValidationResponse>contractIssuers;
       }
-      
+
       // Check if the we found a matching contract.
       if (!contractIssuers) {
         return {

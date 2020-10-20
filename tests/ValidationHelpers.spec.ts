@@ -22,7 +22,7 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
   });
 
   it('should test getTokenObject', async () => {
-    let [request, options, siopRequest] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredentialJwt, true);
+    let [request, options, siopRequest] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential, true);
     const validationResponse: IValidationResponse = {
       status: 200,
       result: true
@@ -37,7 +37,7 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
     response = await options.getTokenObjectDelegate(validationResponse, splitToken[0]);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(400);    
-    expect(response.detailedError).toEqual('The verifiableCredentialJwt could not be deserialized');
+    expect(response.detailedError).toEqual('The verifiableCredential could not be deserialized');
 
     // missing kid
     const header: any = JSON.parse(base64url.decode(splitToken[0]));
@@ -45,11 +45,11 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
     response = await options.getTokenObjectDelegate(validationResponse, `${base64url.encode(JSON.stringify(header))}.${splitToken[1]}.${splitToken[2]}`);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);    
-    expect(response.detailedError).toEqual('The protected header in the verifiableCredentialJwt does not contain the kid');
+    expect(response.detailedError).toEqual('The protected header in the verifiableCredential does not contain the kid');
   });
 
   it('should test resolveDid', async () => {
-    let [request, options, siopRequest] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredentialJwt, true);
+    let [request, options, siopRequest] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential, true);
     const validationResponse: IValidationResponse = {
       status: 200,
       result: true,
@@ -85,7 +85,7 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
   });
 
   it('should not resolve resolveDid', async () => {
-    let [request, options, siopRequest] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredentialJwt, true);
+    let [request, options, siopRequest] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential, true);
     const validationResponse: IValidationResponse = {
       status: 200,
       result: true
@@ -98,7 +98,7 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
   });
 
   it('should test validateDidSignatureDelegate', async () => {
-    let [request, options, siopRequest] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredentialJwt, true);
+    let [request, options, siopRequest] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential, true);
     let validationResponse: IValidationResponse = {
       status: 200,
       result: true,
@@ -117,7 +117,7 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
     response = await options.validateDidSignatureDelegate(validationResponse, validationResponse.didSignature as IPayloadProtectionSigning);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403); 
-    expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredentialJwt is invalid');
+    expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredential is invalid');
 
     // No signature
     const splitToken = (<string>request.rawToken).split('.');
@@ -125,7 +125,7 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
     response = await options.validateDidSignatureDelegate(validationResponse, validationResponse.didSignature as IPayloadProtectionSigning);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403); 
-    expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredentialJwt is invalid');
+    expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredential is invalid');
 
     // no header
     validationResponse = await options.getTokenObjectDelegate(validationResponse, `.${splitToken[1]}.${splitToken[2]}`);    
@@ -143,7 +143,7 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
   });
   
   it('should test checkTimeValidityOnTokenDelegate', () => {
-    const options = new ValidationOptions(setup.validatorOptions, TokenType.verifiableCredentialJwt);
+    const options = new ValidationOptions(setup.validatorOptions, TokenType.verifiableCredential);
 
     // Set the payload
     const validationResponse: IValidationResponse = {
@@ -166,7 +166,7 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
     response = options.checkTimeValidityOnTokenDelegate(validationResponse, 5);
     expect(response.result).toBeFalsy('expired');
     expect(response.status).toEqual(403);
-    expect(response.detailedError?.startsWith('The presented verifiableCredentialJwt is expired')).toBeTruthy();
+    expect(response.detailedError?.startsWith('The presented verifiableCredential is expired')).toBeTruthy();
     
     // Add nbf
     validationResponse.expiration = undefined;
@@ -179,11 +179,11 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
     response = options.checkTimeValidityOnTokenDelegate(validationResponse, 5);
     expect(response.result).toBeFalsy('not yet valid');
     expect(response.status).toEqual(403);
-    expect(response.detailedError?.startsWith('The presented verifiableCredentialJwt is not yet valid')).toBeTruthy();
+    expect(response.detailedError?.startsWith('The presented verifiableCredential is not yet valid')).toBeTruthy();
   });
 
   it('should test checkScopeValidityOnIdTokenDelegate', () => {
-    const options = new ValidationOptions(setup.validatorOptions, TokenType.verifiableCredentialJwt);
+    const options = new ValidationOptions(setup.validatorOptions, TokenType.verifiableCredential);
 
     const issuer = 'iss';
     const audience = 'aud'

@@ -43,32 +43,32 @@ export class ValidationHelpers {
    * @returns validationResponse.payloadObject The parsed payload
    * @returns validationResponse.issuer The issuer of the token
    */
-  public async getTokenObject(validationResponse: IValidationResponse, token: string): Promise<IValidationResponse> {
+  public async getTokenObject(validationResponse: IValidationResponse, token: string | object): Promise<IValidationResponse> {
     const self: any = this;
     validationResponse.didSignature = undefined;
     // check for json ld proofs
-    try {
-      validationResponse.payloadObject = JSON.parse(token);
-
-      // instantiate IPayloadProtectionSigning
-      validationResponse.didSignature = await (self as ValidationOptions).validatorOptions.crypto.signingProtocol(JoseBuilder.JSONLDProofs).deserialize(token);
-      validationResponse.payloadProtectionProtocol = JoseBuilder.JSONLDProofs;
-    } catch (exception) {
-      console.log('Failing to decode json ld proof');
+    if (typeof token === 'object') {
+      try {
+        // instantiate IPayloadProtectionSigning
+        validationResponse.didSignature = await (self as ValidationOptions).validatorOptions.crypto.signingProtocol(JoseBuilder.JSONLDProofs).deserialize(JSON.stringify(token));
+        validationResponse.payloadProtectionProtocol = JoseBuilder.JSONLDProofs;
+      } catch (exception) {
+        console.log('Failing to decode json ld proof');
+      }
     }
 
     if (!validationResponse.didSignature) {
       // check for compact JWT tokens
       try {
         // instantiate IPayloadProtectionSigning
-        validationResponse.didSignature = await (self as ValidationOptions).validatorOptions.crypto.signingProtocol(JoseBuilder.JWT).deserialize(token);
+        validationResponse.didSignature = await (self as ValidationOptions).validatorOptions.crypto.signingProtocol(JoseBuilder.JWT).deserialize(<string>token);
         validationResponse.payloadProtectionProtocol = JoseBuilder.JWT;
       } catch (exception) {
         return {
           result: false,
           detailedError: `The ${(self as ValidationOptions).tokenType} could not be deserialized`,
           status: 400
-        };      
+        };
       }
     }
 
@@ -80,24 +80,16 @@ export class ValidationHelpers {
       };
     }
 
-    validationResponse.didKid = validationResponse.didSignature.signatureProtectedHeader?.kid;
-    if (!validationResponse.didKid) {
-      return {
-        result: false,
-        detailedError: `The protected header in the ${(self as ValidationOptions).tokenType} does not contain the kid`,
-        status: 403
-      };
-    }
-    const payload = validationResponse.didSignature!.signaturePayload;
-    if (!payload) {
-      return {
-        result: false,
-        detailedError: `The payload in the ${(self as ValidationOptions).tokenType} is undefined`,
-        status: 403
-      };
-    }
-
     if (validationResponse.payloadProtectionProtocol === JoseBuilder.JWT) {
+      const payload = validationResponse.didSignature!.signaturePayload;
+      if (!payload) {
+        return {
+          result: false,
+          detailedError: `The payload in the ${(self as ValidationOptions).tokenType} is undefined`,
+          status: 403
+        };
+      }
+
       try {
         validationResponse.payloadObject = JSON.parse(payload.toString());
       } catch (err) {
@@ -108,15 +100,43 @@ export class ValidationHelpers {
           status: 400
         };
       }
-        validationResponse.issuer = validationResponse.payloadObject.iss;
-        validationResponse.expiration = validationResponse.payloadObject.exp;
+      
+      validationResponse.didKid = validationResponse.didSignature.signatureProtectedHeader?.kid;
+      if (!validationResponse.didKid) {
+        return {
+          result: false,
+          detailedError: `The protected header in the ${(self as ValidationOptions).tokenType} does not contain the kid`,
+          status: 403
+        };
+      }
+
+      validationResponse.issuer = validationResponse.payloadObject.iss;
+      validationResponse.expiration = validationResponse.payloadObject.exp;
     } else {
+      validationResponse.payloadObject = token;
       validationResponse.issuer = validationResponse.payloadObject.issuer;
       const expiration: string = validationResponse.payloadObject.expirationDate;
       if (expiration && typeof expiration === 'string') {
         const exp = Date.parse(expiration);
         validationResponse.expiration = exp;
       }
+
+      const proof = validationResponse.payloadObject.proof;
+      if (!proof) {
+        return {
+          result: false,
+          detailedError: `The proof is not available in the json ld payload`,
+          status: 403
+        };
+      }
+      if (!proof.verificationMethod) {
+        return {
+          result: false,
+          detailedError: `The proof does not contain the verificationMethod in the json ld payload`,
+          status: 403
+        };      
+      }
+      validationResponse.didKid = proof.verificationMethod;
     }
 
     return validationResponse;
