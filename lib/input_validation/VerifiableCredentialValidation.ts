@@ -47,7 +47,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       if (!validationResponse.payloadObject.vc) {
         return {
           result: false,
-          detailedError: `The verifiable credential vc property does not contain ${VerifiableCredentialConstants.CLAIM_CONTEXT}`,
+          detailedError: `The verifiable credential vc property does not exist`,
           status: 403
         };
       }

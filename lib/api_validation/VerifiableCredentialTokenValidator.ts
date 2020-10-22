@@ -8,7 +8,6 @@ import { IValidationResponse } from '../input_validation/IValidationResponse';
 import ValidationQueue from '../input_validation/ValidationQueue';
 import ValidationQueueItem from '../input_validation/ValidationQueueItem';
 import { VerifiableCredentialValidation } from '../input_validation/VerifiableCredentialValidation';
-import { VerifiableCredentialValidationJsonLd } from '../input_validation/VerifiableCredentialValidationJsonLd';
 import IValidatorOptions from '../options/IValidatorOptions';
 import ValidationOptions from '../options/ValidationOptions';
 
@@ -41,7 +40,7 @@ export default class VerifiableCredentialTokenValidator implements ITokenValidat
       return validationResult as IValidationResponse;
     }
 
-    const validator = new VerifiableCredentialValidationJsonLd(options, this.expected);
+    const validator = new VerifiableCredentialValidation(options, this.expected);
     const validationResult = await validator.validate(<object>queueItem.tokenToValidate.rawToken, siopDid);
     return validationResult as IValidationResponse;
   }

@@ -17,7 +17,7 @@ import { TokenType, IExpectedVerifiableCredential, Validator } from '../lib';
     setup.fetchMock.reset();
   });
 
-  fit('should test validate', async () => {
+  it('should test validate', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential, true);   
     const expected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
 
@@ -41,7 +41,7 @@ import { TokenType, IExpectedVerifiableCredential, Validator } from '../lib';
     response = await validator.validate(<string>token.rawToken, setup.defaultUserDid);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual(`The verifiable credential does not has the vc property`);
+    expect(response.detailedError).toEqual(`The verifiable credential vc property does not exist`);
 
     // Missing context
     payload = {
@@ -139,6 +139,7 @@ import { TokenType, IExpectedVerifiableCredential, Validator } from '../lib';
     payload = {
       vc: {
         type: ['VerifiableCredential', 'xxx'],
+        credentialSubject: {}
       },
       iss: 'did:test:issuer',
       sub: 'test'

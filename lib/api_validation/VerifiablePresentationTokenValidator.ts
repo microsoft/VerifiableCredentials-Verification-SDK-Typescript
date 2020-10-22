@@ -61,7 +61,7 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
     validationResponse.tokensToValidate = {};
     for (let token in vc) {
       const claimToken = ClaimToken.create(vc[token]);
-      const vcType = VerifiableCredentialValidation.getVerifiableCredentialType(claimToken.decodedToken.vc);
+      const vcType = VerifiableCredentialValidation.getVerifiableCredentialType(claimToken.decodedToken.vc || claimToken.decodedToken);
       validationResponse.tokensToValidate[vcType] = claimToken; 
       queue.enqueueToken(vcType, claimToken);    
     }

@@ -159,7 +159,8 @@ export default class RequestorHelper {
     /**
      * Setup of the requestor
      */
-    public async setup(): Promise<void> {
+    public async setup(_signingAlgorithm: string = 'ES256K'): Promise<void> {
+        //this.crypto.builder.useSigningAlgorithm(signingAlgorithm);
         this.crypto = await this.crypto.generateKey(KeyUse.Signature, 'signing');
         this.crypto = await this.crypto.generateKey(KeyUse.Signature, 'recovery');
         let did = await new LongFormDid(this.crypto).serialize();

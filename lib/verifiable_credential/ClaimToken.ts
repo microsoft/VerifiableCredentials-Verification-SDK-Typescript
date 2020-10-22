@@ -141,14 +141,19 @@ export default class ClaimToken {
    */
   public static create(token: string | object, id?: string): ClaimToken {
 
+    let payload: any;
+    if (typeof token === 'string') {
+      // Deserialize the token
+      payload = ClaimToken.getTokenPayload(<string>token);
+    } else {
+      payload = token;
+    }
+
     // check for json LD
-    if ((<any>token)['\@context'] && (<any>token).type && (<any>token).type.length >= 1 && (<any>token).type.includes('VerifiableCredential') ) {
-      return new ClaimToken(TokenType.verifiableCredential, token, id);
+    if (payload['\@context'] && payload.type && payload.type.length >= 1 && payload.type.includes('VerifiableCredential')) {
+      return new ClaimToken(TokenType.verifiableCredential, payload, id);
     } else {
       // compact jwt      
-      // Deserialize the token
-      const payload = ClaimToken.getTokenPayload(<string>token);
-
       // Check type of token
       if (payload.iss === VerifiableCredentialConstants.TOKEN_SI_ISS) {
         if (payload.contract) {
@@ -263,9 +268,14 @@ export default class ClaimToken {
    * @returns The payload object
    */
   private static getTokenPayload(token: string): any {
-    // Deserialize the token
-    const split = token.split('.');
-    return JSON.parse(base64url.decode(split[1]));
+    try {
+      // Deserialize the JWT token
+      const split = token.split('.');
+      return JSON.parse(base64url.decode(split[1]));
+    } catch (exception) {
+      // Check for json ld
+    }
+    return JSON.parse(token);
   }
 
   /**

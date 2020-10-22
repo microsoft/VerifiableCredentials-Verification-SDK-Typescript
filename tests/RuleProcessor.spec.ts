@@ -5,7 +5,7 @@
 
 import RequestorHelper from './RequestorHelper';
 import ResponderHelper from './ResponderHelper';
-import { ValidatorBuilder } from '../lib';
+import { JoseBuilder, ValidatorBuilder } from '../lib';
 import TokenGenerator from './TokenGenerator';
 import RequestOneVcResponseOk from './models/RequestOneVcResponseOk'
 import RequestTwoVcResponseOk from './models/RequestTwoVcResponseOk'
@@ -18,6 +18,7 @@ import RequestAttestationsOneSelfAssertedResponseOk from './models/RequestAttest
 import RequestAttestationsNameTagOk from './models/RequestAttestationsNameTagOk';
 import RequestOneVcResponseMissingId from './models/RequestOneVcResponseMissingId';
 import RequestTwoVcPointerToMultipleTokens from './models/RequestTwoVcPointerToMultipleTokens';
+import RequestOneJsonLdVcResponseOk from './models/RequestOneJsonLdVcResponseOk';
 
 describe('Rule processor', () => {
   it('should process RequestOneVcResponseOk', async () => {
@@ -50,6 +51,40 @@ describe('Rule processor', () => {
       result = await validator.validate(<string>vc.rawToken);
       expect(result.result).toBeTruthy();
 
+    } finally {
+      TokenGenerator.fetchMock.reset();
+    }
+  });
+
+  it('should process RequestOneJsonLdVcResponseOk - json ld', async () => {
+    try {
+      const model = new RequestOneJsonLdVcResponseOk();
+      const requestor = new RequestorHelper(model);
+      await requestor.setup();
+      const request = await requestor.createPresentationExchangeRequest();
+
+      console.log(`Model: ${model.constructor.name}`);
+      console.log(`=====> Request: ${request.rawToken}`);
+
+      const responder = new ResponderHelper(requestor, model);
+      await responder.setup('EdDSA');
+
+      // add did
+      model.response.presentation_submission.attestations.presentations.IdentityCard.credentialSubject.id = responder.crypto.builder.did;
+
+      const response = await responder.createResponse(JoseBuilder.JSONLDProofs);
+      console.log(`=====> Response: ${response.rawToken}`);
+
+      const validator = new ValidatorBuilder(requestor.crypto)
+        .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!] })
+        .enableFeatureVerifiedCredentialsStatusCheck(true)
+        .build();
+      let result = await validator.validate(<string>response.rawToken);
+      expect(result.result).toBeTruthy();
+
+      expect(result.validationResult!.verifiableCredentials!['IdentityCard'].decodedToken.id).toEqual(model.getVcFromResponse('IdentityCard').decodedToken.id);
+      //const jti = result.validationResult!.verifiablePresentations!['IdentityCard'].decodedToken.id;
+      //expect(result.validationResult!.verifiablePresentationStatus![jti].status).toEqual('valid');
     } finally {
       TokenGenerator.fetchMock.reset();
     }
@@ -114,7 +149,7 @@ describe('Rule processor', () => {
       TokenGenerator.fetchMock.reset();
     }
   });
-  
+
   it('should process RequestTwoVcPointerToMultipleTokens', async () => {
     try {
       const model = new RequestTwoVcPointerToMultipleTokens();
