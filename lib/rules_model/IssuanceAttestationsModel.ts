@@ -30,26 +30,18 @@ export class IssuanceAttestationsModel {
     const allIndexClaims: string[] = [];
 
     if (this.selfIssued) {
-      const { indexClaims } = this.selfIssued;
-
-      if (indexClaims) {
-        allIndexClaims.push(...indexClaims);
-      }
+      allIndexClaims.push(...this.selfIssued.indexClaims);
     }
 
     if (this.presentations) {
       this.presentations.forEach(({ indexClaims }) => {
-        if (indexClaims) {
-          allIndexClaims.push(...indexClaims);
-        }
+        allIndexClaims.push(...indexClaims);
       });
     }
 
     if (this.idTokens) {
       this.idTokens.forEach(({ indexClaims }) => {
-        if (indexClaims) {
-          allIndexClaims.push(...indexClaims);
-        }
+        allIndexClaims.push(...indexClaims);
       });
     }
 

@@ -26,9 +26,9 @@ export abstract class BaseAttestationModel {
   /**
    * Mapping keys of all index claims.
    */
-  public get indexClaims(): string[] | undefined {
+  public get indexClaims(): string[] {
     if (!this.mapping) {
-      return undefined;
+      return [];
     }
 
     return Object.entries(this.mapping).filter(([_, { indexed }]) => indexed).map(([name]) => name);
