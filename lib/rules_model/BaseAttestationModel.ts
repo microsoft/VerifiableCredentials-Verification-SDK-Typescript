@@ -9,7 +9,6 @@ import { InputClaimModel } from './InputClaimModel';
  * Base class for input attestations
  */
 export abstract class BaseAttestationModel {
-
   /**
    *
    * @param mapping a map of string to InputClaimModel instances
@@ -21,8 +20,18 @@ export abstract class BaseAttestationModel {
     public mapping?: { [map: string]: InputClaimModel },
     public encrypted = false,
     public claims?: InputClaimModel[],
-    public required = false
-  ) {
+    public required = false,
+  ) {}
+
+  /**
+   * Mapping keys of all index claims.
+   */
+  public get indexClaims(): string[] {
+    if (!this.mapping) {
+      return [];
+    }
+
+    return Object.entries(this.mapping).filter(([_, { indexed }]) => indexed).map(([name]) => name);
   }
 
   /**
