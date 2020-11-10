@@ -24,6 +24,31 @@ export class IssuanceAttestationsModel {
   }
 
   /**
+   * Mapping keys for all selfIssued, presentation, and Id Token index claims. 
+   */
+  public get indexClaims(): string[] {
+    const allIndexClaims: string[] = [];
+
+    if (this.selfIssued) {
+      allIndexClaims.push(...this.selfIssued.indexClaims);
+    }
+
+    if (this.presentations) {
+      this.presentations.forEach(({ indexClaims }) => {
+        allIndexClaims.push(...indexClaims);
+      });
+    }
+
+    if (this.idTokens) {
+      this.idTokens.forEach(({ indexClaims }) => {
+        allIndexClaims.push(...indexClaims);
+      });
+    }
+
+    return allIndexClaims;
+  }
+
+  /**
    * Derives an IssuanceAttestationModel for input from a Rules attestation model
    */
   forInput (): IssuanceAttestationsModel {

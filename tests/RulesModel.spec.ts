@@ -5,8 +5,7 @@
 
 import { IdTokenAttestationModel, InputClaimModel, InputModel, IssuanceAttestationsModel, RefreshConfigurationModel, RemoteKeyAuthorizationModel, RemoteKeyModel, RulesModel, SelfIssuedAttestationModel, TransformModel, TrustedIssuerModel, VerifiableCredentialModel, VerifiablePresentationAttestationModel } from '../lib';
 
-describe('TenantSourceFactory', () => {
-
+describe('RulesModel', () => {
   const RULES = new RulesModel(
     'issuer uri',
     'issuer',
@@ -74,12 +73,11 @@ describe('TenantSourceFactory', () => {
     true,
     [
       new TrustedIssuerModel('end1')
-    ]
+    ],
   );
 
   // tslint:disable-next-line:max-func-body-length
   describe('RulesModel class serialization', () => {
-
     it('Rules model must roundtrip ', async () => {
       const json = JSON.stringify(RULES);
       const roundtrip = new RulesModel();
@@ -275,6 +273,142 @@ describe('TenantSourceFactory', () => {
       vpModel.populateFrom({});
       expect(vpModel).toBeDefined();
     });
+  });
 
+  describe('attestations.indexClaims', () => {
+    const INDEX_CLAIMS = ['alias', 'email'];
+
+    afterEach(() => {
+      RULES.attestations!.selfIssued!.mapping!.alias.indexed = true;
+      RULES.attestations!.idTokens![0].mapping!.email.indexed = true;
+      RULES.attestations!.presentations![0].mapping!.givenName.indexed = false;
+
+      if (RULES.attestations!.selfIssued!.mapping!.email) {
+        delete RULES.attestations!.selfIssued!.mapping!.email;
+      }
+
+      if (RULES.attestations!.idTokens![1]) {
+        delete RULES.attestations!.idTokens![1];
+      }
+    });
+
+    it('should return all index claims in self-issued, presentation, and Id Token attestations', () => {
+      // Make claim in self-issued attesstations indexed.
+      RULES.attestations!.presentations![0].mapping!.givenName.indexed = true;
+
+      // Add additional IdToken with an indexed claim.
+      RULES.attestations!.idTokens!.push(new IdTokenAttestationModel(
+        'some other oidc config endpoint',
+        'some other clientId',
+        'some other redirect',
+        'some other scope',
+        {
+          gamerTag: new InputClaimModel('Gamer Tag', 'String', false, true),
+        },
+      ));
+
+      const { indexClaims } = RULES.attestations!;
+      const expectedIndexClaims = [...INDEX_CLAIMS, 'gamerTag', 'givenName'];
+      expect(indexClaims.length).toEqual(expectedIndexClaims.length);
+      expect(new Set(indexClaims)).toEqual(new Set(expectedIndexClaims));
+    });
+
+    it('should return duplicate index claims with no policy enforcement', () => {
+      // Add a self-issued claim that clashes with Id Token claim.
+      RULES.attestations!.selfIssued!.mapping!.email = new InputClaimModel('duplicateEmail', 'String', true, true);
+
+      const { indexClaims } = RULES.attestations!;
+      const expectedIndexClaims = [...INDEX_CLAIMS, 'email'];
+      expect(indexClaims.length).toEqual(expectedIndexClaims.length);
+      expect(new Set(indexClaims)).toEqual(new Set(expectedIndexClaims));
+    });
+
+    it('should return empty array if no claims are indexed', () => {
+      // Make all claims unindexed.
+      RULES.attestations!.selfIssued!.mapping!.alias.indexed = false;
+      RULES.attestations!.idTokens![0].mapping!.email.indexed = false;
+
+      const { indexClaims } = RULES.attestations!;
+      expect(indexClaims).toEqual([]);
+    });
+
+    it('should ignore attestation models with no mappings', () => {
+      // Add additional IdToken with no mapping.
+      RULES.attestations!.idTokens!.push(new IdTokenAttestationModel(
+        'some other oidc config endpoint',
+        'some other clientId',
+        'some other redirect',
+        'some other scope',
+      ));
+
+      const { indexClaims } = RULES.attestations!;
+      expect(indexClaims.length).toEqual(INDEX_CLAIMS.length);
+      expect(new Set(indexClaims)).toEqual(new Set(INDEX_CLAIMS));
+    });
+
+    it('should work even with no self-issued attestations', () => {
+      // Temporarily remove self-issued attestations model.
+      const selfIssued = RULES.attestations!.selfIssued;
+      RULES.attestations!.selfIssued = undefined;
+
+      const { indexClaims } = RULES.attestations!;
+      const expectedIndexClaims = ['email'];
+      expect(indexClaims).toEqual(expectedIndexClaims);
+
+      // Restore self-issued attestations model.
+      RULES.attestations!.selfIssued = selfIssued;
+    });
+
+    it('should work even with self-issued attestations with no mapping', () => {
+      // Temporarily remove self-issued attestations model mapping.
+      const selfIssuedMapping = RULES.attestations!.selfIssued!.mapping;
+      RULES.attestations!.selfIssued!.mapping = undefined;
+
+      const { indexClaims } = RULES.attestations!;
+      const expectedIndexClaims = ['email'];
+      expect(indexClaims).toEqual(expectedIndexClaims);
+
+      // Restore self-issued attestations model mapping.
+      RULES.attestations!.selfIssued!.mapping = selfIssuedMapping;
+    });
+
+    it('should work even with no presentation attestations', () => {
+      // Temporarily remove presentation attestations model.
+      const presentations = RULES.attestations!.presentations;
+      RULES.attestations!.presentations = undefined;
+
+      const { indexClaims } = RULES.attestations!;
+      expect(indexClaims.length).toEqual(INDEX_CLAIMS.length);
+      expect(new Set(indexClaims)).toEqual(new Set(INDEX_CLAIMS));
+
+      // Restore presentation attestations model.
+      RULES.attestations!.presentations = presentations;
+    });
+
+    it('should work even with presentation attestations with no mapping', () => {
+      // Temporarily remove presentation attestations model mapping.
+      const presentationsMapping = RULES.attestations!.presentations![0].mapping;
+      RULES.attestations!.presentations![0].mapping = undefined;
+
+      const { indexClaims } = RULES.attestations!;
+      expect(indexClaims.length).toEqual(INDEX_CLAIMS.length);
+      expect(new Set(indexClaims)).toEqual(new Set(INDEX_CLAIMS));
+
+      // Restore presentation attestations model mapping.
+      RULES.attestations!.presentations![0].mapping = presentationsMapping;
+    });
+
+    it('should work even with no Id Token attestations', () => {
+      // Temporarily remove presentation attestations model.
+      const idTokens = RULES.attestations!.idTokens;
+      RULES.attestations!.idTokens = undefined;
+
+      const { indexClaims } = RULES.attestations!;
+      const expectedIndexClaims = ['alias'];
+      expect(indexClaims).toEqual(expectedIndexClaims);
+
+      // Restore presentation attestations model.
+      RULES.attestations!.idTokens = idTokens;
+    });
   });
 });
