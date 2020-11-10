@@ -6,6 +6,7 @@
 import { RequestorBuilder, IRequestorAttestation, IRequestorPresentationExchange, IssuerMap, IssuanceAttestationsModel, IdTokenAttestationModel, VerifiablePresentationAttestationModel } from '../index';
 import { PresentationProtocol } from './RequestorBuilder';
 import { IRequestorResult } from './IRequestorResult';
+import { JoseBuilder } from 'verifiablecredentials-crypto-sdk-typescript';
 
 /**
  * Class to model the OIDC requestor
@@ -79,7 +80,11 @@ export default class Requestor {
       this.createPresentationExchangeRequest(this._payload);
 
     const key = crypto.signingKeyReference;
-    const signature = await this.builder.signingProtocol.sign(this._payload);
+    const signature = await crypto
+      .build()
+      .signingProtocol(JoseBuilder.JWT)
+      .sign(this._payload);
+      
     const token = await signature.serialize();
     const response = {
       result: true,

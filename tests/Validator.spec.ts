@@ -4,7 +4,9 @@ import TestSetup from './TestSetup';
 import ValidationQueue from '../lib/input_validation/ValidationQueue';
 import { Crypto, SelfIssuedTokenValidator } from '../lib/index';
 import VerifiableCredentialConstants from '../lib/verifiable_credential/VerifiableCredentialConstants';
-import { JoseBuilder, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript';
+import { CryptoFactoryNode, IPayloadProtectionSigning, JoseBuilder, KeyReference, KeyStoreInMemory, KeyStoreKeyVault, KeyUse, LongFormDid, Subtle } from 'verifiablecredentials-crypto-sdk-typescript';
+import Credentials from './Credentials';
+import { ClientSecretCredential } from '@azure/identity';
 
 describe('Validator', () => {
   let crypto: Crypto;
@@ -12,7 +14,7 @@ describe('Validator', () => {
   let setup: TestSetup;
   let originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
   beforeEach(async () => {
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;    
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
     setup = new TestSetup();
     signingKeyReference = setup.defaulSigKey;
     crypto = setup.crypto
@@ -31,10 +33,10 @@ describe('Validator', () => {
     //expected.configuration = (<{ [contract: string]: string[]}>expected.configuration)[Validator.getContractIdFromSiop(siop.contract)];
 
     let tokenValidator = new IdTokenTokenValidator(setup.validatorOptions, expected);
-    expect(()=> tokenValidator.getTokens(<any>undefined, <any>undefined)).toThrowError('Not implemented');
+    expect(() => tokenValidator.getTokens(<any>undefined, <any>undefined)).toThrowError('Not implemented');
 
     let selfIssuedValidator = new SelfIssuedTokenValidator(setup.validatorOptions, expected);
-    expect(()=> selfIssuedValidator.getTokens(<any>undefined, <any>undefined)).toThrowError('Not implemented');
+    expect(() => selfIssuedValidator.getTokens(<any>undefined, <any>undefined)).toThrowError('Not implemented');
 
     let validator = new ValidatorBuilder(crypto)
       .useValidators(tokenValidator)
@@ -42,21 +44,21 @@ describe('Validator', () => {
       .build();
 
     let result = await validator.validate(siop.idToken.rawToken);
-    expect(result.result).toBeTruthy(); 
+    expect(result.result).toBeTruthy();
     expect(result.validationResult?.idTokens).toBeDefined();
 
     validator = new ValidatorBuilder(crypto)
       .useTrustedIssuerConfigurationsForIdTokens([setup.defaultIdTokenConfiguration])
       .build();
     result = await validator.validate(siop.idToken.rawToken);
-    expect(result.result).toBeTruthy(); 
+    expect(result.result).toBeTruthy();
     expect(result.validationResult?.idTokens).toBeDefined();
 
     //Redefine the urls
     validator = validator.builder.useTrustedIssuerConfigurationsForIdTokens([setup.defaultIdTokenConfiguration])
-    .build();
+      .build();
     result = await validator.validate(siop.idToken.rawToken);
-    expect(result.result).toBeTruthy(); 
+    expect(result.result).toBeTruthy();
     expect(validator.builder.trustedIssuerConfigurationsForIdTokens).toEqual([setup.defaultIdTokenConfiguration]);
     expect(result.validationResult?.verifiablePresentations).toBeUndefined();
 
@@ -79,7 +81,7 @@ describe('Validator', () => {
     const expected: any = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
 
     const tokenValidator = new VerifiableCredentialTokenValidator(setup.validatorOptions, expected);
-    expect(()=> tokenValidator.getTokens(<any>undefined, <any>undefined)).toThrowError('Not implemented');
+    expect(() => tokenValidator.getTokens(<any>undefined, <any>undefined)).toThrowError('Not implemented');
 
     const validator = new ValidatorBuilder(crypto)
       .useValidators(tokenValidator)
@@ -87,7 +89,7 @@ describe('Validator', () => {
 
     let result = await validator.validate(siop.vc.rawToken);
     expect(result.result).toBeTruthy();
-  
+
   });
 
   it('should validate verifiable presentations', async () => {
@@ -161,7 +163,7 @@ describe('Validator', () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentationJwt, false);
     const siopExpected = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siopPresentationAttestation)[0];
     const vcExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
-    
+
 
     // Check validator, only VCs in presentations
     let validator = new ValidatorBuilder(crypto)
@@ -171,7 +173,7 @@ describe('Validator', () => {
       .build();
 
     expect(validator.builder.audienceUrl).toEqual(siopExpected.audience);
-    
+
     const queue = new ValidationQueue();
     queue.enqueueToken('siopPresentationAttestation', request);
     let result = await validator.validate(queue.getNextToken()!.tokenToValidate);
@@ -218,7 +220,7 @@ describe('Validator', () => {
       .build();
 
     expect(validator.resolver).toBeDefined();
-    
+
     const queue = new ValidationQueue();
     queue.enqueueToken('siop', request);
     const result = await validator.validate(queue.getNextToken()!.tokenToValidate);
@@ -266,18 +268,26 @@ describe('Validator', () => {
 
   xit('should validate a siop', async () => {
     setup.fetchMock.reset();
-    const  crypto = new CryptoBuilder()
+    const credentials = new ClientSecretCredential(Credentials.tenantGuid, Credentials.clientId, Credentials.clientSecret);
+
+    const keyReference = new KeyReference('jsonldtest', 'secret');    const subtle = new Subtle();
+    const cryptoFactory = new CryptoFactoryNode(new KeyStoreKeyVault(credentials, Credentials.vaultUri, new KeyStoreInMemory()), subtle);
+    let crypto = new CryptoBuilder()
+      .useSigningAlgorithm('EdDSA')
+      .useKeyVault(credentials, Credentials.vaultUri)
+      .useCryptoFactory(cryptoFactory)
+      .useSigningKeyReference(keyReference)
       .build();
 
-    // Check validator
+    crypto = await crypto.generateKey(KeyUse.Signature);
+    crypto = await crypto.generateKey(KeyUse.Signature, 'recovery');
+    crypto.builder.useDid(await new LongFormDid(crypto).serialize());
+
     let validator = new ValidatorBuilder(crypto)
       .useAudienceUrl('https://verify.vc.capptoso.com:443/presentation-response')
-      .useTrustedIssuersForVerifiableCredentials({'https://credentials.workday.com/docs/specification/v1.0/credential.json': ['did:work:CcZdQMaiwQyY2zA9njpx5p']})
-      //.useResolver(new ManagedHttpResolver('https://resolver.identity.foundation/1.0/identifiers/'))
+      .useTrustedIssuersForVerifiableCredentials({ 'https://credentials.workday.com/docs/specification/v1.0/credential.json': ['did:work:CcZdQMaiwQyY2zA9njpx5p'] })
       .build();
 
-    expect(validator.resolver).toBeDefined();
-    
     const req = 'your token here';
     console.log(req);
     const result = await validator.validate(req);
