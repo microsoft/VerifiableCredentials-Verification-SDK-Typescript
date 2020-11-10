@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { DidDocument, IDidResolveResult } from '@decentralized-identity/did-common-typescript';
-import { IPayloadProtectionSigning } from 'verifiablecredentials-crypto-sdk-typescript';
+import { IPayloadProtectionSigning, JoseBuilder } from 'verifiablecredentials-crypto-sdk-typescript';
 import { IValidationOptions } from '../options/IValidationOptions';
 import IValidatorOptions from '../options/IValidatorOptions';
 import ValidationOptions from '../options/ValidationOptions';
@@ -41,38 +41,46 @@ export class ValidationHelpers {
    * @returns validationResponse.didKid The kid used to sign the token
    * @returns validationResponse.did The DID used to sign the token
    * @returns validationResponse.payloadObject The parsed payload
+   * @returns validationResponse.issuer The issuer of the token
    */
-  public async getTokenObject(validationResponse: IValidationResponse, token: string): Promise<IValidationResponse> {
-    let tokenPayload: Buffer;
+  public async getTokenObject(validationResponse: IValidationResponse, token: string | object): Promise<IValidationResponse> {
     const self: any = this;
-    try {
-      validationResponse.didSignature = await (self as ValidationOptions).validatorOptions.crypto.signingProtocol.deserialize(token);
-      if (!validationResponse.didSignature) {
-        return {
-          result: false,
-          detailedError: `The signature in the ${(self as ValidationOptions).tokenType} has an invalid format`,
-          status: 403
-        };
+    validationResponse.didSignature = undefined;
+    // check for json ld proofs
+    if (typeof token === 'object') {
+      try {
+        // instantiate IPayloadProtectionSigning
+        validationResponse.didSignature = await (self as ValidationOptions).validatorOptions.crypto.signingProtocol(JoseBuilder.JSONLDProofs).deserialize(JSON.stringify(token));
+        validationResponse.payloadProtectionProtocol = JoseBuilder.JSONLDProofs;
+      } catch (exception) {
+        console.log('Failing to decode json ld proof');
       }
+    }
 
-      const kid = validationResponse.didSignature.signatureProtectedHeader?.kid;
-      validationResponse.didKid = kid;
-      if (!validationResponse.didKid) {
+    if (!validationResponse.didSignature) {
+      // check for compact JWT tokens
+      try {
+        // instantiate IPayloadProtectionSigning
+        validationResponse.didSignature = await (self as ValidationOptions).validatorOptions.crypto.signingProtocol(JoseBuilder.JWT).deserialize(<string>token);
+        validationResponse.payloadProtectionProtocol = JoseBuilder.JWT;
+      } catch (exception) {
         return {
           result: false,
-          detailedError: `The protected header in the ${(self as ValidationOptions).tokenType} does not contain the kid`,
-          status: 403
+          detailedError: `The ${(self as ValidationOptions).tokenType} could not be deserialized`,
+          status: 400
         };
       }
-    } catch (err) {
-      console.error(err);
+    }
+
+    if (!validationResponse.didSignature) {
       return {
         result: false,
-        detailedError: `The ${(self as ValidationOptions).tokenType} could not be deserialized`,
-        status: 400
+        detailedError: `The signature in the ${(self as ValidationOptions).tokenType} has an invalid format`,
+        status: 403
       };
     }
-    try {
+
+    if (validationResponse.payloadProtectionProtocol === JoseBuilder.JWT) {
       const payload = validationResponse.didSignature!.signaturePayload;
       if (!payload) {
         return {
@@ -82,15 +90,55 @@ export class ValidationHelpers {
         };
       }
 
-      validationResponse.payloadObject = JSON.parse(payload.toString());
-    } catch (err) {
-      console.error(err);
-      return {
-        result: false,
-        detailedError: `The payload in the ${(self as ValidationOptions).tokenType} is no valid JSON`,
-        status: 400
-      };
+      try {
+        validationResponse.payloadObject = JSON.parse(payload.toString());
+      } catch (err) {
+        console.error(err);
+        return {
+          result: false,
+          detailedError: `The payload in the ${(self as ValidationOptions).tokenType} is no valid JSON`,
+          status: 400
+        };
+      }
+      
+      validationResponse.didKid = validationResponse.didSignature.signatureProtectedHeader?.kid;
+      if (!validationResponse.didKid) {
+        return {
+          result: false,
+          detailedError: `The protected header in the ${(self as ValidationOptions).tokenType} does not contain the kid`,
+          status: 403
+        };
+      }
+
+      validationResponse.issuer = validationResponse.payloadObject.iss;
+      validationResponse.expiration = validationResponse.payloadObject.exp;
+    } else {
+      validationResponse.payloadObject = token;
+      validationResponse.issuer = validationResponse.payloadObject.issuer;
+      const expiration: string = validationResponse.payloadObject.expirationDate;
+      if (expiration && typeof expiration === 'string') {
+        const exp = Date.parse(expiration);
+        validationResponse.expiration = exp;
+      }
+
+      const proof = validationResponse.payloadObject.proof;
+      if (!proof) {
+        return {
+          result: false,
+          detailedError: `The proof is not available in the json ld payload`,
+          status: 403
+        };
+      }
+      if (!proof.verificationMethod) {
+        return {
+          result: false,
+          detailedError: `The proof does not contain the verificationMethod in the json ld payload`,
+          status: 403
+        };      
+      }
+      validationResponse.didKid = proof.verificationMethod;
     }
+
     return validationResponse;
   }
 
@@ -178,9 +226,9 @@ export class ValidationHelpers {
     const self: any = this;
     const current = Math.trunc(Date.now() / 1000);
 
-    if (validationResponse.payloadObject.exp) {
+    if (validationResponse.expiration) {
       // initialize in utc time
-      const exp = (validationResponse.payloadObject.exp + clockSkewToleranceSeconds);
+      const exp = (validationResponse.expiration + clockSkewToleranceSeconds);
 
       /**
        * The processing of the "exp" claim requires that the current date/time MUST be before the expiration date/time listed in the "exp" claim
@@ -221,7 +269,7 @@ export class ValidationHelpers {
     const self: any = this;
 
     // check iss value
-    const issuer = (validationResponse as IdTokenValidationResponse).issuer;
+    const issuer = (validationResponse as IdTokenValidationResponse).expectedIssuer;
     if (!issuer) {
       return {
         result: false,
@@ -230,7 +278,7 @@ export class ValidationHelpers {
       };
     }
 
-    if (!validationResponse.payloadObject.iss) {
+    if (!validationResponse.issuer) {
       return {
         result: false,
         detailedError: `Missing iss property in idToken. Expected '${JSON.stringify(issuer)}'`,
@@ -238,10 +286,10 @@ export class ValidationHelpers {
       };
     }
 
-    if (issuer !== validationResponse.payloadObject.iss) {
+    if (issuer !== validationResponse.issuer) {
       return {
         result: false,
-        detailedError: `The issuer in configuration '${issuer}' does not correspond with the issuer in the payload ${validationResponse.payloadObject.iss}`,
+        detailedError: `The issuer in configuration '${issuer}' does not correspond with the issuer in the payload ${validationResponse.issuer}`,
         status: 403
       };
     }
@@ -269,7 +317,7 @@ export class ValidationHelpers {
     const self: any = this;
 
     // check iss value
-    if (!validationResponse.payloadObject.iss) {
+    if (!validationResponse.issuer) {
       return {
         result: false,
         detailedError: `Missing iss property in verifiablePresentation. Expected '${siopDid}'`,
@@ -277,7 +325,7 @@ export class ValidationHelpers {
       };
     }
 
-    if (siopDid && validationResponse.payloadObject.iss !== siopDid) {
+    if (siopDid && validationResponse.issuer !== siopDid) {
       return <IValidationResponse>{
         result: false,
         detailedError: `Wrong iss property in verifiablePresentation. Expected '${siopDid}'`,
@@ -359,7 +407,7 @@ export class ValidationHelpers {
     */
 
     // check iss value
-    if (!validationResponse.payloadObject.iss) {
+    if (!validationResponse.issuer) {
       return validationResponse = {
         result: false,
         detailedError: `Missing iss property in siop. Expected '${VerifiableCredentialConstants.TOKEN_SI_ISS}'`,
@@ -367,7 +415,7 @@ export class ValidationHelpers {
       };
     }
 
-    if (validationResponse.payloadObject.iss !== VerifiableCredentialConstants.TOKEN_SI_ISS) {
+    if (validationResponse.issuer !== VerifiableCredentialConstants.TOKEN_SI_ISS) {
       return validationResponse = {
         result: false,
         detailedError: `Wrong iss property in siop. Expected '${VerifiableCredentialConstants.TOKEN_SI_ISS}'`,
@@ -479,7 +527,7 @@ export class ValidationHelpers {
         keys = keys.keys;
 
         // Get issuer
-        (validationResponse as IdTokenValidationResponse).issuer = config.issuer;
+        (validationResponse as IdTokenValidationResponse).expectedIssuer = config.issuer;
         if (!config.issuer) {
           return {
             result: false,
@@ -538,8 +586,8 @@ export class ValidationHelpers {
 
       validationResponse.result = true;
       validationResponse.detailedError = '';
-      
-      validationResponse.validationResult = {idTokens: <any>token};
+
+      validationResponse.validationResult = { idTokens: <any>token };
       return validationResponse;
     } catch (err) {
       console.error(err);
@@ -562,8 +610,8 @@ export class ValidationHelpers {
     const self: any = this;
     try {
       // Get token and check signature
-      validationResponse = await (self as IValidationOptions).getTokenObjectDelegate(validationResponse, token.rawToken);
-      const validation = await (self as ValidationOptions).validatorOptions.crypto.signingProtocol.verify([key]);
+      validationResponse = await (self as IValidationOptions).getTokenObjectDelegate(validationResponse, <string>token.rawToken);
+      const validation = await (self as ValidationOptions).validatorOptions.crypto.signingProtocol(validationResponse.payloadProtectionProtocol!).verify([key]);
       if (!validation) {
         return {
           result: false,

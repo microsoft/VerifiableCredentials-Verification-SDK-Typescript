@@ -5,13 +5,14 @@
 import { IValidationOptions } from '../options/IValidationOptions';
 import { IVerifiableCredentialValidation, VerifiableCredentialValidationResponse } from './VerifiableCredentialValidationResponse';
 import { DidValidation } from './DidValidation';
-import { IExpectedVerifiableCredential, ClaimToken } from '../index';
+import { IExpectedVerifiableCredential, ClaimToken, VerifiableCredentialValidation } from '../index';
 import VerifiableCredentialConstants from '../verifiable_credential/VerifiableCredentialConstants';
+import { isContext } from 'vm';
 
 /**
  * Class for verifiable credential validation
  */
-export class VerifiableCredentialValidation implements IVerifiableCredentialValidation {
+export class VerifiableCredentialValidationJsonLd implements IVerifiableCredentialValidation {
 
   /**
    * Create a new instance of @see <VerifiableCredentialValidation>
@@ -41,16 +42,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
     }
 
     const isJwt = typeof verifiableCredential === 'string';
-    let sub: string | undefined;
     if (isJwt) {
-      sub = validationResponse.payloadObject.sub;
-      if (!validationResponse.payloadObject.vc) {
-        return {
-          result: false,
-          detailedError: `The verifiable credential vc property does not exist`,
-          status: 403
-        };
-      }
       validationResponse.payloadObject = validationResponse.payloadObject.vc;
     }
 
@@ -95,21 +87,9 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
 
     if (isJwt) {
       // Check token sub
-      if (!sub) {
-        return {
-          result: false,
-          detailedError: `Missing sub property in verifiableCredential. Expected '${siopDid}'`,
-          status: 403
-        };
-      }
-
-      // check sub value
-      if (siopDid && sub !== siopDid) {
-        return {
-          result: false,
-          detailedError: `Wrong sub property in verifiableCredential. Expected '${siopDid}'`,
-          status: 403
-        };
+      validationResponse = await this.options.checkScopeValidityOnVcTokenDelegate(validationResponse, this.expected, siopDid);
+      if (!validationResponse.result) {
+        return validationResponse;
       }
     } else {
       let subjects = [];

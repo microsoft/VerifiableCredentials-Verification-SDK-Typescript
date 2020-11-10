@@ -1,12 +1,11 @@
 {
   "name": "verifiablecredentials-verification-sdk-typescript",
-  "version": "0.10.1-preview.7",
+  "version": "0.10.1-preview.9",
   "description": "Typescript SDK for verifiable credentials",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
   "scripts": {
     "build": "tsc --p tsconfig.json",
-    "start": "set JSON_CONFIGURATION=./config.json&& node dist/src/start.js",
     "test": "nyc jasmine-ts --config=./tests/jasmine.json",
     "lint": "tslint --fix --project . --config node_modules/ad-did-services-common/tslint.json"
   },
@@ -23,23 +22,24 @@
     "@types/node-fetch": "2.5.5",
     "@types/uuid": "3.4.4",
     "fetch-mock": "9.3.1",
-    "jasmine": "^3.6.1",
+    "jasmine": "^3.6.2",
     "jasmine-reporters": "^2.3.2",
     "jasmine-spec-reporter": "^4.2.1",
     "jasmine-ts": "0.3.0",
-    "node-fetch": "2.6.0",
-    "nyc": "^14.1.1",
+    "node-fetch": "^2.6.1",
+    "nyc": "^15.1.0",
     "source-map-support": "0.5.12",
     "ts-node": "8.1.0",
     "tslint": "5.16.0",
     "tslint-config-standard": "8.0.1",
-    "typescript": "3.9.2",
+    "typescript": "3.9.4",
     "typescript-map": "0.0.7"
   },
   "dependencies": {
     "@azure/identity": "1.0.0",
     "@decentralized-identity/did-common-typescript": "0.1.19",
     "base64url": "3.0.1",
+    "bs58": "4.0.1",
     "clone": "2.1.2",
     "deep-property-access": "1.0.1",
     "es6-promise": "^4.2.8",
@@ -47,7 +47,7 @@
     "jsonpath": "1.0.2",
     "multihashes": "0.4.14",
     "uuid": "7.0.1",
-    "verifiablecredentials-crypto-sdk-typescript": "1.1.11-preview.5"
+    "verifiablecredentials-crypto-sdk-typescript": "1.1.11-preview.7"
   },
   "nyc": {
     "extension": [

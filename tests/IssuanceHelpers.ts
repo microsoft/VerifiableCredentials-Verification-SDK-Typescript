@@ -2,15 +2,13 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Subtle } from 'verifiablecredentials-crypto-sdk-typescript';
+import { JoseBuilder, Subtle } from 'verifiablecredentials-crypto-sdk-typescript';
 import TestSetup from './TestSetup';
 import { DidDocument } from '@decentralized-identity/did-common-typescript';
 import ClaimToken, { TokenType } from '../lib/verifiable_credential/ClaimToken';
 import base64url from "base64url";
 import ValidationOptions from '../lib/options/ValidationOptions';
 import { KeyReference, IExpectedBase, IExpectedSelfIssued, IExpectedIdToken, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, Validator } from '../lib/index';
-import VerifiableCredentialConstants from '../lib/verifiable_credential/VerifiableCredentialConstants';
-import { stat } from 'fs';
 
 export class IssuanceHelpers {
   public static readonly jti: string = 'testJti';
@@ -112,7 +110,7 @@ export class IssuanceHelpers {
     };
 
     for (let inx = 0; inx < vcs.length; inx++) {
-      (vpTemplate.vp.verifiableCredential as string[]).push(vcs[inx].rawToken);
+      (vpTemplate.vp.verifiableCredential as string[]).push(<string>vcs[inx].rawToken);
     }
     return IssuanceHelpers.signAToken(setup, vpTemplate, '', jwkPrivate);
   }
@@ -187,10 +185,10 @@ export class IssuanceHelpers {
     const keyId = new KeyReference(jwkPrivate.kid);
     await setup.keyStore.save(keyId, <any>jwkPrivate);
     setup.validatorOptions.crypto.builder.useSigningKeyReference(keyId);
-    setup.validatorOptions.crypto.signingProtocol.builder.useKid(keyId.keyReference);
-    const signature = await setup.validatorOptions.crypto.signingProtocol.sign(payload);
-    const token = await setup.validatorOptions.crypto.signingProtocol.serialize();
-    let claimToken = new ClaimToken(TokenType.idToken, token, configuration);
+    setup.validatorOptions.crypto.signingProtocol(JoseBuilder.JWT).builder.useKid(keyId.keyReference);
+    const signature = await setup.validatorOptions.crypto.signingProtocol(JoseBuilder.JWT).sign(payload);
+    const token = await setup.validatorOptions.crypto.signingProtocol(JoseBuilder.JWT).serialize();
+    let claimToken = ClaimToken.create(token, configuration);
     return claimToken;
   }
 
@@ -269,7 +267,7 @@ export class IssuanceHelpers {
       <IExpectedIdToken>{ type: TokenType.idToken, configuration: idTokenConfiguration, audience: setup.AUDIENCE },
       <IExpectedSiop>{ type: TokenType.siopIssuance, audience: setup.AUDIENCE },
       <IExpectedSiop>{ type: TokenType.siopPresentationAttestation, audience: setup.AUDIENCE },
-      <IExpectedVerifiablePresentation>{ type: TokenType.verifiablePresentation, didAudience: setup.defaultIssuerDid },
+      <IExpectedVerifiablePresentation>{ type: TokenType.verifiablePresentationJwt, didAudience: setup.defaultIssuerDid },
       <IExpectedVerifiableCredential>{ type: TokenType.verifiableCredential, contractIssuers: vcContractIssuers }
     ];
 

@@ -32,9 +32,9 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
    * @param siopDid needs to be equal to audience of VP
    */
   public async validate(queue: ValidationQueue, queueItem: ValidationQueueItem, siopDid: string): Promise<IValidationResponse> { 
-    const options = new ValidationOptions(this.validatorOption, TokenType.verifiablePresentation);
+    const options = new ValidationOptions(this.validatorOption, TokenType.verifiablePresentationJwt);
     const validator = new VerifiablePresentationValidation(options, this.expected, siopDid, queueItem.id);
-    let validationResult = await validator.validate(queueItem.tokenToValidate);
+    let validationResult = await validator.validate(<string>queueItem.tokenToValidate.rawToken);
 
     if (validationResult.result) {
       validationResult = this.getTokens(validationResult, queue);
@@ -61,7 +61,7 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
     validationResponse.tokensToValidate = {};
     for (let token in vc) {
       const claimToken = ClaimToken.create(vc[token]);
-      const vcType = VerifiableCredentialValidation.getVerifiableCredentialType(claimToken.decodedToken.vc);
+      const vcType = VerifiableCredentialValidation.getVerifiableCredentialType(claimToken.decodedToken.vc || claimToken.decodedToken);
       validationResponse.tokensToValidate[vcType] = claimToken; 
       queue.enqueueToken(vcType, claimToken);    
     }
@@ -73,7 +73,7 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
    * Gets the type of token to validate
    */
   public get isType(): TokenType {
-    return TokenType.verifiablePresentation;
+    return TokenType.verifiablePresentationJwt;
   }
 }
 

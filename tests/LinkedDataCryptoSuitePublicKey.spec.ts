@@ -1,10 +1,9 @@
-import base64url from 'base64url';
-import { listenerCount } from 'process';
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import LinkedDataCryptoSuitePublicKey from '../lib/input_validation/LinkedDataCryptoSuitePublicKey';
+import base64url from 'base64url';
 
 describe('LinkedDataCryptoSuitePublicKey', () => {
   it('should return a Ed25519VerificationKey2018 public key', () => {
@@ -23,7 +22,7 @@ describe('LinkedDataCryptoSuitePublicKey', () => {
     expect(jwk.crv).toEqual('ed25519');
     expect(jwk.kty).toEqual('OKP');
     expect(jwk.use).toEqual('sig');
-    expect(jwk.x).toEqual('H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV');
+    expect(jwk.x).toEqual('7kqc5NnojHJHZ11Ec5cGCLMIKgJVDBKhrAbu9YrfVFg');
 
     didDocumentPublicKey = {
       "@context": ["https://w3id.org/security/v1"],

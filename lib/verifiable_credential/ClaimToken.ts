@@ -27,6 +27,11 @@ export enum TokenType {
   siopIssuance = 'siopIssuance',
 
   /**
+   * Token is SIOP token
+   */
+  siop = 'siop',
+
+  /**
    * Token is SIOP token presentation request with attestation presentation protocol
    */
   siopPresentationAttestation = 'siopPresentationAttestation',
@@ -39,7 +44,7 @@ export enum TokenType {
   /**
    * Token is verifiable presentation
    */
-  verifiablePresentation = 'verifiablePresentation',
+  verifiablePresentationJwt = 'verifiablePresentationJwt',
 
   /**
    * Token is verifiable credential
@@ -57,7 +62,7 @@ export enum TokenType {
  */
 export default class ClaimToken {
   private _id: string = '';
-  private _rawToken: string = '';
+  private _rawToken: string | object = '';
   private _type: TokenType;
   private _decodedToken: { [key: string]: any } = {};
   private _tokenHeader: { [key: string]: any } = {};
@@ -79,12 +84,12 @@ export default class ClaimToken {
   /**
    * Gets the raw token
    */
-  public get rawToken(): string {
+  public get rawToken(): string | object {
     return this._rawToken;
   }
 
   /**
-   * Gets the token header
+   * Sets the raw token
    */
   public set rawToken(value) {
     this._rawToken = value;
@@ -111,7 +116,7 @@ export default class ClaimToken {
    * @param token The raw token
    * @param id The id of the token (configuration endpoint for id tokens)
    */
-  constructor(typeName: string, token: string, id?: string) {
+  constructor(typeName: string, token: string | object, id?: string) {
     const tokentypeValues: string[] = Object.values(TokenType);
     if (tokentypeValues.includes(typeName)) {
       this._type = typeName as TokenType;
@@ -124,7 +129,7 @@ export default class ClaimToken {
       this.decode();
     }
     else {
-      this._decodedToken = token;
+      this._rawToken = this._decodedToken = token;
     }
 
     this._id = id || '';
@@ -134,36 +139,48 @@ export default class ClaimToken {
    * Factory class to create a ClaimToken containing the token type, raw token and decoded payload
    * @param token to check for type
    */
-  public static create(token: string, id?: string): ClaimToken {
-    // Deserialize the token
-    const payload = ClaimToken.getTokenPayload(token);
+  public static create(token: string | object, id?: string): ClaimToken {
 
-    // Check type of token
-    if (payload.iss === VerifiableCredentialConstants.TOKEN_SI_ISS) {
-      if (payload.contract) {
-        return new ClaimToken(TokenType.siopIssuance, token, id);
-      } else if (payload.presentation_submission) {
-        return new ClaimToken(TokenType.siopPresentationExchange, token, id);
-      } else if (payload.attestations) {
-        return new ClaimToken(TokenType.siopPresentationAttestation, token, id);
-      } else {
-        throw new Error(`SIOP was not recognized.`);
+    let payload: any;
+    if (typeof token === 'string') {
+      // Deserialize the token
+      payload = ClaimToken.getTokenPayload(<string>token);
+    } else {
+      payload = token;
+    }
+
+    // check for json LD
+    if (payload['\@context'] && payload.type && payload.type.length >= 1 && payload.type.includes('VerifiableCredential')) {
+      return new ClaimToken(TokenType.verifiableCredential, payload, id);
+    } else {
+      // compact jwt      
+      // Check type of token
+      if (payload.iss === VerifiableCredentialConstants.TOKEN_SI_ISS) {
+        if (payload.contract) {
+          return new ClaimToken(TokenType.siopIssuance, <string>token, id);
+        } else if (payload.presentation_submission) {
+          return new ClaimToken(TokenType.siopPresentationExchange, <string>token, id);
+        } else if (payload.attestations) {
+          return new ClaimToken(TokenType.siopPresentationAttestation, <string>token, id);
+        } else {
+          return new ClaimToken(TokenType.siop, <string>token, id);
+        }
       }
-    }
 
-    if (payload.vc) {
-      return new ClaimToken(TokenType.verifiableCredential, token, id);
-    }
-    if (payload.vp) {
-      return new ClaimToken(TokenType.verifiablePresentation, token, id);
-    }
+      if (payload.vc) {
+        return new ClaimToken(TokenType.verifiableCredential, <string>token, id);
+      }
+      if (payload.vp) {
+        return new ClaimToken(TokenType.verifiablePresentationJwt, <string>token, id);
+      }
 
-    // Check for signature
-    if (ClaimToken.tokenSignature(token)) {
-      return new ClaimToken(TokenType.idToken, token, id);
-    }
+      // Check for signature
+      if (ClaimToken.tokenSignature(<string>token)) {
+        return new ClaimToken(TokenType.idToken, <string>token, id);
+      }
 
-    return new ClaimToken(TokenType.selfIssued, token, id);
+      return new ClaimToken(TokenType.selfIssued, <string>token, id);
+    }
   }
 
   /**
@@ -216,10 +233,14 @@ export default class ClaimToken {
             const foundToken = tokenFinder[0];
             const claimToken = ClaimToken.create(foundToken);
             decodedTokens[item.id] = claimToken;
+          } else if (tokenFinder[0]['\@context']) {
+            const foundToken = tokenFinder[0];
+            const claimToken = ClaimToken.create(foundToken);
+            decodedTokens[item.id] = claimToken;
           }
         } else {
           throw new Error(`The SIOP presentation exchange response has descriptor_map with id '${item.id}'. No path property found.`);
-        }  
+        }
       }
     }
     return decodedTokens;
@@ -232,7 +253,7 @@ export default class ClaimToken {
    * @param values Claim value
    */
   private decode(): void {
-    const parts = this.rawToken.split('.');
+    const parts = (<string>this.rawToken).split('.');
     if (parts.length < 2) {
       throw new Error(`Cannot decode. Invalid input token`);
     }
@@ -247,9 +268,14 @@ export default class ClaimToken {
    * @returns The payload object
    */
   private static getTokenPayload(token: string): any {
-    // Deserialize the token
-    const split = token.split('.');
-    return JSON.parse(base64url.decode(split[1]));
+    try {
+      // Deserialize the JWT token
+      const split = token.split('.');
+      return JSON.parse(base64url.decode(split[1]));
+    } catch (exception) {
+      // Check for json ld
+    }
+    return JSON.parse(token);
   }
 
   /**

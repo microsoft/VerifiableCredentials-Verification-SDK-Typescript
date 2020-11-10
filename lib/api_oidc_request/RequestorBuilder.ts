@@ -29,7 +29,6 @@ export default class RequestorBuilder {
   private _nonce: string | undefined;
   private _issuance: boolean = false;
   private _crypto: Crypto = new CryptoBuilder().build();
-  private _signingProtocol: IPayloadProtectionSigning;
 
   /**
    * Create a new instance of RequestorBuilder
@@ -40,7 +39,6 @@ export default class RequestorBuilder {
       this._crypto = crypto;
     }
 
-    this._signingProtocol = new JoseBuilder(this._crypto).build();
   }
 
   /**
@@ -48,13 +46,6 @@ export default class RequestorBuilder {
    */
   public get crypto() {
     return this._crypto;
-  }
-
-  /**
-   * Gets the signing protocol
-   */
-  public get signingProtocol() {
-    return this._signingProtocol;
   }
 
   /**
@@ -151,7 +142,7 @@ export default class RequestorBuilder {
   }
 
   /**
-   * Get the nonce for the request
+   * Gets true if issuance is allowed
    */
   public get issuance() {
     return this._issuance;

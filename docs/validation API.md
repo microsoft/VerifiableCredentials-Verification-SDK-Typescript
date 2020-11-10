@@ -42,7 +42,7 @@ const validationResult = await validator.validate(vc: string, expectedAudience: 
 ## Example: Validate a Verifiable Presentation
 ```javascript
 const vpValidator = new ValidationBuilder()
-                    .inputIs(TokenType.verifiablePresentation)
+                    .inputIs(TokenType.verifiablePresentationJwt)
                     .build();
 const validationResult = await validator.validate(vp: string, expectedAudience: string, expectedIssuer: string);
 ```

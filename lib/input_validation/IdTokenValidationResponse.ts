@@ -10,7 +10,7 @@ export interface IdTokenValidationResponse extends IValidationResponse {
   /**
    * The expected issuer of the token extracted from token configuration
    */
-  issuer?: string;
+  expectedIssuer?: string;
 }
 
 

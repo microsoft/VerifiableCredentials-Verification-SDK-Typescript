@@ -20,5 +20,5 @@ export interface IVerifiableCredentialValidation {
    * @param siopContract Conract type asked during siop
    * @returns true if validation passes
    */
-  validate(verifiableCredential: string, siopDid: string, siopContract: string): Promise<IValidationResponse>;
+  validate(verifiableCredential: string | object, siopDid: string, siopContract: string): Promise<IValidationResponse>;
 }

@@ -18,8 +18,6 @@ import { v4 as uuid } from 'uuid';
  */
 export default class Validator {
 
-  private tokens: ClaimToken[] = [];
-
   constructor(private _builder: ValidatorBuilder) {
   }
 
@@ -90,9 +88,6 @@ export default class Validator {
         };
       }
 
-      // keep track of the validated tokens
-      this.tokens.push(claimToken);
-
       const validator = this.tokenValidators[claimToken.type];
       if (!validator) {
         return {
@@ -115,7 +110,7 @@ export default class Validator {
             claimToken = <ClaimToken>(<any>response.validationResult)?.verifiableCredentials;
           }
           break;
-        case TokenType.verifiablePresentation:
+        case TokenType.verifiablePresentationJwt:
           response = await validator.validate(queue, queueItem!, siopDid!);
           break;
         case TokenType.siopIssuance:
@@ -127,10 +122,8 @@ export default class Validator {
           }
 
           break;
+        case TokenType.siop:
         case TokenType.siopPresentationAttestation:
-          response = await validator.validate(queue, queueItem!);
-          siopDid = response.did;
-          break;
         case TokenType.siopPresentationExchange:
           response = await validator.validate(queue, queueItem!);
           siopDid = response.did;
@@ -216,7 +209,7 @@ export default class Validator {
       status: 200,
       validationResult
     };
-  } 
+  }
 
   /**
    * Validate status on verifiable presentation
@@ -291,7 +284,7 @@ export default class Validator {
         if (statusUrl) {
           // send the payload
           payload.aud = statusUrl;
-          const siop = await this.builder.crypto.signingProtocol.sign(payload);
+          const siop = await this.builder.crypto.signingProtocol('JOSE').sign(payload);
           const serialized = await siop.serialize();
 
           console.log(`verifiablePresentation status check on ${statusUrl} ====> ${serialized}`);
@@ -367,7 +360,7 @@ export default class Validator {
 
     // Set the jti
     const jti = queue.items.filter((item) => this.isSiop(item.validatedToken?.type)).map((siop) => {
-      return (siop.validationResponse as ISiopValidationResponse).payloadObject.jti;
+      return (siop.validationResponse as ISiopValidationResponse).tokenId;
     })[0];
 
     const validationResult: IValidationResult = {
@@ -380,9 +373,9 @@ export default class Validator {
     let tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.idToken);
     if (tokens && tokens.length > 0) {
       validationResult.idTokens = {};
-      for (let token in tokens){
+      for (let token in tokens) {
         const id = tokens[token].validatedToken?.id;
-        validationResult.idTokens[id || token] = tokens[token].validatedToken!;   
+        validationResult.idTokens[id || token] = tokens[token].validatedToken!;
       }
     }
 
@@ -396,7 +389,7 @@ export default class Validator {
     }
 
     // get verifiable presentations
-    tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.verifiablePresentation)
+    tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.verifiablePresentationJwt)
     if (tokens && tokens.length > 0) {
       validationResult.verifiablePresentations = {};
       for (let inx = 0; inx < tokens.length; inx++) {
@@ -438,7 +431,7 @@ export default class Validator {
    * @param token to check for type
    */
   private static getClaimToken(queueItem: ValidationQueueItem): ClaimToken {
-    const claimToken = queueItem.claimToken ?? ClaimToken.create(queueItem.tokenToValidate);
+    const claimToken = queueItem.tokenToValidate;
     return claimToken;
   }
 }

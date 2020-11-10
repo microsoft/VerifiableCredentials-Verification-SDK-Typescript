@@ -64,8 +64,8 @@ export default class ValidationQueueItem {
   /**
    * Token to validate
    */
-  public get tokenToValidate(): string {
-    return this._tokenToValidate.rawToken;
+  public get tokenToValidate(): ClaimToken {
+    return this._tokenToValidate;
   }
 
   /**
@@ -94,12 +94,5 @@ export default class ValidationQueueItem {
    */
   public get isUnderValidation(): boolean {
     return this.validationStatus === ValidationStatus.underValidation;
-  }
-
-  /**
-   * A ClaimToken may have already been created elsewhere, get that reference
-   */
-  public get claimToken(): ClaimToken | undefined{
-    return this._tokenToValidate;
   }
 }
