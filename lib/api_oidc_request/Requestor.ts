@@ -43,7 +43,7 @@ export default class Requestor {
   public async create(state?: string, nonce?: string): Promise<IRequestorResult> {
     const crypto = this.builder.crypto.builder;
     this._payload = {
-      response_type: 'idtoken',
+      response_type: 'id_token',
       response_mode: 'form_post',
       client_id: this.builder.clientId,
       redirect_uri: this.builder.redirectUri,
