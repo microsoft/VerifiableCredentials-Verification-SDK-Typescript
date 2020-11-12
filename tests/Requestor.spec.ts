@@ -17,7 +17,7 @@ describe('Requestor', () =>{
     expect(requestor.payload.response_type).toEqual('id_token');
     expect(requestor.payload.scope).toEqual('openid did_authn');
     expect(requestor.payload.response_mode).toEqual('form_post');
-    expect(requestor.payload.client_id).toEqual('https://response.example.com');
+    expect(requestor.payload.client_id).toEqual('https://requestor.example.com');
     expect(requestor.payload.redirect_uri).toEqual('https://response.example.com');
   });
 });
