@@ -45,7 +45,7 @@ export default class Requestor {
     this._payload = {
       response_type: 'id_token',
       response_mode: 'form_post',
-      client_id: this.builder.clientId,
+      client_id: this.builder.redirectUri,
       redirect_uri: this.builder.redirectUri,
       scope: 'openid did_authn',
       state: state || this.builder.state,
@@ -145,19 +145,20 @@ export default class Requestor {
     const issuers: { [credentialType: string]: string[] } = {};
 
     if (this.isPresentationExchange()) {
-      return { undefined: [] };
-
       /*
-      // const presentationDefinition = (<IRequestorPresentationExchange>this.builder.requestor).presentationDefinition;
+      const presentationDefinition = (<IRequestorPresentationExchange>this.builder.requestor).presentationDefinition;
       if (!presentationDefinition.input_descriptors) {
         return { undefined: [] };
       }
+      const issuers: { [credentialType: string]: string[] } = {};
       for (let definition in presentationDefinition.input_descriptors) {
         if (!presentationDefinition.input_descriptors[definition]) {
           throw new Error('Missing id in input_descriptor');
         }
+      }
+      return issuers;
       */
-
+     throw new Error('trustedIssuersForVerifiableCredentials not supported for presentation exchange. Requires constraints.')
     } else {
       const attestations = (<IRequestorAttestation>this.builder.requestor).attestations;
       if (!attestations.presentations) {

@@ -34,14 +34,9 @@ describe('ValidatorBuilder', () => {
 
     let requestor = new RequestorBuilder(<any>{})
       .useState('abcdef');
-      builder = new ValidatorBuilder(crypto)
-      .useState('12345')
-      .useRequestor(requestor.build());
-    expect(builder.state).toEqual('12345');
-
     builder = new ValidatorBuilder(crypto)
-      .useRequestor(requestor.build());
-    expect(builder.state).toEqual('abcdef');
+      .useState('12345');
+    expect(builder.state).toEqual('12345');
   });
 
   it('should set nonce', () => {
@@ -55,14 +50,9 @@ describe('ValidatorBuilder', () => {
 
     let requestor = new RequestorBuilder(<any>{})
       .useNonce('abcdef');
-      builder = new ValidatorBuilder(crypto)
-      .useNonce('12345')
-      .useRequestor(requestor.build());
-    expect(builder.nonce).toEqual('12345');
-
     builder = new ValidatorBuilder(crypto)
-      .useRequestor(requestor.build());
-    expect(builder.nonce).toEqual('abcdef');
+      .useNonce('12345')
+    expect(builder.nonce).toEqual('12345');
   });
 
 });
