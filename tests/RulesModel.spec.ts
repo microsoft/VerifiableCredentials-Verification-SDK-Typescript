@@ -273,6 +273,13 @@ describe('RulesModel', () => {
       vpModel.populateFrom({});
       expect(vpModel).toBeDefined();
     });
+
+    it('should accept models with no attestations', () => {
+      const json = JSON.stringify(RULES);
+      const roundtrip = new RulesModel();
+      roundtrip.populateFrom({ ...JSON.parse(json), attestations: undefined });
+      expect(roundtrip.attestations).toBeUndefined();
+    });
   });
 
   describe('attestations.indexClaims', () => {
