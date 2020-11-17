@@ -34,15 +34,11 @@ export class IssuanceAttestationsModel {
     }
 
     if (this.presentations) {
-      this.presentations.forEach(({ indexClaims }) => {
-        allIndexClaims.push(...indexClaims);
-      });
+      this.presentations.forEach(({ indexClaims }) => allIndexClaims.push(...indexClaims));
     }
 
     if (this.idTokens) {
-      this.idTokens.forEach(({ indexClaims }) => {
-        allIndexClaims.push(...indexClaims);
-      });
+      this.idTokens.forEach(({ indexClaims }) => allIndexClaims.push(...indexClaims));
     }
 
     return allIndexClaims;
@@ -63,9 +59,18 @@ export class IssuanceAttestationsModel {
    * @param input object instance to populate from
    */
   populateFrom (input: any): void {
+    const outputAttestations = new Set<string>();
+    let totalOutputAttestations = 0;
+
     if (input.selfIssued !== undefined) {
       this.selfIssued = new SelfIssuedAttestationModel();
       this.selfIssued.populateFrom(input.selfIssued);
+
+      if (this.selfIssued.mapping) {
+        const outputAttestationKeys = Object.keys(this.selfIssued.mapping);
+        totalOutputAttestations += outputAttestationKeys.length;
+        outputAttestationKeys.forEach(outputAttestation => outputAttestations.add(outputAttestation));
+      }
     }
 
     if (input.presentations !== undefined) {
@@ -73,6 +78,13 @@ export class IssuanceAttestationsModel {
       this.presentations = arr.map(presentation => {
         const p = new VerifiablePresentationAttestationModel();
         p.populateFrom(presentation);
+
+        if (p.mapping) {
+          const outputAttestationKeys = Object.keys(p.mapping);
+          totalOutputAttestations += outputAttestationKeys.length;
+          outputAttestationKeys.forEach(outputAttestation => outputAttestations.add(outputAttestation));
+        }
+
         return p;
       });
     }
@@ -82,8 +94,20 @@ export class IssuanceAttestationsModel {
       this.idTokens = arr.map(token => {
         const t = new IdTokenAttestationModel();
         t.populateFrom(token);
+
+        if (t.mapping) {
+          const outputAttestationKeys = Object.keys(t.mapping);
+          totalOutputAttestations += outputAttestationKeys.length;
+          outputAttestationKeys.forEach(outputAttestation => outputAttestations.add(outputAttestation));
+        }
+
         return t;
       });
+    }
+
+    // Ensure uniqueness of attestation mapping keys. Non-uniqueness leads to data loss.
+    if (totalOutputAttestations !== outputAttestations.size) {
+      throw new Error('Attestation mapping names must be unique.');
     }
   }
 }
