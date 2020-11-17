@@ -47,7 +47,7 @@
     "jsonpath": "1.0.2",
     "multihashes": "0.4.14",
     "uuid": "7.0.1",
-    "verifiablecredentials-crypto-sdk-typescript": "1.1.11-preview.7"
+    "verifiablecredentials-crypto-sdk-typescript": "1.1.11-preview.8"
   },
   "nyc": {
     "extension": [
