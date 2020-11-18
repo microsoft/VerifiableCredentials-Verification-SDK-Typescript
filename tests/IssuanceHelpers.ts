@@ -221,7 +221,6 @@ export class IssuanceHelpers {
     const vcConfiguration = 'https://vcexample.com/schema';
 
     const vcPayload = {
-      id: `${setup.defaultUserDid}`,
       givenName: 'Jules',
       familyName: 'Winnfield'
     };
