@@ -24,7 +24,7 @@ describe('VerifiableCredentialValidation', () => {
     let validator = new VerifiableCredentialValidation(options, expected);
     let response = await validator.validate(siop.vc.rawToken, setup.defaultUserDid);
     expect(response.result).toBeTruthy();
-    expect(response.subject).toEqual(setup.defaultUserDid);
+    expect(response.payloadObject.credentialSubject.id).toEqual(setup.defaultUserDid);
 
     // Negative cases
 
