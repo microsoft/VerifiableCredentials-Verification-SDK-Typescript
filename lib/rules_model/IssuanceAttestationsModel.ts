@@ -6,6 +6,7 @@
 import { SelfIssuedAttestationModel } from './SelfIssuedAttestationModel';
 import { VerifiablePresentationAttestationModel } from './VerifiablePresentationAttestationModel';
 import { IdTokenAttestationModel } from './IdTokenAttestationModel';
+import { RulesValidationError } from '../error_handling/RulesValidationError';
 
 /**
  * Model for attestations for input contract
@@ -107,7 +108,7 @@ export class IssuanceAttestationsModel {
 
     // Ensure uniqueness of attestation mapping keys. Non-uniqueness leads to data loss.
     if (totalOutputAttestations !== outputAttestations.size) {
-      throw new Error('Attestation mapping names must be unique.');
+      throw new RulesValidationError('Attestation mapping names must be unique.');
     }
   }
 }
