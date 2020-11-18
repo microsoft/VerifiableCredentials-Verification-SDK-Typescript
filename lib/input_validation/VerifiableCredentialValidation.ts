@@ -41,8 +41,9 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
     }
 
     const isJwt = typeof verifiableCredential === 'string';
+    let sub: string | undefined;
     if (isJwt) {
-      validationResponse.subject = validationResponse.payloadObject.sub;
+      sub = validationResponse.payloadObject.sub;
       if (!validationResponse.payloadObject.vc) {
         return {
           result: false,
@@ -94,7 +95,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
 
     if (isJwt) {
       // Check token sub
-      if (!validationResponse.subject) {
+      if (!sub) {
         return {
           result: false,
           detailedError: `Missing sub property in verifiableCredential. Expected '${siopDid}'`,
@@ -103,12 +104,17 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       }
 
       // check sub value
-      if (siopDid && validationResponse.subject !== siopDid) {
+      if (siopDid && sub !== siopDid) {
         return {
           result: false,
           detailedError: `Wrong sub property in verifiableCredential. Expected '${siopDid}'`,
           status: 403
         };
+      }
+
+      // make sure the sub claim is the id in the credentialSubject
+      if (!validationResponse.payloadObject.credentialSubject.id) {
+        validationResponse.payloadObject.credentialSubject.id = sub;
       }
     } else {
       let subjects = [];
