@@ -111,6 +111,11 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
           status: 403
         };
       }
+
+      // make sure the sub claim is the id in the credentialSubject
+      if (!validationResponse.payloadObject.credentialSubject.id) {
+        validationResponse.payloadObject.credentialSubject.id = sub;
+      }
     } else {
       let subjects = [];
       if (!Array.isArray(validationResponse.payloadObject.credentialSubject)) {

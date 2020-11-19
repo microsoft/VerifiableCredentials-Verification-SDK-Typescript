@@ -8,6 +8,9 @@ export { DidDocument, IDidDocument, IDidDocumentPublicKey, IDidDocumentServiceDe
 import {IExpectedStatusReceipt, IExpectedBase, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSelfIssued, IExpectedIdToken, IExpectedOpenIdToken, IExpectedAudience, IssuerMap} from './options/IExpected';
 export { IExpectedStatusReceipt, IExpectedBase, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSelfIssued, IExpectedIdToken, IExpectedOpenIdToken, IExpectedAudience, IssuerMap };
 
+import { RulesValidationError } from './error_handling/RulesValidationError';
+export { RulesValidationError };
+
 import ManagedHttpResolver from './resolver/ManagedHttpResolver';
 export { ManagedHttpResolver };
 

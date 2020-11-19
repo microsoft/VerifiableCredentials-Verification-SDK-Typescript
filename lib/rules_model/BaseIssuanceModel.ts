@@ -15,16 +15,18 @@ export abstract class BaseIssuanceModel {
    * @param issuer the DID of the Verifiable Credential Issuer
    * @param attestations IssuanceAttestationsModel instance
    */
-  constructor (public credentialIssuer?: string,  public issuer?: string, public attestations?: IssuanceAttestationsModel) {
-  }
+  constructor (public credentialIssuer?: string,  public issuer?: string, public attestations?: IssuanceAttestationsModel) {}
 
   /**
    * Populate an instance of BaseAttestationModel from any instance
    * @param input object instance to populate from
    */
   populateFrom (input: any): void {
-    this.attestations = new IssuanceAttestationsModel();
-    this.attestations.populateFrom(input.attestations);
+    if (input.attestations) {
+      this.attestations = new IssuanceAttestationsModel();
+      this.attestations.populateFrom(input.attestations);
+    }
+
     this.credentialIssuer = input.credentialIssuer;
     this.issuer = input.issuer;
   }

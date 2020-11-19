@@ -42,6 +42,6 @@ export class InputClaimModel {
    * Creates an InputClaimInstance for a contract using a subset of properties
    */
   forInput(): InputClaimModel {
-    return new InputClaimModel(this.claim, this.type, this.required);
+    return new InputClaimModel(this.claim, this.type, this.required, this.indexed);
   }
 }

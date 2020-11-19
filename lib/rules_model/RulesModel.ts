@@ -59,13 +59,11 @@ export class RulesModel extends BaseIssuanceModel {
     this.clientRevocationDisabled = input.clientRevocationDisabled ?? false;
 
     if (input.decryptionKeys) {
-      const arr = Array.from(input.decryptionKeys);
-      this.decryptionKeys = arr.map(RulesModel.createRemoteKey);
+      this.decryptionKeys = Array.from(input.decryptionKeys, RulesModel.createRemoteKey);
     }
 
     if (input.signingKeys) {
-      const arr = Array.from(input.signingKeys);
-      this.signingKeys = arr.map(RulesModel.createRemoteKey);
+      this.signingKeys = Array.from(input.signingKeys, RulesModel.createRemoteKey);
     }
 
     if (input.refresh) {

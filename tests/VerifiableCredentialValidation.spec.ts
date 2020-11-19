@@ -7,7 +7,7 @@ import { IssuanceHelpers } from './IssuanceHelpers';
 import { VerifiableCredentialValidation } from '../lib/input_validation/VerifiableCredentialValidation';
 import { TokenType, IExpectedVerifiableCredential, Validator } from '../lib';
 
- describe('VerifiableCredentialValidation', () => {
+describe('VerifiableCredentialValidation', () => {
   let setup: TestSetup;
   beforeEach(async () => {
     setup = new TestSetup();
@@ -18,12 +18,13 @@ import { TokenType, IExpectedVerifiableCredential, Validator } from '../lib';
   });
 
   it('should test validate', async () => {
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential, true);   
+    const [_, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential, true);   
     const expected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
 
     let validator = new VerifiableCredentialValidation(options, expected);
     let response = await validator.validate(siop.vc.rawToken, setup.defaultUserDid);
     expect(response.result).toBeTruthy();
+    expect(response.payloadObject.credentialSubject.id).toEqual(setup.defaultUserDid);
 
     // Negative cases
 

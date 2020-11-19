@@ -6,75 +6,79 @@
 import { IdTokenAttestationModel, InputClaimModel, InputModel, IssuanceAttestationsModel, RefreshConfigurationModel, RemoteKeyAuthorizationModel, RemoteKeyModel, RulesModel, SelfIssuedAttestationModel, TransformModel, TrustedIssuerModel, VerifiableCredentialModel, VerifiablePresentationAttestationModel } from '../lib';
 
 describe('RulesModel', () => {
-  const RULES = new RulesModel(
-    'issuer uri',
-    'issuer',
-    new IssuanceAttestationsModel(
-      new SelfIssuedAttestationModel(
-        {
-          alias: new InputClaimModel('name', 'string', false, true, new TransformModel('name', 'remote'))
-        },
-        false,
-        undefined,
-        true
-      ),
-      [
-        new VerifiablePresentationAttestationModel(
-          'CredentialType',
-          5 * 60,
-          [
-            new TrustedIssuerModel('trusted issuer 1'),
-            new TrustedIssuerModel('trusted issuer 2')
-          ],
-          [
-            new TrustedIssuerModel('endorser')
-          ],
-          [
-            'contract'
-          ],
+  let RULES: RulesModel;
+
+  beforeAll(() => {
+    RULES = new RulesModel(
+      'issuer uri',
+      'issuer',
+      new IssuanceAttestationsModel(
+        new SelfIssuedAttestationModel(
           {
-            givenName: new InputClaimModel('vc.credentialSubject.givenName'),
-            familyName: new InputClaimModel('vc.credentialSubject.familyName', 'string', true)
-          })
+            alias: new InputClaimModel('name', 'string', false, true, new TransformModel('name', 'remote'))
+          },
+          false,
+          undefined,
+          true
+        ),
+        [
+          new VerifiablePresentationAttestationModel(
+            'CredentialType',
+            5 * 60,
+            [
+              new TrustedIssuerModel('trusted issuer 1'),
+              new TrustedIssuerModel('trusted issuer 2')
+            ],
+            [
+              new TrustedIssuerModel('endorser')
+            ],
+            [
+              'contract'
+            ],
+            {
+              givenName: new InputClaimModel('vc.credentialSubject.givenName'),
+              familyName: new InputClaimModel('vc.credentialSubject.familyName', 'string', true)
+            })
+        ],
+        [
+          new IdTokenAttestationModel(
+            'oidc config endpoint',
+            'clientId',
+            'redirect',
+            'scope',
+            {
+              email: new InputClaimModel('upn', 'string', false, true),
+              name: new InputClaimModel('name')
+            }
+          ),
+        ]),
+      86400,
+      [
+        new RemoteKeyModel(undefined, undefined, 'x5t', 'pfx', true, new RemoteKeyAuthorizationModel('msi')),
+        new RemoteKeyModel('kid', 'key', undefined, undefined, true, new RemoteKeyAuthorizationModel('msi')),
       ],
       [
-        new IdTokenAttestationModel(
-          'oidc config endpoint',
-          'clientId',
-          'redirect',
-          'scope',
-          {
-            email: new InputClaimModel('upn', 'string', false, true),
-            name: new InputClaimModel('name')
+        new RemoteKeyModel('kid', 'key', undefined, undefined, false, new RemoteKeyAuthorizationModel('msi')),
+      ],
+      new RefreshConfigurationModel(604800),
+      true,
+      true,
+      new VerifiableCredentialModel(
+        ['urn:test:context'],
+        ['EmployeeCredential'],
+        {
+          put: {
+            an: 'object',
+            here: true
           }
-        ),
-      ]),
-    86400,
-    [
-      new RemoteKeyModel(undefined, undefined, 'x5t', 'pfx', true, new RemoteKeyAuthorizationModel('msi')),
-      new RemoteKeyModel('kid', 'key', undefined, undefined, true, new RemoteKeyAuthorizationModel('msi')),
-    ],
-    [
-      new RemoteKeyModel('kid', 'key', undefined, undefined, false, new RemoteKeyAuthorizationModel('msi')),
-    ],
-    new RefreshConfigurationModel(604800),
-    true,
-    true,
-    new VerifiableCredentialModel(
-      ['urn:test:context'],
-      ['EmployeeCredential'],
-      {
-        put: {
-          an: 'object',
-          here: true
-        }
-      },
-    ),
-    true,
-    [
-      new TrustedIssuerModel('end1')
-    ],
-  );
+        },
+      ),
+      true,
+      [
+        new TrustedIssuerModel('end1')
+      ],
+    );
+  });
 
   // tslint:disable-next-line:max-func-body-length
   describe('RulesModel class serialization', () => {
@@ -272,6 +276,25 @@ describe('RulesModel', () => {
       const vpModel = new VerifiablePresentationAttestationModel();
       vpModel.populateFrom({});
       expect(vpModel).toBeDefined();
+    });
+
+    it('should accept models with no attestations', () => {
+      const json = JSON.stringify(RULES);
+      const roundtrip = new RulesModel();
+      roundtrip.populateFrom({ ...JSON.parse(json), attestations: undefined });
+      expect(roundtrip.attestations).toBeUndefined();
+    });
+
+    it('should trigger error if mapping names are not unique', () => {
+      // Make self-issued attestation duplicate.
+      RULES.attestations!.selfIssued!.mapping!.name = new InputClaimModel('dulpicateName', 'String');
+
+      const json = JSON.stringify(RULES);
+      const roundtrip = new RulesModel();
+      expect(() => roundtrip.populateFrom(JSON.parse(json))).toThrowError();
+
+      // Reset self-issued attestations.
+      delete RULES.attestations!.selfIssued!.mapping!.name;
     });
   });
 
