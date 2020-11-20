@@ -6,6 +6,10 @@
 import { IValidationResponse } from './IValidationResponse';
 
 export interface VerifiableCredentialValidationResponse extends IValidationResponse {
+  /**
+   * Verifiable Credential subject did.
+   */
+  subject?: string;
 }
 
 /**
