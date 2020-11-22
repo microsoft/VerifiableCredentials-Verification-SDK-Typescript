@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IdTokenAttestationModel, InputClaimModel, InputModel, IssuanceAttestationsModel, RefreshConfigurationModel, RemoteKeyAuthorizationModel, RemoteKeyModel, RulesModel, SelfIssuedAttestationModel, TransformModel, TrustedIssuerModel, VerifiableCredentialModel, VerifiablePresentationAttestationModel } from '../lib';
+import { IdTokenAttestationModel, InputClaimModel, InputModel, IssuanceAttestationsModel, RefreshConfigurationModel, RemoteKeyAuthorizationModel, RemoteKeyModel, RulesModel, RulesValidationError, SelfIssuedAttestationModel, TransformModel, TrustedIssuerModel, VerifiableCredentialModel, VerifiablePresentationAttestationModel } from '../lib';
 
 describe('RulesModel', () => {
   let RULES: RulesModel;
@@ -82,7 +82,7 @@ describe('RulesModel', () => {
 
   // tslint:disable-next-line:max-func-body-length
   describe('RulesModel class serialization', () => {
-    it('Rules model must roundtrip ', async () => {
+    it('Rules model must roundtrip ', () => {
       const json = JSON.stringify(RULES);
       const roundtrip = new RulesModel();
       roundtrip.populateFrom(JSON.parse(json));
@@ -169,7 +169,7 @@ describe('RulesModel', () => {
       expect(roundtripSubject.put.here).toBe(rulesSubject.put.here);
     });
 
-    it('Input model must correctly derive from Rules Model ', async () => {
+    it('Input model must correctly derive from Rules Model ', () => {
       const json = JSON.stringify(RULES);
       const roundtrip = new RulesModel();
       roundtrip.populateFrom(JSON.parse(json));
@@ -253,7 +253,7 @@ describe('RulesModel', () => {
       });
     });
 
-    it('missing scope value is still valid', async () => {
+    it('missing scope value is still valid', () => {
       const json = JSON.stringify(RULES);
       const roundtrip = new RulesModel();
       roundtrip.populateFrom(JSON.parse(json));
@@ -266,16 +266,54 @@ describe('RulesModel', () => {
       expect(input.attestations!.idTokens![0].scope).toBeUndefined();
     });
 
-    it('should pass populating the VerifiableCredentialModel without context ', async () => {
+    it('should pass populating the VerifiableCredentialModel without context ', () => {
       const vcModel = new VerifiableCredentialModel();
       vcModel.populateFrom({});
       expect(vcModel).toBeDefined();
     });
 
-    it('should pass populating the VerifiablePresentationAttestationModel without context ', async () => {
+    it('should pass populating the VerifiablePresentationAttestationModel without context ', () => {
       const vpModel = new VerifiablePresentationAttestationModel();
       vpModel.populateFrom({});
       expect(vpModel).toBeDefined();
+    });
+
+    it('should process permissions correctly', () => {
+      const permissions = { audit: { allow: ['did:ion:someAllowedDid', 'did:ion:anotherAllowedDid'] }, status: { block: ['did:ion:someBlockedDid'] } };
+      const json = JSON.stringify({ ...RULES, permissions });
+      const roundtrip = new RulesModel();
+      roundtrip.populateFrom(JSON.parse(json));
+
+      // Should populate permissions correctly.
+      const outputPermissions = roundtrip.permissions!;
+      expect(outputPermissions).toBeDefined();
+      expect(JSON.parse(JSON.stringify(outputPermissions))).toEqual(permissions);
+    });
+
+    it('should trigger rules validation error with duplicate DIDs in permissions', () => {
+      const permissions = { audit: { allow: ['did:ion:someAllowedDid', 'did:ion:someAllowedDid', 'did:ion:anotherAllowedDid'] } };
+      const json = JSON.stringify({ ...RULES, permissions });
+      const roundtrip = new RulesModel();
+
+      try {
+        roundtrip.populateFrom(JSON.parse(json));
+        fail('No error was thrown.');
+      } catch (error) {
+        expect(error instanceof RulesValidationError).toEqual(true);
+      }
+    });
+
+    it('should trigger rules validation error with empty permissions', () => {
+      const permissions = { audit: { allow: ['did:ion:someAllowedDid', 'did:ion:anotherAllowedDid'] }, issue: {} };
+      const json = JSON.stringify({ ...RULES, permissions });
+      const roundtrip = new RulesModel();
+
+      try {
+        roundtrip.populateFrom(JSON.parse(json));
+        fail('No error was thrown.');
+      } catch (error) {
+        expect(error instanceof RulesValidationError).toEqual(true);
+      }
     });
 
     it('should accept models with no attestations', () => {
