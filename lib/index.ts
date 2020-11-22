@@ -76,6 +76,7 @@ import { IssuanceAttestationsModel } from './rules_model/IssuanceAttestationsMod
 import { RemoteKeyAuthorizationModel } from './rules_model/RemoteKeyAuthorizationModel';
 import { RemoteKeyModel } from './rules_model/RemoteKeyModel';
 import { RulesModel } from './rules_model/RulesModel';
+import { RulesPermissionModel } from './rules_model/RulesPermissionModel';
 import { SelfIssuedAttestationModel } from './rules_model/SelfIssuedAttestationModel';
 import { TrustedIssuerModel } from './rules_model/TrustedIssuerModel';
 import { VerifiablePresentationAttestationModel } from './rules_model/VerifiablePresentationAttestationModel';
@@ -105,6 +106,7 @@ export {
   RemoteKeyAuthorizationModel,
   RemoteKeyModel,
   RulesModel,
+  RulesPermissionModel,
   SelfIssuedAttestationModel,
   TrustedIssuerModel,
   VerifiablePresentationAttestationModel
