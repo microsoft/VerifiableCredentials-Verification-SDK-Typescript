@@ -5,10 +5,11 @@
 
 import { BaseIssuanceModel } from './BaseIssuanceModel';
 import { IssuanceAttestationsModel } from './IssuanceAttestationsModel';
-import { RemoteKeyModel } from './RemoteKeyModel';
 import { RefreshConfigurationModel } from './RefreshConfigurationModel';
+import { RemoteKeyModel } from './RemoteKeyModel';
+import { RulesPermissionModel } from './RulesPermissionModel';
+import { TrustedIssuerModel } from './TrustedIssuerModel';
 import { VerifiableCredentialModel } from './VerifiableCredentialModel';
-import { TrustedIssuerModel } from '..';
 
 /**
  * Data Model to serialize a Rules file into
@@ -42,7 +43,9 @@ export class RulesModel extends BaseIssuanceModel {
     public clientRevocationDisabled: boolean = false,
     public vc?: VerifiableCredentialModel,
     public minimalDisclosure: boolean = false,
-    public endorsers?: TrustedIssuerModel[]) {
+    public endorsers?: TrustedIssuerModel[],
+    public permissions?: { [endpoint: string]: RulesPermissionModel },
+  ) {
     super(credentialIssuer, issuer, attestations);
   }
 
@@ -52,28 +55,37 @@ export class RulesModel extends BaseIssuanceModel {
    */
   populateFrom(input: any): void {
     super.populateFrom(input);
+
     this.validityInterval = input.validityInterval;
     this.statusCheckDisabled = input.statusCheckDisabled ?? false;
     this.minimalDisclosure = input.minimalDisclosure ?? false;
     this.endorsers = input.endorsers;
     this.clientRevocationDisabled = input.clientRevocationDisabled ?? false;
 
-    if (input.decryptionKeys) {
-      this.decryptionKeys = Array.from(input.decryptionKeys, RulesModel.createRemoteKey);
+    const { decryptionKeys, permissions, refresh, signingKeys, vc } = input;
+
+    if (decryptionKeys) {
+      this.decryptionKeys = Array.from(decryptionKeys, RulesModel.createRemoteKey);
     }
 
-    if (input.signingKeys) {
-      this.signingKeys = Array.from(input.signingKeys, RulesModel.createRemoteKey);
+    if (signingKeys) {
+      this.signingKeys = Array.from(signingKeys, RulesModel.createRemoteKey);
     }
 
-    if (input.refresh) {
+    if (refresh) {
       this.refresh = new RefreshConfigurationModel();
-      this.refresh.populateFrom(input.refresh);
+      this.refresh.populateFrom(refresh);
     }
 
-    if(input.vc){
+    if (vc) {
       this.vc = new VerifiableCredentialModel();
-      this.vc.populateFrom(input.vc);
+      this.vc.populateFrom(vc);
+    }
+
+    if (permissions) {
+      this.permissions = Object.entries(<{ [endpoint: string]: any }>permissions).reduce((all, [endpoint, input]) => (
+        Object.assign(all, { [endpoint]: RulesPermissionModel.create(input) })
+      ), <{ [endpoint: string]: RulesPermissionModel }>{});
     }
   }
 
