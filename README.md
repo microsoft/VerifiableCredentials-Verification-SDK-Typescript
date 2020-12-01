@@ -1,3 +1,5 @@
+[![Build Status](https://dev.azure.com/verifiable-credentials/VerifiableCredential/_apis/build/status/microsoft.VerifiableCredentials-Verification-SDK-Typescript?branchName=refs%2Fpull%2F102%2Fmerge)](https://dev.azure.com/verifiable-credentials/VerifiableCredential/_build/latest?definitionId=4&branchName=refs%2Fpull%2F102%2Fmerge)
+
 # GitHub Verification SDK
 
  
