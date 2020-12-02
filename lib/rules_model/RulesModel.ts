@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { AuthenticationModel } from './AuthenticationModel';
 import { BaseIssuanceModel } from './BaseIssuanceModel';
 import { IssuanceAttestationsModel } from './IssuanceAttestationsModel';
 import { RefreshConfigurationModel } from './RefreshConfigurationModel';
@@ -30,6 +31,7 @@ export class RulesModel extends BaseIssuanceModel {
    * @param vc VerifiableCredential instance
    * @param minimalDisclosure a flag indicating if the issuer should create a minimal disclosure credential
    * @param endorsers optional array of endorsers of the Verifiable Credential Issuer
+   * @param authentication optional AuthenticationModel instance
    */
   constructor(
     credentialIssuer?: string,
@@ -45,6 +47,7 @@ export class RulesModel extends BaseIssuanceModel {
     public minimalDisclosure: boolean = false,
     public endorsers?: TrustedIssuerModel[],
     public permissions?: { [endpoint: string]: RulesPermissionModel },
+    public authentication?: AuthenticationModel
   ) {
     super(credentialIssuer, issuer, attestations);
   }
@@ -62,7 +65,7 @@ export class RulesModel extends BaseIssuanceModel {
     this.endorsers = input.endorsers;
     this.clientRevocationDisabled = input.clientRevocationDisabled ?? false;
 
-    const { decryptionKeys, permissions, refresh, signingKeys, vc } = input;
+    const { decryptionKeys, permissions, refresh, signingKeys, vc, authentication } = input;
 
     if (decryptionKeys) {
       this.decryptionKeys = Array.from(decryptionKeys, RulesModel.createRemoteKey);
@@ -86,6 +89,11 @@ export class RulesModel extends BaseIssuanceModel {
       this.permissions = Object.entries(<{ [endpoint: string]: any }>permissions).reduce((all, [endpoint, input]) => (
         Object.assign(all, { [endpoint]: RulesPermissionModel.create(input) })
       ), <{ [endpoint: string]: RulesPermissionModel }>{});
+    }
+
+    if(authentication){
+      this.authentication = new AuthenticationModel();
+      this.authentication.populateFrom(authentication);
     }
   }
 

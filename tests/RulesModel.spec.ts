@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IdTokenAttestationModel, InputClaimModel, InputModel, IssuanceAttestationsModel, RefreshConfigurationModel, RemoteKeyAuthorizationModel, RemoteKeyModel, RulesModel, RulesValidationError, SelfIssuedAttestationModel, TransformModel, TrustedIssuerModel, VerifiableCredentialModel, VerifiablePresentationAttestationModel } from '../lib';
+import { AuthenticationModel, AuthenticationScheme, IdTokenAttestationModel, InputClaimModel, InputModel, IssuanceAttestationsModel, RefreshConfigurationModel, RemoteKeyAuthorizationModel, RemoteKeyModel, RulesModel, RulesPermissionModel, RulesValidationError, SelfIssuedAttestationModel, TransformModel, TrustedIssuerModel, VerifiableCredentialModel, VerifiablePresentationAttestationModel } from '../lib';
 
 describe('RulesModel', () => {
   let RULES: RulesModel;
@@ -77,6 +77,8 @@ describe('RulesModel', () => {
       [
         new TrustedIssuerModel('end1')
       ],
+      undefined,
+      new AuthenticationModel(AuthenticationScheme.sharedSecret, 'test', 'test')
     );
   });
 
@@ -143,7 +145,7 @@ describe('RulesModel', () => {
       expect(roundtripDecryptionKeys.length).toEqual(2);
       expect(roundtripDecryptionKeys[0].authorization).toBeDefined();
 
-      var decryptionKey = roundtripDecryptionKeys[0];
+      const decryptionKey = roundtripDecryptionKeys[0];
       expect(decryptionKey).toBeDefined();
       expect(decryptionKey.authorization).toBeDefined();
       expect(decryptionKey.extractable).toBeTruthy();
@@ -167,6 +169,13 @@ describe('RulesModel', () => {
       expect(roundtripType.length).toEqual(rulesType.length);
       expect(roundtripSubject.put.here).toBeDefined();
       expect(roundtripSubject.put.here).toBe(rulesSubject.put.here);
+
+      // authentication model
+      const roundtripAuth = <AuthenticationModel> roundtrip.authentication;
+      expect(roundtripAuth).toBeDefined();
+      expect(roundtripAuth.header).toEqual(RULES.authentication!.header);
+      expect(roundtripAuth.type).toEqual(RULES.authentication!.type);
+      expect(roundtripAuth.secret).toEqual(RULES.authentication!.secret);
     });
 
     it('Input model must correctly derive from Rules Model ', () => {

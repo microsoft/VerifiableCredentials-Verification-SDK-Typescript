@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { AuthenticationModel } from '..';
 import { RemoteKeyAuthorizationModel } from './RemoteKeyAuthorizationModel';
 
 /**
@@ -16,7 +17,8 @@ export class RemoteKeyModel {
    * @param x5t the thumbprint of a certificate identifying the public key counterpart of the private key
    * @param pfx url instructing the issuer about where to obtain a PKCS 12 to obtain the private key for a decrypt/sign operation
    * @param extractable flag indicating if the remote key is extractable
-   * @param authorization an object that describes how the Issue API will authorize to the remote key
+   * @param authorization deprecated
+   * @param authentication an object that describes how the to authenticate to the remote signer
    */
   constructor(
     public kid?: string,
@@ -24,8 +26,9 @@ export class RemoteKeyModel {
     public x5t?: string,
     public pfx?: string,
     public extractable: boolean = false,
-    public authorization?: RemoteKeyAuthorizationModel
-  ) {}
+    public authorization?: RemoteKeyAuthorizationModel,
+    public authentication?: AuthenticationModel,
+  ) { }
 
   /**
    * Populate an instance of RemoteKeyAuthorizationModel from any instance
@@ -37,7 +40,15 @@ export class RemoteKeyModel {
     this.x5t = input.x5t;
     this.pfx = input.pfx;
     this.extractable = input.extractable;
-    this.authorization = new RemoteKeyAuthorizationModel();
-    this.authorization.populateFrom(input.authorization);
+
+    if (input.authorization) {
+      this.authorization = new RemoteKeyAuthorizationModel();
+      this.authorization.populateFrom(input.authorization);
+    }
+
+    if (input.authentication) {
+      this.authentication = new AuthenticationModel();
+      this.authentication.populateFrom(input.authentication);
+    }
   }
 }

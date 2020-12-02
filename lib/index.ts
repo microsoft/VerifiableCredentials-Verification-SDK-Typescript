@@ -67,6 +67,8 @@ export { PresentationProtocol, IResponse, RequestorBuilder, Requestor, IRequesto
 
 export { KeyStoreFactory, SubtleCryptoNode, CryptoFactoryManager, CryptographicKey, KeyType, KeyUse, JoseBuilder, IPayloadProtectionSigning, LongFormDid, Subtle, Crypto, CryptoBuilder, IKeyContainer, IKeyStore, KeyReference, CryptoFactory } from 'verifiablecredentials-crypto-sdk-typescript';
 
+import { AuthenticationModel } from './rules_model/AuthenticationModel';
+import { AuthenticationScheme } from './rules_model/AuthenticationModel';
 import { BaseAttestationModel } from './rules_model/BaseAttestationModel';
 import { BaseIssuanceModel } from './rules_model/BaseIssuanceModel';
 import { IdTokenAttestationModel } from './rules_model/IdTokenAttestationModel';
@@ -89,6 +91,8 @@ import { PresentationExchangeSchemaModel } from './rules_model/presentation_exch
 import { PresentationExchangeIssuanceModel } from './rules_model/presentation_exchange/PresentationExchangeIssuanceModel'; 
 import { PresentationExchangeConstraintsModel } from './rules_model/presentation_exchange/PresentationExchangeConstraintsModel'; 
 export {
+  AuthenticationModel,
+  AuthenticationScheme,
   PresentationDefinitionModel,
   PresentationExchangeInputDescriptorModel,
   PresentationExchangeSchemaModel,
