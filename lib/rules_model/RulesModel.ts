@@ -67,12 +67,18 @@ export class RulesModel extends BaseIssuanceModel {
 
     const { decryptionKeys, permissions, refresh, signingKeys, vc, authentication } = input;
 
+    // the AuthenticationModel is populated first because it may cascade down into child objects
+    if (authentication) {
+      this.authentication = new AuthenticationModel();
+      this.authentication.populateFrom(authentication);
+    }
+
     if (decryptionKeys) {
-      this.decryptionKeys = Array.from(decryptionKeys, RulesModel.createRemoteKey);
+      this.decryptionKeys = Array.from(decryptionKeys, key => RulesModel.createRemoteKey(key, this.authentication));
     }
 
     if (signingKeys) {
-      this.signingKeys = Array.from(signingKeys, RulesModel.createRemoteKey);
+      this.signingKeys = Array.from(signingKeys, key => RulesModel.createRemoteKey(key, this.authentication));
     }
 
     if (refresh) {
@@ -90,16 +96,11 @@ export class RulesModel extends BaseIssuanceModel {
         Object.assign(all, { [endpoint]: RulesPermissionModel.create(input) })
       ), <{ [endpoint: string]: RulesPermissionModel }>{});
     }
-
-    if(authentication){
-      this.authentication = new AuthenticationModel();
-      this.authentication.populateFrom(authentication);
-    }
   }
 
-  private static createRemoteKey(key: any): RemoteKeyModel {
+  private static createRemoteKey(key: any, authentication?: AuthenticationModel): RemoteKeyModel {
     const k = new RemoteKeyModel();
-    k.populateFrom(key);
+    k.populateFrom(key, authentication);
     return k;
   }
 }

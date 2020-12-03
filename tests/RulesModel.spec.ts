@@ -7,8 +7,10 @@ import { AuthenticationModel, AuthenticationScheme, IdTokenAttestationModel, Inp
 
 describe('RulesModel', () => {
   let RULES: RulesModel;
+  let AUTH: AuthenticationModel;
 
-  beforeAll(() => {
+  beforeEach(() => {
+    AUTH = new AuthenticationModel(AuthenticationScheme.sharedSecret, 'test', 'test');
     RULES = new RulesModel(
       'issuer uri',
       'issuer',
@@ -78,7 +80,7 @@ describe('RulesModel', () => {
         new TrustedIssuerModel('end1')
       ],
       undefined,
-      new AuthenticationModel(AuthenticationScheme.sharedSecret, 'test', 'test')
+      AUTH
     );
   });
 
@@ -144,6 +146,13 @@ describe('RulesModel', () => {
       expect(roundtripDecryptionKeys).toBeDefined();
       expect(roundtripDecryptionKeys.length).toEqual(2);
       expect(roundtripDecryptionKeys[0].authorization).toBeDefined();
+      expect(roundtripDecryptionKeys[0].authentication).toBeDefined();
+
+      // ensure the authentication object cascades
+      let auth = roundtripDecryptionKeys[0].authentication!;
+      expect(auth.header).toEqual(AUTH.header);
+      expect(auth.type).toEqual(AUTH.type);
+      expect(auth.secret).toEqual(AUTH.secret);
 
       const decryptionKey = roundtripDecryptionKeys[0];
       expect(decryptionKey).toBeDefined();
@@ -154,6 +163,13 @@ describe('RulesModel', () => {
       const roundtripSigningKeys = <RemoteKeyModel[]>roundtrip.signingKeys;
       expect(roundtripSigningKeys).toBeDefined();
       expect(roundtripSigningKeys.length).toEqual(1);
+      expect(roundtripSigningKeys[0].authentication).toBeDefined();
+
+      // ensure the authentication object cascades
+      auth = roundtripSigningKeys[0].authentication!;
+      expect(auth.header).toEqual(AUTH.header);
+      expect(auth.type).toEqual(AUTH.type);
+      expect(auth.secret).toEqual(AUTH.secret);
 
       // vc model compare
       const roundtripVc = <VerifiableCredentialModel>roundtrip.vc;
@@ -343,7 +359,26 @@ describe('RulesModel', () => {
       // Reset self-issued attestations.
       delete RULES.attestations!.selfIssued!.mapping!.name;
     });
-  });
+
+    it('RemoteKey Model can specify its own authentication scheme ', () => {
+      const expected = new AuthenticationModel(AuthenticationScheme.basic, 'test');
+      RULES.decryptionKeys![0].authentication = expected;
+
+      const json = JSON.stringify(RULES);
+      const roundtrip = new RulesModel();
+      roundtrip.populateFrom(JSON.parse(json));
+
+      // decryption keys
+      const roundtripDecryptionKeys = <RemoteKeyModel[]>roundtrip.decryptionKeys;
+      expect(roundtripDecryptionKeys).toBeDefined();
+      expect(roundtripDecryptionKeys.length).toEqual(2);
+      expect(roundtripDecryptionKeys[0].authentication).toBeDefined();
+      const auth = roundtripDecryptionKeys[0].authentication!;
+      expect(auth.header).toEqual(expected.header);
+      expect(auth.type).toEqual(expected.type);
+      expect(auth.secret).toEqual(expected.secret);
+    });
+    });
 
   describe('attestations.indexClaims', () => {
     const INDEX_CLAIMS = ['alias', 'email'];

@@ -33,20 +33,23 @@ export class RemoteKeyModel {
   /**
    * Populate an instance of RemoteKeyAuthorizationModel from any instance
    * @param input object instance to populate from
+   * @param authentication AuthenticationModel instance from the parent object
    */
-  populateFrom(input: any): void {
+  populateFrom(input: any, authentication?: AuthenticationModel): void {
     this.kid = input.kid;
     this.key = input.key;
     this.x5t = input.x5t;
     this.pfx = input.pfx;
     this.extractable = input.extractable;
+    this.authentication = authentication;
 
     if (input.authorization) {
       this.authorization = new RemoteKeyAuthorizationModel();
       this.authorization.populateFrom(input.authorization);
     }
 
-    if (input.authentication) {
+    // the root authentication instance may be overridden
+    if (input.authentication) {      
       this.authentication = new AuthenticationModel();
       this.authentication.populateFrom(input.authentication);
     }
