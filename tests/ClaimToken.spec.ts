@@ -27,7 +27,7 @@ import base64url from 'base64url';
     expect(claimToken.type).toEqual(TokenType.verifiableCredential);
     claimToken = new ClaimToken(TokenType.verifiablePresentationJwt, token, configuration);
     expect(claimToken.type).toEqual(TokenType.verifiablePresentationJwt);
-    delete payload.vc;
+    delete (<any>payload).vc;
     token = base64url.encode(JSON.stringify(header)) + '.' + base64url.encode(JSON.stringify(payload)) + '.';
     claimToken = new ClaimToken(TokenType.selfIssued, token, configuration);
     expect(claimToken.type).toEqual(TokenType.selfIssued);
