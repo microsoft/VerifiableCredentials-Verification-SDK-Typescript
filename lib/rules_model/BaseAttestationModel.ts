@@ -9,19 +9,22 @@ import { InputClaimModel } from './InputClaimModel';
  * Base class for input attestations
  */
 export abstract class BaseAttestationModel {
+
   /**
    *
    * @param mapping a map of string to InputClaimModel instances
    * @param encrypted flag indicating if the attestation is encrypted
    * @param claims an array of InputClaimModel values
    * @param required an array of InputClaimModel values
+   * @param id the identifier of the attestation
    */
   constructor(
     public mapping?: { [map: string]: InputClaimModel },
     public encrypted = false,
     public claims?: InputClaimModel[],
     public required = false,
-  ) {}
+    private _id?: string,
+  ) { }
 
   /**
    * Mapping keys of all index claims.
@@ -40,6 +43,13 @@ export abstract class BaseAttestationModel {
   abstract get name(): string;
 
   /**
+   * Gets the id of the attestation
+   */
+  get id(): string {
+    return this._id ?? this.name;
+  }
+
+  /**
    * Populate an instance of BaseAttestationModel from any instance
    * @param input object instance to populate from
    */
@@ -48,6 +58,7 @@ export abstract class BaseAttestationModel {
     this.claims = input.claims;
     this.mapping = {};
     this.required = input.required;
+    this._id = input._id;
 
     if (input.mapping) {
       for (let key of Object.keys(input.mapping)) {

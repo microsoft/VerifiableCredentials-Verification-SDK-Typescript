@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { AuthenticationModel, AuthenticationScheme, IdTokenAttestationModel, InputClaimModel, InputModel, IssuanceAttestationsModel, RefreshConfigurationModel, RemoteKeyAuthorizationModel, RemoteKeyModel, RulesModel, RulesPermissionModel, RulesValidationError, SelfIssuedAttestationModel, TransformModel, TrustedIssuerModel, VerifiableCredentialModel, VerifiablePresentationAttestationModel } from '../lib';
+import { AuthenticationModel, AuthenticationScheme, BaseAttestationModel, IdTokenAttestationModel, InputClaimModel, InputModel, IssuanceAttestationsModel, RefreshConfigurationModel, RemoteKeyAuthorizationModel, RemoteKeyModel, RulesModel, RulesPermissionModel, RulesValidationError, SelfIssuedAttestationModel, TransformModel, TrustedIssuerModel, VerifiableCredentialModel, VerifiablePresentationAttestationModel } from '../lib';
 
 describe('RulesModel', () => {
   let RULES: RulesModel;
@@ -118,6 +118,8 @@ describe('RulesModel', () => {
       expect(roundtripSelfIssuedMapping).toBeDefined();
       expect(roundtripSelfIssued.required).toEqual(rulesSelfIssuedAttestation.required);
       expect(Object.keys(roundtripSelfIssuedMapping).length).toEqual(Object.keys(<any>RULES.attestations?.selfIssued?.mapping).length);
+      // when id is not specified, it's the same as the name
+      expect((<BaseAttestationModel>roundtripSelfIssued).id).toEqual((<BaseAttestationModel>roundtripSelfIssued).name);
 
       // analyze the contents of input claim
       const roundtripAlias = <InputClaimModel>roundtrip.attestations?.selfIssued?.mapping?.alias;
@@ -136,10 +138,16 @@ describe('RulesModel', () => {
       expect(<any>roundtripPresentations[0].validityInterval).toEqual(5 * 60);
       expect(Object.keys(<any>roundtripPresentations[0].mapping).length).toEqual(2);
 
+      // when id is not specified, it's the same as the name
+      expect((<BaseAttestationModel>roundtripPresentations[0]).id).toEqual((<BaseAttestationModel>roundtripPresentations[0]).name);
+
       const roundtripIdTokens = <IdTokenAttestationModel[]>roundtrip.attestations?.idTokens;
       expect(roundtripIdTokens).toBeDefined();
       expect(roundtripIdTokens.length).toEqual(1);
       expect(Object.keys(<any>roundtripIdTokens[0].mapping).length).toEqual(2);
+
+      // when id is not specified, it's the same as the name
+      expect((<BaseAttestationModel>roundtripIdTokens[0]).id).toEqual((<BaseAttestationModel>roundtripIdTokens[0]).name);
 
       // decryption keys
       const roundtripDecryptionKeys = <RemoteKeyModel[]>roundtrip.decryptionKeys;
@@ -378,7 +386,103 @@ describe('RulesModel', () => {
       expect(auth.type).toEqual(expected.type);
       expect(auth.secret).toEqual(expected.secret);
     });
+
+    it('BaseAttestationModel.id is set correctly for SelfIssuedAttestationModel', () => {
+      const expectedId = 'myId';
+
+      RULES.attestations = new IssuanceAttestationsModel(
+        new SelfIssuedAttestationModel(
+          {
+            alias: new InputClaimModel('name', 'string', false, true, new TransformModel('name', 'remote'))
+          },
+          false,
+          undefined,
+          true,
+          expectedId
+        ),
+      );
+
+      const json = JSON.stringify(RULES);
+      const roundtrip = new RulesModel();
+      roundtrip.populateFrom(JSON.parse(json));
+
+      expect(roundtrip.attestations).toBeDefined();
+      expect(roundtrip.attestations?.selfIssued).toBeDefined();
+      expect(roundtrip.attestations?.selfIssued?.id).toEqual(expectedId);
     });
+
+    it('BaseAttestationModel.id is set correctly for IdTokenAttestationModel', () => {
+      const expectedId = 'myId';
+
+      RULES.attestations = new IssuanceAttestationsModel(
+        undefined,
+        undefined,
+        [
+          new IdTokenAttestationModel(
+            'oidc config endpoint',
+            'clientId',
+            'redirect',
+            'scope',
+            {
+              email: new InputClaimModel('upn', 'string', false, true),
+              name: new InputClaimModel('name')
+            },
+            false,
+            undefined,
+            false,
+            expectedId
+          ),
+        ]
+      );
+
+      const json = JSON.stringify(RULES);
+      const roundtrip = new RulesModel();
+      roundtrip.populateFrom(JSON.parse(json));
+
+      expect(roundtrip.attestations).toBeDefined();
+      expect(roundtrip.attestations?.idTokens).toBeDefined();
+      expect(roundtrip.attestations?.idTokens![0].id).toEqual(expectedId);
+    });
+
+    it('BaseAttestationModel.id is set correctly for VerifiablePresentationAttestationModel', () => {
+      const expectedId = 'myId';
+
+      RULES.attestations = new IssuanceAttestationsModel(
+        undefined,
+        [
+          new VerifiablePresentationAttestationModel(
+            'CredentialType',
+            5 * 60,
+            [
+              new TrustedIssuerModel('trusted issuer 1'),
+              new TrustedIssuerModel('trusted issuer 2')
+            ],
+            [
+              new TrustedIssuerModel('endorser')
+            ],
+            [
+              'contract'
+            ],
+            {
+              givenName: new InputClaimModel('vc.credentialSubject.givenName'),
+              familyName: new InputClaimModel('vc.credentialSubject.familyName', 'string', true)
+            },
+            false,
+            undefined,
+            false,
+            expectedId)
+        ]
+      );
+
+      const json = JSON.stringify(RULES);
+      const roundtrip = new RulesModel();
+      roundtrip.populateFrom(JSON.parse(json));
+
+      expect(roundtrip.attestations).toBeDefined();
+      expect(roundtrip.attestations?.presentations).toBeDefined();
+      expect(roundtrip.attestations?.presentations![0].id).toEqual(expectedId);
+    });
+  });
 
   describe('attestations.indexClaims', () => {
     const INDEX_CLAIMS = ['alias', 'email'];

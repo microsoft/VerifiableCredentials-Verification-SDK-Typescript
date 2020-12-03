@@ -22,6 +22,7 @@ export class VerifiablePresentationAttestationModel extends BaseAttestationModel
    * @param encrypted flag indicating if the attestation is encrypted
    * @param claims an array of InputClaimModel values
    * @param required a flag indicating whether the attestation is required
+   * @param id the identifier of the attestation
    */
   constructor (
     public credentialType?: string, 
@@ -32,8 +33,9 @@ export class VerifiablePresentationAttestationModel extends BaseAttestationModel
     mapping?: { [map: string]: InputClaimModel}, 
     encrypted: boolean = false, 
     claims?: InputClaimModel[], 
-    required: boolean = false) {
-    super(mapping, encrypted, claims, required);
+    required: boolean = false,
+    id?: string) {
+    super(mapping, encrypted, claims, required, id);
   }
 
   /**
