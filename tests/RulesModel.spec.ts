@@ -3,11 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { AuthenticationModel, AuthenticationScheme, BaseAttestationModel, IdTokenAttestationModel, InputClaimModel, InputModel, IssuanceAttestationsModel, RefreshConfigurationModel, RemoteKeyAuthorizationModel, RemoteKeyModel, RulesModel, RulesPermissionModel, RulesValidationError, SelfIssuedAttestationModel, TransformModel, TrustedIssuerModel, VerifiableCredentialModel, VerifiablePresentationAttestationModel } from '../lib';
+import { AuthenticationModel, AuthenticationScheme, BaseAttestationModel, DataProviderModel, EventBindingModel, IdTokenAttestationModel, InputClaimModel, InputModel, IssuanceAttestationsModel, RefreshConfigurationModel, RemoteKeyAuthorizationModel, RemoteKeyModel, RulesModel, RulesPermissionModel, RulesValidationError, SelfIssuedAttestationModel, TransformModel, TrustedIssuerModel, VerifiableCredentialModel, VerifiablePresentationAttestationModel } from '../lib';
 
 describe('RulesModel', () => {
   let RULES: RulesModel;
   let AUTH: AuthenticationModel;
+  const TestHeader = 'header';
+
+  function validateAuthenticationModel(expected: AuthenticationModel, test: AuthenticationModel){
+    expect(test.header).toEqual(expected.header);
+    expect(test.type).toEqual(expected.type);
+    expect(test.secret).toEqual(expected.secret);
+  }
 
   beforeEach(() => {
     AUTH = new AuthenticationModel(AuthenticationScheme.sharedSecret, 'test', 'test');
@@ -80,7 +87,10 @@ describe('RulesModel', () => {
         new TrustedIssuerModel('end1')
       ],
       undefined,
-      AUTH
+      AUTH,
+      new EventBindingModel(
+        new DataProviderModel('test', undefined, { 'test': TestHeader }, 100)
+      )
     );
   });
 
@@ -157,10 +167,7 @@ describe('RulesModel', () => {
       expect(roundtripDecryptionKeys[0].authentication).toBeDefined();
 
       // ensure the authentication object cascades
-      let auth = roundtripDecryptionKeys[0].authentication!;
-      expect(auth.header).toEqual(AUTH.header);
-      expect(auth.type).toEqual(AUTH.type);
-      expect(auth.secret).toEqual(AUTH.secret);
+      validateAuthenticationModel(AUTH, roundtripDecryptionKeys[0].authentication!);
 
       const decryptionKey = roundtripDecryptionKeys[0];
       expect(decryptionKey).toBeDefined();
@@ -174,10 +181,7 @@ describe('RulesModel', () => {
       expect(roundtripSigningKeys[0].authentication).toBeDefined();
 
       // ensure the authentication object cascades
-      auth = roundtripSigningKeys[0].authentication!;
-      expect(auth.header).toEqual(AUTH.header);
-      expect(auth.type).toEqual(AUTH.type);
-      expect(auth.secret).toEqual(AUTH.secret);
+      validateAuthenticationModel(AUTH, roundtripSigningKeys[0].authentication!);
 
       // vc model compare
       const roundtripVc = <VerifiableCredentialModel>roundtrip.vc;
@@ -197,9 +201,21 @@ describe('RulesModel', () => {
       // authentication model
       const roundtripAuth = <AuthenticationModel> roundtrip.authentication;
       expect(roundtripAuth).toBeDefined();
-      expect(roundtripAuth.header).toEqual(RULES.authentication!.header);
-      expect(roundtripAuth.type).toEqual(RULES.authentication!.type);
-      expect(roundtripAuth.secret).toEqual(RULES.authentication!.secret);
+      validateAuthenticationModel(RULES.authentication!, roundtripAuth);
+
+      
+      // event bindings model
+      const roundtripEventBindings = <EventBindingModel> roundtrip.eventBindings;
+      expect(roundtripEventBindings).toBeDefined();
+      expect(roundtripEventBindings.onTokenAugmentation).toBeDefined();
+
+      const tokenAug = <DataProviderModel> roundtripEventBindings.onTokenAugmentation;
+      expect(tokenAug.id).toEqual(RULES.eventBindings!.onTokenAugmentation!.id);
+      expect(tokenAug.timeoutInMilliseconds).toEqual(RULES.eventBindings!.onTokenAugmentation!.timeoutInMilliseconds);
+      expect(tokenAug.authentication).toBeDefined();
+      validateAuthenticationModel(AUTH, tokenAug.authentication);
+      expect(tokenAug.headers.test).toBeDefined();
+      expect(tokenAug.headers.test).toEqual(TestHeader);
     });
 
     it('Input model must correctly derive from Rules Model ', () => {
@@ -368,7 +384,7 @@ describe('RulesModel', () => {
       delete RULES.attestations!.selfIssued!.mapping!.name;
     });
 
-    it('RemoteKey Model can specify its own authentication scheme ', () => {
+    it('RemoteKey Model can specify its own AuthenticationModel instance ', () => {
       const expected = new AuthenticationModel(AuthenticationScheme.basic, 'test');
       RULES.decryptionKeys![0].authentication = expected;
 
@@ -381,11 +397,25 @@ describe('RulesModel', () => {
       expect(roundtripDecryptionKeys).toBeDefined();
       expect(roundtripDecryptionKeys.length).toEqual(2);
       expect(roundtripDecryptionKeys[0].authentication).toBeDefined();
-      const auth = roundtripDecryptionKeys[0].authentication!;
-      expect(auth.header).toEqual(expected.header);
-      expect(auth.type).toEqual(expected.type);
-      expect(auth.secret).toEqual(expected.secret);
+      validateAuthenticationModel(expected, roundtripDecryptionKeys[0].authentication!);
     });
+
+    it('EventBindingModel.onTokenAugmentation can specify its AuthenticationModel instance ', () => {
+      const expected = new AuthenticationModel(AuthenticationScheme.basic, 'test');
+      const dpm = new DataProviderModel('test', expected);
+      RULES.eventBindings!.onTokenAugmentation = dpm;
+
+      const json = JSON.stringify(RULES);
+      const roundtrip = new RulesModel();
+      roundtrip.populateFrom(JSON.parse(json));
+
+      // decryption keys
+      const roundtripEventBindings = roundtrip.eventBindings!;
+      expect(roundtripEventBindings).toBeDefined();
+      expect(roundtripEventBindings.onTokenAugmentation).toBeDefined();
+      validateAuthenticationModel(expected, roundtripEventBindings.onTokenAugmentation!.authentication!);
+    });
+
 
     it('BaseAttestationModel.id is set correctly for SelfIssuedAttestationModel', () => {
       const expectedId = 'myId';

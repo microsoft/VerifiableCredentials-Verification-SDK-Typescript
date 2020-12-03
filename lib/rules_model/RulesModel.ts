@@ -5,6 +5,7 @@
 
 import { AuthenticationModel } from './AuthenticationModel';
 import { BaseIssuanceModel } from './BaseIssuanceModel';
+import { EventBindingModel } from './EventBindingModel';
 import { IssuanceAttestationsModel } from './IssuanceAttestationsModel';
 import { RefreshConfigurationModel } from './RefreshConfigurationModel';
 import { RemoteKeyModel } from './RemoteKeyModel';
@@ -47,7 +48,8 @@ export class RulesModel extends BaseIssuanceModel {
     public minimalDisclosure: boolean = false,
     public endorsers?: TrustedIssuerModel[],
     public permissions?: { [endpoint: string]: RulesPermissionModel },
-    public authentication?: AuthenticationModel
+    public authentication?: AuthenticationModel,
+    public eventBindings?: EventBindingModel
   ) {
     super(credentialIssuer, issuer, attestations);
   }
@@ -65,7 +67,7 @@ export class RulesModel extends BaseIssuanceModel {
     this.endorsers = input.endorsers;
     this.clientRevocationDisabled = input.clientRevocationDisabled ?? false;
 
-    const { decryptionKeys, permissions, refresh, signingKeys, vc, authentication } = input;
+    const { decryptionKeys, permissions, refresh, signingKeys, vc, authentication, eventBindings } = input;
 
     // the AuthenticationModel is populated first because it may cascade down into child objects
     if (authentication) {
@@ -95,6 +97,11 @@ export class RulesModel extends BaseIssuanceModel {
       this.permissions = Object.entries(<{ [endpoint: string]: any }>permissions).reduce((all, [endpoint, input]) => (
         Object.assign(all, { [endpoint]: RulesPermissionModel.create(input) })
       ), <{ [endpoint: string]: RulesPermissionModel }>{});
+    }
+
+    if(eventBindings){
+      this.eventBindings = new EventBindingModel();
+      this.eventBindings.populateFrom(eventBindings, this.authentication);
     }
   }
 

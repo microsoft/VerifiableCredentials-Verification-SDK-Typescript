@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { time } from "console";
 import { RulesValidationError } from "../error_handling/RulesValidationError";
 import { AuthenticationModel } from "./AuthenticationModel";
 
@@ -15,7 +14,7 @@ export declare type DataProviderHeaders = {
 };
 
 /**
- * Data Model to describe external service authentication
+ * Data Model to describe external service data providers
  */
 export class DataProviderModel {
   /**
@@ -62,7 +61,6 @@ export class DataProviderModel {
    */
   populateFrom(input: any, authentication?: AuthenticationModel): void {
     const { id, headers, timeoutInMilliseconds } = input;
-    this._authentication = authentication;
 
     if (!id) {
       throw new RulesValidationError('missing required "id" property');
@@ -75,6 +73,9 @@ export class DataProviderModel {
     if(timeoutInMilliseconds){
       this.timeoutInMilliseconds = timeoutInMilliseconds;
     }
+
+    this._authentication = authentication;
+    this._id = id;
 
     // the root authentication instance may be overridden
     if (input.authentication) {
