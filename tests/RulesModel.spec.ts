@@ -6,11 +6,11 @@
 import { AuthenticationModel, AuthenticationScheme, BaseAttestationModel, DataProviderModel, EventBindingModel, IdTokenAttestationModel, InputClaimModel, InputModel, IssuanceAttestationsModel, RefreshConfigurationModel, RemoteKeyAuthorizationModel, RemoteKeyModel, RulesModel, RulesPermissionModel, RulesValidationError, SelfIssuedAttestationModel, TransformModel, TrustedIssuerModel, VerifiableCredentialModel, VerifiablePresentationAttestationModel } from '../lib';
 
 describe('RulesModel', () => {
-  let RULES: RulesModel;
+  let RULES: any;
   let AUTH: AuthenticationModel;
   const TestHeader = 'header';
 
-  function validateAuthenticationModel(expected: AuthenticationModel, test: AuthenticationModel){
+  function validateAuthenticationModel(expected: AuthenticationModel, test: AuthenticationModel) {
     expect(test.header).toEqual(expected.header);
     expect(test.type).toEqual(expected.type);
     expect(test.secret).toEqual(expected.secret);
@@ -88,10 +88,18 @@ describe('RulesModel', () => {
       ],
       undefined,
       AUTH,
-      new EventBindingModel(
-        new DataProviderModel('test', undefined, { 'test': TestHeader }, 100)
-      )
     );
+
+
+    /**
+     * in order to test that the authentication object in rules can cascade down to DataProviderModel instances,
+     * since DataProvider.authentication cannot be undefined, there's no way to set it in a ctor, so it has to be removed after the fact
+     */    
+    const eventBindings = new EventBindingModel();
+    eventBindings.onTokenAugmentation = new DataProviderModel('test', AUTH, { 'test': TestHeader }, 100);
+    const json = JSON.parse(JSON.stringify(eventBindings));
+    json.onTokenAugmentation.authentication = undefined;
+    RULES.eventBindings = JSON.parse(JSON.stringify(json));
   });
 
   // tslint:disable-next-line:max-func-body-length
@@ -199,17 +207,17 @@ describe('RulesModel', () => {
       expect(roundtripSubject.put.here).toBe(rulesSubject.put.here);
 
       // authentication model
-      const roundtripAuth = <AuthenticationModel> roundtrip.authentication;
+      const roundtripAuth = <AuthenticationModel>roundtrip.authentication;
       expect(roundtripAuth).toBeDefined();
       validateAuthenticationModel(RULES.authentication!, roundtripAuth);
 
-      
+
       // event bindings model
-      const roundtripEventBindings = <EventBindingModel> roundtrip.eventBindings;
+      const roundtripEventBindings = <EventBindingModel>roundtrip.eventBindings;
       expect(roundtripEventBindings).toBeDefined();
       expect(roundtripEventBindings.onTokenAugmentation).toBeDefined();
 
-      const tokenAug = <DataProviderModel> roundtripEventBindings.onTokenAugmentation;
+      const tokenAug = <DataProviderModel>roundtripEventBindings.onTokenAugmentation;
       expect(tokenAug.id).toEqual(RULES.eventBindings!.onTokenAugmentation!.id);
       expect(tokenAug.timeoutInMilliseconds).toEqual(RULES.eventBindings!.onTokenAugmentation!.timeoutInMilliseconds);
       expect(tokenAug.authentication).toBeDefined();
@@ -246,7 +254,7 @@ describe('RulesModel', () => {
       // self issued claims
       let rulesMap = <any>rulesSelfIssuedAttestation.mapping;
       let claims = <InputClaimModel[]>inputSelfIssuedAttestation.claims;
-      let inputMap:{[index: string]:any} = {} = {};
+      let inputMap: { [index: string]: any } = {} = {};
       claims.map((value) => inputMap[value.claim!] = value);
       allMaps.push({ rules: rulesMap, input: inputMap });
 
@@ -264,7 +272,7 @@ describe('RulesModel', () => {
         rulesMap = rulesIdTokens[i].mapping;
         claims = <InputClaimModel[]>inputIdTokens[i].claims;
         inputMap = {};
-        claims.map((value) => inputMap[value.claim!]= value);
+        claims.map((value) => inputMap[value.claim!] = value);
         allMaps.push({ rules: rulesMap, input: inputMap });
       }
 
@@ -280,7 +288,7 @@ describe('RulesModel', () => {
         rulesMap = rulesPresentations[i].mapping;
         claims = <InputClaimModel[]>inputPresentations[i].claims;
         inputMap = {};
-        claims.map((value) => inputMap[value.claim!]= value);
+        claims.map((value) => inputMap[value.claim!] = value);
         allMaps.push({ rules: rulesMap, input: inputMap });
       }
 

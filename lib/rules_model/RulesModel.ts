@@ -99,8 +99,7 @@ export class RulesModel extends BaseIssuanceModel {
     }
 
     if(eventBindings){
-      this.eventBindings = new EventBindingModel();
-      this.eventBindings.populateFrom(eventBindings, this.authentication);
+      this.eventBindings = EventBindingModel.fromJSON(eventBindings, this.authentication);
     }
   }
 

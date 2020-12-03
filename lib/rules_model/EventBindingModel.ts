@@ -10,23 +10,25 @@ import { DataProviderModel } from "./DataProviderModel";
  * Data Model to describe external service authentication
  */
 export class EventBindingModel {
+
   /**
-   * 
-   * @param onTokenAugmentation DataProviderModel instance describing token augmentation process
+   * DataProviderModel instance describing token augmentation process
    */
-  constructor(public onTokenAugmentation?: DataProviderModel) { }
+  public onTokenAugmentation?: DataProviderModel
 
   /**
    * Populate an instance of AuthenticationModel from any instance
    * @param input object instance to populate from
    * @param authentication AuthenticationModel instance from the parent object
    */
-  populateFrom(input: any, authentication?: AuthenticationModel): void {
+  static fromJSON(input: any, authentication?: AuthenticationModel): EventBindingModel {
     const { onTokenAugmentation } = input;
+    const result = new EventBindingModel();
 
-    if(onTokenAugmentation){
-      this.onTokenAugmentation = new DataProviderModel();
-      this.onTokenAugmentation.populateFrom(onTokenAugmentation, authentication);
+    if (onTokenAugmentation) {
+      result.onTokenAugmentation = DataProviderModel.fromJSON(onTokenAugmentation, authentication);
     }
+
+    return result;
   }
 }
