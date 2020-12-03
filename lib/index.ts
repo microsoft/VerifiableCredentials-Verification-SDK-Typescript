@@ -71,6 +71,8 @@ import { AuthenticationModel } from './rules_model/AuthenticationModel';
 import { AuthenticationScheme } from './rules_model/AuthenticationModel';
 import { BaseAttestationModel } from './rules_model/BaseAttestationModel';
 import { BaseIssuanceModel } from './rules_model/BaseIssuanceModel';
+import { DataProviderHeaders } from './rules_model/DataProviderModel';
+import { DataProviderModel } from './rules_model/DataProviderModel';
 import { IdTokenAttestationModel } from './rules_model/IdTokenAttestationModel';
 import { InputClaimModel } from './rules_model/InputClaimModel';
 import { InputModel } from './rules_model/InputModel';
@@ -93,6 +95,8 @@ import { PresentationExchangeConstraintsModel } from './rules_model/presentation
 export {
   AuthenticationModel,
   AuthenticationScheme,
+  DataProviderHeaders,
+  DataProviderModel,
   PresentationDefinitionModel,
   PresentationExchangeInputDescriptorModel,
   PresentationExchangeSchemaModel,

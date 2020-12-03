@@ -49,6 +49,16 @@ export abstract class BaseAttestationModel {
     return this._id ?? this.name;
   }
 
+  toJSON(): any {
+    return {
+      id: this.id,
+      mapping: this.mapping,
+      encrypted: this.encrypted,
+      claims: this.claims,
+      required: this.required,
+    };
+  }
+
   /**
    * Populate an instance of BaseAttestationModel from any instance
    * @param input object instance to populate from
@@ -58,7 +68,7 @@ export abstract class BaseAttestationModel {
     this.claims = input.claims;
     this.mapping = {};
     this.required = input.required;
-    this._id = input._id;
+    this._id = input.id;
 
     if (input.mapping) {
       for (let key of Object.keys(input.mapping)) {

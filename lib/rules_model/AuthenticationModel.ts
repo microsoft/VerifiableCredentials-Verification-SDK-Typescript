@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { RulesValidationError } from "..";
+import { RulesValidationError } from "../error_handling/RulesValidationError";
 
 /**
  * Defines the presentation protcol

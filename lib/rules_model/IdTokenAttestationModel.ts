@@ -29,9 +29,9 @@ export class IdTokenAttestationModel extends BaseAttestationModel {
     // tslint:disable-next-line:variable-name
     public redirect_uri?: string,
     public scope?: string,
-    mapping?: { [map: string]: InputClaimModel }, 
-    encrypted: boolean = false, 
-    claims?: InputClaimModel[], 
+    mapping?: { [map: string]: InputClaimModel },
+    encrypted: boolean = false,
+    claims?: InputClaimModel[],
     required: boolean = false,
     id?: string) {
     super(mapping, encrypted, claims, required, id);
@@ -44,6 +44,15 @@ export class IdTokenAttestationModel extends BaseAttestationModel {
     return this.configuration!;
   }
 
+  toJSON(): any {
+    const result = super.toJSON();
+    result.configuration = this.configuration;
+    result.client_id = this.client_id;
+    result.redirect_uri = this.redirect_uri;
+    result.scope = this.scope;
+    return result;
+  }
+
   /**
    * Populate an instance of IdTokenAttestationModel from any instance
    * @param input object instance to populate from
@@ -52,7 +61,7 @@ export class IdTokenAttestationModel extends BaseAttestationModel {
     super.populateFrom(input);
     this.configuration = input.configuration;
     this.client_id = input.client_id;
-    this.redirect_uri  = input.redirect_uri;
+    this.redirect_uri = input.redirect_uri;
     this.scope = input.scope;
   }
 
