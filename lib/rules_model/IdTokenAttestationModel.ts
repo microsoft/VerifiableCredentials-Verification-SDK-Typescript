@@ -20,6 +20,7 @@ export class IdTokenAttestationModel extends BaseAttestationModel {
    * @param encrypted flag indicating if the attestation is encrypted
    * @param claims an array of InputClaimModel values
    * @param required a flag indicating whether the attestation is required
+   * @param id the identifier of the attestation
    */
   constructor(
     public configuration?: string,
@@ -28,11 +29,12 @@ export class IdTokenAttestationModel extends BaseAttestationModel {
     // tslint:disable-next-line:variable-name
     public redirect_uri?: string,
     public scope?: string,
-    mapping?: { [map: string]: InputClaimModel }, 
-    encrypted: boolean = false, 
-    claims?: InputClaimModel[], 
-    required: boolean = false) {
-    super(mapping, encrypted, claims, required);
+    mapping?: { [map: string]: InputClaimModel },
+    encrypted: boolean = false,
+    claims?: InputClaimModel[],
+    required: boolean = false,
+    id?: string) {
+    super(mapping, encrypted, claims, required, id);
   }
 
   /**
@@ -40,6 +42,15 @@ export class IdTokenAttestationModel extends BaseAttestationModel {
    */
   get name(): string {
     return this.configuration!;
+  }
+
+  toJSON(): any {
+    const result = super.toJSON();
+    result.configuration = this.configuration;
+    result.client_id = this.client_id;
+    result.redirect_uri = this.redirect_uri;
+    result.scope = this.scope;
+    return result;
   }
 
   /**
@@ -50,7 +61,7 @@ export class IdTokenAttestationModel extends BaseAttestationModel {
     super.populateFrom(input);
     this.configuration = input.configuration;
     this.client_id = input.client_id;
-    this.redirect_uri  = input.redirect_uri;
+    this.redirect_uri = input.redirect_uri;
     this.scope = input.scope;
   }
 
