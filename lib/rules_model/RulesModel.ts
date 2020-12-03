@@ -71,8 +71,7 @@ export class RulesModel extends BaseIssuanceModel {
 
     // the AuthenticationModel is populated first because it may cascade down into child objects
     if (authentication) {
-      this.authentication = new AuthenticationModel();
-      this.authentication.populateFrom(authentication);
+      this.authentication = AuthenticationModel.fromJSON(authentication);
     }
 
     if (decryptionKeys) {

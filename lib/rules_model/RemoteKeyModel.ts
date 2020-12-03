@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { AuthenticationModel } from '..';
+import { AuthenticationModel } from './AuthenticationModel';
 import { RemoteKeyAuthorizationModel } from './RemoteKeyAuthorizationModel';
 
 /**
@@ -40,8 +40,7 @@ export class RemoteKeyModel {
     this.key = input.key;
     this.x5t = input.x5t;
     this.pfx = input.pfx;
-    this.extractable = input.extractable;
-    this.authentication = authentication;
+    this.extractable = input.extractable;    
 
     if (input.authorization) {
       this.authorization = new RemoteKeyAuthorizationModel();
@@ -49,9 +48,6 @@ export class RemoteKeyModel {
     }
 
     // the root authentication instance may be overridden
-    if (input.authentication) {      
-      this.authentication = new AuthenticationModel();
-      this.authentication.populateFrom(input.authentication);
-    }
+    this.authentication = input.authentication ? AuthenticationModel.fromJSON(input.authentication) : authentication;
   }
 }

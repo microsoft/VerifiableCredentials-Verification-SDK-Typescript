@@ -9,7 +9,7 @@ import { AuthenticationModel } from "./AuthenticationModel";
 /**
  * Type that describes an object that maps a key to a value.
  */
-export declare type DataProviderHeaders = {
+export type DataProviderHeaders = {
   [header: string]: string;
 };
 
@@ -70,21 +70,19 @@ export class DataProviderModel {
       this.headers = headers;
     }
 
-    if(timeoutInMilliseconds){
+    if (timeoutInMilliseconds) {
       this.timeoutInMilliseconds = timeoutInMilliseconds;
     }
 
-    this._authentication = authentication;
     this._id = id;
 
     // the root authentication instance may be overridden
     if (input.authentication) {
-      this._authentication = new AuthenticationModel();
-      this._authentication.populateFrom(input.authentication);
-    }
-
-    // we must have a valid AuthenticationModel value set
-    if (!this._authentication) {
+      this._authentication = AuthenticationModel.fromJSON(input.authentication);
+    } else if (authentication) {
+      this._authentication = authentication;
+    } else {
+      // we must have a valid AuthenticationModel value set
       throw new RulesValidationError('authentication is not configured');
     }
   }
