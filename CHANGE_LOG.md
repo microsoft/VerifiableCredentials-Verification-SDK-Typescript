@@ -1,3 +1,10 @@
+# version 0.11.1-preview.0
+## Support correlation vectors
+**Type of change:** new feature    
+**Customer impact:** low
+
+
+
 # version 0.10.1
 ## Support for json-ld proofs
 **Type of change:** new feature    

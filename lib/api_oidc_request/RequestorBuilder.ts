@@ -2,7 +2,9 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import { count } from 'console';
 import { Crypto, CryptoBuilder, JoseBuilder, IPayloadProtectionSigning, Requestor, IRequestorPresentationExchange, IRequestorAttestation, IRequestor } from '../index';
+import { CorrelationVector } from '../tracing/CorrelationVector';
 
 /**
  * Defines the presentation protcol
@@ -29,6 +31,7 @@ export default class RequestorBuilder {
   private _nonce: string | undefined;
   private _issuance: boolean = false;
   private _crypto: Crypto = new CryptoBuilder().build();
+  private _correlationVector = CorrelationVector.createCorrelationVector();
 
   /**
    * Create a new instance of RequestorBuilder
@@ -149,21 +152,43 @@ export default class RequestorBuilder {
   }
 
   /**
+    * Sets the correlation vector
+    * @param correlationVector The correlation vector
+    * @returns The validator builder
+    */
+   public useCorrelationVector(correlationVector: string): RequestorBuilder {
+    CorrelationVector.validateCorrelationVectorDuringCreation = false;
+    if (correlationVector.split('.').length === 1) {
+      correlationVector += '.0';
+    }
+
+    this._correlationVector = CorrelationVector.parse(correlationVector);
+    return this;
+  }
+
+  /**
+   * Get the correlation vector for the request
+   */
+  public get correlationVector() {
+    return this._correlationVector.value;
+  }
+
+  /**
     * Sets the nonce
     * @param nonce The nonce for the request
     * @returns The validator builder
     */
    public useNonce(nonce: string): RequestorBuilder {
-     this._nonce = nonce;
-     return this;
-   }
- 
-   /**
-    * Get the nonce for the request
-    */
-   public get nonce() {
-     return this._nonce;
-   }
+    this._nonce = nonce;
+    return this;
+  }
+
+  /**
+   * Get the nonce for the request
+   */
+  public get nonce() {
+    return this._nonce;
+  }
 
   /**
    * Build the requestor
