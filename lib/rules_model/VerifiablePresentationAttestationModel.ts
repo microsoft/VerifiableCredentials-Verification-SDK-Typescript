@@ -14,7 +14,7 @@ export class VerifiablePresentationAttestationModel extends BaseAttestationModel
   /**
    * Instantiates a VerifiablePresentationModel
    * @param credentialType the type of the Verifiable Credential as specified: https://www.w3.org/TR/vc-data-model/#types
-   * @param validityInterval Expirty in seconds for the requested VP.
+   * @param validityInterval Expiry in seconds for the requested VP.
    * @param issuers an array of Trusted Issuers for the Verifiable Credential
    * @param endorsers an array of Trusted Endorsers for the Verifiable Credential
    * @param contracts an array of URLs to approved contracts which return the type of Verifiable Credential
@@ -22,18 +22,20 @@ export class VerifiablePresentationAttestationModel extends BaseAttestationModel
    * @param encrypted flag indicating if the attestation is encrypted
    * @param claims an array of InputClaimModel values
    * @param required a flag indicating whether the attestation is required
+   * @param id the identifier of the attestation
    */
-  constructor (
-    public credentialType?: string, 
+  constructor(
+    public credentialType?: string,
     public validityInterval?: number,
-    public issuers?: TrustedIssuerModel[], 
-    public endorsers?: TrustedIssuerModel[], 
+    public issuers?: TrustedIssuerModel[],
+    public endorsers?: TrustedIssuerModel[],
     public contracts?: string[],
-    mapping?: { [map: string]: InputClaimModel}, 
-    encrypted: boolean = false, 
-    claims?: InputClaimModel[], 
-    required: boolean = false) {
-    super(mapping, encrypted, claims, required);
+    mapping?: { [map: string]: InputClaimModel },
+    encrypted: boolean = false,
+    claims?: InputClaimModel[],
+    required: boolean = false,
+    id?: string) {
+    super(mapping, encrypted, claims, required, id);
   }
 
   /**
@@ -43,11 +45,21 @@ export class VerifiablePresentationAttestationModel extends BaseAttestationModel
     return this.credentialType!;
   }
 
+  toJSON(): any {
+    const result = super.toJSON();
+    result.credentialType = this.credentialType;
+    result.validityInterval = this.validityInterval;
+    result.issuers = this.issuers;
+    result.endorsers = this.endorsers;
+    result.contracts = this.contracts;
+    return result;
+  }
+
   /**
    * Populate an instance of VerifiablePresentationModel from any instance
    * @param input object instance to populate from
    */
-  populateFrom (input: any): void {
+  populateFrom(input: any): void {
     super.populateFrom(input);
     this.credentialType = input.credentialType;
     this.validityInterval = input.validityInterval;
@@ -64,7 +76,7 @@ export class VerifiablePresentationAttestationModel extends BaseAttestationModel
     }
   }
 
-  private static createTrustedIssuer (issuer: any): TrustedIssuerModel {
+  private static createTrustedIssuer(issuer: any): TrustedIssuerModel {
     const t = new TrustedIssuerModel();
     t.populateFrom(issuer);
     return t;
