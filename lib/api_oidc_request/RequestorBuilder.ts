@@ -158,11 +158,27 @@ export default class RequestorBuilder {
     */
    public useCorrelationVector(correlationVector: string): RequestorBuilder {
     CorrelationVector.validateCorrelationVectorDuringCreation = false;
-    if (correlationVector.split('.').length === 1) {
-      correlationVector += '.0';
-    }
-
     this._correlationVector = CorrelationVector.parse(correlationVector);
+    return this;
+  }
+
+  /**
+    * Extends the correlation vector for a new transaction. 
+    * @returns The validator builder
+    */
+   public extendCorrelationVector(): RequestorBuilder {
+    CorrelationVector.validateCorrelationVectorDuringCreation = false;
+    this._correlationVector = CorrelationVector.extend(this._correlationVector.value);
+    return this;
+  }
+
+  /**
+    * Increment the correlation vector for a new legs. 
+    * @returns The validator builder
+    */
+   public incrementCorrelationVector(): RequestorBuilder {
+    CorrelationVector.validateCorrelationVectorDuringCreation = false;
+    this._correlationVector.increment();
     return this;
   }
 

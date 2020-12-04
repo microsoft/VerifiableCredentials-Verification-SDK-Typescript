@@ -29,4 +29,15 @@ describe('Requestor', () =>{
       expect(() => requestor.trustedIssuerConfigurationsForIdTokens()).toThrowError('Id Tokens only supported in Attestation Requestor model.');
       expect(() => requestor.trustedIssuersForVerifiableCredentials()).toThrowError('trustedIssuersForVerifiableCredentials not supported for presentation exchange. Requires constraints.');
     })
+  it('should return correlation vector', async () => {
+    const requestor = new RequestorBuilder(PresentationDefinition.presentationExchangeDefinition)
+      .build();
+
+    // Generate key
+    await requestor.builder.crypto.generateKey(KeyUse.Signature);
+    let request = await requestor.create();
+    expect(request.header!['MS-CV'].split('.').length).toEqual(2);
+    request = await requestor.create('nonce', 'state', 'cv.0');
+    expect(request.header!['MS-CV']).toEqual('cv.0');
+  });
 });

@@ -1,5 +1,11 @@
-# version 0.11.1-preview.0
+# version 0.11.1-preview.1
 ## Support correlation vectors
+**Type of change:** new feature    
+**Customer impact:** low
+
+
+# version 0.11.1-preview.0
+## Rules Model updates to support extensiblity features
 **Type of change:** new feature    
 **Customer impact:** low
 

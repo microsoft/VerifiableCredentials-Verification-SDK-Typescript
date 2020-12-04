@@ -27,4 +27,9 @@ export interface IRequestorResult {
    * The generated request for the provider
    */
   request?: string;
+
+  /**
+   * Header that can be used for the response
+   */ 
+  header?: {[key: string]: string};
 }
