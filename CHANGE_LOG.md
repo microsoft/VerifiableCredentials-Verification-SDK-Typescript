@@ -3,6 +3,10 @@
 **Type of change:** new feature    
 **Customer impact:** low
 
+Integrate correlation vectors into the Requestor/Validator objects and use them for additional legs in the transactions
+
+      requestor.useCorrelationVector("AABBCCDDEEFF.0")
+
 
 # version 0.11.1-preview.0
 ## Rules Model updates to support extensiblity features
