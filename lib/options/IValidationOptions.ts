@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import ClaimToken, { TokenType } from '../verifiable_credential/ClaimToken';
+import ClaimToken from '../verifiable_credential/ClaimToken';
 import { IValidationResponse } from '../input_validation/IValidationResponse';
 import { IPayloadProtectionSigning } from 'verifiablecredentials-crypto-sdk-typescript';
 import { ValidationHelpers } from '../input_validation/ValidationHelpers';
@@ -21,6 +21,7 @@ import { IExpectedBase, IExpectedVerifiablePresentation, IExpectedVerifiableCred
  export type FetchKeyAndValidateSignatureOnIdToken = (validationResponse: IValidationResponse, token: ClaimToken) => Promise<IValidationResponse>;
  export type ValidateSignatureOnToken = (validationResponse: IValidationResponse, token: ClaimToken, key: any) => Promise<IValidationResponse>;
  export type GetTokensFromSiop = (validationResponse: IValidationResponse) => IValidationResponse;
+ export type FetchOpenIdTokenPublicKeys = (validationResponse: IValidationResponse, token: ClaimToken) => Promise<IValidationResponse | any>;
 
  /**
  *Interface to model validation options
@@ -85,4 +86,9 @@ getTokenObjectDelegate: GetTokenObject;
    * Signature validation
    */
   validateSignatureOnTokenDelegate: ValidateSignatureOnToken,
+
+  /**
+   * fetch the public keys of an OpenId Provider
+   */
+  fetchOpenIdTokenPublicKeysDelegate: FetchOpenIdTokenPublicKeys,
 }
