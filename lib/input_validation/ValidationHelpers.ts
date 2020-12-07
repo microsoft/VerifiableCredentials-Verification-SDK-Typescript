@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { DidDocument, IDidResolveResult } from '@decentralized-identity/did-common-typescript';
+import { IDidResolveResult } from '@decentralized-identity/did-common-typescript';
 import { IPayloadProtectionSigning, JoseBuilder } from 'verifiablecredentials-crypto-sdk-typescript';
 import { IValidationOptions } from '../options/IValidationOptions';
 import IValidatorOptions from '../options/IValidatorOptions';
@@ -13,7 +13,6 @@ import { IdTokenValidationResponse } from './IdTokenValidationResponse';
 import { IValidationResponse } from './IValidationResponse';
 import { IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSiop, IExpectedAudience } from '../options/IExpected';
 import LinkedDataCryptoSuitePublicKey from './LinkedDataCryptoSuitePublicKey';
-const jp = require('jsonpath');
 
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
@@ -154,6 +153,7 @@ export class ValidationHelpers {
   public async resolveDidAndGetKeys(validationResponse: IValidationResponse): Promise<IValidationResponse> {
     const self: any = this;
     try {
+      this.validatorOptions.correlationId.increment();
       const resolveResult: IDidResolveResult = await (self as ValidationOptions).validatorOptions.resolver.resolve(validationResponse.did as string);
       if (!resolveResult || !resolveResult.didDocument) {
         return validationResponse = {
@@ -490,7 +490,15 @@ export class ValidationHelpers {
     try {
       if (token.type === TokenType.idToken) {
         console.log(`Id token configuration token '${token.id}'`);
-        let response = await fetch(token.id);
+
+        this.validatorOptions.correlationId.increment();
+        let response = await fetch(token.id, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'MS-CV': this.validatorOptions.correlationId.correlationId,
+          }});
+
         if (!response.ok) {
           return {
             result: false,
@@ -508,7 +516,14 @@ export class ValidationHelpers {
           };
         }
         console.log(`Fetch metadata from '${keysUrl}'`);
-        response = await fetch(keysUrl);
+        this.validatorOptions.correlationId.increment();
+        response = await fetch(keysUrl, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'MS-CV': this.validatorOptions.correlationId.correlationId,
+          }});
+          
         if (!response.ok) {
           return {
             result: false,

@@ -2,9 +2,9 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { count } from 'console';
-import { Crypto, CryptoBuilder, JoseBuilder, IPayloadProtectionSigning, Requestor, IRequestorPresentationExchange, IRequestorAttestation, IRequestor } from '../index';
-import { CorrelationVector } from '../tracing/CorrelationVector';
+import { Crypto, CryptoBuilder, Requestor, IRequestorAttestation, IRequestor } from '../index';
+import CorrelationId from '../tracing/CorrelationId';
+import ICorrelationId from '../tracing/ICorrelationId';
 
 /**
  * Defines the presentation protcol
@@ -31,7 +31,7 @@ export default class RequestorBuilder {
   private _nonce: string | undefined;
   private _issuance: boolean = false;
   private _crypto: Crypto = new CryptoBuilder().build();
-  private _correlationVector = CorrelationVector.createCorrelationVector();
+  private _correlationId: ICorrelationId = new CorrelationId();
 
   /**
    * Create a new instance of RequestorBuilder
@@ -41,7 +41,6 @@ export default class RequestorBuilder {
     if (crypto) {
       this._crypto = crypto;
     }
-
   }
 
   /**
@@ -153,40 +152,19 @@ export default class RequestorBuilder {
 
   /**
     * Sets the correlation vector
-    * @param correlationVector The correlation vector
+    * @param correlationId The correlation vector
     * @returns The validator builder
     */
-   public useCorrelationVector(correlationVector: string): RequestorBuilder {
-    CorrelationVector.validateCorrelationVectorDuringCreation = false;
-    this._correlationVector = CorrelationVector.parse(correlationVector);
-    return this;
-  }
-
-  /**
-    * Extends the correlation vector for a new transaction. 
-    * @returns The validator builder
-    */
-   public extendCorrelationVector(): RequestorBuilder {
-    CorrelationVector.validateCorrelationVectorDuringCreation = false;
-    this._correlationVector = CorrelationVector.extend(this._correlationVector.value);
-    return this;
-  }
-
-  /**
-    * Increment the correlation vector for a new legs. 
-    * @returns The validator builder
-    */
-   public incrementCorrelationVector(): RequestorBuilder {
-    CorrelationVector.validateCorrelationVectorDuringCreation = false;
-    this._correlationVector.increment();
+   public useCorrelationId(correlationId: string): RequestorBuilder {
+    this._correlationId = new CorrelationId(correlationId);
     return this;
   }
 
   /**
    * Get the correlation vector for the request
    */
-  public get correlationVector() {
-    return this._correlationVector.value;
+  public get correlationId() {
+    return this._correlationId.correlationId;
   }
 
   /**

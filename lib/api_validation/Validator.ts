@@ -12,6 +12,7 @@ import IValidationResult from './IValidationResult';
 import { KeyStoreOptions } from 'verifiablecredentials-crypto-sdk-typescript';
 import { VerifiablePresentationValidationResponse } from '../input_validation/VerifiablePresentationValidationResponse';
 import { v4 as uuid } from 'uuid';
+import CorrelationId from '../tracing/CorrelationId';
 
 /**
  * Class model the token validator
@@ -172,8 +173,6 @@ export default class Validator {
     } else {
       return statusResponse;
     }
-
-    return response;
   }
 
   private validateAllRequiredInputs(validationResult: IValidationResult): IValidationResponse {
@@ -288,10 +287,13 @@ export default class Validator {
           const serialized = await siop.serialize();
 
           console.log(`verifiablePresentation status check on ${statusUrl} ====> ${serialized}`);
+
+          this.builder.correlationId.increment();  
           let response = await fetch(statusUrl, {
             method: 'POST',
             headers: {
-              'Content-Type': 'text/plain'
+              'Content-Type': 'text/plain',
+              'MS-CV': this.builder.correlationId.correlationId
             },
             body: serialized
           });
@@ -333,6 +335,7 @@ export default class Validator {
    */
   private setValidatorOptions(): IValidatorOptions {
     return {
+      correlationId:this.builder.correlationId,
       resolver: this.builder.resolver,
       crypto: this.builder.crypto
     }

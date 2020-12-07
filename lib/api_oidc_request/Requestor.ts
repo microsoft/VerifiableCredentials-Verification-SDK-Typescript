@@ -42,9 +42,9 @@ export default class Requestor {
    * Create the actual request
    * @param state The state for the transactions
    * @param nonce The nonce for the transaction
-   * @param correlationVector The correlation vector
+   * @param correlationId The correlation vector
    */
-  public async create(state?: string, nonce?: string, correlationVector?: string): Promise<IRequestorResult> {
+  public async create(state?: string, nonce?: string, correlationId?: string): Promise<IRequestorResult> {
     const crypto = this.builder.crypto.builder;
     this._payload = {
       response_type: 'id_token',
@@ -63,9 +63,9 @@ export default class Requestor {
     };
 
     // Set correlation vector
-    let cv = correlationVector || this.builder.correlationVector;
+    let cv = correlationId || this.builder.correlationId;
     if (cv) {
-      this.builder.useCorrelationVector(cv);
+      this.builder.useCorrelationId(cv);
     }
 
     // Add optional fields
@@ -97,7 +97,7 @@ export default class Requestor {
       
     const token = await signature.serialize();
     const header: any = {};
-    header[`${CorrelationVector.headerName}`] = this.builder.correlationVector;
+    header[`${CorrelationVector.headerName}`] = this.builder.correlationId;
 
     const response = {
       result: true,

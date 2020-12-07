@@ -6,6 +6,7 @@
 import { IssuanceHelpers } from './IssuanceHelpers';
 import { ManagedHttpResolver, CryptoBuilder, IKeyStore, SubtleCryptoNode, KeyReference } from '../lib/index';
 import IValidatorOptions from '../lib/options/IValidatorOptions';
+import CorrelationId from '../lib/tracing/CorrelationId';
 
 /**
  * Class that creates resources needed for unit tests
@@ -98,6 +99,7 @@ export default class TestSetup {
   * Validator options
   */
   public validatorOptions: IValidatorOptions = {
+    correlationId: new CorrelationId(),
     resolver: this.resolver,
     crypto: this.crypto
   };

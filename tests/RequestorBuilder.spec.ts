@@ -79,17 +79,11 @@ describe('RequestorBuilder', () => {
 
   it('should add the correlation vector', () => {
     let builder = new RequestorBuilder(initializer, crypto);
-    console.log(builder.correlationVector);
-    expect(builder.correlationVector.split('.').length).toEqual(2);
+    console.log(builder.correlationId);
+    expect(builder.correlationId.split('.').length).toEqual(2);
 
-    builder.useCorrelationVector('AABBCCDDEEFF.0');
-    expect(builder.correlationVector).toEqual('AABBCCDDEEFF.0');
-
-    builder.extendCorrelationVector();
-    expect(builder.correlationVector).toEqual('AABBCCDDEEFF.0.0');
-
-    builder.incrementCorrelationVector();
-    expect(builder.correlationVector).toEqual('AABBCCDDEEFF.0.1');
+    builder.useCorrelationId('AABBCCDDEEFF.0');
+    expect(builder.correlationId).toEqual('AABBCCDDEEFF.0');
   });
 
   it('should build RequestorBuilder', () => {

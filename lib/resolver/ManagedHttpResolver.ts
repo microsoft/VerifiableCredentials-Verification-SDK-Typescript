@@ -1,4 +1,4 @@
-import { DidDocument, IDidResolver, IDidResolveResult } from '../index';
+import { CorrelationId, DidDocument, IDidResolver, IDidResolveResult } from '../index';
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
 
@@ -27,9 +27,22 @@ export default class ManagedHttpResolver implements IDidResolver {
    * Looks up a DID Document
    * @inheritdoc
    */
-  public async resolve (did: string): Promise<IDidResolveResult> {
+  public async resolve (did: string, correlationId?: CorrelationId): Promise<IDidResolveResult> {
     const query = `${this.resolverUrl}${did}`;
-    const response = await fetch(query);
+    let response: Response;
+    if (correlationId) {
+      correlationId.increment();  
+      response = await fetch(query, {
+        method: 'GET',
+        headers: {
+          'MS-CV': correlationId.correlationId
+        }
+      });
+
+    } else {
+      response = await fetch(query);
+    }
+ 
     if (response.status >= 200 || response.status < 300) {
       const didDocument = await response.json();
       return {

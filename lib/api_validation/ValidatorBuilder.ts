@@ -7,6 +7,8 @@ import { ITokenValidator, Validator, IDidResolver, ManagedHttpResolver, Verifiab
 import VerifiableCredentialConstants from '../verifiable_credential/VerifiableCredentialConstants';
 import { Crypto } from '../index';
 import { IExpectedIdToken, IExpectedSelfIssued, IExpectedVerifiableCredential, IExpectedVerifiablePresentation, IExpectedSiop, IssuerMap } from '../options/IExpected';
+import ICorrelationId from '../tracing/ICorrelationId';
+import CorrelationId from '../tracing/CorrelationId';
 
 /**
  * Class to build a token validator
@@ -21,6 +23,7 @@ export default class ValidatorBuilder {
   private _requestor: Requestor | undefined;
   private _state: string | undefined;
   private _nonce: string | undefined;
+  private _correlationId: ICorrelationId = new CorrelationId();
 
   /**
    * Create a new instance of ValidatorBuilder
@@ -44,8 +47,25 @@ export default class ValidatorBuilder {
   }
   
  /**
+   * Sets the correlationId
+   * @param correlationId The correlationId for the response
+   * @returns The validator builder
+   */
+  public useCorrelationId(correlationId: string): ValidatorBuilder {
+    this._correlationId = new CorrelationId(correlationId);
+    return this;
+  }
+
+  /**
+   * Get the correlation id for the response
+   */
+  public get correlationId() {
+    return this._correlationId;
+  }
+  
+ /**
    * Sets the state
-   * @param state The state for the request
+   * @param state The state for the response
    * @returns The validator builder
    */
   public useState(state: string): ValidatorBuilder {
@@ -54,7 +74,7 @@ export default class ValidatorBuilder {
   }
 
   /**
-   * Get the state for the request
+   * Get the state for the response
    */
   public get state() {
     return this._state;
@@ -62,7 +82,7 @@ export default class ValidatorBuilder {
 
   /**
     * Sets the nonce
-    * @param nonce The nonce for the request
+    * @param nonce The nonce for the response
     * @returns The validator builder
     */
    public useNonce(nonce: string): ValidatorBuilder {
@@ -71,7 +91,7 @@ export default class ValidatorBuilder {
   }
 
   /**
-   * Get the nonce for the request
+   * Get the nonce for the response
    */
   public get nonce() {
     return this._nonce;
@@ -131,6 +151,7 @@ export default class ValidatorBuilder {
     // check if default validators need to be instantiated
     if (!this._tokenValidators) {
       const validatorOptions: IValidatorOptions = {
+        correlationId: this.correlationId,
         resolver: this.resolver,
         crypto: this._crypto
       };
@@ -178,6 +199,7 @@ export default class ValidatorBuilder {
       const vcValidator = this._tokenValidators[TokenType.verifiableCredential];
       if (vcValidator) {
         const validatorOptions: IValidatorOptions = {
+          correlationId: this._correlationId,
           resolver: this.resolver,
           crypto: this._crypto
         };
@@ -207,6 +229,7 @@ export default class ValidatorBuilder {
       const idtokenValidator = this._tokenValidators[TokenType.idToken];
       if (idtokenValidator) {
         const validatorOptions: IValidatorOptions = {
+          correlationId: this._correlationId,
           resolver: this.resolver,
           crypto: this._crypto
         };

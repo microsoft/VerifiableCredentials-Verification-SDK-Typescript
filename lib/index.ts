@@ -2,8 +2,12 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-
+ 
 export { DidDocument, IDidDocument, IDidDocumentPublicKey, IDidDocumentServiceDescriptor, IDidResolver, IDidResolveResult } from '@decentralized-identity/did-common-typescript';
+
+import CorrelationId from './tracing/CorrelationId';
+import ICorrelationId from './tracing/ICorrelationId';
+export { CorrelationId, ICorrelationId };
 
 import {IExpectedStatusReceipt, IExpectedBase, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSelfIssued, IExpectedIdToken, IExpectedOpenIdToken, IExpectedAudience, IssuerMap} from './options/IExpected';
 export { IExpectedStatusReceipt, IExpectedBase, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSelfIssued, IExpectedIdToken, IExpectedOpenIdToken, IExpectedAudience, IssuerMap };
@@ -31,8 +35,7 @@ export { IValidationResult, SelfIssuedTokenValidator, SiopTokenValidator, Verifi
 import { IValidationOptions } from './options/IValidationOptions';
 import IValidatorOptions from './options/IValidatorOptions';
 import ValidationOptions from './options/ValidationOptions';
-import BasicValidatorOptions from './options/BasicValidatorOptions';
-export { ValidationOptions, IValidationOptions, IValidatorOptions, BasicValidatorOptions };
+export { ValidationOptions, IValidationOptions, IValidatorOptions };
 
 import TestSetup from '../tests/TestSetup';
 import { IssuanceHelpers } from '../tests/IssuanceHelpers';

@@ -1,11 +1,19 @@
 # version 0.11.1-preview.1
 ## Support correlation vectors
-**Type of change:** new feature    
+**Type of change:** new feature/breaking change    
 **Customer impact:** low
 
 Integrate correlation vectors into the Requestor/Validator objects and use them for additional legs in the transactions
 
-      requestor.useCorrelationVector("AABBCCDDEEFF.0")
+      requestor.useCorrelationId("AABBCCDDEEFF.0")
+      validator.useCorrelationId("AABBCCDDEEFF.0")
+
+If the correlation id is not specified by the calling App, the SDK will generate its own correlation id for the transaction.
+
+Breaking change
+The interface IValidatorOptions is extended with a new ICorrelationId property. Just add:
+
+      correlationId: new CorrelationId()
 
 
 # version 0.11.1-preview.0
