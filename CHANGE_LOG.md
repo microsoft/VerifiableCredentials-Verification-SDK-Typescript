@@ -37,6 +37,10 @@ The client_id property of the OIDC request will always be equal to redirect_uri.
 **Type of change:** engineering    
 **Customer impact:** low
 
+## Refactored OpenId public key fetching to allow for caching
+**Type of change:** engineering    
+**Customer impact:** low
+
 See change log here: https://github.com/microsoft/VerifiableCredentials-Crypto-SDK-Typescript/blob/master/CHANGE_LOG.md
 
 
