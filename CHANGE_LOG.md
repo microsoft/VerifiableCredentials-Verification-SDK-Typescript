@@ -1,4 +1,4 @@
-# version 0.11.1-preview.1
+# version 0.11.1-preview.2
 ## Support correlation vectors
 **Type of change:** new feature/breaking change    
 **Customer impact:** low
@@ -15,13 +15,15 @@ The interface IValidatorOptions is extended with a new ICorrelationId property. 
 
       correlationId: new CorrelationId()
 
+# version 0.11.1-preview.1
+## Refactored OpenId public key fetching to allow for caching
+**Type of change:** engineering    
+**Customer impact:** low
 
 # version 0.11.1-preview.0
 ## Rules Model updates to support extensiblity features
 **Type of change:** new feature    
 **Customer impact:** low
-
-
 
 # version 0.10.1
 ## Support for json-ld proofs
