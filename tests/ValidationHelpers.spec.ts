@@ -238,8 +238,8 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
     expect(response.detailedError).toEqual(`The issuer in configuration 'iss' does not correspond with the issuer in the payload xxx`);
     validationResponse.issuer = issuer;
     });
-    
-  it('should test fetchKeyAndValidateSignatureOnIdTokenDelegate', async () => {
+
+    it('should test fetchKeyAndValidateSignatureOnIdTokenDelegate', async () => {
       const options = new ValidationOptions(setup.validatorOptions, TokenType.idToken);
       const validationResponse: IValidationResponse = {
         status: 200,
@@ -343,5 +343,26 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
       expect(response.result).toBeFalsy();
       expect(response.status).toEqual(403);
       expect(response.detailedError).toEqual(`Could not validate signature on id token`);
+  });
+
+  it('should test fetchOpenIdTokenPublicKeysDelegate', async () => {
+      const options = new ValidationOptions(setup.validatorOptions, TokenType.idToken);
+      const validationResponse: IValidationResponse = {
+        status: 200,
+        result: true
+      };
+  
+      let [tokenJwkPrivate, tokenJwkPublic, tokenConfiguration] = await IssuanceHelpers.generateSigningKeyAndSetConfigurationMock(setup, setup.defaulIssuerDidKid); 
+      const payload = {
+        jti: 'jti'
+      };
+
+      const idToken = await IssuanceHelpers.signAToken(setup, payload, tokenConfiguration, tokenJwkPrivate);
+
+      let response = await options.fetchOpenIdTokenPublicKeysDelegate(validationResponse, idToken);
+      expect(response).toBeDefined();
+      expect(response.keys).toBeDefined();
+      expect(Array.isArray(response.keys)).toBeTruthy();
+      expect((<Array<any>>response.keys).length).toBeGreaterThan(0);
   });
 });

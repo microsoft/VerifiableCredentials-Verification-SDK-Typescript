@@ -100,7 +100,7 @@ export class ValidationHelpers {
           status: 400
         };
       }
-      
+
       validationResponse.didKid = validationResponse.didSignature.signatureProtectedHeader?.kid;
       if (!validationResponse.didKid) {
         return {
@@ -134,7 +134,7 @@ export class ValidationHelpers {
           result: false,
           detailedError: `The proof does not contain the verificationMethod in the json ld payload`,
           status: 403
-        };      
+        };
       }
       validationResponse.didKid = proof.verificationMethod;
     }
@@ -477,20 +477,20 @@ export class ValidationHelpers {
   }
 
   /**
-   * Validate the signature on a token. Fetch validation key
+   * fetch the public keys for an open id token
    * @param validationResponse The response for the requestor
-   * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
-   * @returns validationResponse.issuer The issuer found in the configuration. Should match the issuer in the token.
+   * @param token ClaimToken instance
    */
-  public async fetchKeyAndValidateSignatureOnIdToken(validationResponse: IValidationResponse, token: ClaimToken): Promise<IValidationResponse> {
-    const self: any = this;
+  public async fetchOpenIdTokenPublicKeys(validationResponse: IValidationResponse, token: ClaimToken): Promise<IValidationResponse | any> {
 
     // Get the keys to validate the token
     let keys: any;
+
     try {
       if (token.type === TokenType.idToken) {
         console.log(`Id token configuration token '${token.id}'`);
         let response = await fetch(token.id);
+        
         if (!response.ok) {
           return {
             result: false,
@@ -498,8 +498,10 @@ export class ValidationHelpers {
             detailedError: `Could not fetch token configuration needed to validate token`
           };
         }
+        
         const config = await response.json();
         const keysUrl = config[VerifiableCredentialConstants.CONFIG_JWKS];
+        
         if (!keysUrl) {
           return {
             result: false,
@@ -507,8 +509,10 @@ export class ValidationHelpers {
             detailedError: `No reference to jwks found in token configuration`
           };
         }
+        
         console.log(`Fetch metadata from '${keysUrl}'`);
         response = await fetch(keysUrl);
+        
         if (!response.ok) {
           return {
             result: false,
@@ -516,7 +520,9 @@ export class ValidationHelpers {
             detailedError: `Could not fetch keys needed to validate token on '${keysUrl}'`
           };
         }
+
         keys = await response.json();
+        
         if (!keys || !keys.keys) {
           return {
             result: false,
@@ -524,7 +530,6 @@ export class ValidationHelpers {
             detailedError: `No or bad jwks keys found in token configuration`
           };
         }
-        keys = keys.keys;
 
         // Get issuer
         (validationResponse as IdTokenValidationResponse).expectedIssuer = config.issuer;
@@ -545,11 +550,30 @@ export class ValidationHelpers {
       };
     }
 
+    return keys;
+  }
+
+  /**
+   * Validate the signature on a token. Fetch validation key
+   * @param validationResponse The response for the requestor
+   * @returns validationResponse.result, validationResponse.status, validationResponse.detailedError
+   * @returns validationResponse.issuer The issuer found in the configuration. Should match the issuer in the token.
+   */
+  public async fetchKeyAndValidateSignatureOnIdToken(validationResponse: IValidationResponse, token: ClaimToken): Promise<IValidationResponse> {
+    const self: any = this ;
+    const publicKeyResponse = await (self as IValidationOptions).fetchOpenIdTokenPublicKeysDelegate(validationResponse, token);
+
+    // if we don't have a keys property, it's because we have IValidationResponse instance, no good way to check for type of an interface
+    if(!publicKeyResponse.keys) {
+      return <IValidationResponse> publicKeyResponse;
+    }
+
+    const keys = publicKeyResponse.keys;
+
     // check signature
     let validated = false;
     try {
       if (token.type === TokenType.idToken) {
-        const self: any = this;
         const header = token.tokenHeader;
         const kid = header[VerifiableCredentialConstants.TOKEN_KID];
         let checkAllKeys = true;

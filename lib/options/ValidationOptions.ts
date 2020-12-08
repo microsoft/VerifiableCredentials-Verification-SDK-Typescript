@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { FetchKeyAndValidateSignatureOnIdToken, IValidationOptions, CheckTimeValidityOnToken, ResolveDidAndGetKeys, GetTokenObject, ValidateDidSignature, CheckScopeValidityOnToken, ValidateSignatureOnToken, GetTokensFromSiop, CheckScopeValidityOnVcToken, CheckScopeValidityOnIdToken, CheckScopeValidityOnVpToken } from './IValidationOptions';
+import { FetchKeyAndValidateSignatureOnIdToken, IValidationOptions, CheckTimeValidityOnToken, ResolveDidAndGetKeys, GetTokenObject, ValidateDidSignature, CheckScopeValidityOnToken, ValidateSignatureOnToken, CheckScopeValidityOnVcToken, CheckScopeValidityOnIdToken, CheckScopeValidityOnVpToken, FetchOpenIdTokenPublicKeys } from './IValidationOptions';
 import { ValidationHelpers } from '../input_validation/ValidationHelpers';
 import IValidatorOptions from './IValidatorOptions';
 import { TokenType } from '../index';
@@ -30,6 +30,7 @@ constructor (public validatorOptions: IValidatorOptions, public tokenType: Token
   this.checkScopeValidityOnVcTokenDelegate = this.validationHelpers.checkScopeValidityOnVcToken;
   this.fetchKeyAndValidateSignatureOnIdTokenDelegate = this.validationHelpers.fetchKeyAndValidateSignatureOnIdToken;
   this.validateSignatureOnTokenDelegate = this.validationHelpers.validateSignatureOnToken;
+  this.fetchOpenIdTokenPublicKeysDelegate = this.validationHelpers.fetchOpenIdTokenPublicKeys;
 }
 
 /**
@@ -86,4 +87,9 @@ public getTokenObjectDelegate: GetTokenObject;
    * Signature validation
    */
   public validateSignatureOnTokenDelegate: ValidateSignatureOnToken;
+
+    /**
+   * fetch the public keys of an OpenId Provider
+   */
+  public fetchOpenIdTokenPublicKeysDelegate: FetchOpenIdTokenPublicKeys;
 }
