@@ -52,7 +52,7 @@ export class ValidationHelpers {
         validationResponse.didSignature = await (self as ValidationOptions).validatorOptions.crypto.signingProtocol(JoseBuilder.JSONLDProofs).deserialize(JSON.stringify(token));
         validationResponse.payloadProtectionProtocol = JoseBuilder.JSONLDProofs;
       } catch (exception) {
-        console.log('Failing to decode json ld proof');
+        console.error('Failing to decode json ld proof');
       }
     }
 
@@ -455,7 +455,6 @@ export class ValidationHelpers {
     const self: any = this;
     try {
       // show header
-      //console.log(`Validate DID signature with kid '${kid}', key kid '${validationResponse.didSigningPublicKey?.kid}'`);
       const validation = await token.verify([validationResponse.didSigningPublicKey]);
       if (!validation) {
         return validationResponse = {
@@ -488,8 +487,6 @@ export class ValidationHelpers {
 
     try {
       if (token.type === TokenType.idToken) {
-        console.log(`Id token configuration token '${token.id}'`);
-
         this.validatorOptions.correlationId.increment();
         let response = await fetch(token.id, {
           method: 'GET',
@@ -517,7 +514,6 @@ export class ValidationHelpers {
           };
         }
         
-        console.log(`Fetch metadata from '${keysUrl}'`);
         this.validatorOptions.correlationId.increment();
         response = await fetch(keysUrl, {
           method: 'GET',
