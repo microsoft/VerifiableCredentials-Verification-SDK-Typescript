@@ -153,7 +153,6 @@ export class ValidationHelpers {
   public async resolveDidAndGetKeys(validationResponse: IValidationResponse): Promise<IValidationResponse> {
     const self: any = this;
     try {
-      this.validatorOptions.correlationId.increment();
       const resolveResult: IDidResolveResult = await (self as ValidationOptions).validatorOptions.resolver.resolve(validationResponse.did as string);
       if (!resolveResult || !resolveResult.didDocument) {
         return validationResponse = {
@@ -490,12 +489,10 @@ export class ValidationHelpers {
       if (token.type === TokenType.idToken) {
         console.log(`Id token configuration token '${token.id}'`);
 
-        this.validatorOptions.correlationId.increment();
-        let response = await fetch(token.id, {
+        let response = await this.validatorOptions.fetchRequest.fetch(token.id, 'OIDCConfiguration', {
           method: 'GET',
           headers: {
-            'Content-Type': 'application/json',
-            'MS-CV': this.validatorOptions.correlationId.correlationId,
+            'Content-Type': 'application/json'
           }});
 
         if (!response.ok) {
@@ -518,12 +515,10 @@ export class ValidationHelpers {
         }
         
         console.log(`Fetch metadata from '${keysUrl}'`);
-        this.validatorOptions.correlationId.increment();
-        response = await fetch(keysUrl, {
+        response = await this.validatorOptions.fetchRequest.fetch(keysUrl, 'OIDCJwks', {
           method: 'GET',
           headers: {
-            'Content-Type': 'application/json',
-            'MS-CV': this.validatorOptions.correlationId.correlationId,
+            'Content-Type': 'application/json'
           }});
           
         if (!response.ok) {

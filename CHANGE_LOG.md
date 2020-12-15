@@ -8,12 +8,12 @@ Integrate correlation vectors into the Requestor/Validator objects and use them 
       requestor.useCorrelationId("AABBCCDDEEFF.0")
       validator.useCorrelationId("AABBCCDDEEFF.0")
 
-If the correlation id is not specified by the calling App, the SDK will generate its own correlation id for the transaction.
+If the correlation id is not specified by the calling App, the SDK will generate its own correlation id for the transaction. The correlation id will be updated for each call out.
 
 Breaking change
-The interface IValidatorOptions is extended with a new ICorrelationId property. Just add:
+The interface IValidatorOptions is extended with a new IFetchRequest property. Just add:
 
-      correlationId: new CorrelationId()
+      fetchRequest: new FetchRequest('correlation id')
 
 # version 0.11.1-preview.1
 ## Refactored OpenId public key fetching to allow for caching

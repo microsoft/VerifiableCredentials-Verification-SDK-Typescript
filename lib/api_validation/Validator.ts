@@ -12,7 +12,6 @@ import IValidationResult from './IValidationResult';
 import { KeyStoreOptions } from 'verifiablecredentials-crypto-sdk-typescript';
 import { VerifiablePresentationValidationResponse } from '../input_validation/VerifiablePresentationValidationResponse';
 import { v4 as uuid } from 'uuid';
-import CorrelationId from '../tracing/CorrelationId';
 
 /**
  * Class model the token validator
@@ -288,12 +287,10 @@ export default class Validator {
 
           console.log(`verifiablePresentation status check on ${statusUrl} ====> ${serialized}`);
 
-          this.builder.correlationId.increment();  
-          let response = await fetch(statusUrl, {
+          let response = await this.builder.fetchRequest.fetch(statusUrl, 'VpStatusCheck', {
             method: 'POST',
             headers: {
-              'Content-Type': 'text/plain',
-              'MS-CV': this.builder.correlationId.correlationId
+              'Content-Type': 'text/plain'
             },
             body: serialized
           });
@@ -335,7 +332,7 @@ export default class Validator {
    */
   private setValidatorOptions(): IValidatorOptions {
     return {
-      correlationId:this.builder.correlationId,
+      fetchRequest:this.builder.fetchRequest,
       resolver: this.builder.resolver,
       crypto: this.builder.crypto
     }

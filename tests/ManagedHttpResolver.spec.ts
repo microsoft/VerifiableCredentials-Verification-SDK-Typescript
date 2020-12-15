@@ -1,5 +1,6 @@
 import { CorrelationId, ManagedHttpResolver } from '../lib/index';
 import { DidDocument } from '@decentralized-identity/did-common-typescript';
+import FetchRequest from '../lib/tracing/FetchRequest';
 
 const fetchMock = require('fetch-mock');
 
@@ -37,11 +38,11 @@ const fetchMock = require('fetch-mock');
         return didDocument;
       });
 
-      const correlationId = new CorrelationId();
+      const fetchRequest = new FetchRequest();
       const resolver = new ManagedHttpResolver('https://resolver');
       await resolver.resolve('did');
-      await resolver.resolve('did', correlationId);
-      expect(correlationId.correlationId.split('.')[1]).toEqual('1');
+      await resolver.resolve('did', fetchRequest);
+      expect(fetchRequest.correlationId.split('.')[1]).toEqual('1');
       expect(called).toBeTruthy();
 
       // Negative cases
@@ -49,7 +50,7 @@ const fetchMock = require('fetch-mock');
         return { status: 404 };
        }, { overwriteRoutes: true });
        try {
-        await resolver.resolve('did', correlationId);
+        await resolver.resolve('did', fetchRequest);
         fail('exception on resolve was  not thrown');
        } catch (exception) {
          expect(exception).toEqual(new Error('Could not resolve https://resolver/did'));

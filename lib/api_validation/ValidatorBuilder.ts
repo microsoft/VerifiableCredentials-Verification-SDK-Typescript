@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ITokenValidator, Validator, IDidResolver, ManagedHttpResolver, VerifiablePresentationTokenValidator, VerifiableCredentialTokenValidator, IdTokenTokenValidator, SiopTokenValidator, SelfIssuedTokenValidator, TokenType, IValidatorOptions, IRequestor, Requestor } from '../index';
+import { ITokenValidator, Validator, IDidResolver, ManagedHttpResolver, VerifiablePresentationTokenValidator, VerifiableCredentialTokenValidator, IdTokenTokenValidator, SiopTokenValidator, SelfIssuedTokenValidator, TokenType, IValidatorOptions, IRequestor, Requestor, ICorrelationId, CorrelationId } from '../index';
 import VerifiableCredentialConstants from '../verifiable_credential/VerifiableCredentialConstants';
 import { Crypto } from '../index';
 import { IExpectedIdToken, IExpectedSelfIssued, IExpectedVerifiableCredential, IExpectedVerifiablePresentation, IExpectedSiop, IssuerMap } from '../options/IExpected';
-import ICorrelationId from '../tracing/ICorrelationId';
-import CorrelationId from '../tracing/CorrelationId';
+import FetchRequest from '../tracing/FetchRequest';
+import IFetchRequest from '../tracing/IFetchRequest';
 
 /**
  * Class to build a token validator
@@ -23,7 +23,7 @@ export default class ValidatorBuilder {
   private _requestor: Requestor | undefined;
   private _state: string | undefined;
   private _nonce: string | undefined;
-  private _correlationId: ICorrelationId = new CorrelationId();
+  private _fetchRequest: IFetchRequest = new FetchRequest();
 
   /**
    * Create a new instance of ValidatorBuilder
@@ -52,7 +52,7 @@ export default class ValidatorBuilder {
    * @returns The validator builder
    */
   public useCorrelationId(correlationId: string): ValidatorBuilder {
-    this._correlationId = new CorrelationId(correlationId);
+    this._fetchRequest.correlationId = correlationId;
     return this;
   }
 
@@ -60,7 +60,7 @@ export default class ValidatorBuilder {
    * Get the correlation id for the response
    */
   public get correlationId() {
-    return this._correlationId;
+    return this._fetchRequest.correlationId;
   }
   
  /**
@@ -151,7 +151,7 @@ export default class ValidatorBuilder {
     // check if default validators need to be instantiated
     if (!this._tokenValidators) {
       const validatorOptions: IValidatorOptions = {
-        correlationId: this.correlationId,
+        fetchRequest: this.fetchRequest,
         resolver: this.resolver,
         crypto: this._crypto
       };
@@ -171,11 +171,21 @@ export default class ValidatorBuilder {
     return this._tokenValidators;
   }
 
+
   /**
-   * Gets the resolver
+   * Specify the fetch client for the validator
+   * @param fetchRequest New fetch client
    */
-  public get resolver(): IDidResolver {
-    return this._resolver;
+  public useFetchRequest(fetchRequest: IFetchRequest): ValidatorBuilder {
+    this._fetchRequest = fetchRequest;
+    return this;
+  }
+
+  /**
+   * Gets the fetch client
+   */
+  public get fetchRequest(): IFetchRequest {
+    return this._fetchRequest;
   }
 
   /**
@@ -185,6 +195,13 @@ export default class ValidatorBuilder {
   public useResolver(resolver: IDidResolver): ValidatorBuilder {
     this._resolver = resolver;
     return this;
+  }
+
+  /**
+   * Gets the resolver
+   */
+  public get resolver(): IDidResolver {
+    return this._resolver;
   }
 
   /**
@@ -199,7 +216,7 @@ export default class ValidatorBuilder {
       const vcValidator = this._tokenValidators[TokenType.verifiableCredential];
       if (vcValidator) {
         const validatorOptions: IValidatorOptions = {
-          correlationId: this._correlationId,
+          fetchRequest: this.fetchRequest,
           resolver: this.resolver,
           crypto: this._crypto
         };
@@ -229,7 +246,7 @@ export default class ValidatorBuilder {
       const idtokenValidator = this._tokenValidators[TokenType.idToken];
       if (idtokenValidator) {
         const validatorOptions: IValidatorOptions = {
-          correlationId: this._correlationId,
+          fetchRequest: this.fetchRequest,
           resolver: this.resolver,
           crypto: this._crypto
         };

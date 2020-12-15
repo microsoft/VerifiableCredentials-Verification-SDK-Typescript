@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IDidResolver, Crypto } from '../index';
-import ICorrelationId from '../tracing/ICorrelationId';
+import IFetchRequest from '../tracing/IFetchRequest';
 
 /**
  * Interface to model the fetch options
@@ -28,9 +28,9 @@ export default interface IValidatorOptions {
     resolver: IDidResolver,
 
     /**
-     * The correlation vector
+     * The fetch client
      */
-    correlationId: ICorrelationId,
+    fetchRequest: IFetchRequest,
 
     /**
      * Get the crypto options
