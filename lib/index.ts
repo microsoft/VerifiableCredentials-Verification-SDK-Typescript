@@ -7,7 +7,9 @@ export { DidDocument, IDidDocument, IDidDocumentPublicKey, IDidDocumentServiceDe
 
 import CorrelationId from './tracing/CorrelationId';
 import ICorrelationId from './tracing/ICorrelationId';
-export { CorrelationId, ICorrelationId };
+import FetchRequest from './tracing/FetchRequest';
+import IFetchRequest from './tracing/IFetchRequest';
+export { CorrelationId, ICorrelationId, FetchRequest, IFetchRequest };
 
 import {IExpectedStatusReceipt, IExpectedBase, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSelfIssued, IExpectedIdToken, IExpectedOpenIdToken, IExpectedAudience, IssuerMap} from './options/IExpected';
 export { IExpectedStatusReceipt, IExpectedBase, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSelfIssued, IExpectedIdToken, IExpectedOpenIdToken, IExpectedAudience, IssuerMap };

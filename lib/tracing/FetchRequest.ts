@@ -3,6 +3,8 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import AbortController from 'abort-controller';
+
 import { CorrelationId, ICorrelationId } from "..";
 import IFetchRequest from "./IFetchRequest";
 const MSCV = 'MS-CV';
@@ -56,6 +58,19 @@ export default class FetchRequest implements IFetchRequest {
       options.headers[MSCV] = this.correlationId;
     } 
 
-    return fetch(url, options);
+    // Get timeout from options. Default to 10 seconds.
+    const { timeout = 10000 } = options;
+    const abortController = new AbortController();
+    options.signal = abortController.signal;
+    
+    const id = setTimeout(() => {
+      console.log(`abort timer fired: ${timeout}`)
+      abortController.abort()
+    }, timeout);
+
+
+    const response = await fetch(url, options);
+    clearTimeout(id);
+    return response;
   }
 }
