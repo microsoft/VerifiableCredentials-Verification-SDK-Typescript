@@ -1,5 +1,5 @@
-# version 0.11.1-preview.2
-## Support correlation vectors
+# version 0.11.1-preview.3
+## Support correlation vectors and IFetchRequest client
 **Type of change:** new feature/breaking change    
 **Customer impact:** low
 
@@ -9,6 +9,9 @@ Integrate correlation vectors into the Requestor/Validator objects and use them 
       validator.useCorrelationId("AABBCCDDEEFF.0")
 
 If the correlation id is not specified by the calling App, the SDK will generate its own correlation id for the transaction. The correlation id will be updated for each call out.
+
+Introducing new interface IFetchRequest which allows an application to provide its own correlation id's and a fetch client which can be handling metrics, caching and logging.
+
 
 Breaking change
 The interface IValidatorOptions is extended with a new IFetchRequest property. Just add:
