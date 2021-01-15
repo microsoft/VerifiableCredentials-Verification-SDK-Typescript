@@ -45,7 +45,6 @@ export class SiopValidation implements ISiopValidation {
       return validationResponse;
     }
     
-    console.log(`The SIOP signature is verified with DID ${validationResponse.did}`);
     return validationResponse;
   }
 }

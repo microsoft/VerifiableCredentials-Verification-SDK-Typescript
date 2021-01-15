@@ -1,3 +1,16 @@
+# version 0.11.1-preview.2
+## Add silent mode
+**Type of change:** engineering    
+**Customer impact:** high
+
+This is a breaking change. long form did's previously generated should be regenerated.
+
+## Add silent mode
+**Type of change:** engineering    
+**Customer impact:** low
+
+console.log message are removed
+
 # version 0.11.1-preview.1
 ## Refactored OpenId public key fetching to allow for caching
 **Type of change:** engineering    
