@@ -11,7 +11,6 @@ import PresentationDefinition from './models/PresentationDefinitionSample1'
 import RequestOneVcResponseOk from './models/RequestOneVcResponseOk'
 import RequestOneJsonLdVcResponseOk from './models/RequestOneJsonLdVcResponseOk';
 
-
 const clone = require('clone');
 describe('PresentationExchange', () => {
   let model = new RequestOneVcResponseOk();
