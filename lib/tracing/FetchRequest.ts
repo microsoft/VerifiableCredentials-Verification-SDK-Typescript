@@ -21,7 +21,7 @@ export default class FetchRequest implements IFetchRequest {
   }
 
   /**
-   * Do fetch call and handle correlation id
+   * Do fetch call
    * @param url to fetch
    * @param method method name
    * @param options fetch options
