@@ -60,6 +60,7 @@ describe('RequestorBuilder', () => {
     crypto.builder.useRecoveryKeyReference(new KeyReference('recovery'));
     crypto = await crypto.generateKey(KeyUse.Signature);
     crypto = await crypto.generateKey(KeyUse.Signature, 'recovery');
+    crypto = await crypto.generateKey(KeyUse.Signature, 'update');
 
     const longFormDid = await new LongFormDid(crypto).serialize();
     console.log(`Long-form DID: ${longFormDid}`);

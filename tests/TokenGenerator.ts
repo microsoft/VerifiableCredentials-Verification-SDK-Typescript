@@ -38,9 +38,13 @@ export default class TokenGenerator {
   public async setup(signingProtocol: string = 'ES256K'): Promise<void> {
     this.crypto.builder.useSigningAlgorithm(signingProtocol);
     this.crypto.builder.useRecoveryAlgorithm(signingProtocol);
+    this.crypto.builder.useUpdateAlgorithm(signingProtocol);
     this.crypto = await this.crypto.generateKey(KeyUse.Signature, 'signing');
     this.crypto = await this.crypto.generateKey(KeyUse.Signature, 'recovery');
-    let did = await new LongFormDid(this.crypto).serialize();
+    this.crypto = await this.crypto.generateKey(KeyUse.Signature, 'update');
+    let did = signingProtocol === 'ES256K' ? 
+      await (new LongFormDid(this.crypto)).serialize() :
+      'did:test:tokenGenerator';
     this.crypto.builder.useDid(did);
 
     // setup mock to resolve this did
@@ -58,7 +62,7 @@ export default class TokenGenerator {
         "@context": "https://w3id.org/did/v1",
         id: crypto.builder.did!,
         publicKey: <any>[{
-          id: jwk.kid,
+          id: `#${crypto.builder.signingKeyReference?.keyReference}`,
           type: 'EcdsaSecp256k1VerificationKey2019',
           controller: crypto.builder.did!,
           publicKeyJwk: jwk

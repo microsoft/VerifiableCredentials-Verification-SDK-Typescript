@@ -27,6 +27,8 @@ describe('Sample for Requestor with different key type and using Key Vault', () 
         console.log('Signing key generated');
         crypto = await crypto.generateKey(KeyUse.Signature, 'recovery');
         console.log('recovery key generated');
+        crypto = await crypto.generateKey(KeyUse.Signature, 'update');
+        console.log('update key generated');
 
         let did = await new LongFormDid(crypto).serialize();
         crypto.builder.useDid(did);
@@ -52,9 +54,11 @@ describe('Sample for Requestor with different key type and using Key Vault', () 
         // Setup sample crypto objects
         const signingKeyReference = new KeyReference('neo');
         const recoveryKeyReference = new KeyReference('recovery');
+        const updateKeyReference = new KeyReference('updateKey', 'key');
         let cryptoNode = new CryptoBuilder()
             .useSigningKeyReference(signingKeyReference)
             .useRecoveryKeyReference(recoveryKeyReference)
+            .useUpdateKeyReference(updateKeyReference)
             .build();
 
         //Generate the necessary keys and set the DID
@@ -65,17 +69,20 @@ describe('Sample for Requestor with different key type and using Key Vault', () 
         console.log(`The request: ${request}`);
     });
     
-    it ('should create a request signed by a key on Key Vault', async () => {
+    it('should create a request signed by a key on Key Vault', async () => {
 
         if (!keyVaultEnabled) {
             console.log('To run this sample, you must specify your Key Vault credentials in Credentials.ts');
             return;
         }
         const signingKeyReference = new KeyReference('neo', 'key');
-        const recoveryKeyReference = new KeyReference('recovery', 'key');
+        const recoveryKeyReference = new KeyReference('recoveryKey', 'key');
+        // Comment 'update' cannot be used as name on key vault
+        const updateKeyReference = new KeyReference('updateKey', 'key');
         let cryptoKv = new CryptoBuilder()
             .useSigningKeyReference(signingKeyReference)
             .useRecoveryKeyReference(recoveryKeyReference)
+            .useUpdateKeyReference(updateKeyReference)
             .useKeyVault(credentials, Credentials.vaultUri)
             .build();
 
@@ -94,10 +101,12 @@ describe('Sample for Requestor with different key type and using Key Vault', () 
             return;
         }
         const signingKeyReference = new KeyReference('neo', 'secret');
-        const recoveryKeyReference = new KeyReference('recovery', 'secret');
+        const recoveryKeyReference = new KeyReference('recoveryKey', 'secret');
+        const updateKeyReference = new KeyReference('updateKey', 'secret');
         let cryptoKv = new CryptoBuilder()
             .useSigningKeyReference(signingKeyReference)
             .useRecoveryKeyReference(recoveryKeyReference)
+            .useUpdateKeyReference(updateKeyReference)
             .useKeyVault(credentials, Credentials.vaultUri)
             .build();
 

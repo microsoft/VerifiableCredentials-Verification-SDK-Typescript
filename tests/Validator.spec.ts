@@ -281,6 +281,7 @@ describe('Validator', () => {
 
     crypto = await crypto.generateKey(KeyUse.Signature);
     crypto = await crypto.generateKey(KeyUse.Signature, 'recovery');
+    crypto = await crypto.generateKey(KeyUse.Signature, 'update');
     crypto.builder.useDid(await new LongFormDid(crypto).serialize());
 
     let validator = new ValidatorBuilder(crypto)

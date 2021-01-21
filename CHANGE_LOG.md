@@ -1,9 +1,16 @@
-# version 0.11.1-preview.2
-## Add silent mode
+# version 0.11.1-preview.3
+## Update to ion v1
 **Type of change:** engineering    
 **Customer impact:** high
 
-This is a breaking change. long form did's previously generated should be regenerated.
+This is a breaking change. Long form did's previously generated should be regenerated.
+The crypto object now requires an update key.
+Add
+            crypto = await crypto.generateKey(KeyUse.Signature, 'update');
+            
+Add the following line to the builder to register the update key            
+            builder.useUpdateKeyReference(updateKeyReference)
+
 
 ## Add silent mode
 **Type of change:** engineering    

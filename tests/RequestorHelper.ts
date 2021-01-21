@@ -147,6 +147,7 @@ export default class RequestorHelper {
     public crypto = new CryptoBuilder()
         .useSigningKeyReference(new KeyReference('signingRequestor'))
         .useRecoveryKeyReference(new KeyReference('recovery'))
+        .useUpdateKeyReference(new KeyReference('updateKey'))
         .build();
 
     /**
@@ -159,11 +160,14 @@ export default class RequestorHelper {
     /**
      * Setup of the requestor
      */
-    public async setup(_signingAlgorithm: string = 'ES256K'): Promise<void> {
+    public async setup(signingAlgorithm: string = 'ES256K'): Promise<void> {
         //this.crypto.builder.useSigningAlgorithm(signingAlgorithm);
         this.crypto = await this.crypto.generateKey(KeyUse.Signature, 'signing');
         this.crypto = await this.crypto.generateKey(KeyUse.Signature, 'recovery');
-        let did = await new LongFormDid(this.crypto).serialize();
+        this.crypto = await this.crypto.generateKey(KeyUse.Signature, 'update');
+        let did = signingAlgorithm === 'ES256K' ? 
+          await (new LongFormDid(this.crypto)).serialize() :
+          'did:test:requestor';
         this.crypto.builder.useDid(did);
 
         // setup mock to resolve this did
