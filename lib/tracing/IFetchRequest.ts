@@ -13,9 +13,4 @@ export default interface IFetchRequest {
    * Do fetch call
    */
   fetch(url: string, method: string, options?: any): Promise<Response>;
-  
-  /**
-   * Gets and sets the correlation id value
-   */
-  correlationId: string;
 }

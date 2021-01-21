@@ -1,4 +1,4 @@
-import { CorrelationId, ManagedHttpResolver } from '../lib/index';
+import { ManagedHttpResolver } from '../lib/index';
 import { DidDocument } from '@decentralized-identity/did-common-typescript';
 import FetchRequest from '../lib/tracing/FetchRequest';
 
@@ -19,7 +19,6 @@ const fetchMock = require('fetch-mock');
       fetchMock.get('https://resolver/did', (_url: string, opts: any) => {
        if (opts) {
         expect(opts.method).toEqual('GET');
-        expect(opts.headers['MS-CV'].split('.')[1]).toEqual('1');
         called = true;
        }
         const didDocument = {
@@ -42,7 +41,6 @@ const fetchMock = require('fetch-mock');
       const resolver = new ManagedHttpResolver('https://resolver');
       await resolver.resolve('did');
       await resolver.resolve('did', fetchRequest);
-      expect(fetchRequest.correlationId.split('.')[1]).toEqual('1');
       expect(called).toBeTruthy();
 
       // Negative cases

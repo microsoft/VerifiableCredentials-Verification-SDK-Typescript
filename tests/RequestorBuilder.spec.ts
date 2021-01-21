@@ -1,6 +1,5 @@
 import IRequestorAttestation from '../lib/api_oidc_request/IRequestorAttestation';
 import { LongFormDid, KeyReference, KeyUse, Crypto, IssuanceAttestationsModel, SelfIssuedAttestationModel, VerifiablePresentationAttestationModel, TrustedIssuerModel, InputClaimModel, IdTokenAttestationModel, CryptoBuilder, RequestorBuilder, IResponse, Requestor } from '../lib/index';
-import { CorrelationVector } from '../lib/tracing/CorrelationVector';
 
 describe('RequestorBuilder', () => {
   const getAttestations = () => {
@@ -76,15 +75,6 @@ describe('RequestorBuilder', () => {
     logoUri: 'https://example.com/mylogo.png',
     attestations: getAttestations()
   };
-
-  it('should add the correlation vector', () => {
-    let builder = new RequestorBuilder(initializer, crypto);
-    console.log(builder.correlationId);
-    expect(builder.correlationId.split('.').length).toEqual(2);
-
-    builder.useCorrelationId('AABBCCDDEEFF.0');
-    expect(builder.correlationId).toEqual('AABBCCDDEEFF.0');
-  });
 
   it('should build RequestorBuilder', () => {
     const builder = new RequestorBuilder(initializer, crypto);

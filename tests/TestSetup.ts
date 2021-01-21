@@ -6,7 +6,6 @@
 import { IssuanceHelpers } from './IssuanceHelpers';
 import { ManagedHttpResolver, CryptoBuilder, IKeyStore, SubtleCryptoNode, KeyReference } from '../lib/index';
 import IValidatorOptions from '../lib/options/IValidatorOptions';
-import CorrelationId from '../lib/tracing/CorrelationId';
 import FetchRequest from '../lib/tracing/FetchRequest';
 
 /**

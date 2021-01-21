@@ -5,11 +5,9 @@
  
 export { DidDocument, IDidDocument, IDidDocumentPublicKey, IDidDocumentServiceDescriptor, IDidResolver, IDidResolveResult } from '@decentralized-identity/did-common-typescript';
 
-import CorrelationId from './tracing/CorrelationId';
-import ICorrelationId from './tracing/ICorrelationId';
 import FetchRequest from './tracing/FetchRequest';
 import IFetchRequest from './tracing/IFetchRequest';
-export { CorrelationId, ICorrelationId, FetchRequest, IFetchRequest };
+export { FetchRequest, IFetchRequest };
 
 import {IExpectedStatusReceipt, IExpectedBase, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSelfIssued, IExpectedIdToken, IExpectedOpenIdToken, IExpectedAudience, IssuerMap} from './options/IExpected';
 export { IExpectedStatusReceipt, IExpectedBase, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSelfIssued, IExpectedIdToken, IExpectedOpenIdToken, IExpectedAudience, IssuerMap };

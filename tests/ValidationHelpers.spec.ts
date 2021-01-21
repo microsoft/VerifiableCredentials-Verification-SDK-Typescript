@@ -9,7 +9,7 @@ import { IPayloadProtectionSigning } from 'verifiablecredentials-crypto-sdk-type
 import ValidationOptions from '../lib/options/ValidationOptions';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import ClaimToken, { TokenType } from '../lib/verifiable_credential/ClaimToken';
-import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationResponse, CorrelationId } from '../lib';
+import { IExpectedAudience, IdTokenValidationResponse } from '../lib';
 
 describe('ValidationHelpers', () => {
   let setup: TestSetup;
@@ -239,48 +239,6 @@ describe('ValidationHelpers', () => {
     validationResponse.issuer = issuer;
   });
 
-  it('should test fetchKeyAndValidateSignatureOnIdTokenDelegate correlationId', async () => {
-    const options = new ValidationOptions(setup.validatorOptions, TokenType.idToken);
-    const validationResponse: IValidationResponse = {
-      status: 200,
-      result: true
-    };
-
-    let [tokenJwkPrivate, tokenJwkPublic, tokenConfiguration] = await IssuanceHelpers.generateSigningKeyAndSetConfigurationMock(setup, setup.defaulIssuerDidKid);
-    const payload = {
-      jti: 'jti'
-    };
-
-    const idToken = await IssuanceHelpers.signAToken(setup, payload, tokenConfiguration, tokenJwkPrivate);
-
-    // Setup mock for configuration
-    let configCalled = false;
-    const configUrl = 'http://example/configuration';
-    const configResponse = setup.fetchMock.routes.filter((route: any) => route.url === configUrl)[0];
-    setup.fetchMock.get(configUrl, (_url: string, opts: any) => {
-      expect(opts.method).toEqual('GET');
-      expect(opts.headers['MS-CV'].split('.')[1]).toEqual('1');
-      configCalled = true;
-      return configResponse.response;
-    }, { overwriteRoutes: true });
-
-    // Setup mock for jwks
-    let jwksCalled = false;
-    const jwksUrl = 'http://example/jwks';
-    const jwksResponse = setup.fetchMock.routes.filter((route: any) => route.url === jwksUrl)[0];
-    setup.fetchMock.get(jwksUrl, (_url: string, opts: any) => {
-      expect(opts.method).toEqual('GET');
-      expect(opts.headers['MS-CV'].split('.')[1]).toEqual('2');
-      jwksCalled = true;
-      return jwksResponse.response;
-    }, { overwriteRoutes: true });
-
-    let response = await options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, idToken);
-    expect(response.result).toBeTruthy();
-    expect(response.status).toEqual(200);
-    expect(configCalled).toBeTruthy();
-    expect(jwksCalled).toBeTruthy();
-  });
   it('should test fetchKeyAndValidateSignatureOnIdTokenDelegate', async () => {
     const options = new ValidationOptions(setup.validatorOptions, TokenType.idToken);
     const validationResponse: IValidationResponse = {

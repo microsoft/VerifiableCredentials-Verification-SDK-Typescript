@@ -1,4 +1,4 @@
-import { CorrelationId, DidDocument, IDidResolver, IDidResolveResult } from '../index';
+import { DidDocument, IDidResolver, IDidResolveResult } from '../index';
 import FetchRequest from '../tracing/FetchRequest';
 import IFetchRequest from '../tracing/IFetchRequest';
 require('es6-promise').polyfill();

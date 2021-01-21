@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ITokenValidator, Validator, IDidResolver, ManagedHttpResolver, VerifiablePresentationTokenValidator, VerifiableCredentialTokenValidator, IdTokenTokenValidator, SiopTokenValidator, SelfIssuedTokenValidator, TokenType, IValidatorOptions, IRequestor, Requestor, ICorrelationId, CorrelationId } from '../index';
+import { ITokenValidator, Validator, IDidResolver, ManagedHttpResolver, VerifiablePresentationTokenValidator, VerifiableCredentialTokenValidator, IdTokenTokenValidator, SiopTokenValidator, SelfIssuedTokenValidator, TokenType, IValidatorOptions, IRequestor, Requestor } from '../index';
 import VerifiableCredentialConstants from '../verifiable_credential/VerifiableCredentialConstants';
 import { Crypto } from '../index';
 import { IExpectedIdToken, IExpectedSelfIssued, IExpectedVerifiableCredential, IExpectedVerifiablePresentation, IExpectedSiop, IssuerMap } from '../options/IExpected';
@@ -44,23 +44,6 @@ export default class ValidatorBuilder {
    */
   public build(): Validator {
     return new Validator(this);
-  }
-  
- /**
-   * Sets the correlationId
-   * @param correlationId The correlationId for the response
-   * @returns The validator builder
-   */
-  public useCorrelationId(correlationId: string): ValidatorBuilder {
-    this._fetchRequest.correlationId = correlationId;
-    return this;
-  }
-
-  /**
-   * Get the correlation id for the response
-   */
-  public get correlationId() {
-    return this._fetchRequest.correlationId;
   }
   
  /**

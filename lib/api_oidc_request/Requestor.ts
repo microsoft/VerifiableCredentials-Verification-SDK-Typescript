@@ -7,7 +7,6 @@ import { RequestorBuilder, IRequestorAttestation, IRequestorPresentationExchange
 import { PresentationProtocol } from './RequestorBuilder';
 import { IRequestorResult } from './IRequestorResult';
 import { JoseBuilder } from 'verifiablecredentials-crypto-sdk-typescript';
-import { CorrelationVector } from '../tracing/CorrelationVector';
 
 /**
  * Class to model the OIDC requestor
@@ -42,9 +41,8 @@ export default class Requestor {
    * Create the actual request
    * @param state The state for the transactions
    * @param nonce The nonce for the transaction
-   * @param correlationId The correlation vector
    */
-  public async create(state?: string, nonce?: string, correlationId?: string): Promise<IRequestorResult> {
+  public async create(state?: string, nonce?: string): Promise<IRequestorResult> {
     const crypto = this.builder.crypto.builder;
     this._payload = {
       response_type: 'id_token',
@@ -61,12 +59,6 @@ export default class Requestor {
         tos_uri: this.builder.tosUri
       }
     };
-
-    // Set correlation vector
-    let cv = correlationId || this.builder.correlationId;
-    if (cv) {
-      this.builder.useCorrelationId(cv);
-    }
 
     // Add optional fields
     const current = Math.trunc(Date.now() / 1000);
@@ -96,14 +88,11 @@ export default class Requestor {
       .sign(this._payload);
       
     const token = await signature.serialize();
-    const header: any = {};
-    header[`${CorrelationVector.headerName}`] = this.builder.correlationId;
 
     const response = {
       result: true,
       status: 200,
-      request: token,
-      header
+      request: token
     };
 
     return response;

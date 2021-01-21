@@ -3,8 +3,6 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { Crypto, CryptoBuilder, Requestor, IRequestorAttestation, IRequestor } from '../index';
-import CorrelationId from '../tracing/CorrelationId';
-import ICorrelationId from '../tracing/ICorrelationId';
 
 /**
  * Defines the presentation protcol
@@ -31,7 +29,6 @@ export default class RequestorBuilder {
   private _nonce: string | undefined;
   private _issuance: boolean = false;
   private _crypto: Crypto = new CryptoBuilder().build();
-  private _correlationId: ICorrelationId = new CorrelationId();
 
   /**
    * Create a new instance of RequestorBuilder
@@ -148,23 +145,6 @@ export default class RequestorBuilder {
    */
   public get issuance() {
     return this._issuance;
-  }
-
-  /**
-    * Sets the correlation vector
-    * @param correlationId The correlation vector
-    * @returns The validator builder
-    */
-   public useCorrelationId(correlationId: string): RequestorBuilder {
-    this._correlationId = new CorrelationId(correlationId);
-    return this;
-  }
-
-  /**
-   * Get the correlation vector for the request
-   */
-  public get correlationId() {
-    return this._correlationId.correlationId;
   }
 
   /**

@@ -5,7 +5,6 @@
 
 import AbortController from 'abort-controller';
 
-import { CorrelationId, ICorrelationId } from "..";
 import IFetchRequest from "./IFetchRequest";
 const MSCV = 'MS-CV';
 
@@ -15,27 +14,10 @@ const MSCV = 'MS-CV';
  */
 export default class FetchRequest implements IFetchRequest {
 
-  private _correlationId: ICorrelationId;
   /**
    * Create new instance of FetchRequest
-   * @param correlationId to be incremented by fetch
    */
-  constructor(correlationId?: string) {
-    this._correlationId = correlationId ? new CorrelationId(correlationId) : new CorrelationId;
-  }
-
-  /**
-   * Gets the correlation id value
-   */
-  public get correlationId(): string {
-    return this._correlationId.correlationId;
-  }
-
-  /**
-   * Sets the correlation id value
-   */
-  public set correlationId(correlationId: string) {
-    this._correlationId = new CorrelationId(correlationId);
+  constructor() {
   }
 
   /**
@@ -53,18 +35,12 @@ export default class FetchRequest implements IFetchRequest {
       options.headers = {};
     }
 
-    if (!options.headers[MSCV]) {
-      this._correlationId.increment();
-      options.headers[MSCV] = this.correlationId;
-    } 
-
     // Get timeout from options. Default to 10 seconds.
     const { timeout = 10000 } = options;
     const abortController = new AbortController();
     options.signal = abortController.signal;
     
     const id = setTimeout(() => {
-      console.log(`abort timer fired: ${timeout}`)
       abortController.abort()
     }, timeout);
 
