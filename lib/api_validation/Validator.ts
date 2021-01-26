@@ -241,7 +241,6 @@ export default class Validator {
           receipts[id] = response.validationResult.verifiablePresentationStatus[id];
         }
       }
-      console.log(`Status request for ${vp}, result: ${response.result} ===> ${validationResult.verifiablePresentations[vp]}`);
     }
 
     return {
@@ -287,7 +286,6 @@ export default class Validator {
           const siop = await this.builder.crypto.signingProtocol('JOSE').sign(payload);
           const serialized = await siop.serialize();
 
-          console.log(`verifiablePresentation status check on ${statusUrl} ====> ${serialized}`);
           let response = await fetch(statusUrl, {
             method: 'POST',
             headers: {
