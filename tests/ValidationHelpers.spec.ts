@@ -168,6 +168,12 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
     expect(response.status).toEqual(403);
     expect(response.detailedError?.startsWith('The presented verifiableCredential is expired')).toBeTruthy();
     
+    validationResponse.expiration = 0;
+    response = options.checkTimeValidityOnTokenDelegate(validationResponse, 5);
+    expect(response.result).toBeFalsy('expired');
+    expect(response.status).toEqual(403);
+    expect(response.detailedError?.startsWith('The presented verifiableCredential is expired')).toBeTruthy();
+    
     // Add nbf
     validationResponse.expiration = undefined;
     let nbf = new Date().getTime() / 1000;

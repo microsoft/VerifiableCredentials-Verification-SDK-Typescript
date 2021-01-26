@@ -236,7 +236,8 @@ export class ValidationHelpers {
     const self: any = this;
     const current = Math.trunc(Date.now() / 1000);
 
-    if (validationResponse.expiration) {
+    // a falsy check is insufficient, zero is a valid epoch time
+    if (validationResponse.expiration !== undefined) {
       // initialize in utc time
       const exp = (validationResponse.expiration + clockSkewToleranceSeconds);
 
