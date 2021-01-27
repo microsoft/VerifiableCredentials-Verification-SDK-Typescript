@@ -22,7 +22,7 @@ describe('LongFormDid', () => {
       expect(did.startsWith('did:ion')).toBeTruthy();
 
       const validator = new ValidatorBuilder(crypto)
-        .useResolver(new ManagedHttpResolver('https://dev.discover.did.msidentity.com/1.0/identifiers'))        
+        .useResolver(new ManagedHttpResolver('https://beta.discover.did.msidentity.com/1.0/identifiers'))        
         .build();
 
       // resolve DID
