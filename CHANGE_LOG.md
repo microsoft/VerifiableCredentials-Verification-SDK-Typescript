@@ -1,3 +1,9 @@
+# version 0.11.1-preview.4
+## Fix token exp check not defined
+**Type of change:** bug    
+**Customer impact:** low
+
+
 # version 0.11.1-preview.3
 ## Update to ion v1
 **Type of change:** engineering    
