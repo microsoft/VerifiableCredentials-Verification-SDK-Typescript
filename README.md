@@ -178,8 +178,36 @@ npm run build
 
 npm run test 
  
-# 
-# 
+ 
+
+# Publishing the package to npmjs
+
+Only authorized publishers are allowed to publish the package.
+
+## Test all unit tests
+
+     npm run build
+     npm run test
+
+Make sure all tests pass.
+Make sure no new uncovered lines are introduced.
+
+## Update version
+
+Make sure package.json shows the new version to publish.
+Also CHANGE_LOG.md shows the changes done to the new version.
+
+
+## publish
+
+It is most common to publish a preview version.
+
+    npm publish --tag preview
+
+
+Skip the --tag to do a new release of the package. Remove '-preview.<n>' from the version number.
+The release package is the same as the last preview package.
+
 
 # Contributing
 
