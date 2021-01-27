@@ -15,10 +15,8 @@ describe('FetchRequest', () => {
     let body = await response.json();
     expect(body['prop1']).toEqual('prop1');
 
-    // check specific CV passed in
-    response = await fetchRequest.fetch('https://example', 'testing', {
-      method: 'GET',
-    });
+    // check fetch without options
+    response = await fetchRequest.fetch('https://example', 'testing', undefined);
     expect(response.ok).toBeTruthy();
   });
 
