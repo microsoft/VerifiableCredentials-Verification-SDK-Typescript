@@ -52,7 +52,7 @@ export class ValidationHelpers {
         validationResponse.didSignature = await (self as ValidationOptions).validatorOptions.crypto.signingProtocol(JoseBuilder.JSONLDProofs).deserialize(JSON.stringify(token));
         validationResponse.payloadProtectionProtocol = JoseBuilder.JSONLDProofs;
       } catch (exception) {
-        console.log('Failing to decode json ld proof');
+        console.error('Failing to decode json ld proof');
       }
     }
 
@@ -183,7 +183,7 @@ export class ValidationHelpers {
 
     let signingKey: any
     try {
-      signingKey = ValidationHelpers.getPublicKeyFromDidDocument(validationResponse);
+      signingKey = ValidationHelpers.getPublicKeyFromDidDocument(validationResponse.didDocument, validationResponse.didKid, validationResponse.did!);
     } catch (exception) {
       return {
         result: false,
@@ -200,16 +200,26 @@ export class ValidationHelpers {
    * Retireve public key from did document
    * @param validationResponse The response for the requestor
    */
-  private static getPublicKeyFromDidDocument(validationResponse: IValidationResponse): any {
-    const publicKey = validationResponse.didDocument!.getPublicKey(validationResponse.didKid!);
+  public static getPublicKeyFromDidDocument(didDocument: any, kid: string, did: string): any {
+    const publicKey = didDocument.getPublicKey(kid);
     let signingKey: any;
     if (publicKey) {
+      // Old ion protocol, to be deleted after switch
       signingKey = LinkedDataCryptoSuitePublicKey.getPublicKey(publicKey);
+    } else { 
+      if (didDocument.rawDocument?.verificationMethod) {
+        const keyIdParts = kid.split('#');
+        const keyId = keyIdParts[keyIdParts.length - 1];
+        const verification = didDocument.rawDocument?.verificationMethod.filter ((vm: any) => vm.id.includes(`#${keyId}`));
+        if (verification) {
+          signingKey = LinkedDataCryptoSuitePublicKey.getPublicKey(verification[0]);
+        }
+      }
     }
 
     //  use jwk in request if did is not registered
     if (!signingKey) {
-      throw new Error(`The did '${validationResponse.did}' does not have a public key with kid '${validationResponse.didKid}'. Public key : '${publicKey ? JSON.stringify(publicKey) : 'undefined'}'`);
+      throw new Error(`The did '${did}' does not have a public key with kid '${kid}'. Public key : '${publicKey ? JSON.stringify(publicKey) : 'undefined'}'`);
     }
 
     return signingKey;
@@ -225,7 +235,8 @@ export class ValidationHelpers {
     const self: any = this;
     const current = Math.trunc(Date.now() / 1000);
 
-    if (validationResponse.expiration) {
+    // a falsy check is insufficient, zero is a valid epoch time
+    if (validationResponse.expiration !== undefined) {
       // initialize in utc time
       const exp = (validationResponse.expiration + clockSkewToleranceSeconds);
 
@@ -454,7 +465,6 @@ export class ValidationHelpers {
     const self: any = this;
     try {
       // show header
-      //console.log(`Validate DID signature with kid '${kid}', key kid '${validationResponse.didSigningPublicKey?.kid}'`);
       const validation = await token.verify([validationResponse.didSigningPublicKey]);
       if (!validation) {
         return validationResponse = {
@@ -487,8 +497,6 @@ export class ValidationHelpers {
 
     try {
       if (token.type === TokenType.idToken) {
-        console.log(`Id token configuration token '${token.id}'`);
-
         let response = await this.validatorOptions.fetchRequest.fetch(token.id, 'OIDCConfiguration', {
           method: 'GET',
           headers: {
@@ -514,7 +522,6 @@ export class ValidationHelpers {
           };
         }
         
-        console.log(`Fetch metadata from '${keysUrl}'`);
         response = await this.validatorOptions.fetchRequest.fetch(keysUrl, 'OIDCJwks', {
           method: 'GET',
           headers: {

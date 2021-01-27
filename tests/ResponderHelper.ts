@@ -17,7 +17,8 @@ export default class ResponderHelper {
 
   public crypto = new CryptoBuilder()
     .useSigningKeyReference(new KeyReference('signingResponder'))
-    .useRecoveryKeyReference(new KeyReference('recovery'))
+    .useRecoveryKeyReference(new KeyReference('recoveryKey'))
+    .useUpdateKeyReference(new KeyReference('updateKey'))
     .build();
 
   public vcPayload = {
@@ -30,9 +31,14 @@ export default class ResponderHelper {
   public async setup(signingProtocol: string = 'ES256K'): Promise<void> {
     this.crypto.builder.useSigningAlgorithm(signingProtocol);
     this.crypto.builder.useRecoveryAlgorithm(signingProtocol);
+    this.crypto.builder.useUpdateAlgorithm(signingProtocol);
     this.crypto = await this.crypto.generateKey(KeyUse.Signature, 'signing');
     this.crypto = await this.crypto.generateKey(KeyUse.Signature, 'recovery');
-    let did = await (new LongFormDid(this.crypto)).serialize();
+    this.crypto = await this.crypto.generateKey(KeyUse.Signature, 'update');
+
+    let did = signingProtocol === 'ES256K' ? 
+      await (new LongFormDid(this.crypto)).serialize() :
+      'did:test:respondor';
     this.crypto.builder.useDid(did);
 
     // setup mock so requestor can resolve this did

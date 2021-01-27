@@ -1,14 +1,7 @@
-# version 0.11.1-preview.3
-## Support correlation vectors and IFetchRequest client
-**Type of change:** new feature/breaking change    
+# version 0.11.1-preview.5
+## Support IFetchRequest client
+**Type of change:** new feature/breaking change
 **Customer impact:** low
-
-Integrate correlation vectors into the Requestor/Validator objects and use them for additional legs in the transactions
-
-      requestor.useCorrelationId("AABBCCDDEEFF.0")
-      validator.useCorrelationId("AABBCCDDEEFF.0")
-
-If the correlation id is not specified by the calling App, the SDK will generate its own correlation id for the transaction. The correlation id will be updated for each call out.
 
 Introducing new interface IFetchRequest which allows an application to provide its own correlation id's and a fetch client which can be handling metrics, caching and logging.
 
@@ -17,6 +10,32 @@ Breaking change
 The interface IValidatorOptions is extended with a new IFetchRequest property. Just add:
 
       fetchRequest: new FetchRequest('correlation id')
+      
+# version 0.11.1-preview.4
+## Fix token exp check not defined
+**Type of change:** bug    
+**Customer impact:** low
+
+
+# version 0.11.1-preview.3
+## Update to ion v1
+**Type of change:** engineering    
+**Customer impact:** high
+
+This is a breaking change. Long form did's previously generated should be regenerated.
+The crypto object now requires an update key.
+Add
+            crypto = await crypto.generateKey(KeyUse.Signature, 'update');
+            
+Add the following line to the builder to register the update key            
+            builder.useUpdateKeyReference(updateKeyReference)
+
+
+## Add silent mode
+**Type of change:** engineering    
+**Customer impact:** low
+
+console.log message are removed
 
 # version 0.11.1-preview.1
 ## Refactored OpenId public key fetching to allow for caching

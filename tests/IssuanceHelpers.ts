@@ -61,7 +61,6 @@ export class IssuanceHelpers {
     
     // Status mock
     setup.fetchMock.post(statusUrl, {}, { overwriteRoutes: true });
-    console.log(`Set mock for ${statusUrl}`);
 
     let vcTemplate = {
       "jti": "urn:pic:80a509d2-99d4-4d6c-86a7-7b2636944080",
@@ -143,11 +142,9 @@ export class IssuanceHelpers {
     issuer = issuer || setup.tokenIssuer;
     const jwks = setup.defaultIdTokenJwksConfiguration
     setup.fetchMock.get(configuration, { "jwks_uri": `${jwks}`, "issuer": `${issuer}` }, { overwriteRoutes: true });
-    console.log(`Set mock for ${configuration}`);
     const [jwkPrivate, jwkPublic] = await IssuanceHelpers.generateSigningKey(setup, kid);
 
     setup.fetchMock.get(jwks, `{"keys": [${JSON.stringify(jwkPublic)}]}`, { overwriteRoutes: true });
-    console.log(`Set mock for ${jwks}`);
     return [jwkPrivate, jwkPublic, configuration];
   }
 
@@ -175,7 +172,6 @@ export class IssuanceHelpers {
     // Resolver mock
     const resolverUrl = `${setup.resolverUrl}/${did}`;
     setup.fetchMock.get(resolverUrl, didDocument, { overwriteRoutes: true });
-    console.log(`Set mock for ${resolverUrl}`);
 
     return [didDocument.didDocument, jwkPrivate, jwkPublic];
   }

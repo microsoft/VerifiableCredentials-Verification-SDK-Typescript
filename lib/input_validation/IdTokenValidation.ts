@@ -80,7 +80,6 @@ export class IdTokenValidation extends BaseIdTokenValidation {
     const arr = <string[]>issuers;
     let idTokenValidated = false;
     for (let inx = 0; inx < arr.length; inx++) {
-      console.log(`Checking id token for configuration ${arr[inx]}`);
       validationResponse = await this.options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, new ClaimToken(TokenType.idToken, idToken, arr[inx]));
       
       if (validationResponse.result) {

@@ -23,7 +23,6 @@ export class OpenIdTokenValidation extends BaseIdTokenValidation {
   }
 
   protected async downloadConfigurationAndValidate(validationResponse: IdTokenValidationResponse, idToken: string): Promise<IdTokenValidationResponse> {
-    console.log(`Checking id token for configuration ${this.expected.configuration}`);
     return await this.options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, new ClaimToken(TokenType.idToken, idToken, this.expected.configuration));
   }
 }

@@ -224,7 +224,6 @@ export default class ClaimToken {
           throw new Error(`The SIOP presentation exchange response has descriptor_map without id property`);
         } else if (item.path) {
           const tokenFinder = jp.query(payload, item.path);
-          console.log(tokenFinder);
           if (tokenFinder.length == 0) {
             throw new Error(`The SIOP presentation exchange response has descriptor_map with id '${item.id}'. This path '${item.path}' did not return a token.`);
           } else if (tokenFinder.length > 1) {
