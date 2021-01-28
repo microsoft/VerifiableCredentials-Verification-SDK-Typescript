@@ -11,6 +11,9 @@ export default interface IFetchRequest {
 
   /**
    * Do fetch call
+   * @param url to fetch
+   * @param callingMethodName Calling method name
+   * @param options fetch options
    */
-  fetch(url: string, method: string, options?: any): Promise<Response>;
+  fetch(url: string, callingMethodName: string, options?: any): Promise<Response>;
 }
