@@ -70,7 +70,7 @@ export default class Validator {
     } else {
       return {
         result: false,
-        status: 500,
+        status: 400,
         detailedError: 'Wrong token type. Expected string or ClaimToken'
       }
     }
@@ -172,8 +172,6 @@ export default class Validator {
     } else {
       return statusResponse;
     }
-
-    return response;
   }
 
   private validateAllRequiredInputs(validationResult: IValidationResult): IValidationResponse {
@@ -428,7 +426,7 @@ export default class Validator {
    * @param validationOptions The options
    * @param token to check for type
    */
-  private static getClaimToken(queueItem: ValidationQueueItem): ClaimToken {
+  public static getClaimToken(queueItem: ValidationQueueItem): ClaimToken {
     const claimToken = queueItem.tokenToValidate;
     return claimToken;
   }

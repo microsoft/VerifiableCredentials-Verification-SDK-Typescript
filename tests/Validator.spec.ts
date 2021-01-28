@@ -36,6 +36,7 @@ describe('Validator', () => {
     expect(() => tokenValidator.getTokens(<any>undefined, <any>undefined)).toThrowError('Not implemented');
 
     let selfIssuedValidator = new SelfIssuedTokenValidator(setup.validatorOptions, expected);
+    expect(selfIssuedValidator.isType).toEqual(TokenType.selfIssued);
     expect(() => selfIssuedValidator.getTokens(<any>undefined, <any>undefined)).toThrowError('Not implemented');
 
     let validator = new ValidatorBuilder(crypto)
@@ -179,6 +180,7 @@ describe('Validator', () => {
     let result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeTruthy();
     expect(result.status).toEqual(200);
+    expect(validator.tokenValidators['siopPresentationAttestation'].isType).toEqual(TokenType.siopPresentationAttestation);
     expect(result.validationResult?.siop).toBeDefined();
     expect(result.validationResult?.verifiablePresentations).toBeDefined();
     expect(result.detailedError).toBeUndefined();
@@ -198,6 +200,79 @@ describe('Validator', () => {
     expect(result.result).toBeFalsy();
     expect(result.detailedError).toEqual(`Expected should have contractIssuers set for verifiableCredential. Missing contractIssuers for 'DrivingLicense'.`);
     expect(result.status).toEqual(403);
+
+    // bad payload
+    queue.enqueueToken('siopPresentationAttestation', <any>{claims: {}});
+    result = await validator.validate(<any>queue.getNextToken()!);
+    expect(result.detailedError).toEqual('Wrong token type. Expected string or ClaimToken');
+
+    let spiedMethod: any = ClaimToken.create;
+    let createSpy: jasmine.Spy = spyOn(ClaimToken, 'create').and.callFake((): ClaimToken => {
+      throw new Error('some create error');
+    });
+    queue.enqueueToken('siopPresentationAttestation', request);
+    result = await validator.validate(<any>queue.getNextToken()!.tokenToValidate.rawToken);
+    expect(result.detailedError).toEqual('some create error');
+    createSpy.and.callFake((token: any, id: any): { [key: string]: ClaimToken } => {
+      return spiedMethod(token, id);
+    });
+
+    spiedMethod = ClaimToken.getClaimTokensFromAttestations;
+    let getClaimTokensFromAttestationsSpy: jasmine.Spy = spyOn(ClaimToken, 'getClaimTokensFromAttestations').and.callFake((): { [key: string]: ClaimToken } => {
+      throw new Error('some error');
+    });
+    queue.enqueueToken('siopPresentationAttestation', request);
+    result = await validator.validate(queue.getNextToken()!.tokenToValidate);
+    expect(result.detailedError).toEqual('some error');
+    getClaimTokensFromAttestationsSpy.and.callFake((attestations: any): { [key: string]: ClaimToken } => {
+      return spiedMethod(attestations);
+    });
+
+    spiedMethod = Validator.getClaimToken;
+    let getClaimTokenSpy: jasmine.Spy = spyOn(Validator, 'getClaimToken').and.callFake((): ClaimToken => {
+      throw new Error('some getClaimToken error');
+    });
+    queue.enqueueToken('siopPresentationAttestation', request);
+    result = await validator.validate(<any>queue.getNextToken()!.tokenToValidate.rawToken);
+    expect(result.detailedError).toEqual('some getClaimToken error');
+
+    getClaimTokenSpy.and.callFake((): ClaimToken => {
+      return <ClaimToken>{type: <any>'test'};
+    });
+    queue.enqueueToken('siopPresentationAttestation', request);
+    validator.tokenValidators['test'] = validator.tokenValidators['siopPresentationAttestation'];
+    result = await validator.validate(<any>queue.getNextToken()!.tokenToValidate.rawToken);
+    expect(result.detailedError).toEqual(`test is not supported`);
+    getClaimTokenSpy.and.callFake((queueItem: any): ClaimToken => {
+      return spiedMethod(queueItem);
+    });
+  });
+
+
+  xit('should validate siop and status', async () => {
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentationJwt, true);
+    const siopExpected = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siopIssuance)[0];
+    const vpExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiablePresentationJwt)[0];
+    const vcExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
+    const idTokenExpected = siop.expected.filter((token: IExpectedIdToken) => token.type === TokenType.idToken)[0];
+    const siExpected = siop.expected.filter((token: IExpectedSelfIssued) => token.type === TokenType.selfIssued)[0];
+
+
+    // Check validator
+    let validator = new ValidatorBuilder(crypto)
+      .useAudienceUrl(siopExpected.audience)
+      .useTrustedIssuerConfigurationsForIdTokens(idTokenExpected.configuration)
+      .useTrustedIssuersForVerifiableCredentials(vcExpected.contractIssuers)
+      .useResolver(new ManagedHttpResolver(VerifiableCredentialConstants.UNIVERSAL_RESOLVER_URL))
+      .enableFeatureVerifiedCredentialsStatusCheck(true)
+      .build();
+
+    const queue = new ValidationQueue();
+    queue.enqueueToken('siop', request);
+    const result = await validator.validate(queue.getNextToken()!.tokenToValidate);
+    expect(result.result).toBeTruthy(result.detailedError);
+    expect(result.status).toEqual(200);
+
   });
 
 
