@@ -7,6 +7,7 @@ import VerifiableCredentialConstants from '../lib/verifiable_credential/Verifiab
 import { CryptoFactoryNode, IPayloadProtectionSigning, JoseBuilder, KeyReference, KeyStoreInMemory, KeyStoreKeyVault, KeyUse, LongFormDid, Subtle } from 'verifiablecredentials-crypto-sdk-typescript';
 import Credentials from './Credentials';
 import { ClientSecretCredential } from '@azure/identity';
+const clone = require('clone');
 
 describe('Validator', () => {
   let crypto: Crypto;
@@ -122,6 +123,12 @@ describe('Validator', () => {
     let result = await vpValidator.validate(queue, queue.getNextToken()!, setup.defaultUserDid);
     expect(result.result).toBeTruthy('vpValidator succeeded');
     expect(result.tokensToValidate![`DrivingLicense`].rawToken).toEqual(siop.vc.rawToken);
+
+    let clonedResult = clone(result);
+    delete clonedResult.payloadObject.vp;
+    result = vpValidator.getTokens(clonedResult, queue);
+    expect(result.result).toBeFalsy(result.detailedError);
+    expect(result.detailedError).toEqual('No verifiable credential');
 
     // Check VC validator
     queue = new ValidationQueue();
