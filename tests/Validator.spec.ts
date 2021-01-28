@@ -67,8 +67,10 @@ describe('Validator', () => {
     tokenValidator = new IdTokenTokenValidator(setup.validatorOptions, expected);
 
     // Negative cases
-    expected.configuration = ['xxx'];
-    tokenValidator = new IdTokenTokenValidator(setup.validatorOptions, expected);
+    // Bad configuration endpoint
+    const clonedExpected = clone(expected);
+    clonedExpected.configuration = ['xxx'];
+    tokenValidator = new IdTokenTokenValidator(setup.validatorOptions, clonedExpected);
     validator = new ValidatorBuilder(crypto)
       .useValidators(tokenValidator)
       .build();
@@ -209,7 +211,7 @@ describe('Validator', () => {
     expect(result.status).toEqual(403);
 
     // bad payload
-    queue.enqueueToken('siopPresentationAttestation', <any>{claims: {}});
+    queue.enqueueToken('siopPresentationAttestation', <any>{ claims: {} });
     result = await validator.validate(<any>queue.getNextToken()!);
     expect(result.detailedError).toEqual('Wrong token type. Expected string or ClaimToken');
 
@@ -244,7 +246,7 @@ describe('Validator', () => {
     expect(result.detailedError).toEqual('some getClaimToken error');
 
     getClaimTokenSpy.and.callFake((): ClaimToken => {
-      return <ClaimToken>{type: <any>'test'};
+      return <ClaimToken>{ type: <any>'test' };
     });
     queue.enqueueToken('siopPresentationAttestation', request);
     validator.tokenValidators['test'] = validator.tokenValidators['siopPresentationAttestation'];
@@ -352,7 +354,7 @@ describe('Validator', () => {
     setup.fetchMock.reset();
     const credentials = new ClientSecretCredential(Credentials.tenantGuid, Credentials.clientId, Credentials.clientSecret);
 
-    const keyReference = new KeyReference('jsonldtest', 'secret');    const subtle = new Subtle();
+    const keyReference = new KeyReference('jsonldtest', 'secret'); const subtle = new Subtle();
     const cryptoFactory = new CryptoFactoryNode(new KeyStoreKeyVault(credentials, Credentials.vaultUri, new KeyStoreInMemory()), subtle);
     let crypto = new CryptoBuilder()
       .useSigningAlgorithm('EdDSA')

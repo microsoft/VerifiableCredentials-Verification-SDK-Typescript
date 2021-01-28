@@ -66,11 +66,37 @@ describe('DidValidation', () =>
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The kid in the protected header does not contain the DID. Required format for kid is <did>#kid');
 
+    // failing token time
+    options.checkTimeValidityOnTokenDelegate= () => {
+      return <any>{ result: false, detailedError: 'checkTimeValidityOnTokenDelegate error'};
+    }
+    response = await validator.validate(<string>request.rawToken);
+    expect(response.result).toBeFalsy(response.detailedError);
+    expect(response.detailedError).toEqual('checkTimeValidityOnTokenDelegate error');
+
+    // failing resolveDidAndGetKeysDelegate
+    options.resolveDidAndGetKeysDelegate = () => {
+      return <any>{ result: false, detailedError: 'resolveDidAndGetKeysDelegate error'};
+    }
+    response = await validator.validate(<string>request.rawToken);
+    expect(response.result).toBeFalsy(response.detailedError);
+    expect(response.detailedError).toEqual('resolveDidAndGetKeysDelegate error');
+
+    // failing did kid
+    options.getTokenObjectDelegate = () => {
+      return <any>{ result: true, didKid: '#did#kid'};
+    }
+    response = await validator.validate(<string>request.rawToken);
+    expect(response.result).toBeFalsy(response.detailedError);
+    expect(response.detailedError).toEqual('The kid does not contain the DID');
+
     // failing DID resolve
     setup.fetchMock.reset();
     const resolverUrl = `${setup.resolverUrl}/abc`;
     setup.fetchMock.get(resolverUrl, {status: 404, response: {}});
     response = await options.resolveDidAndGetKeysDelegate(<any>{did: 'abc'});
     expect(response.result).toBeFalsy();
+
+
 });
 });
