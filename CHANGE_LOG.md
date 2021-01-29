@@ -9,7 +9,7 @@ Introducing new interface IFetchRequest which allows an application to provide i
 Breaking change
 The interface IValidatorOptions is extended with a new IFetchRequest property. Just add:
 
-      fetchRequest: new FetchRequest('correlation id')
+      fetchRequest: new FetchRequest()
       
 # version 0.11.1-preview.4
 ## Fix token exp check not defined
