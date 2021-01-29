@@ -7,6 +7,8 @@ import { ITokenValidator, Validator, IDidResolver, ManagedHttpResolver, Verifiab
 import VerifiableCredentialConstants from '../verifiable_credential/VerifiableCredentialConstants';
 import { Crypto } from '../index';
 import { IExpectedIdToken, IExpectedSelfIssued, IExpectedVerifiableCredential, IExpectedVerifiablePresentation, IExpectedSiop, IssuerMap } from '../options/IExpected';
+import FetchRequest from '../tracing/FetchRequest';
+import IFetchRequest from '../tracing/IFetchRequest';
 
 /**
  * Class to build a token validator
@@ -21,6 +23,7 @@ export default class ValidatorBuilder {
   private _requestor: Requestor | undefined;
   private _state: string | undefined;
   private _nonce: string | undefined;
+  private _fetchRequest: IFetchRequest = new FetchRequest();
 
   /**
    * Create a new instance of ValidatorBuilder
@@ -45,7 +48,7 @@ export default class ValidatorBuilder {
   
  /**
    * Sets the state
-   * @param state The state for the request
+   * @param state The state for the response
    * @returns The validator builder
    */
   public useState(state: string): ValidatorBuilder {
@@ -54,7 +57,7 @@ export default class ValidatorBuilder {
   }
 
   /**
-   * Get the state for the request
+   * Get the state for the response
    */
   public get state() {
     return this._state;
@@ -62,7 +65,7 @@ export default class ValidatorBuilder {
 
   /**
     * Sets the nonce
-    * @param nonce The nonce for the request
+    * @param nonce The nonce for the response
     * @returns The validator builder
     */
    public useNonce(nonce: string): ValidatorBuilder {
@@ -71,7 +74,7 @@ export default class ValidatorBuilder {
   }
 
   /**
-   * Get the nonce for the request
+   * Get the nonce for the response
    */
   public get nonce() {
     return this._nonce;
@@ -131,6 +134,7 @@ export default class ValidatorBuilder {
     // check if default validators need to be instantiated
     if (!this._tokenValidators) {
       const validatorOptions: IValidatorOptions = {
+        fetchRequest: this.fetchRequest,
         resolver: this.resolver,
         crypto: this._crypto
       };
@@ -150,11 +154,21 @@ export default class ValidatorBuilder {
     return this._tokenValidators;
   }
 
+
   /**
-   * Gets the resolver
+   * Specify the fetch client for the validator
+   * @param fetchRequest New fetch client
    */
-  public get resolver(): IDidResolver {
-    return this._resolver;
+  public useFetchRequest(fetchRequest: IFetchRequest): ValidatorBuilder {
+    this._fetchRequest = fetchRequest;
+    return this;
+  }
+
+  /**
+   * Gets the fetch client
+   */
+  public get fetchRequest(): IFetchRequest {
+    return this._fetchRequest;
   }
 
   /**
@@ -164,6 +178,13 @@ export default class ValidatorBuilder {
   public useResolver(resolver: IDidResolver): ValidatorBuilder {
     this._resolver = resolver;
     return this;
+  }
+
+  /**
+   * Gets the resolver
+   */
+  public get resolver(): IDidResolver {
+    return this._resolver;
   }
 
   /**
@@ -178,6 +199,7 @@ export default class ValidatorBuilder {
       const vcValidator = this._tokenValidators[TokenType.verifiableCredential];
       if (vcValidator) {
         const validatorOptions: IValidatorOptions = {
+          fetchRequest: this.fetchRequest,
           resolver: this.resolver,
           crypto: this._crypto
         };
@@ -207,6 +229,7 @@ export default class ValidatorBuilder {
       const idtokenValidator = this._tokenValidators[TokenType.idToken];
       if (idtokenValidator) {
         const validatorOptions: IValidatorOptions = {
+          fetchRequest: this.fetchRequest,
           resolver: this.resolver,
           crypto: this._crypto
         };

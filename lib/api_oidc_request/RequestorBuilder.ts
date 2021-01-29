@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Crypto, CryptoBuilder, JoseBuilder, IPayloadProtectionSigning, Requestor, IRequestorPresentationExchange, IRequestorAttestation, IRequestor } from '../index';
+import { Crypto, CryptoBuilder, Requestor, IRequestorAttestation, IRequestor } from '../index';
 
 /**
  * Defines the presentation protcol
@@ -38,7 +38,6 @@ export default class RequestorBuilder {
     if (crypto) {
       this._crypto = crypto;
     }
-
   }
 
   /**
@@ -154,16 +153,16 @@ export default class RequestorBuilder {
     * @returns The validator builder
     */
    public useNonce(nonce: string): RequestorBuilder {
-     this._nonce = nonce;
-     return this;
-   }
- 
-   /**
-    * Get the nonce for the request
-    */
-   public get nonce() {
-     return this._nonce;
-   }
+    this._nonce = nonce;
+    return this;
+  }
+
+  /**
+   * Get the nonce for the request
+   */
+  public get nonce() {
+    return this._nonce;
+  }
 
   /**
    * Build the requestor

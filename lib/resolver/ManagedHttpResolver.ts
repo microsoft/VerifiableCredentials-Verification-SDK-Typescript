@@ -1,4 +1,6 @@
 import { DidDocument, IDidResolver, IDidResolveResult } from '../index';
+import FetchRequest from '../tracing/FetchRequest';
+import IFetchRequest from '../tracing/IFetchRequest';
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
 
@@ -17,7 +19,7 @@ export default class ManagedHttpResolver implements IDidResolver {
   /**
    * @param universalResolverUrl the URL endpoint of the remote universal resolvers
    */
-  constructor (universalResolverUrl: string) {
+  constructor(universalResolverUrl: string) {
     // Format and set the property for the
     const slash = universalResolverUrl.endsWith('/') ? '' : '/';
     this.resolverUrl = `${universalResolverUrl}${slash}`;
@@ -27,10 +29,20 @@ export default class ManagedHttpResolver implements IDidResolver {
    * Looks up a DID Document
    * @inheritdoc
    */
-  public async resolve (did: string): Promise<IDidResolveResult> {
+  public async resolve(did: string, fetchRequest?: IFetchRequest): Promise<IDidResolveResult> {
     const query = `${this.resolverUrl}${did}`;
-    const response = await fetch(query);
-    if (response.status >= 200 || response.status < 300) {
+    let response: Response;
+    if (!fetchRequest) {
+      fetchRequest = new FetchRequest();
+    }
+
+    response = await fetchRequest.fetch(query, 'DIDResolve', {
+      method: 'GET',
+      headers: {
+      }
+    });
+
+    if (response.status >= 200 && response.status < 300) {
       const didDocument = await response.json();
       return {
         didDocument: new DidDocument(didDocument.didDocument),
