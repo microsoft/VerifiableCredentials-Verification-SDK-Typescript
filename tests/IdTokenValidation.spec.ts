@@ -24,15 +24,21 @@ import { IExpectedIdToken, Validator } from '../lib';
   it('should test validate', async () => {
     
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.idToken, true);   
-    const expected = siop.expected.filter((token: IExpectedIdToken) => token.type === TokenType.idToken)[0];
+    let expected = siop.expected.filter((token: IExpectedIdToken) => token.type === TokenType.idToken)[0];
 
     let validator = new IdTokenValidation(options, expected, Validator.readContractId(siop.contract));
     let response = await validator.validate(siop.idToken.rawToken)
     expect(response.result).toBeTruthy();
     
+    const altExpected: any = {configuration: { schema: ['http://example/configuration'] } }
+    validator = new IdTokenValidation(options, altExpected, Validator.readContractId(siop.contract));
+    response = await validator.validate(siop.idToken.rawToken)
+    expect(response.result).toBeTruthy();
+    
     // Negative cases
 
     // Bad id token signature
+    validator = new IdTokenValidation(options, expected, Validator.readContractId(siop.contract));
     response = await validator.validate(siop.idToken.rawToken + 'a');
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
@@ -49,6 +55,12 @@ import { IExpectedIdToken, Validator } from '../lib';
     response = await validator.validate(siop.idToken.rawToken);
     expect(response.result).toBeFalsy(response.detailedError);
     expect(response.detailedError).toEqual(`Expected should have configuration issuers set for idToken. Missing configuration for 'schema'.`);
+
+    // empty array in configuration
+    validator = new IdTokenValidation(options, <any>{configuration: [] }, Validator.readContractId(siop.contract));
+    response = await validator.validate(siop.idToken.rawToken);
+    expect(response.result).toBeFalsy(response.detailedError);
+    expect(response.detailedError).toEqual('Expected should have configuration issuers set for idToken. Empty array presented.');
 
     // missing configuration in expected
     validator = new IdTokenValidation(options, <any>{}, Validator.readContractId(siop.contract));

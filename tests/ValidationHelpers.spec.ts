@@ -5,11 +5,11 @@
 import TestSetup from './TestSetup';
 import { IValidationResponse } from '../lib/input_validation/IValidationResponse';
 import base64url from 'base64url';
-import { IPayloadProtectionSigning } from 'verifiablecredentials-crypto-sdk-typescript';
+import { IPayloadProtectionSigning, JoseBuilder } from 'verifiablecredentials-crypto-sdk-typescript';
 import ValidationOptions from '../lib/options/ValidationOptions';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import ClaimToken, { TokenType } from '../lib/verifiable_credential/ClaimToken';
-import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationResponse } from '../lib';
+import { IExpectedAudience, IdTokenValidationResponse } from '../lib';
 
  describe('ValidationHelpers', () => {
   let setup: TestSetup;
@@ -46,6 +46,33 @@ import { IExpectedSiop, IExpectedIdToken, IExpectedAudience, IdTokenValidationRe
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);    
     expect(response.detailedError).toEqual('The protected header in the verifiableCredential does not contain the kid');
+
+
+    // bad JWT deserialize 
+    let protocol = options.validatorOptions.crypto.signingProtocol(JoseBuilder.JWT);
+    let deserializeSpy = spyOn(protocol, 'deserialize').and.callFake(() => <any>{});
+    response = await options.getTokenObjectDelegate(validationResponse, '');
+    expect(response.result).toBeFalsy(response.detailedError);
+    expect(response.detailedError).toEqual('The payload in the verifiableCredential is undefined');
+
+    protocol = options.validatorOptions.crypto.signingProtocol(JoseBuilder.JWT);
+    deserializeSpy.and.callFake(() => <any>undefined);
+    response = await options.getTokenObjectDelegate(validationResponse, '');
+    expect(response.result).toBeFalsy(response.detailedError);
+    expect(response.detailedError).toEqual('The signature in the verifiableCredential has an invalid format');
+
+    deserializeSpy.and.callFake(() => {throw new Error('deserialize JWT error')});
+    response = await options.getTokenObjectDelegate(validationResponse, '');
+    expect(response.result).toBeFalsy(response.detailedError);
+    expect(response.detailedError).toEqual('The verifiableCredential could not be deserialized');
+   
+    // bad json ld deserialize 
+    protocol = options.validatorOptions.crypto.signingProtocol(JoseBuilder.JSONLDProofs);
+    deserializeSpy = spyOn(protocol, 'deserialize').and.callFake(() => {throw new Error('deserialize error')});
+    response = await options.getTokenObjectDelegate(validationResponse, {});
+    expect(response.result).toBeFalsy(response.detailedError);
+    expect(response.detailedError).toEqual('The verifiableCredential could not be deserialized');
+    deserializeSpy.and.callFake(() => <any>{});
   });
 
   it('should test resolveDid', async () => {

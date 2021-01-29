@@ -65,6 +65,7 @@ export default class RequestOneJsonLdVcResponseOk implements ITestModel {
         presentations: {
           IdentityCard: {
             'id': `urn:pic:1`,
+            'expirationDate': 'Wed, 14 Jun 3017 07:00:00 GMT',
             'verifier': this.clientId,
             '\@context': [
               'https://www.w3.org/2018/credentials/v1',

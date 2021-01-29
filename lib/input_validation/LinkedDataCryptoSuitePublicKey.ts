@@ -135,7 +135,7 @@ export default class LinkedDataCryptoSuitePublicKey {
    * Convert base58 to base64 url.
    * @param data to convert.
    */
-  private static decodeBase58To64Url(data: string): string {
+  public static decodeBase58To64Url(data: string): string {
     return base64url.encode(bs58.decode(data));
   }
 }
