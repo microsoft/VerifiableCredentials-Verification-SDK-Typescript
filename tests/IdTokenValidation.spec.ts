@@ -38,6 +38,24 @@ import { IExpectedIdToken, Validator } from '../lib';
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The presented idToken is has an invalid signature');
 
+    // missing siopcontract
+    validator = new IdTokenValidation(options, <any>{configuration: {} }, <any>undefined);
+    response = await validator.validate(siop.idToken.rawToken);
+    expect(response.result).toBeFalsy(response.detailedError);
+    expect(response.detailedError).toEqual('The siopContract needs to be specified to validate the idTokens.');
+
+    // missing configuration array in expected
+    validator = new IdTokenValidation(options, <any>{configuration: {} }, Validator.readContractId(siop.contract));
+    response = await validator.validate(siop.idToken.rawToken);
+    expect(response.result).toBeFalsy(response.detailedError);
+    expect(response.detailedError).toEqual(`Expected should have configuration issuers set for idToken. Missing configuration for 'schema'.`);
+
+    // missing configuration in expected
+    validator = new IdTokenValidation(options, <any>{}, Validator.readContractId(siop.contract));
+    response = await validator.validate(siop.idToken.rawToken);
+    expect(response.result).toBeFalsy(response.detailedError);
+    expect(response.detailedError).toEqual('Expected should have configuration issuers set for idToken');
+
     // todo fix aud
     return;
   });
