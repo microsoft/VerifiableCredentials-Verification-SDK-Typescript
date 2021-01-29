@@ -35,7 +35,8 @@ export { IValidationResult, SelfIssuedTokenValidator, SiopTokenValidator, Verifi
 import { IValidationOptions } from './options/IValidationOptions';
 import IValidatorOptions from './options/IValidatorOptions';
 import ValidationOptions from './options/ValidationOptions';
-export { ValidationOptions, IValidationOptions, IValidatorOptions };
+import BasicValidatorOptions from './options/BasicValidatorOptions';
+export { BasicValidatorOptions, ValidationOptions, IValidationOptions, IValidatorOptions };
 
 import TestSetup from '../tests/TestSetup';
 import { IssuanceHelpers } from '../tests/IssuanceHelpers';
