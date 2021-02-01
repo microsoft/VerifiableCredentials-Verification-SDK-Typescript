@@ -329,6 +329,8 @@ import { IExpectedAudience, IdTokenValidationResponse } from '../lib';
       expect(response.result).toBeTruthy();
       expect(response.status).toEqual(200);
 
+      const validateSignatureOnToken = options.validateSignatureOnTokenDelegate;
+
       // check all keys
       const idTokenWithoutKid = new ClaimToken(TokenType.idToken, `${base64url.encode('{"typ": "JWT"}')}.${base64url.encode('{"text": "jules"}')}.abcdef`, setup.defaultIdTokenConfiguration);
       options.validateSignatureOnTokenDelegate = () => {
@@ -415,6 +417,25 @@ import { IExpectedAudience, IdTokenValidationResponse } from '../lib';
       expect(response.result).toBeFalsy();
       expect(response.status).toEqual(403);
       expect(response.detailedError).toEqual(`Could not validate signature on id token`);
+
+      // bad keys in configuration
+      const badKey = {
+        crv: 'secp256k1',
+        x: 'AU-WZrK8O_rx4wlq3idyuFlvACM_sMXZputpkzyHPMk',
+        y: 'qOpL6upm2RSrwrTBbUvL_4xYnSTdSFLtjOlQlJ74pt0',
+        alg: 'ES256K',
+        kty: 'EC',
+        use: 'verify'
+      };
+
+      idToken.tokenHeader['kid'] = undefined;
+      options.validateSignatureOnTokenDelegate = validateSignatureOnToken;
+      setup.fetchMock.get(setup.defaultIdTokenJwksConfiguration, `{"keys": [${JSON.stringify(badKey)}]}`, { overwriteRoutes: true });
+
+      response = await options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, idToken);
+      expect(response.result).toBeFalsy();
+      expect(response.status).toEqual(403);
+      expect(response.detailedError).toEqual('Could not validate token signature');
   });
 
   it('should test fetchOpenIdTokenPublicKeysDelegate', async () => {
