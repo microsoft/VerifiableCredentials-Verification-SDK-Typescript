@@ -41,7 +41,9 @@ describe('SiopTokenValidator', () => {
     siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
     queue = new ValidationQueue();
     queue.enqueueToken('siop', siopRequest);
-    response = await validator.validate(queue, queue.getNextToken()!);
+    const queudToken = queue.getNextToken();
+    expect(queudToken?.isUnderValidation).toBeFalsy();
+    response = await validator.validate(queue, queudToken!);
     expect(response.result).toBeTruthy();
 
     // negative cases

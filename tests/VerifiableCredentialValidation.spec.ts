@@ -5,7 +5,8 @@
 import TestSetup from './TestSetup';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import { VerifiableCredentialValidation } from '../lib/input_validation/VerifiableCredentialValidation';
-import { TokenType, IExpectedVerifiableCredential, Validator } from '../lib';
+import { TokenType, IExpectedVerifiableCredential } from '../lib';
+const clone = require('clone');
 
 describe('VerifiableCredentialValidation', () => {
   let setup: TestSetup;
@@ -25,9 +26,29 @@ describe('VerifiableCredentialValidation', () => {
     let response = await validator.validate(siop.vc.rawToken, setup.defaultUserDid);
     expect(response.result).toBeTruthy();
     expect(response.subject).toEqual(setup.defaultUserDid);
+    
+    // use array of issuers
+    let clonedExpected = clone(expected);
+    clonedExpected.contractIssuers = [];
+    Object.keys(expected.contractIssuers).forEach((type) => {
+      expected.contractIssuers[type].forEach((issuer: string) => clonedExpected.contractIssuers.push(issuer));
+    });
+
+    validator = new VerifiableCredentialValidation(options, clonedExpected);
+    response = await validator.validate(siop.vc.rawToken, setup.defaultUserDid);
+    expect(response.result).toBeTruthy();
+    expect(response.subject).toEqual(setup.defaultUserDid);
 
     // Negative cases
 
+    // missing issuers
+    /*
+    clonedExpected = clone(expected);
+    delete clonedExpected.contractIssuers;
+    validator = new VerifiableCredentialValidation(options, clonedExpected);
+    response = await validator.validate(siop.vc.rawToken, setup.defaultUserDid);
+    expect(response.detailedError).toEqual('Expected should have contractIssuers set for verifyableCredential');
+*/
     // Bad VC signature
     response = await validator.validate(siop.vc.rawToken + 'a', setup.defaultUserDid);
     expect(response.result).toBeFalsy();
@@ -119,6 +140,21 @@ describe('VerifiableCredentialValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`The verifiable credential type first element should be VerifiableCredential`);
+
+    payload = {
+      iss: 'did:test:issuer',
+      sub: 'test',
+      vc: {
+        type: ['VerifiableCredential', 'yyy'],
+      }
+    };
+    payload.vc['@context'] = ['https://www.w3.org/2018/credentials/v1']; 
+    token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
+    validator = new VerifiableCredentialValidation(options, expected);
+    response = await validator.validate(<string>token.rawToken, setup.defaultUserDid);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`The verifiable credential with type 'yyy' does not has a credentialSubject property`);
     
     // Missing sub
     payload = {
