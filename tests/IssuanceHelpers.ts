@@ -140,7 +140,7 @@ export class IssuanceHelpers {
     // setup http mock
     configuration = configuration || setup.defaultIdTokenConfiguration;
     issuer = issuer || setup.tokenIssuer;
-    const jwks = setup.defaultIdTokenJwksConfiguration
+    const jwks = setup.defaultIdTokenJwksConfiguration;
     setup.fetchMock.get(configuration, { "jwks_uri": `${jwks}`, "issuer": `${issuer}` }, { overwriteRoutes: true });
     const [jwkPrivate, jwkPublic] = await IssuanceHelpers.generateSigningKey(setup, kid);
 

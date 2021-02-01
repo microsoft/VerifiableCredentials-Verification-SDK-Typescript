@@ -109,6 +109,13 @@ import { IExpectedAudience, IdTokenValidationResponse } from '../lib';
     response = await options.resolveDidAndGetKeysDelegate(validationResponse);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
+
+    const resolveSpy = spyOn(options.validatorOptions.resolver, "resolve").and.callFake(() => { return <any>undefined });
+    response = await options.resolveDidAndGetKeysDelegate(validationResponse);
+    expect(response.result).toBeFalsy();
+    expect(response.detailedError).toEqual(`Could not retrieve DID document 'did:test:user'`);
+    expect(response.status).toEqual(403);
+
   });
 
   it('should not resolve resolveDid', async () => {
@@ -215,6 +222,31 @@ import { IExpectedAudience, IdTokenValidationResponse } from '../lib';
     expect(response.detailedError?.startsWith('The presented verifiableCredential is not yet valid')).toBeTruthy();
   });
 
+  it('should test checkScopeValidityOnVcToken', () => {
+    const options = new ValidationOptions(setup.validatorOptions, TokenType.verifiableCredential);
+
+    // Set the payload
+    const validationResponse: IValidationResponse = {
+      status: 200,
+      result: true
+    };
+
+    validationResponse.payloadObject = JSON.parse('{"sub": "did"}');
+
+    let response = options.checkScopeValidityOnVcTokenDelegate(validationResponse, <any>{}, 'did');
+    expect(response.result).toBeTruthy(response.detailedError);
+    
+    // Negative cases
+    // wrong did
+    response = options.checkScopeValidityOnVcTokenDelegate(validationResponse, <any>{}, 'wrong did');
+    expect(response.detailedError).toEqual(`Wrong sub property in verifiableCredential. Expected 'wrong did'`);
+
+    // missing sub
+    delete validationResponse.payloadObject.sub;
+    response = options.checkScopeValidityOnVcTokenDelegate(validationResponse, <any>{}, 'did');
+    expect(response.detailedError).toEqual(`Missing sub property in verifiableCredential. Expected 'did'`);
+  });
+
   it('should test checkScopeValidityOnIdTokenDelegate', () => {
     const options = new ValidationOptions(setup.validatorOptions, TokenType.verifiableCredential);
 
@@ -270,8 +302,15 @@ import { IExpectedAudience, IdTokenValidationResponse } from '../lib';
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`The issuer in configuration 'iss' does not correspond with the issuer in the payload xxx`);
     validationResponse.issuer = issuer;
-    });
 
+    validationResponse.issuer = undefined;
+    response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, expected);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual('The issuer in configuration was not found');
+    validationResponse.issuer = issuer;
+    });
+  
     it('should test fetchKeyAndValidateSignatureOnIdTokenDelegate', async () => {
       const options = new ValidationOptions(setup.validatorOptions, TokenType.idToken);
       const validationResponse: IValidationResponse = {
@@ -397,5 +436,25 @@ import { IExpectedAudience, IdTokenValidationResponse } from '../lib';
       expect(response.keys).toBeDefined();
       expect(Array.isArray(response.keys)).toBeTruthy();
       expect((<Array<any>>response.keys).length).toBeGreaterThan(0);
+
+      // negative cases
+      // Bad response
+      setup.fetchMock.get(setup.defaultIdTokenJwksConfiguration, {"status": 400}, {overwriteRoutes: true});
+      response = <IValidationResponse>await options.fetchOpenIdTokenPublicKeysDelegate(validationResponse, idToken);
+      expect(response.detailedError).toEqual(`Could not fetch keys needed to validate token on 'http://example/jwks'`);
+
+      setup.fetchMock.get(setup.defaultIdTokenConfiguration, {"body": {}}, {overwriteRoutes: true});
+      response = <IValidationResponse>await options.fetchOpenIdTokenPublicKeysDelegate(validationResponse, idToken);
+      expect(response.detailedError).toEqual(`No reference to jwks found in token configuration`);
+/*
+      setup.fetchMock.get(setup.defaultIdTokenConfiguration, {"body": {
+        "jwks_uri": `setup.defaultIdTokenJwksConfiguration`
+      }}, {overwriteRoutes: true});
+      response = <IValidationResponse>await options.fetchOpenIdTokenPublicKeysDelegate(validationResponse, idToken);
+      expect(response.detailedError).toEqual(`No reference to jwks found in token configuration`);
+*/
+      setup.fetchMock.get(setup.defaultIdTokenConfiguration, {"status": 400}, {overwriteRoutes: true});
+      response = <IValidationResponse>await options.fetchOpenIdTokenPublicKeysDelegate(validationResponse, idToken);
+      expect(response.detailedError).toEqual(`Could not fetch token configuration needed to validate token`);
   });
 });
