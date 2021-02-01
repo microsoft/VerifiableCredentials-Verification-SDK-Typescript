@@ -10,6 +10,7 @@ import TokenGenerator from './TokenGenerator';
 import PresentationDefinition from './models/PresentationDefinitionSample1'
 import RequestOneVcResponseOk from './models/RequestOneVcResponseOk'
 import RequestOneJsonLdVcResponseOk from './models/RequestOneJsonLdVcResponseOk';
+import RequestOneJsonLdVcResponseNoProofInVC from './models/RequestOneJsonLdVcResponseNoProofInVC';
 
 const clone = require('clone');
 describe('PresentationExchange', () => {
@@ -104,6 +105,37 @@ describe('PresentationExchange', () => {
       .build();
     let result = await validator.validate(<string>response.rawToken);
     expect(result.result).toBeTruthy(result.detailedError);
+  });
+
+  it('should fail because of missing proof in vc - json ld', async () => {
+    let model = new RequestOneJsonLdVcResponseNoProofInVC();
+    let requestor = new RequestorHelper(model);
+    await requestor.setup();
+    let responder = new ResponderHelper(requestor, model);
+    await responder.setup('EdDSA');
+
+    // add did
+    model.response.presentation_submission.attestations.presentations.IdentityCard.credentialSubject.id = responder.crypto.builder.did;
+    let response = await responder.createResponse(JoseBuilder.JSONLDProofs);
+
+    let validator = new ValidatorBuilder(requestor.crypto)
+      .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!] })
+      .build();
+    let result = await validator.validate(<string>response.rawToken);
+    expect(result.detailedError).toEqual('The proof is not available in the json ld payload');
+
+    // missing verificationMethod
+    model = new RequestOneJsonLdVcResponseNoProofInVC();
+    responder = new ResponderHelper(requestor, model);
+    await responder.setup('EdDSA');
+    model.responseOperations[0].path += '.verificationMethod';
+    response = await responder.createResponse(JoseBuilder.JSONLDProofs);
+
+    validator = new ValidatorBuilder(requestor.crypto)
+      .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!] })
+      .build();
+    result = await validator.validate(<string>response.rawToken);
+    expect(result.detailedError).toEqual('The proof does not contain the verificationMethod in the json ld payload');
   });
 
   it('should populate the model', () => {
