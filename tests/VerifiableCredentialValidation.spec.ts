@@ -6,6 +6,7 @@ import TestSetup from './TestSetup';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import { VerifiableCredentialValidation } from '../lib/input_validation/VerifiableCredentialValidation';
 import { TokenType, IExpectedVerifiableCredential } from '../lib';
+import { VerifiableCredentialValidationResponse } from '../lib/input_validation/VerifiableCredentialValidationResponse';
 const clone = require('clone');
 
 describe('VerifiableCredentialValidation', () => {
@@ -41,14 +42,20 @@ describe('VerifiableCredentialValidation', () => {
 
     // Negative cases
 
-    // missing issuers
-    /*
+    // missing issuers from expected
     clonedExpected = clone(expected);
+    response = <VerifiableCredentialValidationResponse>VerifiableCredentialValidation.getIssuersFromExpected(clonedExpected, <any>undefined);
+    expect(response.detailedError).toEqual('The credentialType needs to be specified to validate the verifiableCredential.');
+
+    clonedExpected = clone(expected);
+    clonedExpected.contractIssuers = [];
+    response = <VerifiableCredentialValidationResponse>VerifiableCredentialValidation.getIssuersFromExpected(clonedExpected, 'IdentityCard');
+    expect(response.detailedError).toEqual('Expected should have contractIssuers set for verifiableCredential. Empty array presented.');
+
     delete clonedExpected.contractIssuers;
-    validator = new VerifiableCredentialValidation(options, clonedExpected);
-    response = await validator.validate(siop.vc.rawToken, setup.defaultUserDid);
+    response = <VerifiableCredentialValidationResponse>VerifiableCredentialValidation.getIssuersFromExpected(clonedExpected, 'IdentityCard');
     expect(response.detailedError).toEqual('Expected should have contractIssuers set for verifyableCredential');
-*/
+
     // Bad VC signature
     response = await validator.validate(siop.vc.rawToken + 'a', setup.defaultUserDid);
     expect(response.result).toBeFalsy();

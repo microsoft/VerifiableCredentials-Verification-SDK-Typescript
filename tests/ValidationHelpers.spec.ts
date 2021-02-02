@@ -307,7 +307,7 @@ import { IExpectedAudience, IdTokenValidationResponse } from '../lib';
     response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, expected);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual('The issuer in configuration was not found');
+    expect(response.detailedError).toEqual(`Missing iss property in idToken. Expected '"iss"'`);
     validationResponse.issuer = issuer;
     });
   
