@@ -8,6 +8,7 @@ import { IssuanceHelpers } from './IssuanceHelpers';
 import ClaimToken, { TokenType } from '../lib/verifiable_credential/ClaimToken';
 import { Crypto, IExpectedVerifiablePresentation } from '../lib';
 import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript';
+const clone = require('clone');
 
 describe('VerifiablePresentationValidation', () => {
 
@@ -34,6 +35,7 @@ describe('VerifiablePresentationValidation', () => {
     expect(response.result).toBeTruthy();
 
     // Negative cases
+
     validator = new VerifiablePresentationValidation(options, expected, 'abcdef', 'id');
     response = await validator.validate(siop.vp.rawToken);
     expect(response.result).toBeFalsy();
@@ -157,6 +159,16 @@ describe('VerifiablePresentationValidation', () => {
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Missing @context in presentation`);
 
+
+    // wrong did
+    const checkScopeValidityOnVpTokenSpy = spyOn(options, 'checkScopeValidityOnVpTokenDelegate').and.callFake(() => {
+      return <any>{
+        result: true,
+        did: 'wrong did'
+      }
+    });
+    response = await validator.validate(siop.vp.rawToken);
+    expect(response.detailedError).toEqual(`Wrong iss property in verifiablePresentation. Expected 'wrong did'`);
 
   });
 });
