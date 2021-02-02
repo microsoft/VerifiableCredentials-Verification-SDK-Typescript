@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Crypto, ValidatorBuilder, CryptoBuilder, ManagedHttpResolver, RequestorBuilder } from '../lib/index';
+import { Crypto, ValidatorBuilder, CryptoBuilder, ManagedHttpResolver, RequestorBuilder, BasicValidatorOptions } from '../lib/index';
 
 describe('ValidatorBuilder', () => {
   it('should test status feature flag', () => {
-    const crypto = new CryptoBuilder().build();
-    let builder = new ValidatorBuilder(crypto);
+    const options = new BasicValidatorOptions();
+    let builder = new ValidatorBuilder(options.crypto);
     expect(builder.featureVerifiedCredentialsStatusCheckEnabled).toBeTruthy();
 
     builder = builder.enableFeatureVerifiedCredentialsStatusCheck(false);
@@ -16,11 +16,17 @@ describe('ValidatorBuilder', () => {
   });
 
   it('should use new resolver', () => {
-    const crypto = new CryptoBuilder().build();
-    let builder = new ValidatorBuilder(crypto);
+    let options = new BasicValidatorOptions();
+    let builder = new ValidatorBuilder(options.crypto);
     let resolver = builder.resolver;
     builder.useResolver(new ManagedHttpResolver('https://resolver.example.com'));
     expect(builder.resolver).not.toEqual(resolver);
+
+    resolver = new ManagedHttpResolver('https://resolver.example.com');
+    options = new BasicValidatorOptions(resolver);
+    builder = new ValidatorBuilder(options.crypto);
+    expect(resolver).toEqual(options.resolver);
+    expect(options.httpClient).toBeDefined();
   });
 
   it('should set state', () => {

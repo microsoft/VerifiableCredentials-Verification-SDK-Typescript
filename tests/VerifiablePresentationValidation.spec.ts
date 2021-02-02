@@ -5,10 +5,9 @@
 import TestSetup from './TestSetup';
 import { VerifiablePresentationValidation } from '../lib/input_validation/VerifiablePresentationValidation';
 import { IssuanceHelpers } from './IssuanceHelpers';
-import ClaimToken, { TokenType } from '../lib/verifiable_credential/ClaimToken';
+import { TokenType } from '../lib/verifiable_credential/ClaimToken';
 import { Crypto, IExpectedVerifiablePresentation } from '../lib';
 import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript';
-const clone = require('clone');
 
 describe('VerifiablePresentationValidation', () => {
 
@@ -167,8 +166,9 @@ describe('VerifiablePresentationValidation', () => {
         did: 'wrong did'
       }
     });
-    response = await validator.validate(siop.vp.rawToken);
-    expect(response.detailedError).toEqual(`Wrong iss property in verifiablePresentation. Expected 'wrong did'`);
 
+    validator = new VerifiablePresentationValidation(options, expected, setup.defaultUserDid, 'id');
+    response = await validator.validate(siop.vp.rawToken);
+    expect(response.detailedError).toEqual(`The DID used for the SIOP did:test:user is not equal to the DID used for the verifiable presentation wrong did`);
   });
 });
