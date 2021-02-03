@@ -1,7 +1,6 @@
-[![GitHub version](https://badge.fury.io/gh/Naereen%2FStrapDown.js.svg)](https://github.com/Naereen/StrapDown.js)
-[![GitHub tag](https://img.shields.io/github/tag/Naereen/StrapDown.js.svg)](https://GitHub.com/Naereen/StrapDown.js/tags/)
-[![GitHub issues](https://img.shields.io/github/issues/Naereen/StrapDown.js.svg)](https://GitHub.com/Naereen/StrapDown.js/issues/)
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
+![GitHub package.json version](https://img.shields.io/github/package-json/v/microsoft/VerifiableCredentials-Verification-SDK-Typescript)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/microsoft/VerifiableCredentials-Verification-SDK-Typescript)
+
 
 # GitHub Verification SDK
 
