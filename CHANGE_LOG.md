@@ -1,3 +1,12 @@
+# version 0.11.1-preview.5
+## Change default resolver to beta resolver
+**Type of change:** engineering    
+**Customer impact:** low
+
+## Update unit tests
+**Type of change:** engineering    
+**Customer impact:** low
+
 # version 0.11.1-preview.4
 ## Fix token exp check not defined
 **Type of change:** bug    
