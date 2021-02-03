@@ -1,4 +1,7 @@
-[![Build Status](https://dev.azure.com/verifiable-credentials/VerifiableCredential/_apis/build/status/microsoft.VerifiableCredentials-Verification-SDK-Typescript?branchName=refs%2Fpull%2F102%2Fmerge)](https://dev.azure.com/verifiable-credentials/VerifiableCredential/_build/latest?definitionId=4&branchName=refs%2Fpull%2F102%2Fmerge)
+[![GitHub version](https://badge.fury.io/gh/Naereen%2FStrapDown.js.svg)](https://github.com/Naereen/StrapDown.js)
+[![GitHub tag](https://img.shields.io/github/tag/Naereen/StrapDown.js.svg)](https://GitHub.com/Naereen/StrapDown.js/tags/)
+[![GitHub issues](https://img.shields.io/github/issues/Naereen/StrapDown.js.svg)](https://GitHub.com/Naereen/StrapDown.js/issues/)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
 
 # GitHub Verification SDK
 
