@@ -7,6 +7,24 @@
 **Type of change:** engineering    
 **Customer impact:** low
 
+## Remove httpClient from BasicValidatorOptions
+**Type of change:** engineering    
+**Customer impact:** medium
+
+Could lead to build errors. Just remove the httpClient. It is not used by the SDK.
+
+## Support IFetchRequest client
+**Type of change:** new feature/breaking change
+**Customer impact:** low
+
+Introducing new interface IFetchRequest which allows an application to provide its own correlation id's and a fetch client which can be handling metrics, caching and logging.
+
+
+Breaking change
+The interface IValidatorOptions is extended with a new IFetchRequest property. Just add:
+
+      fetchRequest: new FetchRequest()
+      
 # version 0.11.1-preview.4
 ## Fix token exp check not defined
 **Type of change:** bug    

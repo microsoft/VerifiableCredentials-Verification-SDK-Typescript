@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { DidDocument, IDidResolveResult } from '@decentralized-identity/did-common-typescript';
+import { IDidResolveResult } from '@decentralized-identity/did-common-typescript';
 import { IPayloadProtectionSigning, JoseBuilder } from 'verifiablecredentials-crypto-sdk-typescript';
 import { IValidationOptions } from '../options/IValidationOptions';
 import IValidatorOptions from '../options/IValidatorOptions';
@@ -13,7 +13,6 @@ import { IdTokenValidationResponse } from './IdTokenValidationResponse';
 import { IValidationResponse } from './IValidationResponse';
 import { IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSiop, IExpectedAudience } from '../options/IExpected';
 import LinkedDataCryptoSuitePublicKey from './LinkedDataCryptoSuitePublicKey';
-const jp = require('jsonpath');
 
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
@@ -498,8 +497,12 @@ export class ValidationHelpers {
 
     try {
       if (token.type === TokenType.idToken) {
-        let response = await fetch(token.id);
-        
+        let response = await this.validatorOptions.fetchRequest.fetch(token.id, 'OIDCConfiguration', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }});
+
         if (!response.ok) {
           return {
             result: false,
@@ -519,8 +522,12 @@ export class ValidationHelpers {
           };
         }
         
-        response = await fetch(keysUrl);
-        
+        response = await this.validatorOptions.fetchRequest.fetch(keysUrl, 'OIDCJwks', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }});
+          
         if (!response.ok) {
           return {
             result: false,

@@ -39,6 +39,8 @@ export default class Requestor {
 
   /**
    * Create the actual request
+   * @param state The state for the transactions
+   * @param nonce The nonce for the transaction
    */
   public async create(state?: string, nonce?: string): Promise<IRequestorResult> {
     const crypto = this.builder.crypto.builder;
@@ -86,6 +88,7 @@ export default class Requestor {
       .sign(this._payload);
       
     const token = await signature.serialize();
+
     const response = {
       result: true,
       status: 200,

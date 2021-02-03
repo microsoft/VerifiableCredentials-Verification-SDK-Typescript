@@ -26,7 +26,6 @@ describe('ValidatorBuilder', () => {
     options = new BasicValidatorOptions(resolver);
     builder = new ValidatorBuilder(options.crypto);
     expect(resolver).toEqual(options.resolver);
-    expect(options.httpClient).toBeDefined();
   });
 
   it('should set state', () => {

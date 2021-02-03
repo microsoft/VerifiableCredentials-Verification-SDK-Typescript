@@ -284,7 +284,7 @@ export default class Validator {
           const siop = await this.builder.crypto.signingProtocol('JOSE').sign(payload);
           const serialized = await siop.serialize();
 
-          let response = await fetch(statusUrl, {
+          let response = await this.builder.fetchRequest.fetch(statusUrl, 'VpStatusCheck', {
             method: 'POST',
             headers: {
               'Content-Type': 'text/plain'
@@ -329,6 +329,7 @@ export default class Validator {
    */
   private setValidatorOptions(): IValidatorOptions {
     return {
+      fetchRequest:this.builder.fetchRequest,
       resolver: this.builder.resolver,
       crypto: this.builder.crypto
     }
