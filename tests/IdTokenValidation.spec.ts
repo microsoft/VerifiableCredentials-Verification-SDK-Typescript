@@ -5,7 +5,7 @@
 import TestSetup from './TestSetup';
 import { IdTokenValidation } from '../lib/input_validation/IdTokenValidation';
 import { IssuanceHelpers } from './IssuanceHelpers';
-import ClaimToken, { TokenType } from '../lib/verifiable_credential/ClaimToken';
+import { TokenType } from '../lib/verifiable_credential/ClaimToken';
 import { IExpectedIdToken, Validator } from '../lib';
 
  describe('idTokenValidation', () => {
@@ -36,6 +36,13 @@ import { IExpectedIdToken, Validator } from '../lib';
     expect(response.result).toBeTruthy();
     
     // Negative cases
+
+    // Bad token format
+    validator = new IdTokenValidation(options, expected, Validator.readContractId(siop.contract));
+    response = await validator.validate( '.' + siop.idToken.rawToken);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(400);
+    expect(response.detailedError).toEqual('The idToken could not be deserialized');
 
     // Bad id token signature
     validator = new IdTokenValidation(options, expected, Validator.readContractId(siop.contract));
