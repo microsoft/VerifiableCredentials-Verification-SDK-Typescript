@@ -169,7 +169,7 @@ describe('Validator', () => {
     expect(result.detailedError).toEqual('verifiableCredential does not has a TokenValidator');
   });
 
-  it('should validate presentation siop', async () => {    
+  it('should validate presentation siop', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentationJwt, false);
     const siopExpected = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siopPresentationAttestation)[0];
     const vcExpected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
