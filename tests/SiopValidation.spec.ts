@@ -8,7 +8,7 @@ import { SiopValidation } from "../lib/input_validation/SiopValidation";
 import TestSetup from './TestSetup';
 import ValidationOptions from '../lib/options/ValidationOptions';
 import { IssuanceHelpers } from "./IssuanceHelpers";
-import { IExpectedSiop, TokenType } from "../lib/index";
+import { DidValidation, IExpectedSiop, TokenType } from "../lib/index";
 
 describe('SiopValidation', () =>
 {
@@ -73,6 +73,12 @@ describe('SiopValidation', () =>
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Wrong aud property in siop. Expected 'https://portableidentitycards.azure-api.net/42b39d9d-0cdd-4ae0-b251-b7b39a561f91/api/portable/v1.0/card/issue'`);
 
+    // Bad validation
+    const testValidator = new DidValidation(validationOptions, expected);
+    validator.didValidation = testValidator;
+    const validateSpy = spyOn(testValidator, 'validate').and.callFake(() => <any>{result: false, detailedError: 'did validation error'});
+    response = await validator.validate(<string>siopRequest.rawToken);
+    expect(response.detailedError).toEqual('did validation error');
   });
   
   it('should return status 200', async () => {

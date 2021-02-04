@@ -22,7 +22,7 @@ export default class TokenGenerator {
   /**
    * Resolver url
    */
-  public static resolverUrl = `https://portableidentitycards.azure-api.net/1.0/identifiers`;
+  public static resolverUrl = `https://beta.discover.did.msidentity.com/1.0/identifiers`;
 
   public vcSchema = this.responder.requestor.schema;
 

@@ -5,7 +5,7 @@
 import TestSetup from './TestSetup';
 import { VerifiablePresentationValidation } from '../lib/input_validation/VerifiablePresentationValidation';
 import { IssuanceHelpers } from './IssuanceHelpers';
-import ClaimToken, { TokenType } from '../lib/verifiable_credential/ClaimToken';
+import { TokenType } from '../lib/verifiable_credential/ClaimToken';
 import { Crypto, IExpectedVerifiablePresentation } from '../lib';
 import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript';
 
@@ -34,6 +34,7 @@ describe('VerifiablePresentationValidation', () => {
     expect(response.result).toBeTruthy();
 
     // Negative cases
+
     validator = new VerifiablePresentationValidation(options, expected, 'abcdef', 'id');
     response = await validator.validate(siop.vp.rawToken);
     expect(response.result).toBeFalsy();
@@ -158,5 +159,16 @@ describe('VerifiablePresentationValidation', () => {
     expect(response.detailedError).toEqual(`Missing @context in presentation`);
 
 
+    // wrong did
+    const checkScopeValidityOnVpTokenSpy = spyOn(options, 'checkScopeValidityOnVpTokenDelegate').and.callFake(() => {
+      return <any>{
+        result: true,
+        did: 'wrong did'
+      }
+    });
+
+    validator = new VerifiablePresentationValidation(options, expected, setup.defaultUserDid, 'id');
+    response = await validator.validate(siop.vp.rawToken);
+    expect(response.detailedError).toEqual(`The DID used for the SIOP did:test:user is not equal to the DID used for the verifiable presentation wrong did`);
   });
 });

@@ -129,22 +129,14 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
     // Check if the VC matches the contract and its issuers
     // Get the contract from the VC
     if (this.expected.contractIssuers) {
-      const contractIssuers = VerifiableCredentialValidation.getIssuersFromExpected(this.expected, credentialType);
-      if (!(contractIssuers instanceof Array)) {
+      const vcIssuers = VerifiableCredentialValidation.getIssuersFromExpected(this.expected, credentialType);
+      if (!(vcIssuers instanceof Array)) {
         // Error in issuers
-        return <VerifiableCredentialValidationResponse>contractIssuers;
+        return <VerifiableCredentialValidationResponse>vcIssuers;
       }
 
       // Check if the we found a matching contract.
-      if (!contractIssuers) {
-        return {
-          result: false,
-          detailedError: `The verifiable credential with type '${credentialType}' is not expected in '${JSON.stringify(this.expected.contractIssuers)}'`,
-          status: 403
-        };
-      }
-
-      if (!contractIssuers.includes(validationResponse.issuer!)) {
+      if (!vcIssuers.includes(validationResponse.issuer!)) {
         return {
           result: false,
           detailedError: `The verifiable credential with type '${credentialType}' is not from a trusted issuer '${JSON.stringify(this.expected.contractIssuers)}'`,

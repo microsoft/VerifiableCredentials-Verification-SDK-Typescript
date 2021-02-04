@@ -55,6 +55,36 @@ describe('Rule processor', () => {
       TokenGenerator.fetchMock.reset();
     }
   });
+  it('should process RequestOneVcResponseOk with bad status', async () => {
+    try {
+      const model = new RequestOneVcResponseOk();
+      const requestor = new RequestorHelper(model);
+      await requestor.setup();
+      const request = await requestor.createPresentationExchangeRequest();
+
+      console.log(`Model: ${model.constructor.name}`);
+      console.log(`=====> Request: ${request.rawToken}`);
+
+      const responder = new ResponderHelper(requestor, model);
+      await responder.setup();
+      const response = await responder.createResponse();
+      console.log(`=====> Response: ${response.rawToken}`);
+
+      const validator = new ValidatorBuilder(requestor.crypto)
+        .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!] })
+        .enableFeatureVerifiedCredentialsStatusCheck(true)
+        .build();
+          
+      // Status mock
+      TokenGenerator.fetchMock.post('https://status.example.com', {status: 400, body: {}}, { overwriteRoutes: true });
+
+      let result = await validator.validate(response);
+      expect(result.result).toBeFalsy(result.detailedError);
+
+    } finally {
+      TokenGenerator.fetchMock.reset();
+    }
+  });
 
   it('should process RequestOneJsonLdVcResponseOk - json ld', async () => {
     try {
@@ -178,7 +208,7 @@ describe('Rule processor', () => {
     }
   });
 
-  xit('should process RequestTwoVcResponseOne', async () => {
+  it('should process RequestTwoVcResponseOne', async () => {
     try {
       const model = new RequestTwoVcResponseOne();
       const requestor = new RequestorHelper(model);
@@ -198,6 +228,7 @@ describe('Rule processor', () => {
         .build();
       let result = await validator.validate(<string>response.rawToken);
       expect(result.result).toBeFalsy();
+      expect(result.detailedError).toEqual(`Verifiable credential 'Diploma' is missing from the input request`)
     } finally {
       TokenGenerator.fetchMock.reset();
     }

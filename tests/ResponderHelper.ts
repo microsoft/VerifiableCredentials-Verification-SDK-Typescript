@@ -38,7 +38,7 @@ export default class ResponderHelper {
 
     let did = signingProtocol === 'ES256K' ? 
       await (new LongFormDid(this.crypto)).serialize() :
-      'did:test:respondor';
+      'did:test:responder';
     this.crypto.builder.useDid(did);
 
     // setup mock so requestor can resolve this did

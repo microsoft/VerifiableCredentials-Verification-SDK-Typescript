@@ -1,4 +1,18 @@
 # version 0.11.1-preview.5
+## Change default resolver to beta resolver
+**Type of change:** engineering    
+**Customer impact:** low
+
+## Update unit tests
+**Type of change:** engineering    
+**Customer impact:** low
+
+## Remove httpClient from BasicValidatorOptions
+**Type of change:** engineering    
+**Customer impact:** medium
+
+Could lead to build errors. Just remove the httpClient. It is not used by the SDK.
+
 ## Support IFetchRequest client
 **Type of change:** new feature/breaking change
 **Customer impact:** low

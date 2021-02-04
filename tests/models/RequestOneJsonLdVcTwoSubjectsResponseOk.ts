@@ -75,11 +75,14 @@ export default class RequestOneJsonLdVcResponseOk implements ITestModel {
               'VerifiableCredential',
               'IdentityCard'
             ],
-            'credentialSubject': {
+            'credentialSubject': [{
               givenName: 'Jules',
               familyName: 'Winnfield',
               profession: 'hitman'
             },
+            {
+              age: '58'
+            }],
             'credentialStatus': {
               'id': `https://status.example.com`,
               'type': 'PortableIdentityCardServiceCredentialStatus2020'

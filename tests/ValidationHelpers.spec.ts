@@ -5,7 +5,7 @@
 import TestSetup from './TestSetup';
 import { IValidationResponse } from '../lib/input_validation/IValidationResponse';
 import base64url from 'base64url';
-import { IPayloadProtectionSigning } from 'verifiablecredentials-crypto-sdk-typescript';
+import { IPayloadProtectionSigning, JoseBuilder } from 'verifiablecredentials-crypto-sdk-typescript';
 import ValidationOptions from '../lib/options/ValidationOptions';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import ClaimToken, { TokenType } from '../lib/verifiable_credential/ClaimToken';
@@ -46,6 +46,33 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The protected header in the verifiableCredential does not contain the kid');
+
+
+    // bad JWT deserialize 
+    let protocol = options.validatorOptions.crypto.signingProtocol(JoseBuilder.JWT);
+    let deserializeSpy = spyOn(protocol, 'deserialize').and.callFake(() => <any>{});
+    response = await options.getTokenObjectDelegate(validationResponse, '');
+    expect(response.result).toBeFalsy(response.detailedError);
+    expect(response.detailedError).toEqual('The payload in the verifiableCredential is undefined');
+
+    protocol = options.validatorOptions.crypto.signingProtocol(JoseBuilder.JWT);
+    deserializeSpy.and.callFake(() => <any>undefined);
+    response = await options.getTokenObjectDelegate(validationResponse, '');
+    expect(response.result).toBeFalsy(response.detailedError);
+    expect(response.detailedError).toEqual('The signature in the verifiableCredential has an invalid format');
+
+    deserializeSpy.and.callFake(() => { throw new Error('deserialize JWT error') });
+    response = await options.getTokenObjectDelegate(validationResponse, '');
+    expect(response.result).toBeFalsy(response.detailedError);
+    expect(response.detailedError).toEqual('The verifiableCredential could not be deserialized');
+
+    // bad json ld deserialize 
+    protocol = options.validatorOptions.crypto.signingProtocol(JoseBuilder.JSONLDProofs);
+    deserializeSpy = spyOn(protocol, 'deserialize').and.callFake(() => { throw new Error('deserialize error') });
+    response = await options.getTokenObjectDelegate(validationResponse, {});
+    expect(response.result).toBeFalsy(response.detailedError);
+    expect(response.detailedError).toEqual('The verifiableCredential could not be deserialized');
+    deserializeSpy.and.callFake(() => <any>{});
   });
 
   it('should test resolveDid', async () => {
@@ -82,6 +109,13 @@ describe('ValidationHelpers', () => {
     response = await options.resolveDidAndGetKeysDelegate(validationResponse);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
+
+    const resolveSpy = spyOn(options.validatorOptions.resolver, "resolve").and.callFake(() => { return <any>undefined });
+    response = await options.resolveDidAndGetKeysDelegate(validationResponse);
+    expect(response.result).toBeFalsy();
+    expect(response.detailedError).toEqual(`Could not retrieve DID document 'did:test:user'`);
+    expect(response.status).toEqual(403);
+
   });
 
   it('should not resolve resolveDid', async () => {
@@ -167,13 +201,13 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy('expired');
     expect(response.status).toEqual(403);
     expect(response.detailedError?.startsWith('The presented verifiableCredential is expired')).toBeTruthy();
-    
+
     validationResponse.expiration = 0;
     response = options.checkTimeValidityOnTokenDelegate(validationResponse, 5);
     expect(response.result).toBeFalsy('expired');
     expect(response.status).toEqual(403);
     expect(response.detailedError?.startsWith('The presented verifiableCredential is expired')).toBeTruthy();
-    
+
     // Add nbf
     validationResponse.expiration = undefined;
     let nbf = new Date().getTime() / 1000;
@@ -186,6 +220,31 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy('not yet valid');
     expect(response.status).toEqual(403);
     expect(response.detailedError?.startsWith('The presented verifiableCredential is not yet valid')).toBeTruthy();
+  });
+
+  it('should test checkScopeValidityOnVcToken', () => {
+    const options = new ValidationOptions(setup.validatorOptions, TokenType.verifiableCredential);
+
+    // Set the payload
+    const validationResponse: IValidationResponse = {
+      status: 200,
+      result: true
+    };
+
+    validationResponse.payloadObject = JSON.parse('{"sub": "did"}');
+
+    let response = options.checkScopeValidityOnVcTokenDelegate(validationResponse, <any>{}, 'did');
+    expect(response.result).toBeTruthy(response.detailedError);
+
+    // Negative cases
+    // wrong did
+    response = options.checkScopeValidityOnVcTokenDelegate(validationResponse, <any>{}, 'wrong did');
+    expect(response.detailedError).toEqual(`Wrong sub property in verifiableCredential. Expected 'wrong did'`);
+
+    // missing sub
+    delete validationResponse.payloadObject.sub;
+    response = options.checkScopeValidityOnVcTokenDelegate(validationResponse, <any>{}, 'did');
+    expect(response.detailedError).toEqual(`Missing sub property in verifiableCredential. Expected 'did'`);
   });
 
   it('should test checkScopeValidityOnIdTokenDelegate', () => {
@@ -243,6 +302,13 @@ describe('ValidationHelpers', () => {
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`The issuer in configuration 'iss' does not correspond with the issuer in the payload xxx`);
     validationResponse.issuer = issuer;
+
+    validationResponse.issuer = undefined;
+    response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, expected);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual(`Missing iss property in idToken. Expected '"iss"'`);
+    validationResponse.issuer = issuer;
   });
 
   it('should test fetchKeyAndValidateSignatureOnIdTokenDelegate', async () => {
@@ -263,6 +329,8 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeTruthy();
     expect(response.status).toEqual(200);
 
+    const validateSignatureOnToken = options.validateSignatureOnTokenDelegate;
+
     // check all keys
     const idTokenWithoutKid = new ClaimToken(TokenType.idToken, `${base64url.encode('{"typ": "JWT"}')}.${base64url.encode('{"text": "jules"}')}.abcdef`, setup.defaultIdTokenConfiguration);
     options.validateSignatureOnTokenDelegate = () => {
@@ -273,6 +341,7 @@ describe('ValidationHelpers', () => {
         });
       });
     }
+
     response = await options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, idTokenWithoutKid);
     expect(response.result).toBeTruthy();
     expect(response.status).toEqual(200);
@@ -345,30 +414,70 @@ describe('ValidationHelpers', () => {
         });
       });
     }
+    
     response = await options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, idToken);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Could not validate signature on id token`);
+
+    // bad keys in configuration
+    const badKey = {
+      crv: 'secp256k1',
+      x: 'AU-WZrK8O_rx4wlq3idyuFlvACM_sMXZputpkzyHPMk',
+      y: 'qOpL6upm2RSrwrTBbUvL_4xYnSTdSFLtjOlQlJ74pt0',
+      alg: 'ES256K',
+      kty: 'EC',
+      use: 'verify'
+    };
+
+    idToken.tokenHeader['kid'] = undefined;
+    options.validateSignatureOnTokenDelegate = validateSignatureOnToken;
+    setup.fetchMock.get(setup.defaultIdTokenJwksConfiguration, `{"keys": [${JSON.stringify(badKey)}]}`, { overwriteRoutes: true });
+
+    response = await options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, idToken);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(403);
+    expect(response.detailedError).toEqual('Could not validate token signature');
   });
 
   it('should test fetchOpenIdTokenPublicKeysDelegate', async () => {
-      const options = new ValidationOptions(setup.validatorOptions, TokenType.idToken);
-      const validationResponse: IValidationResponse = {
-        status: 200,
-        result: true
-      };
-  
-      let [tokenJwkPrivate, tokenJwkPublic, tokenConfiguration] = await IssuanceHelpers.generateSigningKeyAndSetConfigurationMock(setup, setup.defaulIssuerDidKid); 
-      const payload = {
-        jti: 'jti'
-      };
+    const options = new ValidationOptions(setup.validatorOptions, TokenType.idToken);
+    const validationResponse: IValidationResponse = {
+      status: 200,
+      result: true
+    };
 
-      const idToken = await IssuanceHelpers.signAToken(setup, payload, tokenConfiguration, tokenJwkPrivate);
+    let [tokenJwkPrivate, tokenJwkPublic, tokenConfiguration] = await IssuanceHelpers.generateSigningKeyAndSetConfigurationMock(setup, setup.defaulIssuerDidKid);
+    const payload = {
+      jti: 'jti'
+    };
 
-      let response = await options.fetchOpenIdTokenPublicKeysDelegate(validationResponse, idToken);
-      expect(response).toBeDefined();
-      expect(response.keys).toBeDefined();
-      expect(Array.isArray(response.keys)).toBeTruthy();
-      expect((<Array<any>>response.keys).length).toBeGreaterThan(0);
+    const idToken = await IssuanceHelpers.signAToken(setup, payload, tokenConfiguration, tokenJwkPrivate);
+
+    let response = await options.fetchOpenIdTokenPublicKeysDelegate(validationResponse, idToken);
+    expect(response).toBeDefined();
+    expect(response.keys).toBeDefined();
+    expect(Array.isArray(response.keys)).toBeTruthy();
+    expect((<Array<any>>response.keys).length).toBeGreaterThan(0);
+
+    // negative cases
+    // Bad response
+    setup.fetchMock.get(setup.defaultIdTokenJwksConfiguration, { "status": 400 }, { overwriteRoutes: true });
+    response = <IValidationResponse>await options.fetchOpenIdTokenPublicKeysDelegate(validationResponse, idToken);
+    expect(response.detailedError).toEqual(`Could not fetch keys needed to validate token on 'http://example/jwks'`);
+
+    setup.fetchMock.get(setup.defaultIdTokenConfiguration, { "body": {} }, { overwriteRoutes: true });
+    response = <IValidationResponse>await options.fetchOpenIdTokenPublicKeysDelegate(validationResponse, idToken);
+    expect(response.detailedError).toEqual(`No reference to jwks found in token configuration`);
+    /*
+          setup.fetchMock.get(setup.defaultIdTokenConfiguration, {"body": {
+            "jwks_uri": `setup.defaultIdTokenJwksConfiguration`
+          }}, {overwriteRoutes: true});
+          response = <IValidationResponse>await options.fetchOpenIdTokenPublicKeysDelegate(validationResponse, idToken);
+          expect(response.detailedError).toEqual(`No reference to jwks found in token configuration`);
+    */
+    setup.fetchMock.get(setup.defaultIdTokenConfiguration, { "status": 400 }, { overwriteRoutes: true });
+    response = <IValidationResponse>await options.fetchOpenIdTokenPublicKeysDelegate(validationResponse, idToken);
+    expect(response.detailedError).toEqual(`Could not fetch token configuration needed to validate token`);
   });
 });
