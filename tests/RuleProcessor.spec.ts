@@ -142,6 +142,7 @@ describe('Rule processor', () => {
       let result = await validator.validate(<string>response.rawToken);
       expect(result.result).toBeFalsy();
       expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map without id property`);
+      expect(result.code).toEqual('CLTO02');
     } finally {
       TokenGenerator.fetchMock.reset();
     }
@@ -202,7 +203,7 @@ describe('Rule processor', () => {
       let result = await validator.validate(<string>response.rawToken);
       expect(result.result).toBeFalsy();
       expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. This path '$.presentation_submission.attestations.presentations.*' points to multiple credentails and should only point to one credential.`)
-
+      expect(result.code).toEqual('CLTO04');
     } finally {
       TokenGenerator.fetchMock.reset();
     }

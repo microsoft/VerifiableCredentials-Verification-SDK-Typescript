@@ -6,7 +6,7 @@
 /**
  * Typed error for validation failures.
  */
-export class ValidationError extends Error {
+export default class ValidationError extends Error {
   /**
    * Create a new instance of ValidationError
    * @param message describing the error message

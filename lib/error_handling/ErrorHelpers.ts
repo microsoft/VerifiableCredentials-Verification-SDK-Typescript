@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
- export class ErrorHelpers {
+ export default class ErrorHelpers {
    /**
     * 
     * @param prefix for the error code

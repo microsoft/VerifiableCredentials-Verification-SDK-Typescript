@@ -4,8 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 import base64url from 'base64url';
 import VerifiableCredentialConstants from './VerifiableCredentialConstants';
-import { PresentationDefinitionModel, ValidationError } from '../index';
-import { ErrorHelpers } from '../error_handling/ErrorHelpers';
+import ValidationError from '../error_handling/ValidationError';
+import { PresentationDefinitionModel  } from '../index';
+import ErrorHelpers from '../error_handling/ErrorHelpers';
 const jp = require('jsonpath');
 const errorCode = (error: number) => ErrorHelpers.errorCode('CLTO', error);
 
@@ -214,8 +215,8 @@ export default class ClaimToken {
   * This algorithm will convert the attestations to a ClaimToken
   * @param payload The presentaiton exchange payload 
   */
-  public static getClaimTokensFromPresentationExchange(payload: PresentationDefinitionModel): { [key: string]: ClaimToken } {
-    const decodedTokens: { [key: string]: ClaimToken } = {};
+ public static getClaimTokensFromPresentationExchange(payload: PresentationDefinitionModel): { [key: string]: ClaimToken } {
+  const decodedTokens: { [key: string]: ClaimToken } = {};
     // Get descriptor map
     const descriptorMap: any[] = jp.query(payload, `$.presentation_submission.descriptor_map.*`);
 
