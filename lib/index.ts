@@ -13,7 +13,8 @@ import {IExpectedStatusReceipt, IExpectedBase, IExpectedSiop, IExpectedVerifiabl
 export { IExpectedStatusReceipt, IExpectedBase, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSelfIssued, IExpectedIdToken, IExpectedOpenIdToken, IExpectedAudience, IssuerMap };
 
 import { RulesValidationError } from './error_handling/RulesValidationError';
-export { RulesValidationError };
+import { ValidationError } from './error_handling/ValidationError';
+export { RulesValidationError, ValidationError };
 
 import ManagedHttpResolver from './resolver/ManagedHttpResolver';
 export { ManagedHttpResolver };
