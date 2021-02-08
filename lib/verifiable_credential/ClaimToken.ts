@@ -8,7 +8,7 @@ import ValidationError from '../error_handling/ValidationError';
 import { PresentationDefinitionModel  } from '../index';
 import ErrorHelpers from '../error_handling/ErrorHelpers';
 const jp = require('jsonpath');
-const errorCode = (error: number) => ErrorHelpers.errorCode('CLTO', error);
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKCLTO', error);
 
 /**
  * Enum for define the token type

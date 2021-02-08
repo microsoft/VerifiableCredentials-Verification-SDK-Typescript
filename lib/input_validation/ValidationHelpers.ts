@@ -13,6 +13,9 @@ import { IdTokenValidationResponse } from './IdTokenValidationResponse';
 import { IValidationResponse } from './IValidationResponse';
 import { IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSiop, IExpectedAudience } from '../options/IExpected';
 import LinkedDataCryptoSuitePublicKey from './LinkedDataCryptoSuitePublicKey';
+import ErrorHelpers from '../error_handling/ErrorHelpers';
+import ValidationError from '../error_handling/ValidationError';
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKVAHE', error);
 
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
@@ -168,6 +171,7 @@ export class ValidationHelpers {
       return {
         result: false,
         detailedError: `Could not resolve DID '${validationResponse.did}'`,
+        code: err.code,
         status: 403
       };
     }
@@ -188,6 +192,7 @@ export class ValidationHelpers {
       return {
         result: false,
         detailedError: exception.message,
+        code: exception.code,
         status: 403
       };
     }
@@ -219,7 +224,7 @@ export class ValidationHelpers {
 
     //  use jwk in request if did is not registered
     if (!signingKey) {
-      throw new Error(`The did '${did}' does not have a public key with kid '${kid}'. Public key : '${publicKey ? JSON.stringify(publicKey) : 'undefined'}'`);
+      throw new ValidationError(`The did '${did}' does not have a public key with kid '${kid}'. Public key : '${publicKey ? JSON.stringify(publicKey) : 'undefined'}'`, errorCode(1));
     }
 
     return signingKey;

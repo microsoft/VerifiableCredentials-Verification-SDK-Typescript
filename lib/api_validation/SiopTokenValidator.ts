@@ -97,7 +97,8 @@ export default class SiopTokenValidator implements ITokenValidator {
             return {
               result: false,
               status: 403,
-              detailedError: err.message
+              detailedError: err.message,
+              code: err.code
             };
           }
         }

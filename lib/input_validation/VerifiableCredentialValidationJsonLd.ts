@@ -5,9 +5,10 @@
 import { IValidationOptions } from '../options/IValidationOptions';
 import { IVerifiableCredentialValidation, VerifiableCredentialValidationResponse } from './VerifiableCredentialValidationResponse';
 import { DidValidation } from './DidValidation';
-import { IExpectedVerifiableCredential, ClaimToken, VerifiableCredentialValidation } from '../index';
+import { IExpectedVerifiableCredential, ClaimToken, VerifiableCredentialValidation, ValidationError } from '../index';
 import VerifiableCredentialConstants from '../verifiable_credential/VerifiableCredentialConstants';
-import { isContext } from 'vm';
+import ErrorHelpers from '../error_handling/ErrorHelpers';
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKVCLD', error);
 
 /**
  * Class for verifiable credential validation
@@ -145,15 +146,15 @@ export class VerifiableCredentialValidationJsonLd implements IVerifiableCredenti
 
     const types: string[] = vc.type;
     if (!types || types.length === 0) {
-      throw new Error(`The vc property does not contain type`);
+      throw new ValidationError(`The vc property does not contain type`, errorCode(1));
     }
 
     if (types.length < 2) {
-      throw new Error(`The verifiable credential type property should have two elements`);
+      throw new ValidationError(`The verifiable credential type property should have two elements`, errorCode(2));
     }
 
     if (types[0] !== VerifiableCredentialConstants.DEFAULT_VERIFIABLECREDENTIAL_TYPE) {
-      throw new Error(`The verifiable credential type first element should be ${VerifiableCredentialConstants.DEFAULT_VERIFIABLECREDENTIAL_TYPE}`);
+      throw new ValidationError(`The verifiable credential type first element should be ${VerifiableCredentialConstants.DEFAULT_VERIFIABLECREDENTIAL_TYPE}`, errorCode(3));
     }
 
     // Get credential type from context

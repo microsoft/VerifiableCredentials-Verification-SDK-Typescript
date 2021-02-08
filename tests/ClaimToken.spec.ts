@@ -40,7 +40,7 @@ import { ValidationError } from '../lib';
     expect(claimToken.rawToken).toEqual('1');
 
     // negative cases
-    expect(() => new ClaimToken(<any>'', token, configuration)).toThrowMatching((exception) => exception.message === `Type '' is not supported` && exception.code === 'CLTO01');
-    expect(() => new ClaimToken(TokenType.siopIssuance, 'token')).toThrowMatching((exception) => exception.message === `Cannot decode. Invalid input token` && exception.code === 'CLTO06');
+    expect(() => new ClaimToken(<any>'', token, configuration)).toThrowMatching((exception) => exception.message === `Type '' is not supported` && exception.code === 'VCSDKCLTO01');
+    expect(() => new ClaimToken(TokenType.siopIssuance, 'token')).toThrowMatching((exception) => exception.message === `Cannot decode. Invalid input token` && exception.code === 'VCSDKCLTO06');
   });
  });

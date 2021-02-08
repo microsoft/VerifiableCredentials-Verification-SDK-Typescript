@@ -115,6 +115,7 @@ describe('VerifiableCredentialValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`The vc property does not contain type`);
+    expect(response.code).toEqual('VCSDKVCVA01');
 
     // The verifiable credential vc property does not contain https://www.w3.org/2018/credentials/v1
     payload = {
@@ -132,7 +133,8 @@ describe('VerifiableCredentialValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`The verifiable credential type property should have two elements`);
-    
+    expect(response.code).toEqual('VCSDKVCVA02');
+
     payload = {
       iss: 'did:test:issuer',
       sub: 'test',
@@ -147,6 +149,7 @@ describe('VerifiableCredentialValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`The verifiable credential type first element should be VerifiableCredential`);
+    expect(response.code).toEqual('VCSDKVCVA03');
 
     payload = {
       iss: 'did:test:issuer',

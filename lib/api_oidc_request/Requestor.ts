@@ -3,10 +3,12 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { RequestorBuilder, IRequestorAttestation, IRequestorPresentationExchange, IssuerMap, IssuanceAttestationsModel, IdTokenAttestationModel, VerifiablePresentationAttestationModel } from '../index';
+import { RequestorBuilder, IRequestorAttestation, IRequestorPresentationExchange, IssuerMap, IssuanceAttestationsModel, IdTokenAttestationModel, VerifiablePresentationAttestationModel, ValidationError } from '../index';
 import { PresentationProtocol } from './RequestorBuilder';
 import { IRequestorResult } from './IRequestorResult';
 import { JoseBuilder } from 'verifiablecredentials-crypto-sdk-typescript';
+import ErrorHelpers from '../error_handling/ErrorHelpers';
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKREQU', error);
 
 /**
  * Class to model the OIDC requestor
@@ -137,7 +139,7 @@ export default class Requestor {
         return <string[]>configurations.filter((config: string | undefined) => config);
       }
     } else {
-      throw new Error('Id Tokens only supported in Attestation Requestor model.');
+      throw new ValidationError(`Id Tokens only supported in Attestation Requestor model.`, errorCode(1));
     }
   }
 
@@ -156,12 +158,12 @@ export default class Requestor {
       const issuers: { [credentialType: string]: string[] } = {};
       for (let definition in presentationDefinition.input_descriptors) {
         if (!presentationDefinition.input_descriptors[definition]) {
-          throw new Error('Missing id in input_descriptor');
+          throw new ValidationError('Missing id in input_descriptor');
         }
       }
       return issuers;
       */
-     throw new Error('trustedIssuersForVerifiableCredentials not supported for presentation exchange. Requires constraints.')
+     throw new ValidationError('trustedIssuersForVerifiableCredentials not supported for presentation exchange. Requires constraints.', errorCode(2));
     } else {
       const attestations = (<IRequestorAttestation>this.builder.requestor).attestations;
       if (!attestations.presentations) {
@@ -170,7 +172,7 @@ export default class Requestor {
         attestations.presentations.forEach((presentation) => {
 
           if (!presentation.credentialType) {
-            throw new Error('Missing credentialType for presentation.');
+            throw new ValidationError('Missing credentialType for presentation.', errorCode(3));
           }
           if (!issuers[presentation.credentialType]) {
             issuers[presentation.credentialType] = [];

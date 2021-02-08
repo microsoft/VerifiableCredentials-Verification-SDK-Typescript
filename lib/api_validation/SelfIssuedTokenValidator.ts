@@ -3,12 +3,14 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IExpectedSelfIssued, ITokenValidator, TokenType } from '../index';
+import ErrorHelpers from '../error_handling/ErrorHelpers';
+import { IExpectedSelfIssued, ITokenValidator, TokenType, ValidationError } from '../index';
 import { IValidationResponse } from '../input_validation/IValidationResponse';
 import ValidationQueue from '../input_validation/ValidationQueue';
 import ValidationQueueItem from '../input_validation/ValidationQueueItem';
 import IValidatorOptions from '../options/IValidatorOptions';
 import ValidationOptions from '../options/ValidationOptions';
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKSITV', error);
 
 /**
  * Class to validate a token
@@ -46,7 +48,7 @@ export default class SelfIssuedTokenValidator implements ITokenValidator {
    * @param queue with tokens to validate
    */
   public getTokens(_validationResponse: IValidationResponse, _queue: ValidationQueue ): IValidationResponse {
-    throw new Error('Not implemented');
+    throw new ValidationError(`Not implemented`, errorCode(1));
   }
 
   /**

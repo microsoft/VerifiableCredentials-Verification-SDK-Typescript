@@ -102,6 +102,8 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`The did 'did:test:user' does not have a public key with kid 'abcd'. Public key : 'undefined'`);
+    expect(response.code).toEqual('VCSDKVAHE01');
+    
     validationResponse.didKid = setup.defaulUserDidKid;
 
     // No did document
@@ -124,11 +126,14 @@ describe('ValidationHelpers', () => {
       status: 200,
       result: true
     };
-    validationResponse.did = 'did Jules';
+    validationResponse.did = 'didJules';
+    setup.fetchMock.get(`${setup.resolverUrl}/${validationResponse.did}`, { status: 404 }, { overwriteRoutes: true });
     const response = await options.resolveDidAndGetKeysDelegate(validationResponse);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
-    expect(response.detailedError).toEqual('Could not resolve DID \'did Jules\'');
+    expect(response.detailedError).toEqual(`Could not resolve DID 'didJules'`);
+    expect(response.code).toEqual('VCSDKMARE01');
+
   });
 
   it('should test validateDidSignatureDelegate', async () => {

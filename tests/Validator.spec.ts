@@ -34,11 +34,11 @@ describe('Validator', () => {
     //expected.configuration = (<{ [contract: string]: string[]}>expected.configuration)[Validator.getContractIdFromSiop(siop.contract)];
 
     let tokenValidator = new IdTokenTokenValidator(setup.validatorOptions, expected);
-    expect(() => tokenValidator.getTokens(<any>undefined, <any>undefined)).toThrowError('Not implemented');
+    expect(() => tokenValidator.getTokens(<any>undefined, <any>undefined)).toThrowMatching((exception) => exception.message === `Not implemented` && exception.code === 'VCSDKIDTV01');
 
     let selfIssuedValidator = new SelfIssuedTokenValidator(setup.validatorOptions, expected);
     expect(selfIssuedValidator.isType).toEqual(TokenType.selfIssued);
-    expect(() => selfIssuedValidator.getTokens(<any>undefined, <any>undefined)).toThrowError('Not implemented');
+    expect(() => selfIssuedValidator.getTokens(<any>undefined, <any>undefined)).toThrowMatching((exception) => exception.message === `Not implemented` && exception.code === 'VCSDKSITV01');
 
     let validator = new ValidatorBuilder(crypto)
       .useValidators(tokenValidator)
@@ -85,7 +85,7 @@ describe('Validator', () => {
     const expected: any = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
 
     const tokenValidator = new VerifiableCredentialTokenValidator(setup.validatorOptions, expected);
-    expect(() => tokenValidator.getTokens(<any>undefined, <any>undefined)).toThrowError('Not implemented');
+    expect(() => tokenValidator.getTokens(<any>undefined, <any>undefined)).toThrowMatching((exception) => exception.message === `Not implemented` && exception.code === 'VCSDKVCTV01');
 
     const validator = new ValidatorBuilder(crypto)
       .useValidators(tokenValidator)

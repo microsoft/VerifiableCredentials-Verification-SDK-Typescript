@@ -76,7 +76,7 @@ describe('PresentationExchange', () => {
     result = await validator!.validate(siop);
     expect(result.result).toBeFalsy('Remove tokens');
     expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. This path '$.presentation_submission.attestations.presentations.IdentityCard' did not return a token.`);
-    expect(result.code).toEqual('CLTO03');
+    expect(result.code).toEqual('VCSDKCLTO03');
 
     //Remove path
     responsePayload = clone(response.decodedToken);
@@ -85,7 +85,7 @@ describe('PresentationExchange', () => {
     result = await validator!.validate(siop);
     expect(result.result).toBeFalsy('Remove path');
     expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. No path property found.`);
-    expect(result.code).toEqual('CLTO05');
+    expect(result.code).toEqual('VCSDKCLTO05');
   });
 
   it('should create a response and validate - json ld', async () => {

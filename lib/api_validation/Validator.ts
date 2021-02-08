@@ -62,6 +62,7 @@ export default class Validator {
         return {
           status: 400,
           detailedError: exception.message,
+          code: exception.code,
           result: false
         }
       }
@@ -83,6 +84,7 @@ export default class Validator {
       } catch (error) {
         return {
           detailedError: error.message,
+          code: error.code,
           status: 400,
           result: false
         };
