@@ -229,7 +229,8 @@ describe('Rule processor', () => {
         .build();
       let result = await validator.validate(<string>response.rawToken);
       expect(result.result).toBeFalsy();
-      expect(result.detailedError).toEqual(`Verifiable credential 'Diploma' is missing from the input request`)
+      expect(result.detailedError).toEqual(`Verifiable credential 'Diploma' is missing from the input request`);
+      expect(result.code).toEqual('VCSDKVTOR04');
     } finally {
       TokenGenerator.fetchMock.reset();
     }
@@ -256,6 +257,7 @@ describe('Rule processor', () => {
       let result = await validator.validate(<string>response.rawToken);
       expect(result.result).toBeFalsy();
       expect(result.detailedError?.startsWith('The status receipt for jti ') && result.detailedError?.endsWith(' failed with status revoked.')).toBeTruthy();
+      expect(result.code).toEqual('VCSDKVTOR07');
     } finally {
       TokenGenerator.fetchMock.reset();
     }
@@ -329,6 +331,7 @@ describe('Rule processor', () => {
       let result = await validator.validate(<string>response.rawToken);
       expect(result.result).toBeFalsy();
       expect(result.detailedError).toEqual(`Verifiable credential 'DriversLicenseCredential' is missing from the input request`);
+      expect(result.code).toEqual('VCSDKVTOR04');
     } finally {
       TokenGenerator.fetchMock.reset();
     }
@@ -357,6 +360,7 @@ describe('Rule processor', () => {
       let result = await validator.validate(<string>response.rawToken);
       expect(result.result).toBeFalsy();
       expect(result.detailedError).toEqual(`The id token is missing from the input request`);
+      expect(result.code).toEqual('VCSDKVTOR05');
     } finally {
       TokenGenerator.fetchMock.reset();
     }

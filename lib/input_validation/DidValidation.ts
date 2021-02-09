@@ -7,6 +7,8 @@ import { IPayloadProtectionSigning } from 'verifiablecredentials-crypto-sdk-type
 import { IDidValidation, IDidValidationResponse } from './DidValidationResponse';
 import { IValidationOptions } from '../options/IValidationOptions';
 import { IExpectedBase } from '../index';
+import ErrorHelpers from '../error_handling/ErrorHelpers';
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKDIDV', error);
 
 /**
  * Class for input validation of a token signed with DID key
@@ -43,6 +45,7 @@ export class DidValidation implements IDidValidation {
      if (parts.length <= 1) {
        return {
          result: false,
+         code: errorCode(1),
          detailedError: `The kid in the protected header does not contain the DID. Required format for kid is <did>#kid`,
          status: 403
        };
@@ -52,6 +55,7 @@ export class DidValidation implements IDidValidation {
     if (!validationResponse.did) {
       return validationResponse = {
           result: false,
+          code: errorCode(2),
           detailedError: 'The kid does not contain the DID',
           status: 403
         };

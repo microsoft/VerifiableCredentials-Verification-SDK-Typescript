@@ -11,6 +11,8 @@ import ValidationQueue from '../input_validation/ValidationQueue';
 import ValidationQueueItem from '../input_validation/ValidationQueueItem';
 import { SiopValidation } from '../input_validation/SiopValidation';
 import VerifiableCredentialConstants from '../verifiable_credential/VerifiableCredentialConstants';
+import ErrorHelpers from '../error_handling/ErrorHelpers';
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKSTVA', error);
 
 /**
  * Class to validate a token
@@ -52,7 +54,8 @@ export default class SiopTokenValidator implements ITokenValidator {
         return {
           result: false,
           status: 403,
-          detailedError: `Expect nonce '${this.expected.nonce}' does not match '${validationResponse.payloadObject.nonce}'.`
+          code: errorCode(1),
+          detailedError: `Expected nonce '${this.expected.nonce}' does not match '${validationResponse.payloadObject.nonce}'.`
         }
       }
     }
@@ -61,7 +64,8 @@ export default class SiopTokenValidator implements ITokenValidator {
         return {
           result: false,
           status: 403,
-          detailedError: `Expect state '${this.expected.state}' does not match '${validationResponse.payloadObject.state}'.`
+          code: errorCode(2),
+          detailedError: `Expected state '${this.expected.state}' does not match '${validationResponse.payloadObject.state}'.`
         }
       }
     }

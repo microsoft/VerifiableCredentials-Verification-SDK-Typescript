@@ -41,6 +41,7 @@ describe('SiopValidation', () =>
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Missing iss property in siop. Expected 'https://self-issued.me'`);
+    expect(response.code).toEqual('VCSDKVAHE23');
 
     // Bad iss
     payload = {
@@ -51,6 +52,7 @@ describe('SiopValidation', () =>
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Wrong iss property in siop. Expected 'https://self-issued.me'`);
+    expect(response.code).toEqual('VCSDKVAHE24');
 
     // Missing aud
     payload = {
@@ -61,6 +63,7 @@ describe('SiopValidation', () =>
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Missing aud property in siop`);
+    expect(response.code).toEqual('VCSDKVAHE25');
 
     // Wrong aud
     payload = {
@@ -72,6 +75,7 @@ describe('SiopValidation', () =>
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Wrong aud property in siop. Expected 'https://portableidentitycards.azure-api.net/42b39d9d-0cdd-4ae0-b251-b7b39a561f91/api/portable/v1.0/card/issue'`);
+    expect(response.code).toEqual('VCSDKVAHE26');
 
     // Bad validation
     const testValidator = new DidValidation(validationOptions, expected);

@@ -68,7 +68,8 @@ describe('PresentationExchange', () => {
     result = await validator!.validate(siop);
     expect(result.result).toBeFalsy('Remove presentation_submission');
     expect(result.detailedError).toEqual(`Verifiable credential 'IdentityCard' is missing from the input request`);
-
+    expect(result.code).toEqual('VCSDKVTOR04');
+    
     //Remove tokens
     responsePayload = clone(response.decodedToken);
     delete responsePayload.presentation_submission.attestations;
@@ -118,13 +119,15 @@ describe('PresentationExchange', () => {
       .build();
     result = await validator.validate(<string>response.rawToken);
     expect(result.detailedError).toEqual(`The verifiable credential with type 'IdentityCard' is not from a trusted issuer '{"IdentityCard":[]}'`);
+    expect(result.code).toEqual('VCSDKVCVA12');
 
     validator = new ValidatorBuilder(requestor.crypto)
       .useTrustedIssuersForVerifiableCredentials({ IdentityCard: ['some did'] })
       .build();
     result = await validator.validate(<string>response.rawToken);
     expect(result.detailedError).toEqual(`The verifiable credential with type 'IdentityCard' is not from a trusted issuer '{"IdentityCard":["some did"]}'`);
-    
+    expect(result.code).toEqual('VCSDKVCVA12');
+
     // wrong siop in vc
     model = new RequestOneJsonLdVcResponseWrongSiopDId();
     responder = new ResponderHelper(requestor, model);
@@ -137,6 +140,7 @@ describe('PresentationExchange', () => {
       .build();
     result = await validator.validate(<string>response.rawToken);
     expect(result.detailedError).toEqual(`The verifiable credential with type 'IdentityCard', the id in the credentialSubject property does not match the presenter DID: did:test:responder`);
+    expect(result.code).toEqual('VCSDKVCVA11');
   });
 
   it('should fail because of missing proof in vc - json ld', async () => {
@@ -155,6 +159,7 @@ describe('PresentationExchange', () => {
       .build();
     let result = await validator.validate(<string>response.rawToken);
     expect(result.detailedError).toEqual('The proof is not available in the json ld payload');
+    expect(result.code).toEqual('VCSDKVAHE06');
 
     // missing verificationMethod
     model = new RequestOneJsonLdVcResponseNoProofInVC();
@@ -168,6 +173,7 @@ describe('PresentationExchange', () => {
       .build();
     result = await validator.validate(<string>response.rawToken);
     expect(result.detailedError).toEqual('The proof does not contain the verificationMethod in the json ld payload');
+    expect(result.code).toEqual('VCSDKVAHE07');
   });
 
   it('should create a response and validate with VC with two credentialSubject - json ld', async () => {

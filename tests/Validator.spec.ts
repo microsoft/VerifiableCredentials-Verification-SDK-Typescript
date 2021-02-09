@@ -131,6 +131,7 @@ describe('Validator', () => {
     result = vpValidator.getTokens(clonedResult, queue);
     expect(result.result).toBeFalsy(result.detailedError);
     expect(result.detailedError).toEqual('No verifiable credential');
+    expect(result.code).toEqual('VCSDKVPTV01');
 
     // Check VC validator
     queue = new ValidationQueue();
@@ -156,6 +157,7 @@ describe('Validator', () => {
     result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeFalsy();
     expect(result.detailedError).toEqual('verifiablePresentationJwt does not has a TokenValidator');
+    expect(result.code).toEqual('VCSDKVTOR02');
 
     // Test validator with missing VC validator
     validator = new ValidatorBuilder(crypto)
@@ -167,6 +169,7 @@ describe('Validator', () => {
     result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeFalsy();
     expect(result.detailedError).toEqual('verifiableCredential does not has a TokenValidator');
+    expect(result.code).toEqual('VCSDKVTOR02');
   });
 
   it('should validate presentation siop', async () => {
@@ -208,12 +211,14 @@ describe('Validator', () => {
     result = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(result.result).toBeFalsy();
     expect(result.detailedError).toEqual(`Expected should have contractIssuers set for verifiableCredential. Missing contractIssuers for 'DrivingLicense'.`);
+    expect(result.code).toEqual('VCSDKVCVA16');
     expect(result.status).toEqual(403);
 
     // bad payload
     queue.enqueueToken('siopPresentationAttestation', <any>{ claims: {} });
     result = await validator.validate(<any>queue.getNextToken()!);
     expect(result.detailedError).toEqual('Wrong token type. Expected string or ClaimToken');
+    expect(result.code).toEqual('VCSDKVTOR01');
 
     let spiedMethod: any = ClaimToken.create;
     let createSpy: jasmine.Spy = spyOn(ClaimToken, 'create').and.callFake((): ClaimToken => {
@@ -252,6 +257,7 @@ describe('Validator', () => {
     validator.tokenValidators['test'] = validator.tokenValidators['siopPresentationAttestation'];
     result = await validator.validate(<any>queue.getNextToken()!.tokenToValidate.rawToken);
     expect(result.detailedError).toEqual(`test is not supported`);
+    expect(result.code).toEqual('VCSDKVTOR03');
     getClaimTokenSpy.and.callFake((queueItem: any): ClaimToken => {
       return spiedMethod(queueItem);
     });

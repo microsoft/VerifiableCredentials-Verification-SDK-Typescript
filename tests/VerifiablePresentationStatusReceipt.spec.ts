@@ -24,6 +24,7 @@ describe('VerifiablePresentationStatusReceipt', () =>
       await verifiablePresentationStatusReceipt.validate();
     } catch (exception) {
       expect(exception.message).toEqual('The status receipt is missing receipt');
+      expect(exception.code).toEqual('VCSDKVPSC01');
     }
     let validator = verifiablePresentationStatusReceipt.didValidation;
     expect(validator.constructor.name).toEqual('DidValidation');

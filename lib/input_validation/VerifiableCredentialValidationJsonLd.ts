@@ -73,6 +73,7 @@ export class VerifiableCredentialValidationJsonLd implements IVerifiableCredenti
       return {
         result: false,
         detailedError: exception.message,
+        code: exception.code,
         status: 403
       };
     }
