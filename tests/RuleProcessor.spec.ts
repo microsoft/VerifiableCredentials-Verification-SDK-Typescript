@@ -21,26 +21,34 @@ import RequestTwoVcPointerToMultipleTokens from './models/RequestTwoVcPointerToM
 import RequestOneJsonLdVcResponseOk from './models/RequestOneJsonLdVcResponseOk';
 
 describe('Rule processor', () => {
+  const doRequest = async (model?: any): Promise<any> => {
+    if (!model) {
+      model = new RequestOneVcResponseOk();
+    }
+    const requestor = new RequestorHelper(model);
+    await requestor.setup();
+    const request = await requestor.createPresentationExchangeRequest();
+  
+    console.log(`Model: ${model.constructor.name}`);
+    console.log(`=====> Request: ${request.rawToken}`);
+  
+    const responder = new ResponderHelper(requestor, model);
+    await responder.setup();
+    const responderResponse = await responder.createResponse();
+    console.log(`=====> Response: ${responderResponse.rawToken}`);
+  
+    const validator = new ValidatorBuilder(requestor.crypto)
+      .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!] })
+      .enableFeatureVerifiedCredentialsStatusCheck(true)
+      .build();
+        
+    return [validator, model, responderResponse, responder];
+  }      
+
   it('should process RequestOneVcResponseOk', async () => {
     try {
-      const model = new RequestOneVcResponseOk();
-      const requestor = new RequestorHelper(model);
-      await requestor.setup();
-      const request = await requestor.createPresentationExchangeRequest();
-
-      console.log(`Model: ${model.constructor.name}`);
-      console.log(`=====> Request: ${request.rawToken}`);
-
-      const responder = new ResponderHelper(requestor, model);
-      await responder.setup();
-      const responderResponse = await responder.createResponse();
-      console.log(`=====> Response: ${responderResponse.rawToken}`);
-
-      const validator = new ValidatorBuilder(requestor.crypto)
-        .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!] })
-        .enableFeatureVerifiedCredentialsStatusCheck(true)
-        .build();
-      let response = await validator.validate(<string>responderResponse.rawToken);
+      let [validator, model, responderResponse] = await doRequest();
+      let response = await validator.validate(responderResponse);
       expect(response.result).toBeTruthy();
 
       expect(response.validationResult!.verifiableCredentials!['IdentityCard'].decodedToken.jti).toEqual(model.getVcFromResponse('IdentityCard').decodedToken.jti);
@@ -57,30 +65,32 @@ describe('Rule processor', () => {
   });
   it('should process RequestOneVcResponseOk with bad status', async () => {
     try {
-      const model = new RequestOneVcResponseOk();
-      const requestor = new RequestorHelper(model);
-      await requestor.setup();
-      const request = await requestor.createPresentationExchangeRequest();
-
-      console.log(`Model: ${model.constructor.name}`);
-      console.log(`=====> Request: ${request.rawToken}`);
-
-      const responder = new ResponderHelper(requestor, model);
-      await responder.setup();
-      const responderResponse = await responder.createResponse();
-      console.log(`=====> Response: ${responderResponse.rawToken}`);
-
-      const validator = new ValidatorBuilder(requestor.crypto)
-        .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!] })
-        .enableFeatureVerifiedCredentialsStatusCheck(true)
-        .build();
+      let [validator, model, responderResponse] = await doRequest();
           
       // Status mock
       TokenGenerator.fetchMock.post('https://status.example.com', {status: 400, body: {}}, { overwriteRoutes: true });
 
       let response = await validator.validate(responderResponse);
       expect(response.result).toBeFalsy(response.detailedError);
-
+      expect(response.code).toEqual('VCSDKVTOR06');
+    } finally {
+      TokenGenerator.fetchMock.reset();
+    }
+  });
+  it('should process RequestOneVcResponseOk with missing attestations in SIOP', async () => {
+    try {
+      const model: any = new RequestAttestationsOneVcSaIdtokenResponseOk();
+      model.responseOperations = [
+        {
+          path: '$.attestations',
+          operation: () => undefined
+        }
+      ];
+      let [validator, _, responderResponse, responder] = await doRequest(model);
+  
+      let response = await validator.validate(responderResponse);
+      expect(response.result).toBeFalsy(response.detailedError);
+      //expect(response.code).toEqual('VCSDKVTOR06');
     } finally {
       TokenGenerator.fetchMock.reset();
     }
