@@ -4,12 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 import { VerifiablePresentationValidationResponse, IVerifiablePresentationValidation } from './VerifiablePresentationValidationResponse';
 import { IValidationOptions } from '../options/IValidationOptions';
-import ClaimToken from '../verifiable_credential/ClaimToken';
 import { DidValidation } from './DidValidation';
 import VerifiableCredentialConstants from '../verifiable_credential/VerifiableCredentialConstants';
 import { IExpectedVerifiablePresentation } from '../index';
-import { Crypto } from '../index';
-import { KeyStoreOptions, JsonWebKey } from 'verifiablecredentials-crypto-sdk-typescript';
+import ErrorHelpers from '../error_handling/ErrorHelpers';
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKVPVa', error);
 
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
@@ -58,6 +57,7 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
     if (this.siopDid && validationResponse.did !== this.siopDid) {
       return {
         result: false,
+        code: errorCode(1),
         detailedError: `The DID used for the SIOP ${this.siopDid} is not equal to the DID used for the verifiable presentation ${validationResponse.did}`,
         status: 403
       };
@@ -67,6 +67,7 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
       return {
         result: false,
         status: 403,
+        code: errorCode(2),
         detailedError: `Missing vp in presentation`
       };
     }
@@ -75,6 +76,7 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
       return {
         result: false,
         status: 403,
+        code: errorCode(3),
         detailedError: `Missing @context in presentation`
       };
     }
@@ -83,6 +85,7 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
       return {
         result: false,
         status: 403,
+        code: errorCode(3),
         detailedError: `Missing or wrong default type in vp of presentation. Should be ${VerifiableCredentialConstants.DEFAULT_VERIFIABLEPRESENTATION_TYPE}`
       };
     }
@@ -90,6 +93,7 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
       return {
         result: false,
         status: 403,
+        code: errorCode(4),
         detailedError: `Missing verifiableCredential in presentation`
       };
     }

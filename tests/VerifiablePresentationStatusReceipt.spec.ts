@@ -36,19 +36,19 @@ describe('VerifiablePresentationStatusReceipt', () =>
 
     verifiablePresentationStatusReceipt = new VerifiablePresentationStatusReceipt({receipt: [{}]}, validatorBuilder, validationOptions, expected);
     verifiablePresentationStatusReceipt.didValidation = validator;
-    let result = await verifiablePresentationStatusReceipt.validate();
-    expect(result.result).toBeFalsy(result.detailedError);    
+    let response = await verifiablePresentationStatusReceipt.validate();
+    expect(response.result).toBeFalsy(response.detailedError);    
 
     validatorSpy.and.callFake(() => {
       return <any> {result: true, payloadObject: {aud: ''}};
     });
-    result = await verifiablePresentationStatusReceipt.validate();
-    expect(result.result).toBeFalsy(result.detailedError);    
+    response = await verifiablePresentationStatusReceipt.validate();
+    expect(response.result).toBeFalsy(response.detailedError);    
 
     validatorSpy.and.callFake(() => {
       return <any> {result: true, payloadObject: {aud: 'didAudience', issuer: ''}};
     });
-    result = await verifiablePresentationStatusReceipt.validate();
-    expect(result.result).toBeFalsy(result.detailedError);    
+    response = await verifiablePresentationStatusReceipt.validate();
+    expect(response.result).toBeFalsy(response.detailedError);    
   });
 });

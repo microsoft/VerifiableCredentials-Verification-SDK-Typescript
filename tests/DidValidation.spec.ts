@@ -43,6 +43,7 @@ describe('DidValidation', () =>
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(400);
     expect(response.detailedError).toEqual('The siopIssuance could not be deserialized');
+    expect(response.code).toEqual('VCSDKVAHE01');
 
     // Token has no kid
     let header: any = {

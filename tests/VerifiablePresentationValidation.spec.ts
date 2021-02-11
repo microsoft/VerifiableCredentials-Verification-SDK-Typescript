@@ -47,6 +47,7 @@ describe('VerifiablePresentationValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The signature on the payload in the verifiablePresentationJwt is invalid');
+    expect(response.code).toEqual('VCSDKVAHE27');
 
     // Missing iss
     let payload: any = {
@@ -116,6 +117,7 @@ describe('VerifiablePresentationValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Missing or wrong default type in vp of presentation. Should be VerifiablePresentation`);
+    expect(response.code).toEqual('VCSDKVPVa03');
 
     payload.vp['@context'].type = ['VerifiablePresentation'];
     siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
@@ -123,6 +125,7 @@ describe('VerifiablePresentationValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Missing or wrong default type in vp of presentation. Should be VerifiablePresentation`);
+    expect(response.code).toEqual('VCSDKVPVa03');
 
     // Missing vc
     payload = {
@@ -138,6 +141,7 @@ describe('VerifiablePresentationValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Missing verifiableCredential in presentation`);
+    expect(response.code).toEqual('VCSDKVPVa04');
 
     // Missing vp
     payload = {
@@ -149,6 +153,7 @@ describe('VerifiablePresentationValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Missing vp in presentation`);
+    expect(response.code).toEqual('VCSDKVPVa02');
 
     // Missing context in vp
     payload = {
@@ -161,6 +166,7 @@ describe('VerifiablePresentationValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Missing @context in presentation`);
+    expect(response.code).toEqual('VCSDKVPVa03');
 
 
     // wrong did
@@ -174,5 +180,6 @@ describe('VerifiablePresentationValidation', () => {
     validator = new VerifiablePresentationValidation(options, expected, setup.defaultUserDid, 'id');
     response = await validator.validate(siop.vp.rawToken);
     expect(response.detailedError).toEqual(`The DID used for the SIOP did:test:user is not equal to the DID used for the verifiable presentation wrong did`);
+    expect(response.code).toEqual('VCSDKVPVa01');
   });
 });

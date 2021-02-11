@@ -51,6 +51,7 @@ export class VerifiableCredentialValidationJsonLd implements IVerifiableCredenti
     if (!context || context.length === 0) {
       return {
         result: false,
+        code: errorCode(4),
         detailedError: `The verifiable credential vc property does not contain ${VerifiableCredentialConstants.CLAIM_CONTEXT}`,
         status: 403
       };
@@ -59,6 +60,7 @@ export class VerifiableCredentialValidationJsonLd implements IVerifiableCredenti
     if (context[0] !== VerifiableCredentialConstants.DEFAULT_VERIFIABLECREDENTIAL_CONTEXT) {
       return {
         result: false,
+        code: errorCode(5),
         detailedError: `The verifiable credential context first element should be ${VerifiableCredentialConstants.DEFAULT_VERIFIABLECREDENTIAL_CONTEXT}`,
         status: 403
       };
@@ -72,8 +74,9 @@ export class VerifiableCredentialValidationJsonLd implements IVerifiableCredenti
       console.error(exception.message);
       return {
         result: false,
+        code: errorCode(5),
         detailedError: exception.message,
-        code: exception.code,
+        innerError: exception,
         status: 403
       };
     }
@@ -82,6 +85,7 @@ export class VerifiableCredentialValidationJsonLd implements IVerifiableCredenti
     if (!validationResponse.payloadObject.credentialSubject) {
       return {
         result: false,
+        code: errorCode(6),
         detailedError: `The verifiable credential with type '${credentialType}' does not has a credentialSubject property`,
         status: 403
       };
@@ -103,6 +107,7 @@ export class VerifiableCredentialValidationJsonLd implements IVerifiableCredenti
       if (!subjects.includes(siopDid)) {
         return {
           result: false,
+          code: errorCode(7),
           detailedError: `The verifiable credential with type '${credentialType}', the id in the credentialSubject property does not match the presenter DID: ${siopDid}`,
           status: 403
         };
@@ -122,6 +127,7 @@ export class VerifiableCredentialValidationJsonLd implements IVerifiableCredenti
       if (!contractIssuers) {
         return {
           result: false,
+          code: errorCode(8),
           detailedError: `The verifiable credential with type '${credentialType}' is not expected in '${JSON.stringify(this.expected.contractIssuers)}'`,
           status: 403
         };
@@ -130,6 +136,7 @@ export class VerifiableCredentialValidationJsonLd implements IVerifiableCredenti
       if (!contractIssuers.includes(validationResponse.issuer!)) {
         return {
           result: false,
+          code: errorCode(9),
           detailedError: `The verifiable credential with type '${credentialType}' is not from a trusted issuer '${JSON.stringify(this.expected.contractIssuers)}'`,
           status: 403
         };
@@ -172,6 +179,7 @@ export class VerifiableCredentialValidationJsonLd implements IVerifiableCredenti
       return {
         result: false,
         status: 500,
+        code: errorCode(10),
         detailedError: `Expected should have contractIssuers set for verifyableCredential`
       };
     }
@@ -184,6 +192,7 @@ export class VerifiableCredentialValidationJsonLd implements IVerifiableCredenti
         return {
           result: false,
           status: 500,
+          code: errorCode(11),
           detailedError: `Expected should have contractIssuers set for verifiableCredential. Empty array presented.`
         };
       }
@@ -193,6 +202,7 @@ export class VerifiableCredentialValidationJsonLd implements IVerifiableCredenti
         return {
           result: false,
           status: 500,
+          code: errorCode(12),
           detailedError: `The credentialType needs to be specified to validate the verifiableCredential.`
         };
       }
@@ -202,6 +212,7 @@ export class VerifiableCredentialValidationJsonLd implements IVerifiableCredenti
         return {
           result: false,
           status: 403,
+          code: errorCode(13),
           detailedError: `Expected should have contractIssuers set for verifiableCredential. Missing contractIssuers for '${credentialType}'.`
         };
       }

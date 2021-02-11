@@ -100,8 +100,8 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The kid is not referenced in the request');
-    validationResponse.didKid = setup.defaulUserDidKid;
     expect(response.code).toEqual('VCSDKVAHE10');
+    validationResponse.didKid = setup.defaulUserDidKid;
 
     // No public key
     validationResponse.didKid = 'abcd';
@@ -110,7 +110,6 @@ describe('ValidationHelpers', () => {
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`The did 'did:test:user' does not have a public key with kid 'abcd'. Public key : 'undefined'`);
     expect(response.code).toEqual('VCSDKVAHE11');
-    
     validationResponse.didKid = setup.defaulUserDidKid;
 
     // No did document
@@ -123,8 +122,8 @@ describe('ValidationHelpers', () => {
     response = await options.resolveDidAndGetKeysDelegate(validationResponse);
     expect(response.result).toBeFalsy();
     expect(response.detailedError).toEqual(`Could not retrieve DID document 'did:test:user'`);
-    expect(response.status).toEqual(403);
     expect(response.code).toEqual('VCSDKVAHE08');
+    expect(response.status).toEqual(403);
 
   });
 
@@ -182,6 +181,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('Failed to validate signature');
+    expect(response.code).toEqual('VCSDKVAHE28');
 
     // no payload
     validationResponse = await options.getTokenObjectDelegate(validationResponse, `${splitToken[0]}..${splitToken[2]}`);
@@ -189,6 +189,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('Failed to validate signature');
+    expect(response.code).toEqual('VCSDKVAHE28');
   });
 
   it('should test checkTimeValidityOnTokenDelegate', () => {
@@ -213,15 +214,17 @@ describe('ValidationHelpers', () => {
 
     validationResponse.expiration = exp - 1000;
     response = options.checkTimeValidityOnTokenDelegate(validationResponse, 5);
-    expect(response.result).toBeFalsy('expired');
+    expect(response.result).toBeFalsy(response.result);
     expect(response.status).toEqual(403);
     expect(response.detailedError?.startsWith('The presented verifiableCredential is expired')).toBeTruthy();
+    expect(response.code).toEqual('VCSDKVAHE12');
 
     validationResponse.expiration = 0;
     response = options.checkTimeValidityOnTokenDelegate(validationResponse, 5);
-    expect(response.result).toBeFalsy('expired');
+    expect(response.result).toBeFalsy(response.result);
     expect(response.status).toEqual(403);
     expect(response.detailedError?.startsWith('The presented verifiableCredential is expired')).toBeTruthy();
+    expect(response.code).toEqual('VCSDKVAHE12');
 
     // Add nbf
     validationResponse.expiration = undefined;
@@ -232,9 +235,10 @@ describe('ValidationHelpers', () => {
     nbf = (new Date().getTime() / 1000) + 10;
     validationResponse.payloadObject = JSON.parse(`{"jti": "abcdefg", "nbf": ${nbf}}`);
     response = options.checkTimeValidityOnTokenDelegate(validationResponse, 5);
-    expect(response.result).toBeFalsy('not yet valid');
+    expect(response.result).toBeFalsy(response.result);
     expect(response.status).toEqual(403);
     expect(response.detailedError?.startsWith('The presented verifiableCredential is not yet valid')).toBeTruthy();
+    expect(response.code).toEqual('VCSDKVAHE40');
   });
 
   it('should test checkScopeValidityOnVcToken', () => {
@@ -305,6 +309,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(401);
     expect(response.detailedError).toEqual(`The audience undefined is invalid`);
+    expect(response.code).toEqual('VCSDKVAHE16');
     validationResponse.payloadObject.aud = audience;
 
     validationResponse.payloadObject.aud = 'xxx';

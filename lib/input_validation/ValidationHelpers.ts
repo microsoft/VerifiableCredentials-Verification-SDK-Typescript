@@ -236,7 +236,7 @@ export class ValidationHelpers {
 
     //  use jwk in request if did is not registered
     if (!signingKey) {
-      throw new ValidationError(`The did '${did}' does not have a public key with kid '${kid}'. Public key : '${publicKey ? JSON.stringify(publicKey) : 'undefined'}'`, errorCode(1));
+      throw new ValidationError(`The did '${did}' does not have a public key with kid '${kid}'. Public key : '${publicKey ? JSON.stringify(publicKey) : 'undefined'}'`, errorCode(39));
     }
 
     return signingKey;
@@ -279,7 +279,7 @@ export class ValidationHelpers {
       if (current < nbf) {
         return {
           result: false,
-          code: errorCode(12),
+          code: errorCode(40),
           detailedError: `The presented ${(self as ValidationOptions).tokenType} is not yet valid ${nbf}`,
           status: 403
         };

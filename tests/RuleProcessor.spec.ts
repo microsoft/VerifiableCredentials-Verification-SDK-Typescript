@@ -33,23 +33,23 @@ describe('Rule processor', () => {
 
       const responder = new ResponderHelper(requestor, model);
       await responder.setup();
-      const response = await responder.createResponse();
-      console.log(`=====> Response: ${response.rawToken}`);
+      const responderResponse = await responder.createResponse();
+      console.log(`=====> Response: ${responderResponse.rawToken}`);
 
       const validator = new ValidatorBuilder(requestor.crypto)
         .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!] })
         .enableFeatureVerifiedCredentialsStatusCheck(true)
         .build();
-      let result = await validator.validate(<string>response.rawToken);
-      expect(result.result).toBeTruthy();
+      let response = await validator.validate(<string>responderResponse.rawToken);
+      expect(response.result).toBeTruthy();
 
-      expect(result.validationResult!.verifiableCredentials!['IdentityCard'].decodedToken.jti).toEqual(model.getVcFromResponse('IdentityCard').decodedToken.jti);
-      const jti = result.validationResult!.verifiablePresentations!['IdentityCard'].decodedToken.jti;
-      expect(result.validationResult!.verifiablePresentationStatus![jti].status).toEqual('valid');
+      expect(response.validationResult!.verifiableCredentials!['IdentityCard'].decodedToken.jti).toEqual(model.getVcFromResponse('IdentityCard').decodedToken.jti);
+      const jti = response.validationResult!.verifiablePresentations!['IdentityCard'].decodedToken.jti;
+      expect(response.validationResult!.verifiablePresentationStatus![jti].status).toEqual('valid');
 
-      const vc = result.validationResult!.verifiableCredentials!['IdentityCard'];
-      result = await validator.validate(<string>vc.rawToken);
-      expect(result.result).toBeTruthy();
+      const vc = response.validationResult!.verifiableCredentials!['IdentityCard'];
+      response = await validator.validate(<string>vc.rawToken);
+      expect(response.result).toBeTruthy();
 
     } finally {
       TokenGenerator.fetchMock.reset();
@@ -67,8 +67,8 @@ describe('Rule processor', () => {
 
       const responder = new ResponderHelper(requestor, model);
       await responder.setup();
-      const response = await responder.createResponse();
-      console.log(`=====> Response: ${response.rawToken}`);
+      const responderResponse = await responder.createResponse();
+      console.log(`=====> Response: ${responderResponse.rawToken}`);
 
       const validator = new ValidatorBuilder(requestor.crypto)
         .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!] })
@@ -78,8 +78,8 @@ describe('Rule processor', () => {
       // Status mock
       TokenGenerator.fetchMock.post('https://status.example.com', {status: 400, body: {}}, { overwriteRoutes: true });
 
-      let result = await validator.validate(response);
-      expect(result.result).toBeFalsy(result.detailedError);
+      let response = await validator.validate(responderResponse);
+      expect(response.result).toBeFalsy(response.detailedError);
 
     } finally {
       TokenGenerator.fetchMock.reset();
@@ -102,19 +102,19 @@ describe('Rule processor', () => {
       // add did
       model.response.presentation_submission.attestations.presentations.IdentityCard.credentialSubject.id = responder.crypto.builder.did;
 
-      const response = await responder.createResponse(JoseBuilder.JSONLDProofs);
-      console.log(`=====> Response: ${response.rawToken}`);
+      const responderResponse = await responder.createResponse(JoseBuilder.JSONLDProofs);
+      console.log(`=====> Response: ${responderResponse.rawToken}`);
 
       const validator = new ValidatorBuilder(requestor.crypto)
         .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!] })
         .enableFeatureVerifiedCredentialsStatusCheck(true)
         .build();
-      let result = await validator.validate(<string>response.rawToken);
-      expect(result.result).toBeTruthy();
+      let response = await validator.validate(<string>responderResponse.rawToken);
+      expect(response.result).toBeTruthy();
 
-      expect(result.validationResult!.verifiableCredentials!['IdentityCard'].decodedToken.id).toEqual(model.getVcFromResponse('IdentityCard').decodedToken.id);
-      //const jti = result.validationResult!.verifiablePresentations!['IdentityCard'].decodedToken.id;
-      //expect(result.validationResult!.verifiablePresentationStatus![jti].status).toEqual('valid');
+      expect(response.validationResult!.verifiableCredentials!['IdentityCard'].decodedToken.id).toEqual(model.getVcFromResponse('IdentityCard').decodedToken.id);
+      //const jti = response.validationResult!.verifiablePresentations!['IdentityCard'].decodedToken.id;
+      //expect(response.validationResult!.verifiablePresentationStatus![jti].status).toEqual('valid');
     } finally {
       TokenGenerator.fetchMock.reset();
     }
@@ -132,17 +132,17 @@ describe('Rule processor', () => {
 
       const responder = new ResponderHelper(requestor, model);
       await responder.setup();
-      const response = await responder.createResponse();
-      console.log(`=====> Response: ${response.rawToken}`);
+      const responderResponse = await responder.createResponse();
+      console.log(`=====> Response: ${responderResponse.rawToken}`);
 
       const validator = new ValidatorBuilder(requestor.crypto)
         .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!], Diploma: [responder.generator.crypto.builder.did!] })
         .enableFeatureVerifiedCredentialsStatusCheck(true)
         .build();
-      let result = await validator.validate(<string>response.rawToken);
-      expect(result.result).toBeFalsy();
-      expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map without id property`);
-      expect(result.code).toEqual('VCSDKCLTO02');
+      let response = await validator.validate(<string>responderResponse.rawToken);
+      expect(response.result).toBeFalsy();
+      expect(response.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map without id property`);
+      expect(response.code).toEqual('VCSDKCLTO02');
     } finally {
       TokenGenerator.fetchMock.reset();
     }
@@ -160,22 +160,22 @@ describe('Rule processor', () => {
 
       const responder = new ResponderHelper(requestor, model);
       await responder.setup();
-      const response = await responder.createResponse();
-      console.log(`=====> Response: ${response.rawToken}`);
+      const responderResponse = await responder.createResponse();
+      console.log(`=====> Response: ${responderResponse.rawToken}`);
 
       const validator = new ValidatorBuilder(requestor.crypto)
         .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!], Diploma: [responder.generator.crypto.builder.did!] })
         .enableFeatureVerifiedCredentialsStatusCheck(true)
         .build();
-      let result = await validator.validate(<string>response.rawToken);
-      expect(result.result).toBeTruthy();
+      let response = await validator.validate(<string>responderResponse.rawToken);
+      expect(response.result).toBeTruthy();
 
-      expect(result.validationResult!.verifiableCredentials!['IdentityCard'].decodedToken.jti).toEqual(model.getVcFromResponse('IdentityCard').decodedToken.jti);
-      const jtiIdentity = result.validationResult!.verifiablePresentations!['IdentityCard'].decodedToken.jti;
-      const jtiDiploma = result.validationResult!.verifiablePresentations!['Diploma'].decodedToken.jti;
+      expect(response.validationResult!.verifiableCredentials!['IdentityCard'].decodedToken.jti).toEqual(model.getVcFromResponse('IdentityCard').decodedToken.jti);
+      const jtiIdentity = response.validationResult!.verifiablePresentations!['IdentityCard'].decodedToken.jti;
+      const jtiDiploma = response.validationResult!.verifiablePresentations!['Diploma'].decodedToken.jti;
       expect(jtiDiploma === jtiIdentity).toBeFalsy();
-      expect(result.validationResult!.verifiablePresentationStatus![jtiIdentity].status).toEqual('valid');
-      expect(result.validationResult!.verifiablePresentationStatus![jtiDiploma].status).toEqual('valid');
+      expect(response.validationResult!.verifiablePresentationStatus![jtiIdentity].status).toEqual('valid');
+      expect(response.validationResult!.verifiablePresentationStatus![jtiDiploma].status).toEqual('valid');
     } finally {
       TokenGenerator.fetchMock.reset();
     }
@@ -193,17 +193,17 @@ describe('Rule processor', () => {
 
       const responder = new ResponderHelper(requestor, model);
       await responder.setup();
-      const response = await responder.createResponse();
-      console.log(`=====> Response: ${response.rawToken}`);
+      const responderResponse = await responder.createResponse();
+      console.log(`=====> Response: ${responderResponse.rawToken}`);
 
       const validator = new ValidatorBuilder(requestor.crypto)
         .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!], Diploma: [responder.generator.crypto.builder.did!] })
         .enableFeatureVerifiedCredentialsStatusCheck(true)
         .build();
-      let result = await validator.validate(<string>response.rawToken);
-      expect(result.result).toBeFalsy();
-      expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. This path '$.presentation_submission.attestations.presentations.*' points to multiple credentails and should only point to one credential.`)
-      expect(result.code).toEqual('VCSDKCLTO04');
+      let response = await validator.validate(<string>responderResponse.rawToken);
+      expect(response.result).toBeFalsy();
+      expect(response.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. This path '$.presentation_submission.attestations.presentations.*' points to multiple credentails and should only point to one credential.`)
+      expect(response.code).toEqual('VCSDKCLTO04');
     } finally {
       TokenGenerator.fetchMock.reset();
     }
@@ -221,16 +221,16 @@ describe('Rule processor', () => {
 
       const responder = new ResponderHelper(requestor, model);
       await responder.setup();
-      const response = await responder.createResponse();
-      console.log(`=====> Response: ${response.rawToken}`);
+      const responderResponse = await responder.createResponse();
+      console.log(`=====> Response: ${responderResponse.rawToken}`);
 
       const validator = new ValidatorBuilder(requestor.crypto)
         .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!], Diploma: [responder.generator.crypto.builder.did!] }).enableFeatureVerifiedCredentialsStatusCheck(true)
         .build();
-      let result = await validator.validate(<string>response.rawToken);
-      expect(result.result).toBeFalsy();
-      expect(result.detailedError).toEqual(`Verifiable credential 'Diploma' is missing from the input request`);
-      expect(result.code).toEqual('VCSDKVTOR04');
+      let response = await validator.validate(<string>responderResponse.rawToken);
+      expect(response.result).toBeFalsy();
+      expect(response.detailedError).toEqual(`Verifiable credential 'Diploma' is missing from the input request`);
+      expect(response.code).toEqual('VCSDKVTOR04');
     } finally {
       TokenGenerator.fetchMock.reset();
     }
@@ -248,16 +248,16 @@ describe('Rule processor', () => {
 
       const responder = new ResponderHelper(requestor, model);
       await responder.setup();
-      const response = await responder.createResponse();
-      console.log(`=====> Response: ${response.rawToken}`);
+      const responderResponse = await responder.createResponse();
+      console.log(`=====> Response: ${responderResponse.rawToken}`);
 
       const validator = new ValidatorBuilder(requestor.crypto)
         .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!], Diploma: [responder.generator.crypto.builder.did!] }).enableFeatureVerifiedCredentialsStatusCheck(true)
         .build();
-      let result = await validator.validate(<string>response.rawToken);
-      expect(result.result).toBeFalsy();
-      expect(result.detailedError?.startsWith('The status receipt for jti ') && result.detailedError?.endsWith(' failed with status revoked.')).toBeTruthy();
-      expect(result.code).toEqual('VCSDKVTOR07');
+      let response = await validator.validate(<string>responderResponse.rawToken);
+      expect(response.result).toBeFalsy();
+      expect(response.detailedError?.startsWith('The status receipt for jti ') && response.detailedError?.endsWith(' failed with status revoked.')).toBeTruthy();
+      expect(response.code).toEqual('VCSDKVTOR07');
     } finally {
       TokenGenerator.fetchMock.reset();
     }
@@ -275,33 +275,33 @@ describe('Rule processor', () => {
 
       const responder = new ResponderHelper(requestor, model);
       await responder.setup();
-      const response = await responder.createResponse();
-      console.log(`=====> Response: ${response.rawToken}`);
+      const responderResponse = await responder.createResponse();
+      console.log(`=====> Response: ${responderResponse.rawToken}`);
 
       let validator = new ValidatorBuilder(requestor.crypto)
         .useTrustedIssuersForVerifiableCredentials({ InsuranceCredential: [responder.generator.crypto.builder.did!], DriversLicenseCredential: [responder.generator.crypto.builder.did!] })
         .useTrustedIssuerConfigurationsForIdTokens(['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'])
         .enableFeatureVerifiedCredentialsStatusCheck(true)
         .build();
-      let result = await validator.validate(<string>response.rawToken);
-      expect(result.result).toBeTruthy();
+      let response = await validator.validate(<string>responderResponse.rawToken);
+      expect(response.result).toBeTruthy();
 
-      expect(result.validationResult!.verifiableCredentials!['InsuranceCredential'].decodedToken.jti).toEqual(model.getVcFromResponse('InsuranceCredential').decodedToken.jti);
-      const jtiInsurance = result.validationResult!.verifiablePresentations!['InsuranceCredential'].decodedToken.jti;
-      const jtiLicense = result.validationResult!.verifiablePresentations!['DriversLicenseCredential'].decodedToken.jti;
+      expect(response.validationResult!.verifiableCredentials!['InsuranceCredential'].decodedToken.jti).toEqual(model.getVcFromResponse('InsuranceCredential').decodedToken.jti);
+      const jtiInsurance = response.validationResult!.verifiablePresentations!['InsuranceCredential'].decodedToken.jti;
+      const jtiLicense = response.validationResult!.verifiablePresentations!['DriversLicenseCredential'].decodedToken.jti;
       expect(jtiLicense === jtiInsurance).toBeFalsy();
-      expect(result.validationResult!.verifiablePresentationStatus![jtiInsurance].status).toEqual('valid');
-      expect(result.validationResult!.verifiablePresentationStatus![jtiLicense].status).toEqual('valid');
-      expect(result.validationResult!.idTokens!['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'].decodedToken.firstName).toEqual('Jules');
-      expect(result.validationResult?.selfIssued!.decodedToken.name).toEqual('Jules Winnfield');
+      expect(response.validationResult!.verifiablePresentationStatus![jtiInsurance].status).toEqual('valid');
+      expect(response.validationResult!.verifiablePresentationStatus![jtiLicense].status).toEqual('valid');
+      expect(response.validationResult!.idTokens!['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'].decodedToken.firstName).toEqual('Jules');
+      expect(response.validationResult?.selfIssued!.decodedToken.name).toEqual('Jules Winnfield');
 
       // present id token
       validator = new ValidatorBuilder(requestor.crypto)
         .useTrustedIssuerConfigurationsForIdTokens(['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'])
         .build();
-      result = await validator.validate(<string>result.validationResult!.idTokens!['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'].rawToken);
-      expect(result.result).toBeTruthy();
-      expect(result.validationResult!.idTokens!['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'].decodedToken.firstName).toEqual('Jules');
+      response = await validator.validate(<string>response.validationResult!.idTokens!['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'].rawToken);
+      expect(response.result).toBeTruthy();
+      expect(response.validationResult!.idTokens!['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'].decodedToken.firstName).toEqual('Jules');
 
     } finally {
       TokenGenerator.fetchMock.reset();
@@ -320,18 +320,18 @@ describe('Rule processor', () => {
 
       const responder = new ResponderHelper(requestor, model);
       await responder.setup();
-      const response = await responder.createResponse();
-      console.log(`=====> Response: ${response.rawToken}`);
+      const responderResponse = await responder.createResponse();
+      console.log(`=====> Response: ${responderResponse.rawToken}`);
 
       const validator = new ValidatorBuilder(requestor.crypto)
         .useTrustedIssuersForVerifiableCredentials({ InsuranceCredential: [responder.generator.crypto.builder.did!], DriversLicenseCredential: [responder.generator.crypto.builder.did!] })
         .enableFeatureVerifiedCredentialsStatusCheck(true)
         .useTrustedIssuerConfigurationsForIdTokens(['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'])
         .build();
-      let result = await validator.validate(<string>response.rawToken);
-      expect(result.result).toBeFalsy();
-      expect(result.detailedError).toEqual(`Verifiable credential 'DriversLicenseCredential' is missing from the input request`);
-      expect(result.code).toEqual('VCSDKVTOR04');
+      let response = await validator.validate(<string>responderResponse.rawToken);
+      expect(response.result).toBeFalsy();
+      expect(response.detailedError).toEqual(`Verifiable credential 'DriversLicenseCredential' is missing from the input request`);
+      expect(response.code).toEqual('VCSDKVTOR04');
     } finally {
       TokenGenerator.fetchMock.reset();
     }
@@ -349,18 +349,18 @@ describe('Rule processor', () => {
 
       const responder = new ResponderHelper(requestor, model);
       await responder.setup();
-      const response = await responder.createResponse();
-      console.log(`=====> Response: ${response.rawToken}`);
+      const responderResponse = await responder.createResponse();
+      console.log(`=====> Response: ${responderResponse.rawToken}`);
 
       const validator = new ValidatorBuilder(requestor.crypto)
         .useTrustedIssuersForVerifiableCredentials({ InsuranceCredential: [responder.generator.crypto.builder.did!], DriversLicenseCredential: [responder.generator.crypto.builder.did!] })
         .enableFeatureVerifiedCredentialsStatusCheck(true)
         .useTrustedIssuerConfigurationsForIdTokens(['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'])
         .build();
-      let result = await validator.validate(<string>response.rawToken);
-      expect(result.result).toBeFalsy();
-      expect(result.detailedError).toEqual(`The id token is missing from the input request`);
-      expect(result.code).toEqual('VCSDKVTOR05');
+      let response = await validator.validate(<string>responderResponse.rawToken);
+      expect(response.result).toBeFalsy();
+      expect(response.detailedError).toEqual(`The id token is missing from the input request`);
+      expect(response.code).toEqual('VCSDKVTOR05');
     } finally {
       TokenGenerator.fetchMock.reset();
     }
@@ -379,16 +379,16 @@ describe('Rule processor', () => {
 
       const responder = new ResponderHelper(requestor, model);
       await responder.setup();
-      const response = await responder.createResponse();
-      console.log(`=====> Response: ${response.rawToken}`);
+      const responderResponse = await responder.createResponse();
+      console.log(`=====> Response: ${responderResponse.rawToken}`);
 
       const validator = new ValidatorBuilder(requestor.crypto)
         .build();
-      let result = await validator.validate(<string>response.rawToken);
-      expect(result.result).toBeTruthy();
-      expect(result.validationResult?.selfIssued!.decodedToken.name).toEqual('Jules Winnfield');
-      expect(result.validationResult?.idTokens).toBeUndefined();
-      expect(result.validationResult?.verifiableCredentials).toBeUndefined();
+      let response = await validator.validate(<string>responderResponse.rawToken);
+      expect(response.result).toBeTruthy();
+      expect(response.validationResult?.selfIssued!.decodedToken.name).toEqual('Jules Winnfield');
+      expect(response.validationResult?.idTokens).toBeUndefined();
+      expect(response.validationResult?.verifiableCredentials).toBeUndefined();
     } finally {
       TokenGenerator.fetchMock.reset();
     }
@@ -407,16 +407,16 @@ describe('Rule processor', () => {
 
       const responder = new ResponderHelper(requestor, model);
       await responder.setup();
-      const response = await responder.createResponse();
-      console.log(`=====> Response: ${response.rawToken}`);
+      const responderResponse = await responder.createResponse();
+      console.log(`=====> Response: ${responderResponse.rawToken}`);
 
       const validator = new ValidatorBuilder(requestor.crypto)
         .build();
-      let result = await validator.validate(<string>response.rawToken);
-      expect(result.result).toBeTruthy();
-      expect(result.validationResult?.selfIssued!.decodedToken.name).toEqual('Jules Winnfield');
-      expect(result.validationResult?.idTokens).toBeUndefined();
-      expect(result.validationResult?.verifiableCredentials).toBeUndefined();
+      let response = await validator.validate(<string>responderResponse.rawToken);
+      expect(response.result).toBeTruthy();
+      expect(response.validationResult?.selfIssued!.decodedToken.name).toEqual('Jules Winnfield');
+      expect(response.validationResult?.idTokens).toBeUndefined();
+      expect(response.validationResult?.verifiableCredentials).toBeUndefined();
     } finally {
       TokenGenerator.fetchMock.reset();
     }

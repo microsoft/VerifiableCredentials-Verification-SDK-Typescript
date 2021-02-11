@@ -43,6 +43,7 @@ import { IExpectedIdToken, Validator } from '../lib';
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(400);
     expect(response.detailedError).toEqual('The idToken could not be deserialized');
+    expect(response.code).toEqual('VCSDKVAHE01');
 
     // Bad id token signature
     validator = new IdTokenValidation(options, expected, Validator.readContractId(siop.contract));

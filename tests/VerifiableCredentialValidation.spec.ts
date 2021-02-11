@@ -57,12 +57,14 @@ describe('VerifiableCredentialValidation', () => {
     delete clonedExpected.contractIssuers;
     response = <VerifiableCredentialValidationResponse>VerifiableCredentialValidation.getIssuersFromExpected(clonedExpected, 'IdentityCard');
     expect(response.detailedError).toEqual('Expected should have contractIssuers set for verifyableCredential');
+    expect(response.code).toEqual('VCSDKVCVA13');
 
     // Bad VC signature
     response = await validator.validate(siop.vc.rawToken + 'a', setup.defaultUserDid);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredential is invalid');
+    expect(response.code).toEqual('VCSDKVAHE27');
 
     // Missing vc
     let payload: any = {
