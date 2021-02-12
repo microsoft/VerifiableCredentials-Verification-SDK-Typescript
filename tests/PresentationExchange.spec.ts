@@ -61,14 +61,22 @@ describe('PresentationExchange', () => {
 
     // Negative cases
 
-    //Remove presentation_submission
+    //Empy presentation_submission
     let responsePayload = clone(responderResponse.decodedToken);
-    delete responsePayload.presentation_submission;
+    responsePayload.presentation_submission = {};
     let siop = await (await responderHelper.crypto.signingProtocol(JoseBuilder.JWT).sign(responsePayload)).serialize();
     response = await validator!.validate(siop);
-    expect(response.result).toBeFalsy('Remove presentation_submission');
+    expect(response.result).toBeFalsy(response.detailedError);
     expect(response.detailedError).toEqual(`Verifiable credential 'IdentityCard' is missing from the input request`);
     expect(response.code).toEqual('VCSDKVTOR04');
+    
+    //Remove presentation_submission
+    delete responsePayload.presentation_submission;
+    siop = await (await responderHelper.crypto.signingProtocol(JoseBuilder.JWT).sign(responsePayload)).serialize();
+    response = await validator!.validate(siop);
+    expect(response.result).toBeFalsy(response.detailedError);
+    expect(response.detailedError).toEqual(`Not a valid SIOP`);
+    expect(response.code).toEqual('VCSDKSTVA05');
     
     //Remove tokens
     responsePayload = clone(responderResponse.decodedToken);
@@ -77,7 +85,7 @@ describe('PresentationExchange', () => {
     response = await validator!.validate(siop);
     expect(response.result).toBeFalsy('Remove tokens');
     expect(response.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. This path '$.presentation_submission.attestations.presentations.IdentityCard' did not return a token.`);
-    expect(response.code).toEqual('VCSDKCLTO03');
+    expect(response.code).toEqual('VCSDKSTVA04');
 
     //Remove path
     responsePayload = clone(responderResponse.decodedToken);
@@ -86,7 +94,7 @@ describe('PresentationExchange', () => {
     response = await validator!.validate(siop);
     expect(response.result).toBeFalsy('Remove path');
     expect(response.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. No path property found.`);
-    expect(response.code).toEqual('VCSDKCLTO05');
+    expect(response.code).toEqual('VCSDKSTVA04');
   });
 
   it('should create a response and validate - json ld', async () => {

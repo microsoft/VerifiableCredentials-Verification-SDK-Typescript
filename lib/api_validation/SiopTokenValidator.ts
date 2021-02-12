@@ -100,9 +100,10 @@ export default class SiopTokenValidator implements ITokenValidator {
             console.error(err);
             return {
               result: false,
-              status: 403,
+              status: 400,
               detailedError: err.message,
-              code: err.code
+              code: errorCode(3),
+              innerError: err
             };
           }
         }
@@ -120,10 +121,19 @@ export default class SiopTokenValidator implements ITokenValidator {
             result: false,
             status: 403,
             detailedError: err.message,
-            code: err.code
-          };
+            code: errorCode(4),
+            innerError: err
+        };
         }
         break;
+
+      default:
+          return {
+            result: false,
+            status: 400,
+            detailedError: 'Not a valid SIOP',
+            code: errorCode(5)
+        };
     }
     if (validationResponse.tokensToValidate) {
       for (let key in validationResponse.tokensToValidate) {

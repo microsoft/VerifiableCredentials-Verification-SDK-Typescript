@@ -77,7 +77,7 @@ describe('Rule processor', () => {
       TokenGenerator.fetchMock.reset();
     }
   });
-  it('should process RequestOneVcResponseOk with missing attestations in SIOP', async () => {
+  it('should process RequestAttestationsOneVcSaIdtokenResponseOk with missing attestations in SIOP', async () => {
     try {
       const model: any = new RequestAttestationsOneVcSaIdtokenResponseOk();
       model.responseOperations = [
@@ -90,7 +90,51 @@ describe('Rule processor', () => {
   
       let response = await validator.validate(responderResponse);
       expect(response.result).toBeFalsy(response.detailedError);
-      //expect(response.code).toEqual('VCSDKVTOR06');
+      expect(response.code).toEqual('VCSDKSTVA05');
+      expect(response.status).toEqual(400);
+    } finally {
+      TokenGenerator.fetchMock.reset();
+    }
+  });
+  it('should process RequestAttestationsOneVcSaIdtokenResponseOk with malformed attestations in SIOP', async () => {
+    try {
+      const model: any = new RequestAttestationsOneVcSaIdtokenResponseOk();
+      model.responseOperations = [
+        {
+          path: '$.attestations',
+          operation: () => 'fault'
+        }
+      ];
+      let [validator, _, responderResponse, responder] = await doRequest(model);
+  
+      let response = await validator.validate(responderResponse);
+      expect(response.result).toBeFalsy(response.detailedError);
+      expect(response.code).toEqual('VCSDKSTVA03');
+      expect(response.status).toEqual(400);
+    } finally {
+      TokenGenerator.fetchMock.reset();
+    }
+  });
+  fit('should process RequestAttestationsOneVcSaIdtokenResponseOk:  An attestation is not yet valid', async () => {
+    try {
+      const model: any = new RequestAttestationsOneVcSaIdtokenResponseOk();
+      model.responseOperations = [
+        {
+          path: '$.attestations.presentations.DriversLicenseCredential.nbf',
+          operation: () => 9613052815
+        }
+      ];
+      let [validator, _, responderResponse, responder] = await doRequest(model);
+      validator
+        .builder        
+        .useTrustedIssuersForVerifiableCredentials({ InsuranceCredential: [responder.generator.crypto.builder.did!], DriversLicenseCredential: [responder.generator.crypto.builder.did!] })
+        .useTrustedIssuerConfigurationsForIdTokens(['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'])
+        .enableFeatureVerifiedCredentialsStatusCheck(true);
+
+      let response = await validator.validate(responderResponse);
+      expect(response.result).toBeFalsy(response.detailedError);
+      expect(response.code).toEqual('VCSDKSTVA03');
+      expect(response.status).toEqual(400);
     } finally {
       TokenGenerator.fetchMock.reset();
     }
@@ -152,7 +196,7 @@ describe('Rule processor', () => {
       let response = await validator.validate(<string>responderResponse.rawToken);
       expect(response.result).toBeFalsy();
       expect(response.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map without id property`);
-      expect(response.code).toEqual('VCSDKCLTO02');
+      expect(response.code).toEqual('VCSDKSTVA04');
     } finally {
       TokenGenerator.fetchMock.reset();
     }
@@ -213,7 +257,7 @@ describe('Rule processor', () => {
       let response = await validator.validate(<string>responderResponse.rawToken);
       expect(response.result).toBeFalsy();
       expect(response.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. This path '$.presentation_submission.attestations.presentations.*' points to multiple credentails and should only point to one credential.`)
-      expect(response.code).toEqual('VCSDKCLTO04');
+      expect(response.code).toEqual('VCSDKSTVA04');
     } finally {
       TokenGenerator.fetchMock.reset();
     }

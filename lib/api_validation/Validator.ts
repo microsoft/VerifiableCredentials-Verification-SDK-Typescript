@@ -64,7 +64,8 @@ export default class Validator {
         return {
           status: 400,
           detailedError: exception.message,
-          code: exception.code,
+          code: errorCode(8),
+          innerError: exception,
           result: false
         }
       }
@@ -84,10 +85,11 @@ export default class Validator {
     do {
       try {
         claimToken = Validator.getClaimToken(queueItem!);
-      } catch (error) {
+      } catch (exception) {
         return {
-          detailedError: error.message,
-          code: error.code,
+          detailedError: exception.message,
+          code: errorCode(9),
+          innerError: exception,
           status: 400,
           result: false
         };
@@ -191,7 +193,7 @@ export default class Validator {
           return {
             detailedError: `Verifiable credential '${vc}' is missing from the input request`,
             code: errorCode(4),
-            status: 403,
+            status: 401,
             result: false
           };
         }
@@ -205,7 +207,7 @@ export default class Validator {
         return {
           code: errorCode(5),
           detailedError: `The id token is missing from the input request`,
-          status: 403,
+          status: 401,
           result: false
         };
       }

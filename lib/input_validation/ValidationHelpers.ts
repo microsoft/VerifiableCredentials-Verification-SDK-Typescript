@@ -103,6 +103,7 @@ export class ValidationHelpers {
         return {
           result: false,
           code: errorCode(4),
+          innerError: err,
           detailedError: `The payload in the ${(self as ValidationOptions).tokenType} is no valid JSON`,
           status: 400
         };
