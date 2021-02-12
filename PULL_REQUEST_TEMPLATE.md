@@ -24,10 +24,3 @@ Please include here how it was verified that the PR works as intended.
 - [ ] Medium – Errors could cause regression of 1 or more scenarios. (Example: somewhat complex bug fixes, small new features)
 - [ ] Small – No issues are expected. (Example: Very small bug fixes, string changes, or configuration settings changes)
 
-
-**Work Item links**:
-Please include here links for this work item, or deferred work, or related work. E.g. if the refactoring is too big to fit in this PR, or the localized strings need to be updated later, please link the TODO work items here.
-
-
-**Documentation Links**:
-Please include here links to any related background documentation for this PR.

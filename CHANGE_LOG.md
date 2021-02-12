@@ -1,3 +1,7 @@
+# version 0.11.1
+## Turn 0.11.1-preview.5 into the released package
+
+
 # version 0.11.1-preview.5
 ## Change default resolver to beta resolver
 **Type of change:** engineering    
