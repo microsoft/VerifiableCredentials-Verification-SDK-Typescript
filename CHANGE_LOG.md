@@ -1,3 +1,10 @@
+# version 0.12.1-preview.0
+## Add error codes to the validation response
+**Type of change:** engineering    
+**Customer impact:** low
+The validation response return code, a string which contains a unique value for the error.
+The error code is fixed in unit tests
+
 # version 0.11.1
 ## Turn 0.11.1-preview.5 into the released package
 
