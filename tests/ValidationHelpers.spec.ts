@@ -38,7 +38,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(400);
     expect(response.detailedError).toEqual('The verifiableCredential could not be deserialized');
-    expect(response.code).toEqual('VCSDKVAHE01');
+    expect(response.code).toEqual('VCSDKVaHe01');
 
     // missing kid
     const header: any = JSON.parse(base64url.decode(splitToken[0]));
@@ -47,7 +47,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The protected header in the verifiableCredential does not contain the kid');
-    expect(response.code).toEqual('VCSDKVAHE05');
+    expect(response.code).toEqual('VCSDKVaHe05');
 
 
     // bad JWT deserialize 
@@ -56,20 +56,20 @@ describe('ValidationHelpers', () => {
     response = await options.getTokenObjectDelegate(validationResponse, '');
     expect(response.result).toBeFalsy(response.detailedError);
     expect(response.detailedError).toEqual('The payload in the verifiableCredential is undefined');
-    expect(response.code).toEqual('VCSDKVAHE03');
+    expect(response.code).toEqual('VCSDKVaHe03');
 
     protocol = options.validatorOptions.crypto.signingProtocol(JoseBuilder.JWT);
     deserializeSpy.and.callFake(() => <any>undefined);
     response = await options.getTokenObjectDelegate(validationResponse, '');
     expect(response.result).toBeFalsy(response.detailedError);
     expect(response.detailedError).toEqual('The signature in the verifiableCredential has an invalid format');
-    expect(response.code).toEqual('VCSDKVAHE02');
+    expect(response.code).toEqual('VCSDKVaHe02');
 
     deserializeSpy.and.callFake(() => { throw new Error('deserialize JWT error') });
     response = await options.getTokenObjectDelegate(validationResponse, '');
     expect(response.result).toBeFalsy(response.detailedError);
     expect(response.detailedError).toEqual('The verifiableCredential could not be deserialized');
-    expect(response.code).toEqual('VCSDKVAHE01');
+    expect(response.code).toEqual('VCSDKVaHe01');
 
     // bad json ld deserialize 
     protocol = options.validatorOptions.crypto.signingProtocol(JoseBuilder.JSONLDProofs);
@@ -77,7 +77,7 @@ describe('ValidationHelpers', () => {
     response = await options.getTokenObjectDelegate(validationResponse, {});
     expect(response.result).toBeFalsy(response.detailedError);
     expect(response.detailedError).toEqual('The verifiableCredential could not be deserialized');
-    expect(response.code).toEqual('VCSDKVAHE01');
+    expect(response.code).toEqual('VCSDKVaHe01');
     deserializeSpy.and.callFake(() => <any>{});
   });
 
@@ -100,7 +100,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The kid is not referenced in the request');
-    expect(response.code).toEqual('VCSDKVAHE10');
+    expect(response.code).toEqual('VCSDKVaHe10');
     validationResponse.didKid = setup.defaulUserDidKid;
 
     // No public key
@@ -109,7 +109,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`The did 'did:test:user' does not have a public key with kid 'abcd'. Public key : 'undefined'`);
-    expect(response.code).toEqual('VCSDKVAHE11');
+    expect(response.code).toEqual('VCSDKVaHe11');
     validationResponse.didKid = setup.defaulUserDidKid;
 
     // No did document
@@ -122,7 +122,7 @@ describe('ValidationHelpers', () => {
     response = await options.resolveDidAndGetKeysDelegate(validationResponse);
     expect(response.result).toBeFalsy();
     expect(response.detailedError).toEqual(`Could not retrieve DID document 'did:test:user'`);
-    expect(response.code).toEqual('VCSDKVAHE08');
+    expect(response.code).toEqual('VCSDKVaHe08');
     expect(response.status).toEqual(403);
 
   });
@@ -139,7 +139,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Could not resolve DID 'didJules'`);
-    expect(response.code).toEqual('VCSDKVAHE09');
+    expect(response.code).toEqual('VCSDKVaHe09');
 
   });
 
@@ -164,7 +164,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredential is invalid');
-    expect(response.code).toEqual('VCSDKVAHE27');
+    expect(response.code).toEqual('VCSDKVaHe27');
 
     // No signature
     const splitToken = (<string>request.rawToken).split('.');
@@ -173,7 +173,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredential is invalid');
-    expect(response.code).toEqual('VCSDKVAHE27');
+    expect(response.code).toEqual('VCSDKVaHe27');
 
     // no header
     validationResponse = await options.getTokenObjectDelegate(validationResponse, `.${splitToken[1]}.${splitToken[2]}`);
@@ -181,7 +181,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('Failed to validate signature');
-    expect(response.code).toEqual('VCSDKVAHE28');
+    expect(response.code).toEqual('VCSDKVaHe28');
 
     // no payload
     validationResponse = await options.getTokenObjectDelegate(validationResponse, `${splitToken[0]}..${splitToken[2]}`);
@@ -189,7 +189,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('Failed to validate signature');
-    expect(response.code).toEqual('VCSDKVAHE28');
+    expect(response.code).toEqual('VCSDKVaHe28');
   });
 
   it('should test checkTimeValidityOnTokenDelegate', () => {
@@ -217,14 +217,14 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy(response.result);
     expect(response.status).toEqual(403);
     expect(response.detailedError?.startsWith('The presented verifiableCredential is expired')).toBeTruthy();
-    expect(response.code).toEqual('VCSDKVAHE12');
+    expect(response.code).toEqual('VCSDKVaHe12');
 
     validationResponse.expiration = 0;
     response = options.checkTimeValidityOnTokenDelegate(validationResponse, 5);
     expect(response.result).toBeFalsy(response.result);
     expect(response.status).toEqual(403);
     expect(response.detailedError?.startsWith('The presented verifiableCredential is expired')).toBeTruthy();
-    expect(response.code).toEqual('VCSDKVAHE12');
+    expect(response.code).toEqual('VCSDKVaHe12');
 
     // Add nbf
     validationResponse.expiration = undefined;
@@ -238,7 +238,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy(response.result);
     expect(response.status).toEqual(403);
     expect(response.detailedError?.startsWith('The presented verifiableCredential is not yet valid')).toBeTruthy();
-    expect(response.code).toEqual('VCSDKVAHE40');
+    expect(response.code).toEqual('VCSDKVaHe40');
   });
 
   it('should test checkScopeValidityOnVcToken', () => {
@@ -259,13 +259,13 @@ describe('ValidationHelpers', () => {
     // wrong did
     response = options.checkScopeValidityOnVcTokenDelegate(validationResponse, <any>{}, 'wrong did');
     expect(response.detailedError).toEqual(`Wrong sub property in verifiableCredential. Expected 'wrong did'`);
-    expect(response.code).toEqual('VCSDKVAHE22');
+    expect(response.code).toEqual('VCSDKVaHe22');
 
     // missing sub
     delete validationResponse.payloadObject.sub;
     response = options.checkScopeValidityOnVcTokenDelegate(validationResponse, <any>{}, 'did');
     expect(response.detailedError).toEqual(`Missing sub property in verifiableCredential. Expected 'did'`);
-    expect(response.code).toEqual('VCSDKVAHE21');
+    expect(response.code).toEqual('VCSDKVaHe21');
   });
 
   it('should test checkScopeValidityOnIdTokenDelegate', () => {
@@ -301,7 +301,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`The issuer in configuration was not found`);
-    expect(response.code).toEqual('VCSDKVAHE13');
+    expect(response.code).toEqual('VCSDKVaHe13');
     validationResponse.expectedIssuer = issuer;
 
     validationResponse.payloadObject.aud = undefined;
@@ -309,7 +309,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(401);
     expect(response.detailedError).toEqual(`The audience undefined is invalid`);
-    expect(response.code).toEqual('VCSDKVAHE16');
+    expect(response.code).toEqual('VCSDKVaHe16');
     validationResponse.payloadObject.aud = audience;
 
     validationResponse.payloadObject.aud = 'xxx';
@@ -317,7 +317,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(401);
     expect(response.detailedError).toEqual(`The audience xxx is invalid`);
-    expect(response.code).toEqual('VCSDKVAHE16');
+    expect(response.code).toEqual('VCSDKVaHe16');
     validationResponse.payloadObject.aud = audience;
 
     validationResponse.issuer = 'xxx';
@@ -325,7 +325,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`The issuer in configuration 'iss' does not correspond with the issuer in the payload xxx`);
-    expect(response.code).toEqual('VCSDKVAHE15');
+    expect(response.code).toEqual('VCSDKVaHe15');
     validationResponse.issuer = issuer;
 
     validationResponse.issuer = undefined;
@@ -333,7 +333,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Missing iss property in idToken. Expected '"iss"'`);
-    expect(response.code).toEqual('VCSDKVAHE14');
+    expect(response.code).toEqual('VCSDKVaHe14');
     validationResponse.issuer = issuer;
   });
 
@@ -379,7 +379,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('Could not fetch token configuration');
-    expect(response.code).toEqual('VCSDKVAHE34');
+    expect(response.code).toEqual('VCSDKVaHe34');
 
     // no keys in configuration
 
@@ -388,7 +388,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('No reference to jwks found in token configuration');
-    expect(response.code).toEqual('VCSDKVAHE30');
+    expect(response.code).toEqual('VCSDKVaHe30');
 
     // no issuer in configuration
     setup.fetchMock.get(setup.defaultIdTokenConfiguration, { "jwks_uri": `${setup.defaultIdTokenJwksConfiguration}` }, { overwriteRoutes: true });
@@ -396,7 +396,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('No issuer found in token configuration');
-    expect(response.code).toEqual('VCSDKVAHE33');
+    expect(response.code).toEqual('VCSDKVaHe33');
 
     // could not fetch keys
     [tokenJwkPrivate, tokenJwkPublic, tokenConfiguration] = await IssuanceHelpers.generateSigningKeyAndSetConfigurationMock(setup, setup.defaulIssuerDidKid);
@@ -405,7 +405,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Could not fetch keys needed to validate token on '${setup.defaultIdTokenJwksConfiguration}'`);
-    expect(response.code).toEqual('VCSDKVAHE31');
+    expect(response.code).toEqual('VCSDKVaHe31');
 
     // bad keys
     [tokenJwkPrivate, tokenJwkPublic, tokenConfiguration] = await IssuanceHelpers.generateSigningKeyAndSetConfigurationMock(setup, setup.defaulIssuerDidKid);
@@ -414,7 +414,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`No or bad jwks keys found in token configuration`);
-    expect(response.code).toEqual('VCSDKVAHE32');
+    expect(response.code).toEqual('VCSDKVaHe32');
     [tokenJwkPrivate, tokenJwkPublic, tokenConfiguration] = await IssuanceHelpers.generateSigningKeyAndSetConfigurationMock(setup, setup.defaulIssuerDidKid);
 
     setup.fetchMock.get(setup.defaultIdTokenJwksConfiguration, `test`, { overwriteRoutes: true });
@@ -422,7 +422,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Could not fetch token configuration`);
-    expect(response.code).toEqual('VCSDKVAHE34');
+    expect(response.code).toEqual('VCSDKVaHe34');
 
     // Failed signature
     [tokenJwkPrivate, tokenJwkPublic, tokenConfiguration] = await IssuanceHelpers.generateSigningKeyAndSetConfigurationMock(setup, setup.defaulIssuerDidKid);
@@ -451,7 +451,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Could not validate signature on id token`);
-    expect(response.code).toEqual('VCSDKVAHE36');
+    expect(response.code).toEqual('VCSDKVaHe36');
 
     // bad keys in configuration
     const badKey = {
@@ -471,7 +471,7 @@ describe('ValidationHelpers', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('Could not validate token signature');
-    expect(response.code).toEqual('VCSDKVAHE35');
+    expect(response.code).toEqual('VCSDKVaHe35');
   });
 
   it('should test fetchOpenIdTokenPublicKeysDelegate', async () => {
@@ -499,12 +499,12 @@ describe('ValidationHelpers', () => {
     setup.fetchMock.get(setup.defaultIdTokenJwksConfiguration, { "status": 400 }, { overwriteRoutes: true });
     response = <IValidationResponse>await options.fetchOpenIdTokenPublicKeysDelegate(validationResponse, idToken);
     expect(response.detailedError).toEqual(`Could not fetch keys needed to validate token on 'http://example/jwks'`);
-    expect(response.code).toEqual('VCSDKVAHE31');
+    expect(response.code).toEqual('VCSDKVaHe31');
 
     setup.fetchMock.get(setup.defaultIdTokenConfiguration, { "body": {} }, { overwriteRoutes: true });
     response = <IValidationResponse>await options.fetchOpenIdTokenPublicKeysDelegate(validationResponse, idToken);
     expect(response.detailedError).toEqual(`No reference to jwks found in token configuration`);
-    expect(response.code).toEqual('VCSDKVAHE30');
+    expect(response.code).toEqual('VCSDKVaHe30');
     /*
           setup.fetchMock.get(setup.defaultIdTokenConfiguration, {"body": {
             "jwks_uri": `setup.defaultIdTokenJwksConfiguration`
@@ -515,6 +515,7 @@ describe('ValidationHelpers', () => {
     setup.fetchMock.get(setup.defaultIdTokenConfiguration, { "status": 400 }, { overwriteRoutes: true });
     response = <IValidationResponse>await options.fetchOpenIdTokenPublicKeysDelegate(validationResponse, idToken);
     expect(response.detailedError).toEqual(`Could not fetch token configuration needed to validate token`);
-    expect(response.code).toEqual('VCSDKVAHE29');
+    expect(response.code).toEqual('VCSDKVaHe29');
+    expect(response.status).toEqual(403);
   });
 });

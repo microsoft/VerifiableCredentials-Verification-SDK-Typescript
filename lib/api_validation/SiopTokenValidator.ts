@@ -12,7 +12,7 @@ import ValidationQueueItem from '../input_validation/ValidationQueueItem';
 import { SiopValidation } from '../input_validation/SiopValidation';
 import VerifiableCredentialConstants from '../verifiable_credential/VerifiableCredentialConstants';
 import ErrorHelpers from '../error_handling/ErrorHelpers';
-const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKSTVA', error);
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKSTVa', error);
 
 /**
  * Class to validate a token

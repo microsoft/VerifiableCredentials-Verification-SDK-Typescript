@@ -78,7 +78,7 @@ describe('Validator', () => {
     response = await validator.validate(siop.idToken.rawToken);
     expect(response.result).toBeFalsy();
     expect(response.detailedError).toEqual(`Could not fetch token configuration`);
-    expect(response.code).toEqual('VCSDKVAHE34');
+    expect(response.code).toEqual('VCSDKVaHe34');
   });
 
   it('should validate verifiable credentials', async () => {
@@ -158,7 +158,7 @@ describe('Validator', () => {
     response = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(response.result).toBeFalsy();
     expect(response.detailedError).toEqual('verifiablePresentationJwt does not has a TokenValidator');
-    expect(response.code).toEqual('VCSDKVTOR02');
+    expect(response.code).toEqual('VCSDKVtor02');
 
     // Test validator with missing VC validator
     validator = new ValidatorBuilder(crypto)
@@ -170,7 +170,7 @@ describe('Validator', () => {
     response = await validator.validate(queue.getNextToken()!.tokenToValidate);
     expect(response.result).toBeFalsy();
     expect(response.detailedError).toEqual('verifiableCredential does not has a TokenValidator');
-    expect(response.code).toEqual('VCSDKVTOR02');
+    expect(response.code).toEqual('VCSDKVtor02');
   });
 
   it('should validate presentation siop', async () => {
@@ -219,7 +219,7 @@ describe('Validator', () => {
     queue.enqueueToken('siopPresentationAttestation', <any>{ claims: {} });
     response = await validator.validate(<any>queue.getNextToken()!);
     expect(response.detailedError).toEqual('Wrong token type. Expected string or ClaimToken');
-    expect(response.code).toEqual('VCSDKVTOR01');
+    expect(response.code).toEqual('VCSDKVtor01');
 
     let spiedMethod: any = ClaimToken.create;
     let createSpy: jasmine.Spy = spyOn(ClaimToken, 'create').and.callFake((): ClaimToken => {
@@ -258,7 +258,7 @@ describe('Validator', () => {
     validator.tokenValidators['test'] = validator.tokenValidators['siopPresentationAttestation'];
     response = await validator.validate(<any>queue.getNextToken()!.tokenToValidate.rawToken);
     expect(response.detailedError).toEqual(`test is not supported`);
-    expect(response.code).toEqual('VCSDKVTOR03');
+    expect(response.code).toEqual('VCSDKVtor03');
     getClaimTokenSpy.and.callFake((queueItem: any): ClaimToken => {
       return spiedMethod(queueItem);
     });

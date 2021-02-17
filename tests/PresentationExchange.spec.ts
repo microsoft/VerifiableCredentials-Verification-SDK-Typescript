@@ -68,7 +68,7 @@ describe('PresentationExchange', () => {
     response = await validator!.validate(siop);
     expect(response.result).toBeFalsy(response.detailedError);
     expect(response.detailedError).toEqual(`Verifiable credential 'IdentityCard' is missing from the input request`);
-    expect(response.code).toEqual('VCSDKVTOR04');
+    expect(response.code).toEqual('VCSDKVtor04');
     
     //Remove presentation_submission
     delete responsePayload.presentation_submission;
@@ -76,7 +76,7 @@ describe('PresentationExchange', () => {
     response = await validator!.validate(siop);
     expect(response.result).toBeFalsy(response.detailedError);
     expect(response.detailedError).toEqual(`Not a valid SIOP`);
-    expect(response.code).toEqual('VCSDKSTVA05');
+    expect(response.code).toEqual('VCSDKSTVa05');
     
     //Remove tokens
     responsePayload = clone(responderResponse.decodedToken);
@@ -85,7 +85,7 @@ describe('PresentationExchange', () => {
     response = await validator!.validate(siop);
     expect(response.result).toBeFalsy('Remove tokens');
     expect(response.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. This path '$.presentation_submission.attestations.presentations.IdentityCard' did not return a token.`);
-    expect(response.code).toEqual('VCSDKSTVA04');
+    expect(response.code).toEqual('VCSDKSTVa04');
 
     //Remove path
     responsePayload = clone(responderResponse.decodedToken);
@@ -94,7 +94,7 @@ describe('PresentationExchange', () => {
     response = await validator!.validate(siop);
     expect(response.result).toBeFalsy('Remove path');
     expect(response.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. No path property found.`);
-    expect(response.code).toEqual('VCSDKSTVA04');
+    expect(response.code).toEqual('VCSDKSTVa04');
   });
 
   it('should create a response and validate - json ld', async () => {
@@ -167,13 +167,13 @@ describe('PresentationExchange', () => {
       .build();
     let response = await validator.validate(<string>responderResponse.rawToken);
     expect(response.detailedError).toEqual('The proof is not available in the json ld payload');
-    expect(response.code).toEqual('VCSDKVAHE06');
+    expect(response.code).toEqual('VCSDKVaHe06');
 
     // missing verificationMethod
     model = new RequestOneJsonLdVcResponseNoProofInVC();
     responderHelper = new ResponderHelper(requestor, model);
     await responderHelper.setup('EdDSA');
-    model.responseOperations[0].path += '.verificationMethod';
+    model.preSiopResponseOperations[0].path += '.verificationMethod';
     responderResponse = await responderHelper.createResponse(JoseBuilder.JSONLDProofs);
 
     validator = new ValidatorBuilder(requestor.crypto)
@@ -181,7 +181,7 @@ describe('PresentationExchange', () => {
       .build();
     response = await validator.validate(<string>responderResponse.rawToken);
     expect(response.detailedError).toEqual('The proof does not contain the verificationMethod in the json ld payload');
-    expect(response.code).toEqual('VCSDKVAHE07');
+    expect(response.code).toEqual('VCSDKVaHe07');
   });
 
   it('should create a response and validate with VC with two credentialSubject - json ld', async () => {

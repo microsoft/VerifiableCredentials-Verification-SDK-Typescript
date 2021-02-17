@@ -24,9 +24,14 @@ export default interface ITestModel {
     responseStatus: any;
 
     /**
-     * Define a set of operations to perform on response payload
+     * Define a set of operations to perform on response payload before signing the SIOP
      */
-    responseOperations?: any[];
+     preSiopResponseOperations?: any[];
+
+    /**
+     * Define a set of operations to perform on response payload before signing the tokens
+     */
+     preSignatureResponseOperations?: any[];
 
     /**
      * Retrieve VC

@@ -15,7 +15,7 @@ import { IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpect
 import LinkedDataCryptoSuitePublicKey from './LinkedDataCryptoSuitePublicKey';
 import ErrorHelpers from '../error_handling/ErrorHelpers';
 import ValidationError from '../error_handling/ValidationError';
-const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKVAHE', error);
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKVaHe', error);
 
 require('es6-promise').polyfill();
 require('isomorphic-fetch');

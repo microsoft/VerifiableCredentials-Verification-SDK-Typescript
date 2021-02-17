@@ -8,7 +8,7 @@ import { PresentationProtocol } from './RequestorBuilder';
 import { IRequestorResult } from './IRequestorResult';
 import { JoseBuilder } from 'verifiablecredentials-crypto-sdk-typescript';
 import ErrorHelpers from '../error_handling/ErrorHelpers';
-const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKREQU', error);
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKRequ', error);
 
 /**
  * Class to model the OIDC requestor

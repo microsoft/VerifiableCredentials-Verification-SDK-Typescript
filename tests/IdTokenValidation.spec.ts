@@ -43,7 +43,7 @@ import { IExpectedIdToken, Validator } from '../lib';
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(400);
     expect(response.detailedError).toEqual('The idToken could not be deserialized');
-    expect(response.code).toEqual('VCSDKVAHE01');
+    expect(response.code).toEqual('VCSDKVaHe01');
 
     // Bad id token signature
     validator = new IdTokenValidation(options, expected, Validator.readContractId(siop.contract));
@@ -51,35 +51,35 @@ import { IExpectedIdToken, Validator } from '../lib';
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The presented idToken is has an invalid signature');
-    expect(response.code).toEqual('VCSDKVAHE37');
+    expect(response.code).toEqual('VCSDKVaHe37');
 
     // missing siopcontract
     validator = new IdTokenValidation(options, <any>{configuration: {} }, <any>undefined);
     response = await validator.validate(siop.idToken.rawToken);
     expect(response.result).toBeFalsy(response.detailedError);
     expect(response.detailedError).toEqual('The siopContract needs to be specified to validate the idTokens.');
-    expect(response.code).toEqual('VCSDKIDVA03');
+    expect(response.code).toEqual('VCSDKIDVa03');
 
     // missing configuration array in expected
     validator = new IdTokenValidation(options, <any>{configuration: {} }, Validator.readContractId(siop.contract));
     response = await validator.validate(siop.idToken.rawToken);
     expect(response.result).toBeFalsy(response.detailedError);
     expect(response.detailedError).toEqual(`Expected should have configuration issuers set for idToken. Missing configuration for 'schema'.`);
-    expect(response.code).toEqual('VCSDKIDVA04');
+    expect(response.code).toEqual('VCSDKIDVa04');
 
     // empty array in configuration
     validator = new IdTokenValidation(options, <any>{configuration: [] }, Validator.readContractId(siop.contract));
     response = await validator.validate(siop.idToken.rawToken);
     expect(response.result).toBeFalsy(response.detailedError);
     expect(response.detailedError).toEqual('Expected should have configuration issuers set for idToken. Empty array presented.');
-    expect(response.code).toEqual('VCSDKIDVA02');
+    expect(response.code).toEqual('VCSDKIDVa02');
 
     // missing configuration in expected
     validator = new IdTokenValidation(options, <any>{}, Validator.readContractId(siop.contract));
     response = await validator.validate(siop.idToken.rawToken);
     expect(response.result).toBeFalsy(response.detailedError);
     expect(response.detailedError).toEqual('Expected should have configuration issuers set for idToken');
-    expect(response.code).toEqual('VCSDKIDVA01');
+    expect(response.code).toEqual('VCSDKIDVa01');
 
     // todo fix aud
     return;

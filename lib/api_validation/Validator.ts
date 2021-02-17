@@ -13,7 +13,7 @@ import { KeyStoreOptions } from 'verifiablecredentials-crypto-sdk-typescript';
 import { VerifiablePresentationValidationResponse } from '../input_validation/VerifiablePresentationValidationResponse';
 import { v4 as uuid } from 'uuid';
 import ErrorHelpers from '../error_handling/ErrorHelpers';
-const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKVTOR', error);
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKVtor', error);
 
 /**
  * Class model the token validator

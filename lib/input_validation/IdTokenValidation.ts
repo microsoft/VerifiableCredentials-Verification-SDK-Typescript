@@ -8,7 +8,7 @@ import { IValidationOptions } from '../options/IValidationOptions';
 import ClaimToken, { TokenType } from '../verifiable_credential/ClaimToken';
 import { BaseIdTokenValidation } from './BaseIdTokenValidation';
 import ErrorHelpers from '../error_handling/ErrorHelpers';
-const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKIDVA', error);
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKIDVa', error);
 
 /**
  * Class for id token validation for the Verifiable Credential attestation scenario

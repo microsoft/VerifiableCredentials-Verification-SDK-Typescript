@@ -26,7 +26,7 @@ describe('Requestor', () =>{
     const requestor = new RequestorBuilder(PresentationDefinition.presentationExchangeDefinition)
       .build();
 
-      expect(() => requestor.trustedIssuerConfigurationsForIdTokens()).toThrowMatching((exception) => exception.message === `Id Tokens only supported in Attestation Requestor model.` && exception.code === 'VCSDKREQU01');
-      expect(() => requestor.trustedIssuersForVerifiableCredentials()).toThrowMatching((exception) => exception.message === `trustedIssuersForVerifiableCredentials not supported for presentation exchange. Requires constraints.` && exception.code === 'VCSDKREQU02');
+      expect(() => requestor.trustedIssuerConfigurationsForIdTokens()).toThrowMatching((exception) => exception.message === `Id Tokens only supported in Attestation Requestor model.` && exception.code === 'VCSDKRequ01');
+      expect(() => requestor.trustedIssuersForVerifiableCredentials()).toThrowMatching((exception) => exception.message === `trustedIssuersForVerifiableCredentials not supported for presentation exchange. Requires constraints.` && exception.code === 'VCSDKRequ02');
     })
 });

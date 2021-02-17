@@ -42,7 +42,7 @@ describe('OpenIdTokenValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The presented idToken is has an invalid signature');
-    expect(response.code).toEqual('VCSDKVAHE37');
+    expect(response.code).toEqual('VCSDKVaHe37');
   });
 
   it('should fail validation when the issuer is incorrect', async () => {

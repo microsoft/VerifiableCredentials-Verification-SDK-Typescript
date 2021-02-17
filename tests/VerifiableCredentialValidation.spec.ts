@@ -64,7 +64,7 @@ describe('VerifiableCredentialValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredential is invalid');
-    expect(response.code).toEqual('VCSDKVAHE27');
+    expect(response.code).toEqual('VCSDKVaHe27');
 
     // Missing vc
     let payload: any = {

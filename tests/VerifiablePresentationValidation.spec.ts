@@ -40,14 +40,14 @@ describe('VerifiablePresentationValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Wrong iss property in verifiablePresentation. Expected 'abcdef'`);
-    expect(response.code).toEqual('VCSDKVAHE18');
+    expect(response.code).toEqual('VCSDKVaHe18');
 
     // Bad VP signature
     response = await validator.validate(siop.vp.rawToken + 'a');
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The signature on the payload in the verifiablePresentationJwt is invalid');
-    expect(response.code).toEqual('VCSDKVAHE27');
+    expect(response.code).toEqual('VCSDKVaHe27');
 
     // Missing iss
     let payload: any = {
@@ -58,7 +58,7 @@ describe('VerifiablePresentationValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Missing iss property in verifiablePresentation. Expected 'did:test:user'`);
-    expect(response.code).toEqual('VCSDKVAHE17');
+    expect(response.code).toEqual('VCSDKVaHe17');
 
     // Bad iss
      payload = {
@@ -70,7 +70,7 @@ describe('VerifiablePresentationValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Wrong iss property in verifiablePresentation. Expected 'did:test:user'`);
-    expect(response.code).toEqual('VCSDKVAHE18');
+    expect(response.code).toEqual('VCSDKVaHe18');
 
     // Missing aud
     payload = {
@@ -86,7 +86,7 @@ describe('VerifiablePresentationValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Missing aud property in verifiablePresentation. Expected 'did:test:issuer'`);
-    expect(response.code).toEqual('VCSDKVAHE19');
+    expect(response.code).toEqual('VCSDKVaHe19');
 
     // Wrong aud
     payload = {
@@ -102,7 +102,7 @@ describe('VerifiablePresentationValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Wrong aud property in verifiablePresentation. Expected 'did:test:issuer'. Found 'test'`);
-    expect(response.code).toEqual('VCSDKVAHE20');
+    expect(response.code).toEqual('VCSDKVaHe20');
 
     // Missing context
     payload = {

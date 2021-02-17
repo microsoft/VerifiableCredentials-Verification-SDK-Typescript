@@ -8,7 +8,7 @@ import RequestOneVcResponseOk from './RequestOneVcResponseOk';
 
 export default class RequestOneVcResponseMissingId extends RequestOneVcResponseOk implements ITestModel {
 
-  public responseOperations = [
+  public preSiopResponseOperations = [
     {
       path: '$.presentation_submission.descriptor_map[0].id',
       operation: () => undefined
