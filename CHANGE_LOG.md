@@ -1,3 +1,11 @@
+# version 0.12.1-preview.0
+## Allow IValidationOptions to be specified via ValidatorBuilder
+**Type of change:** feature    
+**Customer impact:** low
+
+Removed IHttpClientOptions because not used anymore.
+VerifiablePresentationTokenValidator ctor no longer uses the crypto argument.
+
 # version 0.11.1
 ## Turn 0.11.1-preview.5 into the released package
 

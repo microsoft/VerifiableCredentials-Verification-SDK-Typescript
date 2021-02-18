@@ -21,8 +21,7 @@ describe('SiopTokenValidator', () => {
   it('should test nonce and state', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.siopIssuance, true);
     const expected: IExpectedSiop = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siopIssuance)[0];
-    const validationOptions = new ValidationOptions(setup.validatorOptions, TokenType.siopIssuance);
-
+    
     let validator = new SiopTokenValidator(setup.validatorOptions, expected);
     let payload: any = {
       ...request.decodedToken,

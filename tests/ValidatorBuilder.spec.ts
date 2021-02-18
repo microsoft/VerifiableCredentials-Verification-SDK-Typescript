@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Crypto, ValidatorBuilder, CryptoBuilder, ManagedHttpResolver, RequestorBuilder, BasicValidatorOptions } from '../lib/index';
+import { Crypto, ValidatorBuilder, CryptoBuilder, ManagedHttpResolver, RequestorBuilder, BasicValidatorOptions, FetchRequest } from '../lib/index';
 
 describe('ValidatorBuilder', () => {
   it('should test status feature flag', () => {
@@ -13,6 +13,18 @@ describe('ValidatorBuilder', () => {
 
     builder = builder.enableFeatureVerifiedCredentialsStatusCheck(false);
     expect(builder.featureVerifiedCredentialsStatusCheckEnabled).toBeFalsy();
+  });
+
+  it('should return validationOptions', () => {
+    const resolver = new ManagedHttpResolver('https://example.com');
+    const fetchRequest = new FetchRequest();
+    const options = new BasicValidatorOptions();
+    let builder = new ValidatorBuilder(options.crypto)
+      .useFetchRequest(fetchRequest)
+      .useResolver(resolver);
+    expect(builder.crypto).toEqual(builder.validationOptions.crypto);
+    expect(builder.fetchRequest).toEqual(builder.validationOptions.fetchRequest);
+    expect(builder.resolver).toEqual(builder.validationOptions.resolver);
   });
 
   it('should use new resolver', () => {
