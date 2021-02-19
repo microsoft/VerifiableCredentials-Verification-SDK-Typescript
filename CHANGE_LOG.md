@@ -5,6 +5,14 @@
 The validation response return code, a string which contains a unique value for the error.
 The error code is fixed in unit tests
 
+
+## Allow IValidationOptions to be specified via ValidatorBuilder
+**Type of change:** feature    
+**Customer impact:** low
+
+Removed IHttpClientOptions because not used anymore.
+VerifiablePresentationTokenValidator ctor no longer uses the crypto argument.
+
 # version 0.11.1
 ## Turn 0.11.1-preview.5 into the released package
 

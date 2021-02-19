@@ -45,7 +45,18 @@ export default class ValidatorBuilder {
   public build(): Validator {
     return new Validator(this);
   }
-  
+
+  /**
+   * Gets the validation options
+   */
+  public get validationOptions(): IValidatorOptions {
+    return {
+      resolver: this.resolver,
+      fetchRequest: this.fetchRequest,
+      crypto: this.crypto
+    };
+  }
+
  /**
    * Sets the state
    * @param state The state for the response
@@ -133,17 +144,13 @@ export default class ValidatorBuilder {
   public get tokenValidators(): { [type: string]: ITokenValidator } {
     // check if default validators need to be instantiated
     if (!this._tokenValidators) {
-      const validatorOptions: IValidatorOptions = {
-        fetchRequest: this.fetchRequest,
-        resolver: this.resolver,
-        crypto: this._crypto
-      };
+      const validatorOptions: IValidatorOptions = this.validationOptions;
 
       this._tokenValidators = {
         selfIssued: new SelfIssuedTokenValidator(validatorOptions, <IExpectedSelfIssued> {type: TokenType.selfIssued}),
         idToken: new IdTokenTokenValidator(validatorOptions, <IExpectedIdToken> {type: TokenType.idToken, configuration: this._trustedIssuerConfigurationsForIdTokens}),
         verifiableCredential: new VerifiableCredentialTokenValidator(validatorOptions, <IExpectedVerifiableCredential> {type: TokenType.verifiableCredential, contractIssuers: this._trustedIssuersForVerifiableCredentials}),
-        verifiablePresentationJwt: new VerifiablePresentationTokenValidator(validatorOptions, this.crypto, <IExpectedVerifiablePresentation> {type: TokenType.verifiablePresentationJwt, didAudience: this.crypto.builder.did}),
+        verifiablePresentationJwt: new VerifiablePresentationTokenValidator(validatorOptions, <IExpectedVerifiablePresentation> {type: TokenType.verifiablePresentationJwt, didAudience: this.crypto.builder.did}),
         siopPresentationAttestation: new SiopTokenValidator(validatorOptions, <IExpectedSiop> {type: TokenType.siopPresentationAttestation, audience: this._audienceUrl}),
         siop: new SiopTokenValidator(validatorOptions, <IExpectedSiop> {type: TokenType.siop, audience: this._audienceUrl}),
         siopPresentationExchange: new SiopTokenValidator(validatorOptions, <IExpectedSiop> {type: TokenType.siopPresentationExchange, audience: this._audienceUrl}),
@@ -198,13 +205,8 @@ export default class ValidatorBuilder {
       // Make sure existing expected gets updated
       const vcValidator = this._tokenValidators[TokenType.verifiableCredential];
       if (vcValidator) {
-        const validatorOptions: IValidatorOptions = {
-          fetchRequest: this.fetchRequest,
-          resolver: this.resolver,
-          crypto: this._crypto
-        };
         const expected: IExpectedVerifiableCredential = {type: TokenType.verifiableCredential, contractIssuers: issuers};
-        this._tokenValidators[TokenType.verifiableCredential] = new VerifiableCredentialTokenValidator(validatorOptions, expected);
+        this._tokenValidators[TokenType.verifiableCredential] = new VerifiableCredentialTokenValidator(this.validationOptions, expected);
       }
     }
     return this;
@@ -228,13 +230,8 @@ export default class ValidatorBuilder {
       // Make sure existing expected gets updated
       const idtokenValidator = this._tokenValidators[TokenType.idToken];
       if (idtokenValidator) {
-        const validatorOptions: IValidatorOptions = {
-          fetchRequest: this.fetchRequest,
-          resolver: this.resolver,
-          crypto: this._crypto
-        };
         const expected: IExpectedIdToken = {type: TokenType.idToken, configuration: issuers};
-        this._tokenValidators[TokenType.idToken] = new IdTokenTokenValidator(validatorOptions, expected);
+        this._tokenValidators[TokenType.idToken] = new IdTokenTokenValidator(this.validationOptions, expected);
       }
     }
     return this;

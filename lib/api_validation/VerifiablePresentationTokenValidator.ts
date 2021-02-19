@@ -24,7 +24,7 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
    * @param validatorOption The options used during validation
    * @param expected values to find in the token to validate
    */
-  constructor (private validatorOption: IValidatorOptions, private crypto: Crypto, private expected: IExpectedVerifiablePresentation ) {
+   constructor (private validatorOption: IValidatorOptions, private expected: IExpectedVerifiablePresentation ) {
   }
 
   /**

@@ -116,7 +116,7 @@ describe('Validator', () => {
     };
     map[vcAttestationName] = vcExpected;
 
-    const vpValidator = new VerifiablePresentationTokenValidator(setup.validatorOptions, crypto, vpExpected);
+    const vpValidator = new VerifiablePresentationTokenValidator(setup.validatorOptions, vpExpected);
     const vcValidator = new VerifiableCredentialTokenValidator(setup.validatorOptions, map);
     let validator = new ValidatorBuilder(crypto)
       .useValidators([vcValidator, vpValidator])

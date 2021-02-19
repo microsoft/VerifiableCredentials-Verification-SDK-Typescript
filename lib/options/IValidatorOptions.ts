@@ -6,17 +6,6 @@
 import { IDidResolver, Crypto } from '../index';
 import IFetchRequest from '../tracing/IFetchRequest';
 
-/**
- * Interface to model the fetch options
- */
-export interface IHttpClientOptions {
-
-    /**
-     * The http client options
-     */
-    options: any,
-}
-
  /**
  * Interface to model the validator options
  */

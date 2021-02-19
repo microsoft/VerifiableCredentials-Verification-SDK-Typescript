@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 import { Crypto, IDidResolver, CryptoBuilder, IFetchRequest, FetchRequest } from '../index';
 import IValidatorOptions from './IValidatorOptions';
-import { IHttpClientOptions } from "./IValidatorOptions";
 
 /**
  * Basic IValidatorOptions implementation
