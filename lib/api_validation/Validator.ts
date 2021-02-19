@@ -301,7 +301,7 @@ export default class Validator {
 
           // Validate receipt
           const receipt = await response.json();
-          const validatorOption: IValidatorOptions = this.setValidatorOptions();
+          const validatorOption: IValidatorOptions = this.builder.validationOptions;
           const options = new ValidationOptions(validatorOption, TokenType.siopPresentationExchange);
           const receiptValidator = new VerifiablePresentationStatusReceipt(receipt, this.builder, options, <IExpectedStatusReceipt>{ didIssuer: vcIssuerDid, didAudience: this.builder.crypto.builder.did });
           const receipts = await receiptValidator.validate();
@@ -322,17 +322,6 @@ export default class Validator {
     }
 
     return validationResponse;
-  }
-
-  /**
-   * Set the validator options
-   */
-  private setValidatorOptions(): IValidatorOptions {
-    return {
-      fetchRequest:this.builder.fetchRequest,
-      resolver: this.builder.resolver,
-      crypto: this.builder.crypto
-    }
   }
 
   private isSiop(type: TokenType | undefined) {
