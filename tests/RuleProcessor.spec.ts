@@ -5,7 +5,7 @@
 
 import RequestorHelper from './RequestorHelper';
 import ResponderHelper from './ResponderHelper';
-import { JoseBuilder, ValidatorBuilder } from '../lib';
+import { JoseBuilder, TokenType, Validator, ValidatorBuilder, VerifiablePresentationValidation } from '../lib';
 import TokenGenerator from './TokenGenerator';
 import RequestOneVcResponseOk from './models/RequestOneVcResponseOk'
 import RequestTwoVcResponseOk from './models/RequestTwoVcResponseOk'
@@ -21,6 +21,9 @@ import RequestTwoVcPointerToMultipleTokens from './models/RequestTwoVcPointerToM
 import RequestOneJsonLdVcResponseOk from './models/RequestOneJsonLdVcResponseOk';
 
 describe('Rule processor', () => {
+  let doRequestResponder: ResponderHelper;
+  let doRequestValidator: Validator;
+  
   const doRequest = async (model?: any): Promise<any> => {
     if (!model) {
       model = new RequestOneVcResponseOk();
@@ -32,17 +35,18 @@ describe('Rule processor', () => {
     console.log(`Model: ${model.constructor.name}`);
     console.log(`=====> Request: ${request.rawToken}`);
   
-    const responder = new ResponderHelper(requestor, model);
-    await responder.setup();
-    const responderResponse = await responder.createResponse();
-    console.log(`=====> Response: ${responderResponse.rawToken}`);
+    doRequestResponder = new ResponderHelper(requestor, model);
+    await doRequestResponder.setup();
   
-    const validator = new ValidatorBuilder(requestor.crypto)
-      .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!] })
+    doRequestValidator = new ValidatorBuilder(requestor.crypto)
+      .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [doRequestResponder.generator.crypto.builder.did!] })
       .enableFeatureVerifiedCredentialsStatusCheck(true)
       .build();
+  
+      const responderResponse = await doRequestResponder.createResponse();
+    console.log(`=====> Response: ${responderResponse.rawToken}`);
         
-    return [validator, model, responderResponse, responder];
+    return [doRequestValidator, model, responderResponse, doRequestResponder];
   }      
 
   it('should process RequestOneVcResponseOk', async () => {
@@ -428,6 +432,7 @@ describe('Rule processor', () => {
       expect(response.result).toBeFalsy();
       expect(response.detailedError?.startsWith('The status receipt for jti ') && response.detailedError?.endsWith(' failed with status revoked.')).toBeTruthy();
       expect(response.code).toEqual('VCSDKVtor07');
+      expect(response.status).toEqual(403);
     } finally {
       TokenGenerator.fetchMock.reset();
     }

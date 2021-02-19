@@ -95,7 +95,14 @@ describe('Validator', () => {
     let response = await validator.validate(siop.vc.rawToken);
     expect(response.result).toBeTruthy();
 
-  });
+    // Negative cases
+    // VC signature failure
+    const splitted = siop.vc.rawToken.split('.');
+    response = await validator.validate(`${splitted[0]}.${splitted[1]}.1234${splitted[2]}`);
+    expect(response.result).toBeFalsy(response.detailedError);
+    expect(response.status).toEqual(403);
+    expect(response.code).toEqual('VCSDKVaHe27');
+});
 
   it('should validate verifiable presentations', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentationJwt, true);
