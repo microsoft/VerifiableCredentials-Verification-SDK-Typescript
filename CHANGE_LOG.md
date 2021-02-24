@@ -1,3 +1,9 @@
+# version 0.12.1-preview.1
+## Pass fetchRequest to resolver to enable customization of fetch for resolver
+**Type of change:** bug fix
+**Customer impact:** low
+
+
 # version 0.12.1-preview.0
 ## Allow IValidationOptions to be specified via ValidatorBuilder
 **Type of change:** feature    
