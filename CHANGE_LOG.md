@@ -1,10 +1,28 @@
 # version 0.12.1-preview.0
+## Add error codes to the validation response
+**Type of change:** engineering    
+**Customer impact:** low
+The validation response return code, a string which contains a unique value for the error.
+The error code is fixed in unit tests
+
+    console.log(validationResponse.code); // for seeing the code
+    console.log(validationResponse.status); // for seeing the suggested status to return to client
+    console.log(validationResponse.detailedError); // for seeing the detailed error message
+
+
 ## Allow IValidationOptions to be specified via ValidatorBuilder
 **Type of change:** feature    
 **Customer impact:** low
 
-Removed IHttpClientOptions because not used anymore.
+Removed IHttpClientOptions because it is not used anymore.
+
 VerifiablePresentationTokenValidator ctor no longer uses the crypto argument.
+
+Add validationOptions property to ValidatorBuilder
+
+    // Retrieve the validator options from the builder state
+    const options = validationBuilder.validationOptions;  
+
 
 # version 0.11.1
 ## Turn 0.11.1-preview.5 into the released package

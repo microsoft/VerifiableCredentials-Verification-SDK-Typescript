@@ -38,9 +38,9 @@ const fetchMock = require('fetch-mock');
       });
 
       const fetchRequest = new FetchRequest();
-      const resolver = new ManagedHttpResolver('https://resolver');
+      const resolver = new ManagedHttpResolver('https://resolver', fetchRequest);
       await resolver.resolve('did');
-      await resolver.resolve('did', fetchRequest);
+      await resolver.resolve('did');
       expect(called).toBeTruthy();
 
       // Negative cases
@@ -48,7 +48,7 @@ const fetchMock = require('fetch-mock');
         return { status: 404 };
        }, { overwriteRoutes: true });
        try {
-        await resolver.resolve('did', fetchRequest);
+        await resolver.resolve('did');
         fail('exception on resolve was  not thrown');
        } catch (exception) {
          expect(exception).toEqual(new Error('Could not resolve https://resolver/did'));
