@@ -21,7 +21,7 @@ export default class ManagedHttpResolver implements IDidResolver {
    * @param universalResolverUrl the URL endpoint of the remote universal resolvers
    * @param fetchRequest optional fetch client
    */
-  constructor(universalResolverUrl: string, private fetchRequest?: IFetchRequest) {
+  constructor(universalResolverUrl: string, public fetchRequest?: IFetchRequest) {
     // Format and set the property for the
     const slash = universalResolverUrl.endsWith('/') ? '' : '/';
     this.resolverUrl = `${universalResolverUrl}${slash}`;
