@@ -15,7 +15,6 @@ import IFetchRequest from '../tracing/IFetchRequest';
  */
 export default class ValidatorBuilder {
   private _tokenValidators: ({ [type: string]: ITokenValidator }) | undefined;
-  private _resolver: IDidResolver = new ManagedHttpResolver(VerifiableCredentialConstants.UNIVERSAL_RESOLVER_URL);
   
   private _trustedIssuersForVerifiableCredentials:  {[credentialType: string]: string[]} | undefined;
   private _trustedIssuerConfigurationsForIdTokens: IssuerMap | undefined;
@@ -24,6 +23,7 @@ export default class ValidatorBuilder {
   private _state: string | undefined;
   private _nonce: string | undefined;
   private _fetchRequest: IFetchRequest = new FetchRequest();
+  private _resolver: IDidResolver = new ManagedHttpResolver(VerifiableCredentialConstants.UNIVERSAL_RESOLVER_URL, this._fetchRequest);
 
   /**
    * Create a new instance of ValidatorBuilder
@@ -167,7 +167,8 @@ export default class ValidatorBuilder {
    * @param fetchRequest New fetch client
    */
   public useFetchRequest(fetchRequest: IFetchRequest): ValidatorBuilder {
-    this._fetchRequest = fetchRequest;
+    (<any>this.resolver).fetchRequest = this._fetchRequest = fetchRequest;
+     
     return this;
   }
 

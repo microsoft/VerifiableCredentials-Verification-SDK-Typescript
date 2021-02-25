@@ -166,6 +166,7 @@ export class ValidationHelpers {
     const self: any = this;
     try {
       const resolveResult: IDidResolveResult = await (self as ValidationOptions).validatorOptions.resolver.resolve(validationResponse.did as string);
+
       if (!resolveResult || !resolveResult.didDocument) {
         return validationResponse = {
           result: false,

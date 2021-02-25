@@ -20,9 +20,11 @@ export default class ManagedHttpResolver implements IDidResolver {
   public readonly resolverUrl: string;
 
   /**
+   * Create an instance of ManagedHttpResolver
    * @param universalResolverUrl the URL endpoint of the remote universal resolvers
+   * @param fetchRequest optional fetch client
    */
-  constructor(universalResolverUrl: string) {
+  constructor(universalResolverUrl: string, public fetchRequest?: IFetchRequest) {
     // Format and set the property for the
     const slash = universalResolverUrl.endsWith('/') ? '' : '/';
     this.resolverUrl = `${universalResolverUrl}${slash}`;
@@ -32,14 +34,14 @@ export default class ManagedHttpResolver implements IDidResolver {
    * Looks up a DID Document
    * @inheritdoc
    */
-  public async resolve(did: string, fetchRequest?: IFetchRequest): Promise<IDidResolveResult> {
+  public async resolve(did: string): Promise<IDidResolveResult> {
     const query = `${this.resolverUrl}${did}`;
     let response: Response;
-    if (!fetchRequest) {
-      fetchRequest = new FetchRequest();
+    if (!this.fetchRequest) {
+      this.fetchRequest = new FetchRequest();
     }
 
-    response = await fetchRequest.fetch(query, 'DIDResolve', {
+    response = await this.fetchRequest.fetch(query, 'DIDResolve', {
       method: 'GET',
       headers: {
       }
