@@ -1,6 +1,6 @@
 {
   "name": "verifiablecredentials-verification-sdk-typescript",
-  "version": "0.12.1-preview.1",
+  "version": "0.12.1-preview.2",
   "description": "Typescript SDK for verifiable credentials",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -45,7 +45,7 @@
     "clone": "2.1.2",
     "deep-property-access": "1.0.1",
     "es6-promise": "^4.2.8",
-    "isomorphic-fetch": "2.2.1",
+    "isomorphic-fetch": "3.0.0",
     "jsonpath": "1.0.2",
     "multihashes": "0.4.14",
     "uuid": "7.0.1",

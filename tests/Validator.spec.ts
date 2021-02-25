@@ -34,35 +34,35 @@ describe('Validator', () => {
     //expected.configuration = (<{ [contract: string]: string[]}>expected.configuration)[Validator.getContractIdFromSiop(siop.contract)];
 
     let tokenValidator = new IdTokenTokenValidator(setup.validatorOptions, expected);
-    expect(() => tokenValidator.getTokens(<any>undefined, <any>undefined)).toThrowError('Not implemented');
+    expect(() => tokenValidator.getTokens(<any>undefined, <any>undefined)).toThrowMatching((exception) => exception.message === `Not implemented` && exception.code === 'VCSDKIDTV01');
 
     let selfIssuedValidator = new SelfIssuedTokenValidator(setup.validatorOptions, expected);
     expect(selfIssuedValidator.isType).toEqual(TokenType.selfIssued);
-    expect(() => selfIssuedValidator.getTokens(<any>undefined, <any>undefined)).toThrowError('Not implemented');
+    expect(() => selfIssuedValidator.getTokens(<any>undefined, <any>undefined)).toThrowMatching((exception) => exception.message === `Not implemented` && exception.code === 'VCSDKSITV01');
 
     let validator = new ValidatorBuilder(crypto)
       .useValidators(tokenValidator)
       .useTrustedIssuerConfigurationsForIdTokens([setup.defaultIdTokenConfiguration])
       .build();
 
-    let result = await validator.validate(siop.idToken.rawToken);
-    expect(result.result).toBeTruthy();
-    expect(result.validationResult?.idTokens).toBeDefined();
+    let response = await validator.validate(siop.idToken.rawToken);
+    expect(response.result).toBeTruthy();
+    expect(response.validationResult?.idTokens).toBeDefined();
 
     validator = new ValidatorBuilder(crypto)
       .useTrustedIssuerConfigurationsForIdTokens([setup.defaultIdTokenConfiguration])
       .build();
-    result = await validator.validate(siop.idToken.rawToken);
-    expect(result.result).toBeTruthy();
-    expect(result.validationResult?.idTokens).toBeDefined();
+    response = await validator.validate(siop.idToken.rawToken);
+    expect(response.result).toBeTruthy();
+    expect(response.validationResult?.idTokens).toBeDefined();
 
     //Redefine the urls
     validator = validator.builder.useTrustedIssuerConfigurationsForIdTokens([setup.defaultIdTokenConfiguration])
       .build();
-    result = await validator.validate(siop.idToken.rawToken);
-    expect(result.result).toBeTruthy();
+    response = await validator.validate(siop.idToken.rawToken);
+    expect(response.result).toBeTruthy();
     expect(validator.builder.trustedIssuerConfigurationsForIdTokens).toEqual([setup.defaultIdTokenConfiguration]);
-    expect(result.validationResult?.verifiablePresentations).toBeUndefined();
+    expect(response.validationResult?.verifiablePresentations).toBeUndefined();
 
     tokenValidator = new IdTokenTokenValidator(setup.validatorOptions, expected);
 
@@ -75,9 +75,10 @@ describe('Validator', () => {
       .useValidators(tokenValidator)
       .build();
 
-    result = await validator.validate(siop.idToken.rawToken);
-    expect(result.result).toBeFalsy();
-    expect(result.detailedError).toEqual(`Could not fetch token configuration`);
+    response = await validator.validate(siop.idToken.rawToken);
+    expect(response.result).toBeFalsy();
+    expect(response.detailedError).toEqual(`Could not fetch token configuration`);
+    expect(response.code).toEqual('VCSDKVaHe34');
   });
 
   it('should validate verifiable credentials', async () => {
@@ -85,16 +86,23 @@ describe('Validator', () => {
     const expected: any = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
 
     const tokenValidator = new VerifiableCredentialTokenValidator(setup.validatorOptions, expected);
-    expect(() => tokenValidator.getTokens(<any>undefined, <any>undefined)).toThrowError('Not implemented');
+    expect(() => tokenValidator.getTokens(<any>undefined, <any>undefined)).toThrowMatching((exception) => exception.message === `Not implemented` && exception.code === 'VCSDKVCTV01');
 
     const validator = new ValidatorBuilder(crypto)
       .useValidators(tokenValidator)
       .build();
 
-    let result = await validator.validate(siop.vc.rawToken);
-    expect(result.result).toBeTruthy();
+    let response = await validator.validate(siop.vc.rawToken);
+    expect(response.result).toBeTruthy();
 
-  });
+    // Negative cases
+    // VC signature failure
+    const splitted = siop.vc.rawToken.split('.');
+    response = await validator.validate(`${splitted[0]}.${splitted[1]}.1234${splitted[2]}`);
+    expect(response.result).toBeFalsy(response.detailedError);
+    expect(response.status).toEqual(403);
+    expect(response.code).toEqual('VCSDKVaHe27');
+});
 
   it('should validate verifiable presentations', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentationJwt, true);
@@ -122,29 +130,30 @@ describe('Validator', () => {
     // Check VP validator
     let queue = new ValidationQueue();
     queue.enqueueToken('vp', siop.vp);
-    let result = await vpValidator.validate(queue, queue.getNextToken()!, setup.defaultUserDid);
-    expect(result.result).toBeTruthy('vpValidator succeeded');
-    expect(result.tokensToValidate![`DrivingLicense`].rawToken).toEqual(siop.vc.rawToken);
+    let response = await vpValidator.validate(queue, queue.getNextToken()!, setup.defaultUserDid);
+    expect(response.result).toBeTruthy('vpValidator succeeded');
+    expect(response.tokensToValidate![`DrivingLicense`].rawToken).toEqual(siop.vc.rawToken);
 
-    let clonedResult = clone(result);
+    let clonedResult = clone(response);
     delete clonedResult.payloadObject.vp;
-    result = vpValidator.getTokens(clonedResult, queue);
-    expect(result.result).toBeFalsy(result.detailedError);
-    expect(result.detailedError).toEqual('No verifiable credential');
+    response = vpValidator.getTokens(clonedResult, queue);
+    expect(response.result).toBeFalsy(response.detailedError);
+    expect(response.detailedError).toEqual('No verifiable credential');
+    expect(response.code).toEqual('VCSDKVPTV01');
 
     // Check VC validator
     queue = new ValidationQueue();
     queue.enqueueToken(vcAttestationName, siop.vc);
-    result = await vcValidator.validate(queue, queue.getNextToken()!, setup.defaultUserDid);
-    expect(result.result).toBeTruthy('vcValidator succeeded');
+    response = await vcValidator.validate(queue, queue.getNextToken()!, setup.defaultUserDid);
+    expect(response.result).toBeTruthy('vcValidator succeeded');
 
     // Check validator
     queue = new ValidationQueue();
     queue.enqueueToken('vp', siop.vp);
     let token = queue.getNextToken()!.tokenToValidate;
-    result = await validator.validate(token);
-    expect(result.result).toBeTruthy('check validator');
-    expect(result.validationResult?.verifiableCredentials).toBeDefined();
+    response = await validator.validate(token);
+    expect(response.result).toBeTruthy('check validator');
+    expect(response.validationResult?.verifiableCredentials).toBeDefined();
 
     // Negative cases
     // No validator
@@ -153,9 +162,10 @@ describe('Validator', () => {
       .build();
     queue = new ValidationQueue();
     queue.enqueueToken('vp', siop.vp);
-    result = await validator.validate(queue.getNextToken()!.tokenToValidate);
-    expect(result.result).toBeFalsy();
-    expect(result.detailedError).toEqual('verifiablePresentationJwt does not has a TokenValidator');
+    response = await validator.validate(queue.getNextToken()!.tokenToValidate);
+    expect(response.result).toBeFalsy();
+    expect(response.detailedError).toEqual('verifiablePresentationJwt does not has a TokenValidator');
+    expect(response.code).toEqual('VCSDKVtor02');
 
     // Test validator with missing VC validator
     validator = new ValidatorBuilder(crypto)
@@ -164,9 +174,10 @@ describe('Validator', () => {
       .build();
     queue = new ValidationQueue();
     queue.enqueueToken('vp', siop.vp);
-    result = await validator.validate(queue.getNextToken()!.tokenToValidate);
-    expect(result.result).toBeFalsy();
-    expect(result.detailedError).toEqual('verifiableCredential does not has a TokenValidator');
+    response = await validator.validate(queue.getNextToken()!.tokenToValidate);
+    expect(response.result).toBeFalsy();
+    expect(response.detailedError).toEqual('verifiableCredential does not has a TokenValidator');
+    expect(response.code).toEqual('VCSDKVtor02');
   });
 
   it('should validate presentation siop', async () => {
@@ -186,42 +197,44 @@ describe('Validator', () => {
 
     const queue = new ValidationQueue();
     queue.enqueueToken('siopPresentationAttestation', request);
-    let result = await validator.validate(queue.getNextToken()!.tokenToValidate);
-    expect(result.result).toBeTruthy();
-    expect(result.status).toEqual(200);
+    let response = await validator.validate(queue.getNextToken()!.tokenToValidate);
+    expect(response.result).toBeTruthy();
+    expect(response.status).toEqual(200);
     expect(validator.tokenValidators['siopPresentationAttestation'].isType).toEqual(TokenType.siopPresentationAttestation);
-    expect(result.validationResult?.siop).toBeDefined();
-    expect(result.validationResult?.verifiablePresentations).toBeDefined();
-    expect(result.detailedError).toBeUndefined();
-    expect(result.tokensToValidate).toBeUndefined();
-    expect(result.validationResult?.did).toEqual(setup.defaultUserDid);
-    expect(result.validationResult?.siopJti).toEqual(IssuanceHelpers.jti);
-    expect(result.validationResult?.idTokens).toBeUndefined();
-    expect(result.validationResult?.selfIssued).toBeUndefined();
-    expect(result.validationResult?.verifiableCredentials).toBeDefined();
-    expect(result.validationResult?.verifiableCredentials!['DrivingLicense'].decodedToken.vc.credentialSubject.givenName).toEqual('Jules');
+    expect(response.validationResult?.siop).toBeDefined();
+    expect(response.validationResult?.verifiablePresentations).toBeDefined();
+    expect(response.detailedError).toBeUndefined();
+    expect(response.tokensToValidate).toBeUndefined();
+    expect(response.validationResult?.did).toEqual(setup.defaultUserDid);
+    expect(response.validationResult?.siopJti).toEqual(IssuanceHelpers.jti);
+    expect(response.validationResult?.idTokens).toBeUndefined();
+    expect(response.validationResult?.selfIssued).toBeUndefined();
+    expect(response.validationResult?.verifiableCredentials).toBeDefined();
+    expect(response.validationResult?.verifiableCredentials!['DrivingLicense'].decodedToken.vc.credentialSubject.givenName).toEqual('Jules');
 
     // Negative cases
     // map issuer to other credential type
     validator = validator.builder.useTrustedIssuersForVerifiableCredentials({ someCredential: vcExpected.contractIssuers.DrivingLicense }).build();
     queue.enqueueToken('siopPresentationAttestation', request);
-    result = await validator.validate(queue.getNextToken()!.tokenToValidate);
-    expect(result.result).toBeFalsy();
-    expect(result.detailedError).toEqual(`Expected should have contractIssuers set for verifiableCredential. Missing contractIssuers for 'DrivingLicense'.`);
-    expect(result.status).toEqual(403);
+    response = await validator.validate(queue.getNextToken()!.tokenToValidate);
+    expect(response.result).toBeFalsy();
+    expect(response.detailedError).toEqual(`Expected should have contractIssuers set for verifiableCredential. Missing contractIssuers for 'DrivingLicense'.`);
+    expect(response.code).toEqual('VCSDKVCVA16');
+    expect(response.status).toEqual(403);
 
     // bad payload
     queue.enqueueToken('siopPresentationAttestation', <any>{ claims: {} });
-    result = await validator.validate(<any>queue.getNextToken()!);
-    expect(result.detailedError).toEqual('Wrong token type. Expected string or ClaimToken');
+    response = await validator.validate(<any>queue.getNextToken()!);
+    expect(response.detailedError).toEqual('Wrong token type. Expected string or ClaimToken');
+    expect(response.code).toEqual('VCSDKVtor01');
 
     let spiedMethod: any = ClaimToken.create;
     let createSpy: jasmine.Spy = spyOn(ClaimToken, 'create').and.callFake((): ClaimToken => {
       throw new Error('some create error');
     });
     queue.enqueueToken('siopPresentationAttestation', request);
-    result = await validator.validate(<any>queue.getNextToken()!.tokenToValidate.rawToken);
-    expect(result.detailedError).toEqual('some create error');
+    response = await validator.validate(<any>queue.getNextToken()!.tokenToValidate.rawToken);
+    expect(response.detailedError).toEqual('some create error');
     createSpy.and.callFake((token: any, id: any): { [key: string]: ClaimToken } => {
       return spiedMethod(token, id);
     });
@@ -231,8 +244,8 @@ describe('Validator', () => {
       throw new Error('some error');
     });
     queue.enqueueToken('siopPresentationAttestation', request);
-    result = await validator.validate(queue.getNextToken()!.tokenToValidate);
-    expect(result.detailedError).toEqual('some error');
+    response = await validator.validate(queue.getNextToken()!.tokenToValidate);
+    expect(response.detailedError).toEqual('some error');
     getClaimTokensFromAttestationsSpy.and.callFake((attestations: any): { [key: string]: ClaimToken } => {
       return spiedMethod(attestations);
     });
@@ -242,16 +255,17 @@ describe('Validator', () => {
       throw new Error('some getClaimToken error');
     });
     queue.enqueueToken('siopPresentationAttestation', request);
-    result = await validator.validate(<any>queue.getNextToken()!.tokenToValidate.rawToken);
-    expect(result.detailedError).toEqual('some getClaimToken error');
+    response = await validator.validate(<any>queue.getNextToken()!.tokenToValidate.rawToken);
+    expect(response.detailedError).toEqual('some getClaimToken error');
 
     getClaimTokenSpy.and.callFake((): ClaimToken => {
       return <ClaimToken>{ type: <any>'test' };
     });
     queue.enqueueToken('siopPresentationAttestation', request);
     validator.tokenValidators['test'] = validator.tokenValidators['siopPresentationAttestation'];
-    result = await validator.validate(<any>queue.getNextToken()!.tokenToValidate.rawToken);
-    expect(result.detailedError).toEqual(`test is not supported`);
+    response = await validator.validate(<any>queue.getNextToken()!.tokenToValidate.rawToken);
+    expect(response.detailedError).toEqual(`test is not supported`);
+    expect(response.code).toEqual('VCSDKVtor03');
     getClaimTokenSpy.and.callFake((queueItem: any): ClaimToken => {
       return spiedMethod(queueItem);
     });
@@ -278,9 +292,9 @@ describe('Validator', () => {
 
     const queue = new ValidationQueue();
     queue.enqueueToken('siop', request);
-    const result = await validator.validate(queue.getNextToken()!.tokenToValidate);
-    expect(result.result).toBeTruthy(result.detailedError);
-    expect(result.status).toEqual(200);
+    const response = await validator.validate(queue.getNextToken()!.tokenToValidate);
+    expect(response.result).toBeTruthy(response.detailedError);
+    expect(response.status).toEqual(200);
 
   });
 
@@ -307,23 +321,23 @@ describe('Validator', () => {
 
     const queue = new ValidationQueue();
     queue.enqueueToken('siop', request);
-    const result = await validator.validate(queue.getNextToken()!.tokenToValidate);
-    expect(result.result).toBeTruthy();
-    expect(result.status).toEqual(200);
-    expect(result.detailedError).toBeUndefined();
-    expect(result.tokensToValidate).toBeUndefined();
-    expect(result.validationResult?.did).toEqual(setup.defaultUserDid);
-    expect(result.validationResult?.siopJti).toEqual(IssuanceHelpers.jti);
-    expect(result.validationResult?.siop).toBeDefined();
-    expect(result.validationResult?.verifiablePresentations).toBeDefined();
-    expect(result.validationResult?.idTokens).toBeDefined();
-    for (let idtoken in result.validationResult?.idTokens) {
-      expect(result.validationResult?.idTokens[idtoken].decodedToken.upn).toEqual('jules@pulpfiction.com');
+    const response = await validator.validate(queue.getNextToken()!.tokenToValidate);
+    expect(response.result).toBeTruthy();
+    expect(response.status).toEqual(200);
+    expect(response.detailedError).toBeUndefined();
+    expect(response.tokensToValidate).toBeUndefined();
+    expect(response.validationResult?.did).toEqual(setup.defaultUserDid);
+    expect(response.validationResult?.siopJti).toEqual(IssuanceHelpers.jti);
+    expect(response.validationResult?.siop).toBeDefined();
+    expect(response.validationResult?.verifiablePresentations).toBeDefined();
+    expect(response.validationResult?.idTokens).toBeDefined();
+    for (let idtoken in response.validationResult?.idTokens) {
+      expect(response.validationResult?.idTokens[idtoken].decodedToken.upn).toEqual('jules@pulpfiction.com');
     }
-    expect(result.validationResult?.selfIssued).toBeDefined();
-    expect(result.validationResult?.selfIssued!.decodedToken.name).toEqual('jules');
-    expect(result.validationResult?.verifiableCredentials).toBeDefined();
-    expect(result.validationResult?.verifiableCredentials!['DrivingLicense'].decodedToken.vc.credentialSubject.givenName).toEqual('Jules');
+    expect(response.validationResult?.selfIssued).toBeDefined();
+    expect(response.validationResult?.selfIssued!.decodedToken.name).toEqual('jules');
+    expect(response.validationResult?.verifiableCredentials).toBeDefined();
+    expect(response.validationResult?.verifiableCredentials!['DrivingLicense'].decodedToken.vc.credentialSubject.givenName).toEqual('Jules');
 
     // Negative cases
 
@@ -332,51 +346,35 @@ describe('Validator', () => {
   it('should read the contract id with no spaces', () => {
     const id = 'foo';
     const url = `https://test.com/v1.0/abc/def/contracts/${id}`;
-    const result = Validator.readContractId(url);
-    expect(result).toEqual(id);
+    const response = Validator.readContractId(url);
+    expect(response).toEqual(id);
   });
 
   it('should read the contract id with spaces', () => {
     const id = 'foo bar';
     const url = `https://test.com/v1.0/abc/def/contracts/${encodeURIComponent(id)}`;
-    const result = Validator.readContractId(url);
-    expect(result).toEqual(id);
+    const response = Validator.readContractId(url);
+    expect(response).toEqual(id);
   });
 
   it('should read the contract id with spaces and query', () => {
     const id = 'foo bar';
     const url = `https://test.com/v1.0/abc/def/contracts/${encodeURIComponent(id)}?qs=abcdefggh`;
-    const result = Validator.readContractId(url);
-    expect(result).toEqual(id);
+    const response = Validator.readContractId(url);
+    expect(response).toEqual(id);
   });
 
-  xit('should validate a siop', async () => {
+  it('should validate a siop', async () => {
     setup.fetchMock.reset();
-    const credentials = new ClientSecretCredential(Credentials.tenantGuid, Credentials.clientId, Credentials.clientSecret);
-
-    const keyReference = new KeyReference('jsonldtest', 'secret'); const subtle = new Subtle();
-    const cryptoFactory = new CryptoFactoryNode(new KeyStoreKeyVault(credentials, Credentials.vaultUri, new KeyStoreInMemory()), subtle);
     let crypto = new CryptoBuilder()
-      .useSigningAlgorithm('EdDSA')
-      .useKeyVault(credentials, Credentials.vaultUri)
-      .useCryptoFactory(cryptoFactory)
-      .useSigningKeyReference(keyReference)
       .build();
 
-    crypto = await crypto.generateKey(KeyUse.Signature);
-    crypto = await crypto.generateKey(KeyUse.Signature, 'recovery');
-    crypto = await crypto.generateKey(KeyUse.Signature, 'update');
-    crypto.builder.useDid(await new LongFormDid(crypto).serialize());
-
     let validator = new ValidatorBuilder(crypto)
-      .useAudienceUrl('https://verify.vc.capptoso.com:443/presentation-response')
-      .useTrustedIssuersForVerifiableCredentials({ 'https://credentials.workday.com/docs/specification/v1.0/credential.json': ['did:work:CcZdQMaiwQyY2zA9njpx5p'] })
       .build();
 
     const req = 'your token here';
     console.log(req);
-    const result = await validator.validate(req);
-    expect(result.result).toBeTruthy();
-    expect(result.status).toEqual(200);
+    const response = await validator.validate(req);
+    expect(response.result).toBeFalsy();
   });
 });

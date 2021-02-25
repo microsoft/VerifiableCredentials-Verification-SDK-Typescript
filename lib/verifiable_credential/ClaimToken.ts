@@ -4,8 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 import base64url from 'base64url';
 import VerifiableCredentialConstants from './VerifiableCredentialConstants';
-import { PresentationDefinitionModel } from '..';
+import ValidationError from '../error_handling/ValidationError';
+import { PresentationDefinitionModel  } from '../index';
+import ErrorHelpers from '../error_handling/ErrorHelpers';
 const jp = require('jsonpath');
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKCLTO', error);
 
 /**
  * Enum for define the token type
@@ -121,7 +124,7 @@ export default class ClaimToken {
     if (tokentypeValues.includes(typeName)) {
       this._type = typeName as TokenType;
     } else {
-      throw new Error(`Type '${typeName}' is not supported`);
+      throw new ValidationError(`Type '${typeName}' is not supported`, errorCode(1));
     }
 
     if (typeof token === 'string') {
@@ -212,8 +215,8 @@ export default class ClaimToken {
   * This algorithm will convert the attestations to a ClaimToken
   * @param payload The presentaiton exchange payload 
   */
-  public static getClaimTokensFromPresentationExchange(payload: PresentationDefinitionModel): { [key: string]: ClaimToken } {
-    const decodedTokens: { [key: string]: ClaimToken } = {};
+ public static getClaimTokensFromPresentationExchange(payload: PresentationDefinitionModel): { [key: string]: ClaimToken } {
+  const decodedTokens: { [key: string]: ClaimToken } = {};
     // Get descriptor map
     const descriptorMap: any[] = jp.query(payload, `$.presentation_submission.descriptor_map.*`);
 
@@ -221,13 +224,13 @@ export default class ClaimToken {
       const item = descriptorMap[inx];
       if (item) {
         if (!item.id) {
-          throw new Error(`The SIOP presentation exchange response has descriptor_map without id property`);
+          throw new ValidationError(`The SIOP presentation exchange response has descriptor_map without id property`, errorCode(2));
         } else if (item.path) {
           const tokenFinder = jp.query(payload, item.path);
           if (tokenFinder.length == 0) {
-            throw new Error(`The SIOP presentation exchange response has descriptor_map with id '${item.id}'. This path '${item.path}' did not return a token.`);
+            throw new ValidationError(`The SIOP presentation exchange response has descriptor_map with id '${item.id}'. This path '${item.path}' did not return a token.`, errorCode(3));
           } else if (tokenFinder.length > 1) {
-            throw new Error(`The SIOP presentation exchange response has descriptor_map with id '${item.id}'. This path '${item.path}' points to multiple credentails and should only point to one credential.`);
+            throw new ValidationError(`The SIOP presentation exchange response has descriptor_map with id '${item.id}'. This path '${item.path}' points to multiple credentails and should only point to one credential.`, errorCode(4));
           } else if (typeof tokenFinder[0] === 'string') {
             const foundToken = tokenFinder[0];
             const claimToken = ClaimToken.create(foundToken);
@@ -238,7 +241,7 @@ export default class ClaimToken {
             decodedTokens[item.id] = claimToken;
           }
         } else {
-          throw new Error(`The SIOP presentation exchange response has descriptor_map with id '${item.id}'. No path property found.`);
+          throw new ValidationError(`The SIOP presentation exchange response has descriptor_map with id '${item.id}'. No path property found.`, errorCode(5));
         }
       }
     }
@@ -254,7 +257,7 @@ export default class ClaimToken {
   private decode(): void {
     const parts = (<string>this.rawToken).split('.');
     if (parts.length < 2) {
-      throw new Error(`Cannot decode. Invalid input token`);
+      throw new ValidationError(`Cannot decode. Invalid input token`, errorCode(6));
     }
 
     this._tokenHeader = JSON.parse(base64url.decode(parts[0]));

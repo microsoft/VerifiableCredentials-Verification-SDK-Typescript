@@ -47,10 +47,19 @@ export default class ResponderHelper {
     await this.generator.setup(signingProtocol);
   }
 
-  public async createResponse(vcProtocol: string = JoseBuilder.JWT): Promise<ClaimToken> {
+  public async createResponse(vcProtocol: string = JoseBuilder.JOSE): Promise<ClaimToken> {
+    
+    const payload = this.responseDefinition.response;
+
+    // Check for any pre payload signature operations
+    const preSignatureResponseOperations = this.responseDefinition.preSignatureResponseOperations;
+    if (preSignatureResponseOperations) {
+      for (let inx in preSignatureResponseOperations) {
+        jp.apply(payload, preSignatureResponseOperations![inx].path, preSignatureResponseOperations![inx].operation);
+      }
+    }
 
     await this.generator.setVcsInPresentations(vcProtocol);
-    const payload = this.responseDefinition.response;
 
     // Present the VCs
     const presentations = (<ITestModel>this.responseDefinition).getPresentationsFromModel();
@@ -115,17 +124,14 @@ export default class ResponderHelper {
     // Present the id tokens
     await this.generator.setIdTokens();
 
-    // Add VCs without presentation
-
-
-    // Check for any payload operations
-    if (this.responseDefinition.responseOperations) {
-      for (let inx in this.responseDefinition.responseOperations) {
-        jp.apply(payload, this.responseDefinition!.responseOperations![inx].path, this.responseDefinition!.responseOperations![inx].operation);
+    // Check for any pre SIOP payload operations
+    if (this.responseDefinition.preSiopResponseOperations) {
+      for (let inx in this.responseDefinition.preSiopResponseOperations) {
+        jp.apply(payload, this.responseDefinition!.preSiopResponseOperations![inx].path, this.responseDefinition!.preSiopResponseOperations![inx].operation);
       }
     }
 
-    const token = await (await this.crypto.signingProtocol(JoseBuilder.JWT).sign(payload)).serialize();
+    const token = await (await this.crypto.signingProtocol(JoseBuilder.JOSE).sign(payload)).serialize();
     return new ClaimToken(TokenType.siopPresentationAttestation, token);
   }
 

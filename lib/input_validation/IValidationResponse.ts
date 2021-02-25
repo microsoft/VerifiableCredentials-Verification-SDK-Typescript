@@ -26,6 +26,11 @@ export interface IResponse {
   detailedError?: string;
 
   /**
+   * Output if false. Unique code for the response
+   */
+  code?: string;
+
+  /**
    * Additional error object
    */
   innerError?: any;

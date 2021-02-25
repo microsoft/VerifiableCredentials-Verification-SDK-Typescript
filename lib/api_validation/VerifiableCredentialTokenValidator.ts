@@ -3,13 +3,15 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IExpectedVerifiableCredential, ITokenValidator, TokenType } from '../index';
+import ErrorHelpers from '../error_handling/ErrorHelpers';
+import { IExpectedVerifiableCredential, ITokenValidator, TokenType, ValidationError } from '../index';
 import { IValidationResponse } from '../input_validation/IValidationResponse';
 import ValidationQueue from '../input_validation/ValidationQueue';
 import ValidationQueueItem from '../input_validation/ValidationQueueItem';
 import { VerifiableCredentialValidation } from '../input_validation/VerifiableCredentialValidation';
 import IValidatorOptions from '../options/IValidatorOptions';
 import ValidationOptions from '../options/ValidationOptions';
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKVCTV', error);
 
 /**
  * Class to validate a token
@@ -51,7 +53,7 @@ export default class VerifiableCredentialTokenValidator implements ITokenValidat
    * @param queue with tokens to validate
    */
   public getTokens(_validationResponse: IValidationResponse, _queue: ValidationQueue): IValidationResponse {
-    throw new Error('Not implemented');
+    throw new ValidationError(`Not implemented`, errorCode(1));
   }
 
   /**

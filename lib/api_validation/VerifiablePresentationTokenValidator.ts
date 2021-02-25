@@ -11,6 +11,8 @@ import IValidatorOptions from '../options/IValidatorOptions';
 import ValidationQueue from '../input_validation/ValidationQueue';
 import ValidationQueueItem from '../input_validation/ValidationQueueItem';
 import { Crypto } from '../index';
+import ErrorHelpers from '../error_handling/ErrorHelpers';
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKVPTV', error);
 
 /**
  * Class to validate a token
@@ -53,6 +55,7 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
       return {
         result: false,
         status: 403,
+        code: errorCode(1),
         detailedError: 'No verifiable credential'
       };
     }

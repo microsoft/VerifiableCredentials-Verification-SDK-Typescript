@@ -28,17 +28,17 @@ describe('LinkedDataCryptoSuitePublicKey', () => {
     expect(jwk.crv).toEqual('ed25519');
 
     // Negative cases
-    expect(() => suites.WorkEd25519VerificationKey2020(undefined)).toThrowError('Pass in the public key. Undefined.');
+    expect(() => suites.WorkEd25519VerificationKey2020(undefined)).toThrowMatching((exception) => exception.message === 'Pass in the public key. Undefined.' && exception.code === 'VCSDKLDCS13');
 
     const decodeBase58To64UrlSpy = spyOn(LinkedDataCryptoSuitePublicKey, 'decodeBase58To64Url').and.callFake((): string  => {
       return <any>undefined;
     });
-    expect(() => suites.WorkEd25519VerificationKey2020(didDocumentPublicKey)).toThrowError('{"@context":["https://w3id.org/security/v1"],"id":"did:example:123456789abcdefghi#keys-1","type":"Ed25519VerificationKey2018","controller":"did:example:123456789abcdefghi","expires":"2017-02-08T16:02:20Z","publicKeyBase58":"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"} public key type is not supported.');
+    expect(() => suites.WorkEd25519VerificationKey2020(didDocumentPublicKey)).toThrowMatching((exception) => exception.message === `{"@context":["https://w3id.org/security/v1"],"id":"did:example:123456789abcdefghi#keys-1","type":"Ed25519VerificationKey2018","controller":"did:example:123456789abcdefghi","expires":"2017-02-08T16:02:20Z","publicKeyBase58":"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"} public key type is not supported.` && exception.code === 'VCSDKLDCS02');
 
     let parsePublicKeySpy = spyOn(LinkedDataCryptoSuitePublicKey, 'parsePublicKey').and.callFake((): string  => {
       return <any>undefined;
     });
-    expect(() => suites.WorkEd25519VerificationKey2020(didDocumentPublicKey)).toThrowError('{"@context":["https://w3id.org/security/v1"],"id":"did:example:123456789abcdefghi#keys-1","type":"Ed25519VerificationKey2018","controller":"did:example:123456789abcdefghi","expires":"2017-02-08T16:02:20Z","publicKeyBase58":"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"} public key type is not supported.');
+    expect(() => suites.WorkEd25519VerificationKey2020(didDocumentPublicKey)).toThrowMatching((exception) => exception.message === `{"@context":["https://w3id.org/security/v1"],"id":"did:example:123456789abcdefghi#keys-1","type":"Ed25519VerificationKey2018","controller":"did:example:123456789abcdefghi","expires":"2017-02-08T16:02:20Z","publicKeyBase58":"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"} public key type is not supported.` && exception.code === 'VCSDKLDCS01');
     parsePublicKeySpy.and.callFake(() => {
       return { publicKey: 'some key'};
     });
@@ -94,7 +94,7 @@ describe('LinkedDataCryptoSuitePublicKey', () => {
     expect(jwk.x).toEqual(base64url.encode(Buffer.from('1122334455', 'hex')));
 
     // Negative cases
-    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(<any>undefined)).toThrowError('The passed in public key is not defined');
+    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(<any>undefined)).toThrowMatching((exception) => exception.message === 'The passed in public key is not defined' && exception.code === 'VCSDKLDCS10');
 
     didDocumentPublicKey = {
       "@context": ["https://w3id.org/security/v1"],
@@ -103,12 +103,13 @@ describe('LinkedDataCryptoSuitePublicKey', () => {
       "expires": "2017-02-08T16:02:20Z",
       "publicKeyHex": "1122334455"
     };
-    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(didDocumentPublicKey)).toThrowError(`The passed in public key has no type. {"@context":["https://w3id.org/security/v1"],"id":"did:example:123456789abcdefghi#keys-1","controller":"did:example:123456789abcdefghi","expires":"2017-02-08T16:02:20Z","publicKeyHex":"1122334455"}`);
-    expect(() => LinkedDataCryptoSuitePublicKey.parsePublicKey(<any>undefined)).toThrowError(`Pass in the public key. Undefined.`);
+    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(didDocumentPublicKey)).toThrowMatching((exception) => exception.message === `The passed in public key has no type. {"@context":["https://w3id.org/security/v1"],"id":"did:example:123456789abcdefghi#keys-1","controller":"did:example:123456789abcdefghi","expires":"2017-02-08T16:02:20Z","publicKeyHex":"1122334455"}` && exception.code === 'VCSDKLDCS11');
+    expect(() => LinkedDataCryptoSuitePublicKey.parsePublicKey(<any>undefined)).toThrowMatching((exception) => exception.message === 'Pass in the public key. Undefined.' && exception.code === 'VCSDKLDCS13');
+
     didDocumentPublicKey = {
       "xxx": "1122334455"
     };
-    expect(() => LinkedDataCryptoSuitePublicKey.parsePublicKey(didDocumentPublicKey)).toThrowError(`{"xxx":"1122334455"} public key type is not supported.`);
+    expect(() => LinkedDataCryptoSuitePublicKey.parsePublicKey(didDocumentPublicKey)).toThrowMatching((exception) => exception.message === `{"xxx":"1122334455"} public key type is not supported.` && exception.code === 'VCSDKLDCS02');
 
     didDocumentPublicKey = {
       "@context": ["https://w3id.org/security/v1"],
@@ -118,14 +119,14 @@ describe('LinkedDataCryptoSuitePublicKey', () => {
       "expires": "2017-02-08T16:02:20Z",
       "publicKeyBase58": "H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"
     };
-    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(didDocumentPublicKey)).toThrowError(`The suite with type: 'xxx' is not supported.`);
+    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(didDocumentPublicKey)).toThrowMatching((exception) => exception.message === `The suite with type: 'xxx' is not supported.` && exception.code === 'VCSDKLDCS12');
 
     const testSpy = {
       "type": "Ed25519VerificationKey2018",
       "publicKeyJwk": {}
     };
     const parsePublicKeySpy: jasmine.Spy = spyOn(LinkedDataCryptoSuitePublicKey, 'parsePublicKey').withArgs(testSpy);
-    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(<any>testSpy)).toThrowError(`{"type":"Ed25519VerificationKey2018","publicKeyJwk":{}} public key type is not supported.`);
+    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(<any>testSpy)).toThrowMatching((exception) => exception.message === `{"type":"Ed25519VerificationKey2018","publicKeyJwk":{}} public key type is not supported.` && exception.code === 'VCSDKLDCS03');
   });
   it('should return a Secp256k1VerificationKey2018 public key', () => {
     let didDocumentPublicKey: any = {
@@ -153,7 +154,7 @@ describe('LinkedDataCryptoSuitePublicKey', () => {
     expect(jwk.y).toEqual('05fsHpcimSDwdnQ_sKw5tmsNMx_3WRBDibpydraxLwA');
 
     // Negative cases
-    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(<any>undefined)).toThrowError('The passed in public key is not defined');
+    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(<any>undefined)).toThrowMatching((exception) => exception.message === 'The passed in public key is not defined' && exception.code === 'VCSDKLDCS10');
     didDocumentPublicKey = {
       "id": "#test-key",
       "type": "xxx",
@@ -168,21 +169,22 @@ describe('LinkedDataCryptoSuitePublicKey', () => {
         "defaultEncryptionAlgorithm": "none"
       }
     };
-    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(didDocumentPublicKey)).toThrowError(`The suite with type: 'xxx' is not supported.`);
+    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(didDocumentPublicKey)).toThrowMatching((exception) => exception.message === `The suite with type: 'xxx' is not supported.` && exception.code === 'VCSDKLDCS12');
+
 
     didDocumentPublicKey = {
       "id": "#test-key",
       "type": "Secp256k1VerificationKey2018",
       "publicKeyBase58": "AAAAA"
     };
-    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(didDocumentPublicKey)).toThrowError(`{"id":"#test-key","type":"Secp256k1VerificationKey2018","publicKeyBase58":"AAAAA"} public key type is not supported.`);
+    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(didDocumentPublicKey)).toThrowMatching((exception) => exception.message === `{"id":"#test-key","type":"Secp256k1VerificationKey2018","publicKeyBase58":"AAAAA"} public key type is not supported.` && exception.code === 'VCSDKLDCS04');
 
     const testSpy = {
       "type": "Secp256k1VerificationKey2018",
       "publicKeyJwk": {}
     };
     const parsePublicKeySpy: jasmine.Spy = spyOn(LinkedDataCryptoSuitePublicKey, 'parsePublicKey').withArgs(testSpy);
-    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(<any>testSpy)).toThrowError(`{"type":"Secp256k1VerificationKey2018","publicKeyJwk":{}} public key type is not supported.`);
+    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(<any>testSpy)).toThrowMatching((exception) => exception.message === `{"type":"Secp256k1VerificationKey2018","publicKeyJwk":{}} public key type is not supported.` && exception.code === 'VCSDKLDCS05');
   });
   it('should return a EcdsaSecp256k1VerificationKey2019 public key', () => {
     let didDocumentPublicKey: any = {
@@ -216,8 +218,8 @@ describe('LinkedDataCryptoSuitePublicKey', () => {
       "publicKeyBase58": "AAAAA"
     };
 
-    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(didDocumentPublicKey)).toThrowError(`{"id":"#test-key","type":"EcdsaSecp256k1VerificationKey2019","publicKeyBase58":"AAAAA"} public key type is not supported.`);
-    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(<any>undefined)).toThrowError('The passed in public key is not defined');
+    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(didDocumentPublicKey)).toThrowMatching((exception) => exception.message === `{"id":"#test-key","type":"EcdsaSecp256k1VerificationKey2019","publicKeyBase58":"AAAAA"} public key type is not supported.` && exception.code === 'VCSDKLDCS06');
+    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(<any>undefined)).toThrowMatching((exception) => exception.message === 'The passed in public key is not defined' && exception.code === 'VCSDKLDCS10');
     didDocumentPublicKey = {
       "id": "#test-key",
       "type": "xxx",
@@ -232,21 +234,21 @@ describe('LinkedDataCryptoSuitePublicKey', () => {
         "defaultEncryptionAlgorithm": "none"
       }
     };
-    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(didDocumentPublicKey)).toThrowError(`The suite with type: 'xxx' is not supported.`);
+    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(didDocumentPublicKey)).toThrowMatching((exception) => exception.message === `The suite with type: 'xxx' is not supported.` && exception.code === 'VCSDKLDCS12');
 
     didDocumentPublicKey = {
       "id": "#test-key",
       "type": "EcdsaSecp256k1VerificationKey2019",
       "publicKeyBase58": "AAAAA"
     };
-    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(didDocumentPublicKey)).toThrowError(`{"id":"#test-key","type":"EcdsaSecp256k1VerificationKey2019","publicKeyBase58":"AAAAA"} public key type is not supported.`);
+    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(didDocumentPublicKey)).toThrowMatching((exception) => exception.message === `{"id":"#test-key","type":"EcdsaSecp256k1VerificationKey2019","publicKeyBase58":"AAAAA"} public key type is not supported.` && exception.code === 'VCSDKLDCS06');
 
     const testSpy = {
       "type": "EcdsaSecp256k1VerificationKey2019",
       "publicKeyJwk": {}
     };
     const parsePublicKeySpy: jasmine.Spy = spyOn(LinkedDataCryptoSuitePublicKey, 'parsePublicKey').withArgs(testSpy);
-    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(<any>testSpy)).toThrowError(`{"type":"EcdsaSecp256k1VerificationKey2019","publicKeyJwk":{}} public key type is not supported.`);
+    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(<any>testSpy)).toThrowMatching((exception) => exception.message === `{"type":"EcdsaSecp256k1VerificationKey2019","publicKeyJwk":{}} public key type is not supported.` && exception.code === 'VCSDKLDCS07');
   });
   it('should return a RsaVerificationKey2018 public key', () => {
     let didDocumentPublicKey: any = {
@@ -275,9 +277,9 @@ describe('LinkedDataCryptoSuitePublicKey', () => {
       "type": "RsaVerificationKey2018",
       "publicKeyBase58": "AAAAA"
     };
-    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(didDocumentPublicKey)).toThrowError(`{"id":"#test-key","type":"RsaVerificationKey2018","publicKeyBase58":"AAAAA"} public key type is not supported.`);
+    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(didDocumentPublicKey)).toThrowMatching((exception) => exception.message === `{"id":"#test-key","type":"RsaVerificationKey2018","publicKeyBase58":"AAAAA"} public key type is not supported.` && exception.code === 'VCSDKLDCS08');
 
-    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(<any>undefined)).toThrowError('The passed in public key is not defined');
+    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(<any>undefined)).toThrowMatching((exception) => exception.message === 'The passed in public key is not defined' && exception.code === 'VCSDKLDCS10');
     didDocumentPublicKey = {
       "id": "#test-key",
       "type": "xxx",
@@ -289,14 +291,14 @@ describe('LinkedDataCryptoSuitePublicKey', () => {
         "use": "sig"
       }
     };
-    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(didDocumentPublicKey)).toThrowError(`The suite with type: 'xxx' is not supported.`);
+    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(didDocumentPublicKey)).toThrowMatching((exception) => exception.message === `The suite with type: 'xxx' is not supported.` && exception.code === 'VCSDKLDCS12');
 
     const testSpy = {
       "type": "RsaVerificationKey2018",
       "publicKeyJwk": {}
     };
     const parsePublicKeySpy: jasmine.Spy = spyOn(LinkedDataCryptoSuitePublicKey, 'parsePublicKey').withArgs(testSpy);
-    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(<any>testSpy)).toThrowError(`{"type":"RsaVerificationKey2018","publicKeyJwk":{}} public key type is not supported.`);
+    expect(() => LinkedDataCryptoSuitePublicKey.getPublicKey(<any>testSpy)).toThrowMatching((exception) => exception.message === `{"type":"RsaVerificationKey2018","publicKeyJwk":{}} public key type is not supported.` && exception.code === 'VCSDKLDCS09');
   });
 
 });

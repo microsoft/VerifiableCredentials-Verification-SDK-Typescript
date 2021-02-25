@@ -5,8 +5,10 @@
 import { IValidationOptions } from '../options/IValidationOptions';
 import { IVerifiableCredentialValidation, VerifiableCredentialValidationResponse } from './VerifiableCredentialValidationResponse';
 import { DidValidation } from './DidValidation';
-import { IExpectedVerifiableCredential, ClaimToken } from '../index';
+import { IExpectedVerifiableCredential, ClaimToken, ValidationError } from '../index';
 import VerifiableCredentialConstants from '../verifiable_credential/VerifiableCredentialConstants';
+import ErrorHelpers from '../error_handling/ErrorHelpers';
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKVCVA', error);
 
 /**
  * Class for verifiable credential validation
@@ -46,6 +48,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       if (!validationResponse.payloadObject.vc) {
         return {
           result: false,
+          code: errorCode(4),
           detailedError: `The verifiable credential vc property does not exist`,
           status: 403
         };
@@ -57,6 +60,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
     if (!context || context.length === 0) {
       return {
         result: false,
+        code: errorCode(5),
         detailedError: `The verifiable credential vc property does not contain ${VerifiableCredentialConstants.CLAIM_CONTEXT}`,
         status: 403
       };
@@ -65,6 +69,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
     if (context[0] !== VerifiableCredentialConstants.DEFAULT_VERIFIABLECREDENTIAL_CONTEXT) {
       return {
         result: false,
+        code: errorCode(6),
         detailedError: `The verifiable credential context first element should be ${VerifiableCredentialConstants.DEFAULT_VERIFIABLECREDENTIAL_CONTEXT}`,
         status: 403
       };
@@ -78,7 +83,9 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       console.error(exception.message);
       return {
         result: false,
+        code: errorCode(7),
         detailedError: exception.message,
+        innerError: exception,
         status: 403
       };
     }
@@ -87,6 +94,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
     if (!validationResponse.payloadObject.credentialSubject) {
       return {
         result: false,
+        code: errorCode(8),
         detailedError: `The verifiable credential with type '${credentialType}' does not has a credentialSubject property`,
         status: 403
       };
@@ -97,6 +105,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       if (!validationResponse.subject) {
         return {
           result: false,
+          code: errorCode(9),
           detailedError: `Missing sub property in verifiableCredential. Expected '${siopDid}'`,
           status: 403
         };
@@ -106,6 +115,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       if (siopDid && validationResponse.subject !== siopDid) {
         return {
           result: false,
+          code: errorCode(10),
           detailedError: `Wrong sub property in verifiableCredential. Expected '${siopDid}'`,
           status: 403
         };
@@ -120,6 +130,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       if (!subjects.includes(siopDid)) {
         return {
           result: false,
+          code: errorCode(11),
           detailedError: `The verifiable credential with type '${credentialType}', the id in the credentialSubject property does not match the presenter DID: ${siopDid}`,
           status: 403
         };
@@ -139,6 +150,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       if (!vcIssuers.includes(validationResponse.issuer!)) {
         return {
           result: false,
+          code: errorCode(12),
           detailedError: `The verifiable credential with type '${credentialType}' is not from a trusted issuer '${JSON.stringify(this.expected.contractIssuers)}'`,
           status: 403
         };
@@ -156,15 +168,15 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
 
     const types: string[] = vc.type;
     if (!types || types.length === 0) {
-      throw new Error(`The vc property does not contain type`);
+      throw new ValidationError(`The vc property does not contain type`, errorCode(1));
     }
 
     if (types.length < 2) {
-      throw new Error(`The verifiable credential type property should have two elements`);
+      throw new ValidationError(`The verifiable credential type property should have two elements`, errorCode(2));
     }
 
     if (types[0] !== VerifiableCredentialConstants.DEFAULT_VERIFIABLECREDENTIAL_TYPE) {
-      throw new Error(`The verifiable credential type first element should be ${VerifiableCredentialConstants.DEFAULT_VERIFIABLECREDENTIAL_TYPE}`);
+      throw new ValidationError(`The verifiable credential type first element should be ${VerifiableCredentialConstants.DEFAULT_VERIFIABLECREDENTIAL_TYPE}`, errorCode(3));
     }
 
     // Get credential type from context
@@ -181,6 +193,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       return {
         result: false,
         status: 500,
+        code: errorCode(13),
         detailedError: `Expected should have contractIssuers set for verifyableCredential`
       };
     }
@@ -193,6 +206,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
         return {
           result: false,
           status: 500,
+          code: errorCode(14),
           detailedError: `Expected should have contractIssuers set for verifiableCredential. Empty array presented.`
         };
       }
@@ -202,6 +216,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
         return {
           result: false,
           status: 500,
+          code: errorCode(15),
           detailedError: `The credentialType needs to be specified to validate the verifiableCredential.`
         };
       }
@@ -211,6 +226,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
         return {
           result: false,
           status: 403,
+          code: errorCode(16),
           detailedError: `Expected should have contractIssuers set for verifiableCredential. Missing contractIssuers for '${credentialType}'.`
         };
       }

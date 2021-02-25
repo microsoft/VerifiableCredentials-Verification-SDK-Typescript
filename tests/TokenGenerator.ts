@@ -163,7 +163,7 @@ export default class TokenGenerator {
     for (let inx = 0; inx < vc.length; inx++) {
       (vpTemplate.vp.verifiableCredential as string[]).push(<string>vc[inx].rawToken);
     }
-    const token = await (await this.responder.crypto.signingProtocol(JoseBuilder.JWT).sign(vpTemplate)).serialize();
+    const token = await (await this.responder.crypto.signingProtocol(JoseBuilder.JOSE).sign(vpTemplate)).serialize();
     return new ClaimToken(TokenType.verifiablePresentationJwt, token, '');
   }
 }

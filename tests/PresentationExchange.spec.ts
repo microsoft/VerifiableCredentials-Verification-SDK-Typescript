@@ -18,13 +18,13 @@ const clone = require('clone');
 describe('PresentationExchange', () => {
   let model = new RequestOneVcResponseOk();
   let requestor = new RequestorHelper(model);
-  let responder: ResponderHelper;
+  let responderHelper: ResponderHelper;
 
   beforeAll(async () => {
     await requestor.setup();
 
-    responder = new ResponderHelper(requestor, model);
-    await responder.setup();
+    responderHelper = new ResponderHelper(requestor, model);
+    await responderHelper.setup();
   });
 
   afterAll(() => {
@@ -51,62 +51,73 @@ describe('PresentationExchange', () => {
     expect(request.rawToken).toBeDefined();
     console.log(request.rawToken);
 
-    let response = await responder.createResponse();
+    let responderResponse = await responderHelper.createResponse();
 
     let validator = new ValidatorBuilder(requestor.crypto)
-      .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!] })
+      .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responderHelper.generator.crypto.builder.did!] })
       .build();
-    let result = await validator.validate(<string>response.rawToken);
-    expect(result.result).toBeTruthy(result.detailedError);
+    let response = await validator.validate(<string>responderResponse.rawToken);
+    expect(response.result).toBeTruthy(response.detailedError);
 
     // Negative cases
 
+    //Empy presentation_submission
+    let responsePayload = clone(responderResponse.decodedToken);
+    responsePayload.presentation_submission = {};
+    let siop = await (await responderHelper.crypto.signingProtocol(JoseBuilder.JWT).sign(responsePayload)).serialize();
+    response = await validator!.validate(siop);
+    expect(response.result).toBeFalsy(response.detailedError);
+    expect(response.detailedError).toEqual(`Verifiable credential 'IdentityCard' is missing from the input request`);
+    expect(response.code).toEqual('VCSDKVtor04');
+    
     //Remove presentation_submission
-    let responsePayload = clone(response.decodedToken);
     delete responsePayload.presentation_submission;
-    let siop = await (await responder.crypto.signingProtocol(JoseBuilder.JWT).sign(responsePayload)).serialize();
-    result = await validator!.validate(siop);
-    expect(result.result).toBeFalsy('Remove presentation_submission');
-    expect(result.detailedError).toEqual(`Verifiable credential 'IdentityCard' is missing from the input request`);
-
+    siop = await (await responderHelper.crypto.signingProtocol(JoseBuilder.JWT).sign(responsePayload)).serialize();
+    response = await validator!.validate(siop);
+    expect(response.result).toBeFalsy(response.detailedError);
+    expect(response.detailedError).toEqual(`Not a valid SIOP`);
+    expect(response.code).toEqual('VCSDKSTVa05');
+    
     //Remove tokens
-    responsePayload = clone(response.decodedToken);
+    responsePayload = clone(responderResponse.decodedToken);
     delete responsePayload.presentation_submission.attestations;
-    siop = await (await responder.crypto.signingProtocol(JoseBuilder.JWT).sign(responsePayload)).serialize();
-    result = await validator!.validate(siop);
-    expect(result.result).toBeFalsy('Remove tokens');
-    expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. This path '$.presentation_submission.attestations.presentations.IdentityCard' did not return a token.`);
+    siop = await (await responderHelper.crypto.signingProtocol(JoseBuilder.JWT).sign(responsePayload)).serialize();
+    response = await validator!.validate(siop);
+    expect(response.result).toBeFalsy('Remove tokens');
+    expect(response.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. This path '$.presentation_submission.attestations.presentations.IdentityCard' did not return a token.`);
+    expect(response.code).toEqual('VCSDKSTVa04');
 
     //Remove path
-    responsePayload = clone(response.decodedToken);
+    responsePayload = clone(responderResponse.decodedToken);
     delete responsePayload.presentation_submission.descriptor_map[0].path;
-    siop = await (await responder.crypto.signingProtocol(JoseBuilder.JWT).sign(responsePayload)).serialize();
-    result = await validator!.validate(siop);
-    expect(result.result).toBeFalsy('Remove path');
-    expect(result.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. No path property found.`);
+    siop = await (await responderHelper.crypto.signingProtocol(JoseBuilder.JWT).sign(responsePayload)).serialize();
+    response = await validator!.validate(siop);
+    expect(response.result).toBeFalsy('Remove path');
+    expect(response.detailedError).toEqual(`The SIOP presentation exchange response has descriptor_map with id 'IdentityCard'. No path property found.`);
+    expect(response.code).toEqual('VCSDKSTVa04');
   });
 
   it('should create a response and validate - json ld', async () => {
     let model = new RequestOneJsonLdVcResponseOk();
     let requestor = new RequestorHelper(model);
     await requestor.setup();
-    let responder = new ResponderHelper(requestor, model);
-    await responder.setup('EdDSA');
+    let responderHelper = new ResponderHelper(requestor, model);
+    await responderHelper.setup('EdDSA');
 
     // add did
-    model.response.presentation_submission.attestations.presentations.IdentityCard.credentialSubject.id = responder.crypto.builder.did;
+    model.response.presentation_submission.attestations.presentations.IdentityCard.credentialSubject.id = responderHelper.crypto.builder.did;
 
     const request: any = await requestor.createPresentationExchangeRequest();
     expect(request.rawToken).toBeDefined();
     console.log(request.rawToken);
 
-    let response = await responder.createResponse(JoseBuilder.JSONLDProofs);
+    let responderResponse = await responderHelper.createResponse(JoseBuilder.JSONLDProofs);
 
     let validator = new ValidatorBuilder(requestor.crypto)
-      .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!] })
+      .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responderHelper.generator.crypto.builder.did!] })
       .build();
-    let result = await validator.validate(<string>response.rawToken);
-    expect(result.result).toBeTruthy(result.detailedError);
+    let response = await validator.validate(<string>responderResponse.rawToken);
+    expect(response.result).toBeTruthy(response.detailedError);
 
     // Negative cases
 
@@ -114,81 +125,86 @@ describe('PresentationExchange', () => {
     validator = new ValidatorBuilder(requestor.crypto)
       .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [] })
       .build();
-    result = await validator.validate(<string>response.rawToken);
-    expect(result.detailedError).toEqual(`The verifiable credential with type 'IdentityCard' is not from a trusted issuer '{"IdentityCard":[]}'`);
+    response = await validator.validate(<string>responderResponse.rawToken);
+    expect(response.detailedError).toEqual(`The verifiable credential with type 'IdentityCard' is not from a trusted issuer '{"IdentityCard":[]}'`);
+    expect(response.code).toEqual('VCSDKVCVA12');
 
     validator = new ValidatorBuilder(requestor.crypto)
       .useTrustedIssuersForVerifiableCredentials({ IdentityCard: ['some did'] })
       .build();
-    result = await validator.validate(<string>response.rawToken);
-    expect(result.detailedError).toEqual(`The verifiable credential with type 'IdentityCard' is not from a trusted issuer '{"IdentityCard":["some did"]}'`);
-    
+    response = await validator.validate(<string>responderResponse.rawToken);
+    expect(response.detailedError).toEqual(`The verifiable credential with type 'IdentityCard' is not from a trusted issuer '{"IdentityCard":["some did"]}'`);
+    expect(response.code).toEqual('VCSDKVCVA12');
+
     // wrong siop in vc
     model = new RequestOneJsonLdVcResponseWrongSiopDId();
-    responder = new ResponderHelper(requestor, model);
-    await responder.setup('EdDSA');
+    responderHelper = new ResponderHelper(requestor, model);
+    await responderHelper.setup('EdDSA');
     
-    response = await responder.createResponse(JoseBuilder.JSONLDProofs);
+    responderResponse = await responderHelper.createResponse(JoseBuilder.JSONLDProofs);
 
     validator = new ValidatorBuilder(requestor.crypto)
-      .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!] })
+      .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responderHelper.generator.crypto.builder.did!] })
       .build();
-    result = await validator.validate(<string>response.rawToken);
-    expect(result.detailedError).toEqual(`The verifiable credential with type 'IdentityCard', the id in the credentialSubject property does not match the presenter DID: did:test:responder`);
+    response = await validator.validate(<string>responderResponse.rawToken);
+    expect(response.detailedError).toEqual(`The verifiable credential with type 'IdentityCard', the id in the credentialSubject property does not match the presenter DID: did:test:responder`);
+    expect(response.code).toEqual('VCSDKVCVA11');
   });
 
   it('should fail because of missing proof in vc - json ld', async () => {
     let model = new RequestOneJsonLdVcResponseNoProofInVC();
     let requestor = new RequestorHelper(model);
     await requestor.setup();
-    let responder = new ResponderHelper(requestor, model);
-    await responder.setup('EdDSA');
+    let responderHelper = new ResponderHelper(requestor, model);
+    await responderHelper.setup('EdDSA');
 
     // add did
-    model.response.presentation_submission.attestations.presentations.IdentityCard.credentialSubject.id = responder.crypto.builder.did;
-    let response = await responder.createResponse(JoseBuilder.JSONLDProofs);
+    model.response.presentation_submission.attestations.presentations.IdentityCard.credentialSubject.id = responderHelper.crypto.builder.did;
+    let responderResponse = await responderHelper.createResponse(JoseBuilder.JSONLDProofs);
 
     let validator = new ValidatorBuilder(requestor.crypto)
-      .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!] })
+      .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responderHelper.generator.crypto.builder.did!] })
       .build();
-    let result = await validator.validate(<string>response.rawToken);
-    expect(result.detailedError).toEqual('The proof is not available in the json ld payload');
+    let response = await validator.validate(<string>responderResponse.rawToken);
+    expect(response.detailedError).toEqual('The proof is not available in the json ld payload');
+    expect(response.code).toEqual('VCSDKVaHe06');
 
     // missing verificationMethod
     model = new RequestOneJsonLdVcResponseNoProofInVC();
-    responder = new ResponderHelper(requestor, model);
-    await responder.setup('EdDSA');
-    model.responseOperations[0].path += '.verificationMethod';
-    response = await responder.createResponse(JoseBuilder.JSONLDProofs);
+    responderHelper = new ResponderHelper(requestor, model);
+    await responderHelper.setup('EdDSA');
+    model.preSiopResponseOperations[0].path += '.verificationMethod';
+    responderResponse = await responderHelper.createResponse(JoseBuilder.JSONLDProofs);
 
     validator = new ValidatorBuilder(requestor.crypto)
-      .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!] })
+      .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responderHelper.generator.crypto.builder.did!] })
       .build();
-    result = await validator.validate(<string>response.rawToken);
-    expect(result.detailedError).toEqual('The proof does not contain the verificationMethod in the json ld payload');
+    response = await validator.validate(<string>responderResponse.rawToken);
+    expect(response.detailedError).toEqual('The proof does not contain the verificationMethod in the json ld payload');
+    expect(response.code).toEqual('VCSDKVaHe07');
   });
 
   it('should create a response and validate with VC with two credentialSubject - json ld', async () => {
     const model = new RequestOneJsonLdVcTwoSubjectsResponseOk();
     const requestor = new RequestorHelper(model);
     await requestor.setup();
-    const responder = new ResponderHelper(requestor, model);
-    await responder.setup('EdDSA');
+    const responderHelper = new ResponderHelper(requestor, model);
+    await responderHelper.setup('EdDSA');
 
     // add did
-    model.response.presentation_submission.attestations.presentations.IdentityCard.credentialSubject[0].id = responder.crypto.builder.did;
+    model.response.presentation_submission.attestations.presentations.IdentityCard.credentialSubject[0].id = responderHelper.crypto.builder.did;
 
     const request: any = await requestor.createPresentationExchangeRequest();
     expect(request.rawToken).toBeDefined();
     console.log(request.rawToken);
 
-    let response = await responder.createResponse(JoseBuilder.JSONLDProofs);
+    let responderResponse = await responderHelper.createResponse(JoseBuilder.JSONLDProofs);
 
     let validator = new ValidatorBuilder(requestor.crypto)
-      .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!] })
+      .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responderHelper.generator.crypto.builder.did!] })
       .build();
-    let result = await validator.validate(<string>response.rawToken);
-    expect(result.result).toBeTruthy(result.detailedError);
+    let response = await validator.validate(<string>responderResponse.rawToken);
+    expect(response.result).toBeTruthy(response.detailedError);
   });
 
   it('should populate the model', () => {

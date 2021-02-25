@@ -24,6 +24,7 @@ describe('VerifiablePresentationStatusReceipt', () =>
       await verifiablePresentationStatusReceipt.validate();
     } catch (exception) {
       expect(exception.message).toEqual('The status receipt is missing receipt');
+      expect(exception.code).toEqual('VCSDKVPSC01');
     }
     let validator = verifiablePresentationStatusReceipt.didValidation;
     expect(validator.constructor.name).toEqual('DidValidation');
@@ -35,19 +36,19 @@ describe('VerifiablePresentationStatusReceipt', () =>
 
     verifiablePresentationStatusReceipt = new VerifiablePresentationStatusReceipt({receipt: [{}]}, validatorBuilder, validationOptions, expected);
     verifiablePresentationStatusReceipt.didValidation = validator;
-    let result = await verifiablePresentationStatusReceipt.validate();
-    expect(result.result).toBeFalsy(result.detailedError);    
+    let response = await verifiablePresentationStatusReceipt.validate();
+    expect(response.result).toBeFalsy(response.detailedError);    
 
     validatorSpy.and.callFake(() => {
       return <any> {result: true, payloadObject: {aud: ''}};
     });
-    result = await verifiablePresentationStatusReceipt.validate();
-    expect(result.result).toBeFalsy(result.detailedError);    
+    response = await verifiablePresentationStatusReceipt.validate();
+    expect(response.result).toBeFalsy(response.detailedError);    
 
     validatorSpy.and.callFake(() => {
       return <any> {result: true, payloadObject: {aud: 'didAudience', issuer: ''}};
     });
-    result = await verifiablePresentationStatusReceipt.validate();
-    expect(result.result).toBeFalsy(result.detailedError);    
+    response = await verifiablePresentationStatusReceipt.validate();
+    expect(response.result).toBeFalsy(response.detailedError);    
   });
 });

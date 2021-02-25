@@ -12,6 +12,8 @@ import IValidationResult from './IValidationResult';
 import { KeyStoreOptions } from 'verifiablecredentials-crypto-sdk-typescript';
 import { VerifiablePresentationValidationResponse } from '../input_validation/VerifiablePresentationValidationResponse';
 import { v4 as uuid } from 'uuid';
+import ErrorHelpers from '../error_handling/ErrorHelpers';
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKVtor', error);
 
 /**
  * Class model the token validator
@@ -62,6 +64,8 @@ export default class Validator {
         return {
           status: 400,
           detailedError: exception.message,
+          code: errorCode(8),
+          innerError: exception,
           result: false
         }
       }
@@ -71,6 +75,7 @@ export default class Validator {
       return {
         result: false,
         status: 400,
+        code: errorCode(1),
         detailedError: 'Wrong token type. Expected string or ClaimToken'
       }
     }
@@ -80,9 +85,11 @@ export default class Validator {
     do {
       try {
         claimToken = Validator.getClaimToken(queueItem!);
-      } catch (error) {
+      } catch (exception) {
         return {
-          detailedError: error.message,
+          detailedError: exception.message,
+          code: errorCode(9),
+          innerError: exception,
           status: 400,
           result: false
         };
@@ -92,6 +99,7 @@ export default class Validator {
       if (!validator) {
         return {
           detailedError: `${claimToken.type} does not has a TokenValidator`,
+          code: errorCode(2),
           status: 500,
           result: false
         };
@@ -134,6 +142,7 @@ export default class Validator {
         default:
           return {
             detailedError: `${claimToken.type} is not supported`,
+            code: errorCode(3),
             status: 400,
             result: false
           };
@@ -183,7 +192,8 @@ export default class Validator {
         if (!presentedVc) {
           return {
             detailedError: `Verifiable credential '${vc}' is missing from the input request`,
-            status: 403,
+            code: errorCode(4),
+            status: 401,
             result: false
           };
         }
@@ -195,8 +205,9 @@ export default class Validator {
     if (requiredidTokens && (Object.keys(requiredidTokens).length !== 0 || requiredidTokens.length > 0)) {
       if (!validationResult.idTokens) {
         return {
+          code: errorCode(5),
           detailedError: `The id token is missing from the input request`,
-          status: 403,
+          status: 401,
           result: false
         };
       }
@@ -295,6 +306,7 @@ export default class Validator {
             return {
               result: false,
               status: 403,
+              code: errorCode(6),
               detailedError: `status check could not fetch response from ${statusUrl} with status ${response.status}. Message ${JSON.stringify(await response.json())}`
             };
           }
@@ -309,6 +321,7 @@ export default class Validator {
             validationResponse = {
               result: false,
               status: 403,
+              code: errorCode(7),
               detailedError: receipts.detailedError
             };
             break;

@@ -3,7 +3,10 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import base64url from 'base64url';
-const bs58 = require('bs58')
+import ErrorHelpers from '../error_handling/ErrorHelpers';
+import ValidationError from '../error_handling/ValidationError';
+const bs58 = require('bs58');
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKLDCS', error);
 
 /**
  * Class to model the Linked Data crypto suites public keys
@@ -17,7 +20,7 @@ export default class LinkedDataCryptoSuitePublicKey {
     WorkEd25519VerificationKey2020: (rawPublicKey: any): object => {
       let publicKey = LinkedDataCryptoSuitePublicKey.parsePublicKey(rawPublicKey);
       if (!publicKey) {
-        throw new Error(`${JSON.stringify(rawPublicKey)} public key type is not supported.`);
+        throw new ValidationError(`${JSON.stringify(rawPublicKey)} public key type is not supported.`, errorCode(1));
       }
 
       if (typeof publicKey === 'string') {
@@ -35,7 +38,7 @@ export default class LinkedDataCryptoSuitePublicKey {
     Ed25519VerificationKey2018: (rawPublicKey: any): object => {
       let publicKey = LinkedDataCryptoSuitePublicKey.parsePublicKey(rawPublicKey);
       if (!publicKey) {
-        throw new Error(`${JSON.stringify(rawPublicKey)} public key type is not supported.`);
+        throw new ValidationError(`${JSON.stringify(rawPublicKey)} public key type is not supported.`, errorCode(3));
       }
 
       if (typeof publicKey === 'string') {
@@ -53,11 +56,11 @@ export default class LinkedDataCryptoSuitePublicKey {
     Secp256k1VerificationKey2018: (rawPublicKey: any): object => {
       let publicKey = LinkedDataCryptoSuitePublicKey.parsePublicKey(rawPublicKey);
       if (!publicKey) {
-        throw new Error(`${JSON.stringify(rawPublicKey)} public key type is not supported.`);
+        throw new ValidationError(`${JSON.stringify(rawPublicKey)} public key type is not supported.`, errorCode(5));
       }
 
       if (typeof publicKey === 'string') {
-        throw new Error(`${JSON.stringify(rawPublicKey)} public key type is not supported.`);
+        throw new ValidationError(`${JSON.stringify(rawPublicKey)} public key type is not supported.`, errorCode(4));
       }
 
       return publicKey;
@@ -65,11 +68,11 @@ export default class LinkedDataCryptoSuitePublicKey {
     EcdsaSecp256k1VerificationKey2019: (rawPublicKey: any): object => {
       let publicKey = LinkedDataCryptoSuitePublicKey.parsePublicKey(rawPublicKey);
       if (!publicKey) {
-        throw new Error(`${JSON.stringify(rawPublicKey)} public key type is not supported.`);
+        throw new ValidationError(`${JSON.stringify(rawPublicKey)} public key type is not supported.`, errorCode(7));
       }
 
       if (typeof publicKey === 'string') {
-        throw new Error(`${JSON.stringify(rawPublicKey)} public key type is not supported.`);
+        throw new ValidationError(`${JSON.stringify(rawPublicKey)} public key type is not supported.`, errorCode(6));
       }
 
       return publicKey;
@@ -77,11 +80,11 @@ export default class LinkedDataCryptoSuitePublicKey {
     RsaVerificationKey2018: (rawPublicKey: any): object => {
       let publicKey = LinkedDataCryptoSuitePublicKey.parsePublicKey(rawPublicKey);
       if (!publicKey) {
-        throw new Error(`${JSON.stringify(rawPublicKey)} public key type is not supported.`);
+        throw new ValidationError(`${JSON.stringify(rawPublicKey)} public key type is not supported.`, errorCode(9));
       }
 
       if (typeof publicKey === 'string') {
-        throw new Error(`${JSON.stringify(rawPublicKey)} public key type is not supported.`);
+        throw new ValidationError(`${JSON.stringify(rawPublicKey)} public key type is not supported.`, errorCode(8));
       }
 
       return publicKey;
@@ -95,17 +98,17 @@ export default class LinkedDataCryptoSuitePublicKey {
    */
   public static getPublicKey(rawPublicKey: any): any {
     if (!rawPublicKey) {
-      throw new Error(`The passed in public key is not defined`);
+      throw new ValidationError(`The passed in public key is not defined`, errorCode(10));
     }
 
     const suiteType = rawPublicKey.type;
     if (!suiteType) {
-      throw new Error(`The passed in public key has no type. ${JSON.stringify(rawPublicKey)}`);
+      throw new ValidationError(`The passed in public key has no type. ${JSON.stringify(rawPublicKey)}`, errorCode(11));
     }
 
     const suite = LinkedDataCryptoSuitePublicKey.suites[suiteType];
     if (!suite) {
-      throw new Error(`The suite with type: '${suiteType}' is not supported.`);
+      throw new ValidationError(`The suite with type: '${suiteType}' is not supported.`, errorCode(12));
     }
 
     return suite(rawPublicKey);
@@ -113,7 +116,7 @@ export default class LinkedDataCryptoSuitePublicKey {
 
   public static parsePublicKey(rawPublicKey: any): any {
     if (!rawPublicKey) {
-      throw new Error('Pass in the public key. Undefined.');
+      throw new ValidationError(`Pass in the public key. Undefined.`, errorCode(13));
     }
 
     let publicKey: any;
@@ -125,7 +128,7 @@ export default class LinkedDataCryptoSuitePublicKey {
       publicKey = base64url.encode(Buffer.from((rawPublicKey.publicKeyHex), 'hex'));
     }
     if (!publicKey) {
-      throw new Error(`${JSON.stringify(rawPublicKey)} public key type is not supported.`);
+      throw new ValidationError(`${JSON.stringify(rawPublicKey)} public key type is not supported.`, errorCode(2));
     }
 
     return publicKey;

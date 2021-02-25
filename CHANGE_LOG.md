@@ -1,10 +1,21 @@
+# version 0.12.1-preview.2
+## Add error codes to the validation response
+**Type of change:** engineering    
+**Customer impact:** low
+The validation response return code, a string which contains a unique value for the error.
+The error code is fixed in unit tests
+
+    console.log(validationResponse.code); // for seeing the code
+    console.log(validationResponse.status); // for seeing the suggested status to return to client
+    console.log(validationResponse.detailedError); // for seeing the detailed error message
+
+
 # version 0.12.1-preview.1
 ## Pass fetchRequest to resolver to enable customization of fetch for resolver
 **Type of change:** bug fix
 **Customer impact:** low
 
 
-# version 0.12.1-preview.0
 ## Allow IValidationOptions to be specified via ValidatorBuilder
 **Type of change:** feature    
 **Customer impact:** low
@@ -17,10 +28,6 @@ Add validationOptions property to ValidatorBuilder
 
     // Retrieve the validator options from the builder state
     const options = validationBuilder.validationOptions;  
-
-## Pass fetchRequest to resolver to enable customization of fetch for resolver
-**Type of change:** bug fix
-**Customer impact:** low
 
 
 # version 0.11.1

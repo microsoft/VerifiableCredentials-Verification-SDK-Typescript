@@ -35,6 +35,7 @@ describe('DidValidation', () =>
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The signature on the payload in the siopIssuance is invalid');
+    expect(response.code).toEqual('VCSDKVaHe27');
 
     // invalid format
     let tokenParts =  (<string>request.rawToken).split('.');
@@ -42,6 +43,7 @@ describe('DidValidation', () =>
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(400);
     expect(response.detailedError).toEqual('The siopIssuance could not be deserialized');
+    expect(response.code).toEqual('VCSDKVaHe01');
 
     // Token has no kid
     let header: any = {
@@ -53,6 +55,7 @@ describe('DidValidation', () =>
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The protected header in the siopIssuance does not contain the kid');
+    expect(response.code).toEqual('VCSDKVaHe05');
 
     // The kid has no did
     header = {
@@ -65,6 +68,7 @@ describe('DidValidation', () =>
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The kid in the protected header does not contain the DID. Required format for kid is <did>#kid');
+    expect(response.code).toEqual('VCSDKDIDV01');
 
     // failing token time
     options.checkTimeValidityOnTokenDelegate= () => {
@@ -89,6 +93,7 @@ describe('DidValidation', () =>
     response = await validator.validate(<string>request.rawToken);
     expect(response.result).toBeFalsy(response.detailedError);
     expect(response.detailedError).toEqual('The kid does not contain the DID');
+    expect(response.code).toEqual('VCSDKDIDV02');
 
     // failing DID resolve
     setup.fetchMock.reset();

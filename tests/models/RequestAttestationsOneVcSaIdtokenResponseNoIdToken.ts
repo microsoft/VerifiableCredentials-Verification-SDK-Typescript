@@ -8,7 +8,7 @@ import RequestAttestationsOneVcSaIdtokenResponseOk from './RequestAttestationsOn
 
 export default class RequestAttestationsOneVcSaIdtokenResponseNoIdToken extends RequestAttestationsOneVcSaIdtokenResponseOk implements ITestModel {
 
-    public responseOperations = [
+    public preSiopResponseOperations = [
         {
         path: '$.attestations.idTokens',
         operation: () => undefined

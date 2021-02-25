@@ -7,6 +7,8 @@ import { IdTokenValidationResponse } from './IdTokenValidationResponse';
 import { IValidationOptions } from '../options/IValidationOptions';
 import ClaimToken, { TokenType } from '../verifiable_credential/ClaimToken';
 import { BaseIdTokenValidation } from './BaseIdTokenValidation';
+import ErrorHelpers from '../error_handling/ErrorHelpers';
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKIDVa', error);
 
 /**
  * Class for id token validation for the Verifiable Credential attestation scenario
@@ -32,6 +34,7 @@ export class IdTokenValidation extends BaseIdTokenValidation {
       return {
         result: false,
         status: 500,
+        code: errorCode(1),
         detailedError: `Expected should have configuration issuers set for idToken`
       };
     }
@@ -44,6 +47,7 @@ export class IdTokenValidation extends BaseIdTokenValidation {
         return {
           result: false,
           status: 500,
+          code: errorCode(2),
           detailedError: `Expected should have configuration issuers set for idToken. Empty array presented.`
         };
       }
@@ -53,6 +57,7 @@ export class IdTokenValidation extends BaseIdTokenValidation {
         return {
           result: false,
           status: 500,
+          code: errorCode(3),
           detailedError: `The siopContract needs to be specified to validate the idTokens.`
         };
       }
@@ -62,6 +67,7 @@ export class IdTokenValidation extends BaseIdTokenValidation {
         return {
           result: false,
           status: 500,
+          code: errorCode(4),
           detailedError: `Expected should have configuration issuers set for idToken. Missing configuration for '${this.siopContract}'.`
         };
       }

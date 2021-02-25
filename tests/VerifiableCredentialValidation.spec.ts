@@ -46,21 +46,25 @@ describe('VerifiableCredentialValidation', () => {
     clonedExpected = clone(expected);
     response = <VerifiableCredentialValidationResponse>VerifiableCredentialValidation.getIssuersFromExpected(clonedExpected, <any>undefined);
     expect(response.detailedError).toEqual('The credentialType needs to be specified to validate the verifiableCredential.');
+    expect(response.code).toEqual('VCSDKVCVA15');
 
     clonedExpected = clone(expected);
     clonedExpected.contractIssuers = [];
     response = <VerifiableCredentialValidationResponse>VerifiableCredentialValidation.getIssuersFromExpected(clonedExpected, 'IdentityCard');
     expect(response.detailedError).toEqual('Expected should have contractIssuers set for verifiableCredential. Empty array presented.');
+    expect(response.code).toEqual('VCSDKVCVA14');
 
     delete clonedExpected.contractIssuers;
     response = <VerifiableCredentialValidationResponse>VerifiableCredentialValidation.getIssuersFromExpected(clonedExpected, 'IdentityCard');
     expect(response.detailedError).toEqual('Expected should have contractIssuers set for verifyableCredential');
+    expect(response.code).toEqual('VCSDKVCVA13');
 
     // Bad VC signature
     response = await validator.validate(siop.vc.rawToken + 'a', setup.defaultUserDid);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredential is invalid');
+    expect(response.code).toEqual('VCSDKVaHe27');
 
     // Missing vc
     let payload: any = {
@@ -71,6 +75,7 @@ describe('VerifiableCredentialValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`The verifiable credential vc property does not exist`);
+    expect(response.code).toEqual('VCSDKVCVA04');
 
     // Missing context
     payload = {
@@ -84,6 +89,7 @@ describe('VerifiableCredentialValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`The verifiable credential vc property does not contain @context`);
+    expect(response.code).toEqual('VCSDKVCVA05');
 
     // The verifiable credential vc property does not contain https://www.w3.org/2018/credentials/v1
     payload = {
@@ -100,6 +106,7 @@ describe('VerifiableCredentialValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`The verifiable credential context first element should be https://www.w3.org/2018/credentials/v1`);
+    expect(response.code).toEqual('VCSDKVCVA06');
     
     // Missing type
     payload = {
@@ -115,6 +122,7 @@ describe('VerifiableCredentialValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`The vc property does not contain type`);
+    expect(response.code).toEqual('VCSDKVCVA07');
 
     // The verifiable credential vc property does not contain https://www.w3.org/2018/credentials/v1
     payload = {
@@ -132,7 +140,8 @@ describe('VerifiableCredentialValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`The verifiable credential type property should have two elements`);
-    
+    expect(response.code).toEqual('VCSDKVCVA07');
+
     payload = {
       iss: 'did:test:issuer',
       sub: 'test',
@@ -147,6 +156,7 @@ describe('VerifiableCredentialValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`The verifiable credential type first element should be VerifiableCredential`);
+    expect(response.code).toEqual('VCSDKVCVA07');
 
     payload = {
       iss: 'did:test:issuer',
@@ -162,6 +172,7 @@ describe('VerifiableCredentialValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`The verifiable credential with type 'yyy' does not has a credentialSubject property`);
+    expect(response.code).toEqual('VCSDKVCVA08');
     
     // Missing sub
     payload = {
@@ -178,6 +189,7 @@ describe('VerifiableCredentialValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Missing sub property in verifiableCredential. Expected 'did:test:user'`);
+    expect(response.code).toEqual('VCSDKVCVA09');
 
     // bad sub
     payload = {
@@ -196,5 +208,6 @@ describe('VerifiableCredentialValidation', () => {
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Wrong sub property in verifiableCredential. Expected 'did:test:user'`);
+    expect(response.code).toEqual('VCSDKVCVA10');
  });
 });

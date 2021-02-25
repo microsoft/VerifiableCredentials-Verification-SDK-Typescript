@@ -57,7 +57,8 @@ describe('SiopTokenValidator', () => {
     queue.enqueueToken('siop', siopRequest);
     response = await validator.validate(queue, queue.getNextToken()!);
     expect(response.result).toBeFalsy();
-    expect(response.detailedError).toEqual(`Expect state 'state' does not match 'xxx'.`);
+    expect(response.detailedError).toEqual(`Expected state 'state' does not match 'xxx'.`);
+    expect(response.code).toEqual('VCSDKSTVa02');
 
     // wrong state in response
     payload = {
@@ -70,8 +71,8 @@ describe('SiopTokenValidator', () => {
     queue.enqueueToken('siop', siopRequest);
     response = await validator.validate(queue, queue.getNextToken()!);
     expect(response.result).toBeFalsy();
-    expect(response.detailedError).toEqual(`Expect nonce 'nonce' does not match 'xxx'.`);
-
+    expect(response.detailedError).toEqual(`Expected nonce 'nonce' does not match 'xxx'.`);
+    expect(response.code).toEqual('VCSDKSTVa01');
   });
 
 });

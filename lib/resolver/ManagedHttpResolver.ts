@@ -1,6 +1,9 @@
-import { DidDocument, IDidResolver, IDidResolveResult } from '../index';
+import ErrorHelpers from '../error_handling/ErrorHelpers';
+import { DidDocument, IDidResolver, IDidResolveResult, ValidationError } from '../index';
 import FetchRequest from '../tracing/FetchRequest';
 import IFetchRequest from '../tracing/IFetchRequest';
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKMARE', error);
+
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
 
@@ -51,6 +54,7 @@ export default class ManagedHttpResolver implements IDidResolver {
         metadata: didDocument.resolverMetadata
       } as IDidResolveResult;
     }
-    return Promise.reject(new Error(`Could not resolve ${query}`));
+    
+    return Promise.reject(new ValidationError(`Could not resolve ${query}`, errorCode(1)));
   }
 }

@@ -13,6 +13,9 @@ import { IdTokenValidationResponse } from './IdTokenValidationResponse';
 import { IValidationResponse } from './IValidationResponse';
 import { IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSiop, IExpectedAudience } from '../options/IExpected';
 import LinkedDataCryptoSuitePublicKey from './LinkedDataCryptoSuitePublicKey';
+import ErrorHelpers from '../error_handling/ErrorHelpers';
+import ValidationError from '../error_handling/ValidationError';
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKVaHe', error);
 
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
@@ -65,7 +68,9 @@ export class ValidationHelpers {
       } catch (exception) {
         return {
           result: false,
+          code: errorCode(1),
           detailedError: `The ${(self as ValidationOptions).tokenType} could not be deserialized`,
+          innerError: exception,
           status: 400
         };
       }
@@ -74,6 +79,7 @@ export class ValidationHelpers {
     if (!validationResponse.didSignature) {
       return {
         result: false,
+        code: errorCode(2),
         detailedError: `The signature in the ${(self as ValidationOptions).tokenType} has an invalid format`,
         status: 403
       };
@@ -84,6 +90,7 @@ export class ValidationHelpers {
       if (!payload) {
         return {
           result: false,
+          code: errorCode(3),
           detailedError: `The payload in the ${(self as ValidationOptions).tokenType} is undefined`,
           status: 403
         };
@@ -95,6 +102,8 @@ export class ValidationHelpers {
         console.error(err);
         return {
           result: false,
+          code: errorCode(4),
+          innerError: err,
           detailedError: `The payload in the ${(self as ValidationOptions).tokenType} is no valid JSON`,
           status: 400
         };
@@ -104,6 +113,7 @@ export class ValidationHelpers {
       if (!validationResponse.didKid) {
         return {
           result: false,
+          code: errorCode(5),
           detailedError: `The protected header in the ${(self as ValidationOptions).tokenType} does not contain the kid`,
           status: 403
         };
@@ -124,6 +134,7 @@ export class ValidationHelpers {
       if (!proof) {
         return {
           result: false,
+          code: errorCode(6),
           detailedError: `The proof is not available in the json ld payload`,
           status: 403
         };
@@ -131,6 +142,7 @@ export class ValidationHelpers {
       if (!proof.verificationMethod) {
         return {
           result: false,
+          code: errorCode(7),
           detailedError: `The proof does not contain the verificationMethod in the json ld payload`,
           status: 403
         };
@@ -158,6 +170,7 @@ export class ValidationHelpers {
       if (!resolveResult || !resolveResult.didDocument) {
         return validationResponse = {
           result: false,
+          code: errorCode(8),
           detailedError: `Could not retrieve DID document '${validationResponse.did}'`,
           status: 403
         }
@@ -168,6 +181,8 @@ export class ValidationHelpers {
       console.error(err);
       return {
         result: false,
+        code: errorCode(9),
+        innerError: err,
         detailedError: `Could not resolve DID '${validationResponse.did}'`,
         status: 403
       };
@@ -177,6 +192,7 @@ export class ValidationHelpers {
     if (!validationResponse.didKid) {
       return {
         result: false,
+        code: errorCode(10),
         detailedError: `The kid is not referenced in the request`,
         status: 403
       };
@@ -188,7 +204,9 @@ export class ValidationHelpers {
     } catch (exception) {
       return {
         result: false,
+        code: errorCode(11),
         detailedError: exception.message,
+        innerError: exception,
         status: 403
       };
     }
@@ -220,7 +238,7 @@ export class ValidationHelpers {
 
     //  use jwk in request if did is not registered
     if (!signingKey) {
-      throw new Error(`The did '${did}' does not have a public key with kid '${kid}'. Public key : '${publicKey ? JSON.stringify(publicKey) : 'undefined'}'`);
+      throw new ValidationError(`The did '${did}' does not have a public key with kid '${kid}'. Public key : '${publicKey ? JSON.stringify(publicKey) : 'undefined'}'`, errorCode(39));
     }
 
     return signingKey;
@@ -247,6 +265,7 @@ export class ValidationHelpers {
       if (current >= exp) {
         return {
           result: false,
+          code: errorCode(12),
           detailedError: `The presented ${(self as ValidationOptions).tokenType} is expired ${exp}, now ${current as number}`,
           status: 403
         };
@@ -262,6 +281,7 @@ export class ValidationHelpers {
       if (current < nbf) {
         return {
           result: false,
+          code: errorCode(40),
           detailedError: `The presented ${(self as ValidationOptions).tokenType} is not yet valid ${nbf}`,
           status: 403
         };
@@ -284,6 +304,7 @@ export class ValidationHelpers {
     if (!issuer) {
       return {
         result: false,
+        code: errorCode(13),
         detailedError: `The issuer in configuration was not found`,
         status: 403
       };
@@ -292,6 +313,7 @@ export class ValidationHelpers {
     if (!validationResponse.issuer) {
       return {
         result: false,
+        code: errorCode(14),
         detailedError: `Missing iss property in idToken. Expected '${JSON.stringify(issuer)}'`,
         status: 403
       };
@@ -300,6 +322,7 @@ export class ValidationHelpers {
     if (issuer !== validationResponse.issuer) {
       return {
         result: false,
+        code: errorCode(15),
         detailedError: `The issuer in configuration '${issuer}' does not correspond with the issuer in the payload ${validationResponse.issuer}`,
         status: 403
       };
@@ -310,6 +333,7 @@ export class ValidationHelpers {
       return {
         result: false,
         status: 401,
+        code: errorCode(16),
         detailedError: `The audience ${validationResponse.payloadObject.aud} is invalid`
       };
     }
@@ -331,6 +355,7 @@ export class ValidationHelpers {
     if (!validationResponse.issuer) {
       return {
         result: false,
+        code: errorCode(17),
         detailedError: `Missing iss property in verifiablePresentation. Expected '${siopDid}'`,
         status: 403
       };
@@ -339,6 +364,7 @@ export class ValidationHelpers {
     if (siopDid && validationResponse.issuer !== siopDid) {
       return <IValidationResponse>{
         result: false,
+        code: errorCode(18),
         detailedError: `Wrong iss property in verifiablePresentation. Expected '${siopDid}'`,
         status: 403
       };
@@ -349,6 +375,7 @@ export class ValidationHelpers {
       if (!validationResponse.payloadObject.aud) {
         return {
           result: false,
+          code: errorCode(19),
           detailedError: `Missing aud property in verifiablePresentation. Expected '${expected.didAudience}'`,
           status: 403
         };
@@ -357,6 +384,7 @@ export class ValidationHelpers {
       if (validationResponse.payloadObject.aud !== expected.didAudience) {
         return {
           result: false,
+          code: errorCode(20),
           detailedError: `Wrong aud property in verifiablePresentation. Expected '${expected.didAudience}'. Found '${validationResponse.payloadObject.aud}'`,
           status: 403
         };
@@ -380,6 +408,7 @@ export class ValidationHelpers {
     if (!validationResponse.payloadObject.sub) {
       return {
         result: false,
+        code: errorCode(21),
         detailedError: `Missing sub property in verifiableCredential. Expected '${siopDid}'`,
         status: 403
       };
@@ -389,6 +418,7 @@ export class ValidationHelpers {
     if (siopDid && validationResponse.payloadObject.sub !== siopDid) {
       return {
         result: false,
+        code: errorCode(22),
         detailedError: `Wrong sub property in verifiableCredential. Expected '${siopDid}'`,
         status: 403
       };
@@ -421,6 +451,7 @@ export class ValidationHelpers {
     if (!validationResponse.issuer) {
       return validationResponse = {
         result: false,
+        code: errorCode(23),
         detailedError: `Missing iss property in siop. Expected '${VerifiableCredentialConstants.TOKEN_SI_ISS}'`,
         status: 403
       };
@@ -429,6 +460,7 @@ export class ValidationHelpers {
     if (validationResponse.issuer !== VerifiableCredentialConstants.TOKEN_SI_ISS) {
       return validationResponse = {
         result: false,
+        code: errorCode(24),
         detailedError: `Wrong iss property in siop. Expected '${VerifiableCredentialConstants.TOKEN_SI_ISS}'`,
         status: 403
       };
@@ -438,6 +470,7 @@ export class ValidationHelpers {
     if (!validationResponse.payloadObject.aud) {
       return validationResponse = {
         result: false,
+        code: errorCode(25),
         detailedError: `Missing aud property in siop`,
         status: 403
       };
@@ -447,6 +480,7 @@ export class ValidationHelpers {
       if (validationResponse.payloadObject.aud !== expected.audience) {
         return validationResponse = {
           result: false,
+          code: errorCode(26),
           detailedError: `Wrong aud property in siop. Expected '${expected.audience}'`,
           status: 403
         };
@@ -470,6 +504,7 @@ export class ValidationHelpers {
       if (!validation) {
         return validationResponse = {
           result: false,
+          code: errorCode(27),
           detailedError: `The signature on the payload in the ${(self as ValidationOptions).tokenType} is invalid`,
           status: 403
         };
@@ -478,7 +513,9 @@ export class ValidationHelpers {
       console.error(err);
       return validationResponse = {
         result: false,
+        code: errorCode(28),
         detailedError: `Failed to validate signature`,
+        innerError: err,
         status: 403
       };
     }
@@ -508,6 +545,7 @@ export class ValidationHelpers {
           return {
             result: false,
             status: 403,
+            code: errorCode(29),
             detailedError: `Could not fetch token configuration needed to validate token`
           };
         }
@@ -519,6 +557,7 @@ export class ValidationHelpers {
           return {
             result: false,
             status: 403,
+            code: errorCode(30),
             detailedError: `No reference to jwks found in token configuration`
           };
         }
@@ -533,6 +572,7 @@ export class ValidationHelpers {
           return {
             result: false,
             status: 403,
+            code: errorCode(31),
             detailedError: `Could not fetch keys needed to validate token on '${keysUrl}'`
           };
         }
@@ -543,6 +583,7 @@ export class ValidationHelpers {
           return {
             result: false,
             status: 403,
+            code: errorCode(32),
             detailedError: `No or bad jwks keys found in token configuration`
           };
         }
@@ -553,6 +594,7 @@ export class ValidationHelpers {
           return {
             result: false,
             status: 403,
+            code: errorCode(33),
             detailedError: `No issuer found in token configuration`
           };
         }
@@ -562,6 +604,8 @@ export class ValidationHelpers {
       return {
         result: false,
         status: 403,
+        innerError: err,
+        code: errorCode(34),
         detailedError: `Could not fetch token configuration`
       };
     }
@@ -619,6 +663,7 @@ export class ValidationHelpers {
           return {
             result: false,
             status: 403,
+            code: errorCode(35),
             detailedError: `Could not validate token signature`
           };
         }
@@ -634,6 +679,8 @@ export class ValidationHelpers {
       return {
         result: false,
         status: 403,
+        code: errorCode(36),
+        innerError: err,
         detailedError: `Could not validate signature on id token`
       };
     }
@@ -655,6 +702,7 @@ export class ValidationHelpers {
       if (!validation) {
         return {
           result: false,
+          code: errorCode(37),
           detailedError: `The presented ${(self as ValidationOptions).tokenType} is has an invalid signature`,
           status: 403
         };
@@ -667,7 +715,9 @@ export class ValidationHelpers {
       console.error(err);
       return {
         result: false,
+        code: errorCode(38),
         detailedError: `Failed to verify token signature`,
+        innerError: err,
         status: 403
       };
     }

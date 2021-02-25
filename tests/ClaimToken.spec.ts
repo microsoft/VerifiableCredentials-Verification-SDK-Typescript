@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import ClaimToken, { TokenType } from '../lib/verifiable_credential/ClaimToken';
 import base64url from 'base64url';
+import { ValidationError } from '../lib';
 
  describe('ClaimToken', () => {
   it ('should create a ClaimToken', () => {
@@ -39,7 +40,7 @@ import base64url from 'base64url';
     expect(claimToken.rawToken).toEqual('1');
 
     // negative cases
-    expect(() => new ClaimToken(<any>'', token, configuration)).toThrowError(`Type '' is not supported`);
-    expect(() => new ClaimToken(TokenType.siopIssuance, 'token')).toThrowError('Cannot decode. Invalid input token');
+    expect(() => new ClaimToken(<any>'', token, configuration)).toThrowMatching((exception) => exception.message === `Type '' is not supported` && exception.code === 'VCSDKCLTO01');
+    expect(() => new ClaimToken(TokenType.siopIssuance, 'token')).toThrowMatching((exception) => exception.message === `Cannot decode. Invalid input token` && exception.code === 'VCSDKCLTO06');
   });
  });

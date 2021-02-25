@@ -3,13 +3,15 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TokenType, IExpectedIdToken, ITokenValidator, ClaimToken } from '../index';
+import { TokenType, IExpectedIdToken, ITokenValidator, ClaimToken, ValidationError } from '../index';
 import { IValidationResponse } from '../input_validation/IValidationResponse';
 import ValidationOptions from '../options/ValidationOptions';
 import IValidatorOptions from '../options/IValidatorOptions';
 import { IdTokenValidation } from '../input_validation/IdTokenValidation';
 import ValidationQueue from '../input_validation/ValidationQueue';
 import ValidationQueueItem from '../input_validation/ValidationQueueItem';
+import ErrorHelpers from '../error_handling/ErrorHelpers';
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKIDTV', error);
 
 /**
  * Class to validate a token
@@ -45,7 +47,7 @@ export default class IdTokenTokenValidator implements ITokenValidator {
    * @param queue with tokens to validate
    */
   public getTokens(_validationResponse: IValidationResponse, _queue: ValidationQueue ): IValidationResponse {
-    throw new Error('Not implemented');
+    throw new ValidationError(`Not implemented`, errorCode(1));
   }
 
   /**

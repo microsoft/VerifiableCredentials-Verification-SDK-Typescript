@@ -1,5 +1,5 @@
 import IRequestorAttestation from '../lib/api_oidc_request/IRequestorAttestation';
-import { LongFormDid, KeyReference, KeyUse, Crypto, IssuanceAttestationsModel, SelfIssuedAttestationModel, VerifiablePresentationAttestationModel, TrustedIssuerModel, InputClaimModel, IdTokenAttestationModel, CryptoBuilder, RequestorBuilder, IResponse, Requestor } from '../lib/index';
+import { LongFormDid, KeyReference, KeyUse, Crypto, IssuanceAttestationsModel, SelfIssuedAttestationModel, VerifiablePresentationAttestationModel, TrustedIssuerModel, InputClaimModel, IdTokenAttestationModel, CryptoBuilder, RequestorBuilder, IResponse, Requestor, ValidatorBuilder } from '../lib/index';
 
 describe('RequestorBuilder', () => {
   const getAttestations = () => {
@@ -98,6 +98,12 @@ describe('RequestorBuilder', () => {
     builder.useOidcRequestExpiry(60 * 60);
     expect(builder.OidcRequestExpiry).toEqual(60 * 60);
 
+    // Set requestor in validator
+    const requestor = builder.build();
+    const validator = new ValidatorBuilder(crypto)
+      .useRequestor(requestor)
+      .build();
+    expect(validator.builder.requestor).toEqual(requestor);
   });
 
   it('should sign the request', async () => {

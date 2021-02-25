@@ -3,8 +3,10 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import ErrorHelpers from '../error_handling/ErrorHelpers';
 import { ClaimToken } from '../index';
 import { IValidationResponse } from './IValidationResponse';
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKQuIt', error);
 
 export enum ValidationStatus {
   /**
@@ -33,6 +35,7 @@ export default class ValidationQueueItem {
     this._validationResult = {
       result: false,
       status: 500,
+      code: errorCode(1),
       detailedError: 'Token not validated'
     };
   }

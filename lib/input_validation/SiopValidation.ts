@@ -7,6 +7,8 @@ import { ISiopValidation, ISiopValidationResponse } from './SiopValidationRespon
 import { DidValidation } from './DidValidation';
 import { IValidationOptions } from '../options/IValidationOptions';
 import { IExpectedSiop } from '../index';
+import ErrorHelpers from '../error_handling/ErrorHelpers';
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKSIVa', error);
 
 /**
  * Class for siop validation
@@ -55,6 +57,15 @@ export class SiopValidation implements ISiopValidation {
       return validationResponse;
     }
     
+    if (!validationResponse.tokenId) {
+      return {
+        result: false,
+        code: errorCode(1),
+        detailedError: `The SIOP token identifier (jti/id) is missing`,
+        status: 400
+      };    
+    }
+
     return validationResponse;
   }
 }

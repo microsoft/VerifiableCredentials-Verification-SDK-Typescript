@@ -2,7 +2,9 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import ErrorHelpers from '../error_handling/ErrorHelpers';
 import { IValidationResponse, IValidationOptions, TokenType, ValidatorBuilder, DidValidation, IExpectedStatusReceipt, ClaimToken } from '../index';
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKVPSR', error);
 
 export interface IVerifiablePresentationStatus {
   id: string;
@@ -54,6 +56,7 @@ export default class VerifiablePresentationStatusReceipt {
       return {
         result: false,
         status: 403,
+        code: errorCode(1),
         detailedError: 'The status receipt is missing receipt'
       }
     }
@@ -81,6 +84,7 @@ export default class VerifiablePresentationStatusReceipt {
         return {
           result: false,
           status: 403,
+          code: errorCode(2),
           detailedError: `The status receipt iss '${receiptResponse.issuer}' is wrong. Expected '${this.expected.didIssuer}'`
         }
       }
@@ -97,6 +101,7 @@ export default class VerifiablePresentationStatusReceipt {
         return {
           result: false,
           status: 403,
+          code: errorCode(3),
           detailedError: `The status receipt for jti '${jti}' failed with status ${this.verifiablePresentationStatus![jti].status}.`
         }
       }

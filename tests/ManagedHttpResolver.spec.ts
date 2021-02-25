@@ -51,7 +51,8 @@ const fetchMock = require('fetch-mock');
         await resolver.resolve('did');
         fail('exception on resolve was  not thrown');
        } catch (exception) {
-         expect(exception).toEqual(new Error('Could not resolve https://resolver/did'));
-       }
+        expect(exception.message).toEqual('Could not resolve https://resolver/did');
+        expect(exception.code).toEqual('VCSDKMARE01');
+      }
     });
   });
