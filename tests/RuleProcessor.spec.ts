@@ -410,7 +410,7 @@ describe('Rule processor', () => {
     }
   });
 
-  it('should process RequestTwoVcResponseRevoked', async () => {
+  fit('should process RequestTwoVcResponseRevoked', async () => {
     try {
       const model = new RequestTwoVcResponseRevoked();
       const requestor = new RequestorHelper(model);
