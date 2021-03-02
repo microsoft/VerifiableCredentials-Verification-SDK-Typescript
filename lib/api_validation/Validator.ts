@@ -322,10 +322,13 @@ export default class Validator {
 
           // Validate receipt
           const receipt = await response.json();
-          const validatorOption: IValidatorOptions = this.builder.validationOptions;
-          const options = new ValidationOptions(validatorOption, TokenType.siopPresentationExchange);
-          const receiptValidator = new VerifiablePresentationStatusReceipt(receipt, this.builder, options, <IExpectedStatusReceipt>{ didIssuer: vcIssuerDid, didAudience: this.builder.crypto.builder.did });
-          const receipts = await receiptValidator.validate();
+          const options = new ValidationOptions(this.builder.validationOptions, TokenType.siopPresentationExchange);
+          const receiptValidator = new VerifiablePresentationStatusReceipt(
+            this.builder, 
+            options, 
+            <IExpectedStatusReceipt>{ didIssuer: vcIssuerDid, didAudience: this.builder.crypto.builder.did });
+          console.log(`Validate receipt on ${statusUrl}`);
+          const receipts = await receiptValidator.validate(receipt);
           if (!receipts.result) {
             validationResponse = {
               result: false,

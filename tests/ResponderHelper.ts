@@ -65,7 +65,7 @@ export default class ResponderHelper {
     const presentations = (<ITestModel>this.responseDefinition).getPresentationsFromModel();
     if (presentations) {
       for (let presentation in presentations) {
-        const jti = uuidv4();
+        const jti = `jti:${presentation}`; //uuidv4();
         const vcs: ClaimToken = presentations[presentation];
 
         // Set status mock

@@ -17,38 +17,38 @@ describe('VerifiablePresentationStatusReceipt', () =>
       type: TokenType.verifiablePresentationStatus
     };
 
-    let verifiablePresentationStatusReceipt = new VerifiablePresentationStatusReceipt(receipts, validatorBuilder, validationOptions, expected);
+    let verifiablePresentationStatusReceipt = new VerifiablePresentationStatusReceipt(validatorBuilder, validationOptions, expected);
     expect(verifiablePresentationStatusReceipt.verifiablePresentationStatus).toBeUndefined();
 
     try {
-      await verifiablePresentationStatusReceipt.validate();
+      await verifiablePresentationStatusReceipt.validate(receipts);
     } catch (exception) {
       expect(exception.message).toEqual('The status receipt is missing receipt');
       expect(exception.code).toEqual('VCSDKVPSC01');
     }
     let validator = verifiablePresentationStatusReceipt.didValidation;
-    expect(validator.constructor.name).toEqual('DidValidation');
+    expect(validator!.constructor.name).toEqual('DidValidation');
 
     validator = new DidValidation(validationOptions, expected);
     let validatorSpy = spyOn(validator, "validate").and.callFake(() => {
       return <any> {result: false};
     });
 
-    verifiablePresentationStatusReceipt = new VerifiablePresentationStatusReceipt({receipt: [{}]}, validatorBuilder, validationOptions, expected);
+    verifiablePresentationStatusReceipt = new VerifiablePresentationStatusReceipt(validatorBuilder, validationOptions, expected);
     verifiablePresentationStatusReceipt.didValidation = validator;
-    let response = await verifiablePresentationStatusReceipt.validate();
+    let response = await verifiablePresentationStatusReceipt.validate({receipt: [{}]});
     expect(response.result).toBeFalsy(response.detailedError);    
 
     validatorSpy.and.callFake(() => {
       return <any> {result: true, payloadObject: {aud: ''}};
     });
-    response = await verifiablePresentationStatusReceipt.validate();
+    response = await verifiablePresentationStatusReceipt.validate({receipt: [{}]});
     expect(response.result).toBeFalsy(response.detailedError);    
 
     validatorSpy.and.callFake(() => {
       return <any> {result: true, payloadObject: {aud: 'didAudience', issuer: ''}};
     });
-    response = await verifiablePresentationStatusReceipt.validate();
+    response = await verifiablePresentationStatusReceipt.validate({receipt: [{}]});
     expect(response.result).toBeFalsy(response.detailedError);    
   });
 });

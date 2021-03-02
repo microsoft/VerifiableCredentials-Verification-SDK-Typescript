@@ -19,12 +19,10 @@ export interface IVerifiablePresentationStatus {
  */
 export default class VerifiablePresentationStatusReceipt {
 
-  constructor(public receipts: any, private validationBuilder: ValidatorBuilder, private options: IValidationOptions, private expected: IExpectedStatusReceipt) {
-    this._didValidation = new DidValidation(this.options, this.expected);
-  }
+  constructor(private validationBuilder: ValidatorBuilder, private options: IValidationOptions, private expected: IExpectedStatusReceipt) {}
 
   private _verifiablePresentationStatus: { [jti: string]: IVerifiablePresentationStatus } | undefined;
-  private _didValidation: DidValidation;
+  private _didValidation: DidValidation | undefined;
 
   /**
    * Gets the result of the status
@@ -36,23 +34,23 @@ export default class VerifiablePresentationStatusReceipt {
   /**
    * Gets the DID validator
    */
-  public get didValidation(): DidValidation {
+  public get didValidation(): DidValidation | undefined {
     return this._didValidation;
   }
 
   /**
    * Sets the DID validator
    */
-  public set didValidation(validator: DidValidation) {
+  public set didValidation(validator: DidValidation | undefined) {
     this._didValidation = validator;
   }
 
   /**
    * The status validator
    */
-  public async validate(): Promise<IValidationResponse> {
+  public async validate(receipts: any): Promise<IValidationResponse> {
     // create new validator for receipt
-    if (!this.receipts?.receipt) {
+    if (!receipts?.receipt) {
       return {
         result: false,
         status: 403,
@@ -63,9 +61,10 @@ export default class VerifiablePresentationStatusReceipt {
 
     // Check each entry in the receipt
     this._verifiablePresentationStatus = {};
-    for (let jti in this.receipts.receipt) {
-      const receipt = this.receipts.receipt[jti];
-      const receiptResponse = await this.didValidation.validate(receipt);
+    for (let jti in receipts.receipt) {
+      const receipt = receipts.receipt[jti];
+      let didValidation = this.didValidation || new DidValidation(this.options, this.expected);
+      const receiptResponse = await didValidation.validate(receipt);
       if (!receiptResponse.result) {
         return receiptResponse;
       }
