@@ -46,13 +46,12 @@ export class ValidationHelpers {
    * @returns validationResponse.issuer The issuer of the token
    */
   public async getTokenObject(validationResponse: IValidationResponse, token: string | object): Promise<IValidationResponse> {
-    const self: any = this;
     validationResponse.didSignature = undefined;
     // check for json ld proofs
     if (typeof token === 'object') {
       try {
         // instantiate IPayloadProtectionSigning
-        validationResponse.didSignature = await (self as ValidationOptions).validatorOptions.crypto.signingProtocol(JoseBuilder.JSONLDProofs).deserialize(JSON.stringify(token));
+        validationResponse.didSignature = await this.validatorOptions.crypto.signingProtocol(JoseBuilder.JSONLDProofs).deserialize(JSON.stringify(token));
         validationResponse.payloadProtectionProtocol = JoseBuilder.JSONLDProofs;
       } catch (exception) {
         console.error('Failing to decode json ld proof');
@@ -63,13 +62,13 @@ export class ValidationHelpers {
       // check for compact JWT tokens
       try {
         // instantiate IPayloadProtectionSigning
-        validationResponse.didSignature = await (self as ValidationOptions).validatorOptions.crypto.signingProtocol(JoseBuilder.JWT).deserialize(<string>token);
+        validationResponse.didSignature = await this.validatorOptions.crypto.signingProtocol(JoseBuilder.JWT).deserialize(<string>token);
         validationResponse.payloadProtectionProtocol = JoseBuilder.JWT;
       } catch (exception) {
         return {
           result: false,
           code: errorCode(1),
-          detailedError: `The ${(self as ValidationOptions).tokenType} could not be deserialized`,
+          detailedError: `The ${this.tokenType} could not be deserialized`,
           innerError: exception,
           status: 400
         };
@@ -80,7 +79,7 @@ export class ValidationHelpers {
       return {
         result: false,
         code: errorCode(2),
-        detailedError: `The signature in the ${(self as ValidationOptions).tokenType} has an invalid format`,
+        detailedError: `The signature in the ${this.tokenType} has an invalid format`,
         status: 403
       };
     }
@@ -91,7 +90,7 @@ export class ValidationHelpers {
         return {
           result: false,
           code: errorCode(3),
-          detailedError: `The payload in the ${(self as ValidationOptions).tokenType} is undefined`,
+          detailedError: `The payload in the ${this.tokenType} is undefined`,
           status: 403
         };
       }
@@ -104,7 +103,7 @@ export class ValidationHelpers {
           result: false,
           code: errorCode(4),
           innerError: err,
-          detailedError: `The payload in the ${(self as ValidationOptions).tokenType} is no valid JSON`,
+          detailedError: `The payload in the ${this.tokenType} is no valid JSON`,
           status: 400
         };
       }
@@ -114,7 +113,7 @@ export class ValidationHelpers {
         return {
           result: false,
           code: errorCode(5),
-          detailedError: `The protected header in the ${(self as ValidationOptions).tokenType} does not contain the kid`,
+          detailedError: `The protected header in the ${this.tokenType} does not contain the kid`,
           status: 403
         };
       }
