@@ -11,6 +11,9 @@ import IFetchRequest from '../tracing/IFetchRequest';
  */
 export default interface IValidatorOptions {
 
+    // extend with validation gate
+
+    
     /**
      * The DID resolver
      */

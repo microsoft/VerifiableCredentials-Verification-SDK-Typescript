@@ -135,6 +135,9 @@ export default class SiopTokenValidator implements ITokenValidator {
             code: errorCode(5)
         };
     }
+    // Validation gate: Test for maximum number of presentations and maximum size
+
+    // Add tokens to queue
     if (validationResponse.tokensToValidate) {
       for (let key in validationResponse.tokensToValidate) {
         queue.enqueueItem(new ValidationQueueItem(key, validationResponse.tokensToValidate[key]));
