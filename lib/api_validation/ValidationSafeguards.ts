@@ -7,12 +7,12 @@
  * Interface defining all safeguards for validation
  */
 export interface IValidationSafeguards {
-  maxNumberOfVPTokensInSiop: number,
-  maxSizeOfVPTokensInSiop: number,
-  maxNumberOfVCTokensInPresentation: number,
-  maxSizeOfVCTokensInPresentation: number,
-  maxNumberOfIdTokensInSiop: number,
-  maxSizeOfIdToken: number
+  maxNumberOfVPTokensInSiop?: number,
+  maxSizeOfVPTokensInSiop?: number,
+  maxNumberOfVCTokensInPresentation?: number,
+  maxSizeOfVCTokensInPresentation?: number,
+  maxNumberOfIdTokensInSiop?: number,
+  maxSizeOfIdToken?: number
 }
 
 /**
@@ -32,7 +32,7 @@ export default class ValidationSafeguards {
     this._maxSizeOfVPTokensInSiop = safeguards?.maxSizeOfVPTokensInSiop || 16 * 1024 * 1024;
     this._maxNumberOfVCTokensInPresentation = safeguards?.maxNumberOfVCTokensInPresentation || 1;
     this._maxSizeOfVCTokensInPresentation = safeguards?.maxSizeOfVCTokensInPresentation || 16 * 1024 * 1024;
-    this._maxNumberOfIdTokensInSiop = safeguards?.maxNumberOfIdTokensInSiop || 1;
+    this._maxNumberOfIdTokensInSiop = safeguards?.maxNumberOfIdTokensInSiop || 5;
     this._maxSizeOfIdToken = safeguards?.maxSizeOfIdToken || 16 * 1024 * 1024;
   }
 
