@@ -73,4 +73,22 @@ describe('ValidatorBuilder', () => {
     expect(builder.nonce).toEqual('12345');
   });
 
+  it('should modify validation safeguards', () => {
+    const crypto = new CryptoBuilder().build();
+    let builder = new ValidatorBuilder(crypto);
+
+    //builder.useMaxNumberOfIdTokensInSiop = 20;
+    //expect(safeguards.maxNumberOfIdTokensInSiop).toEqual(20);
+    builder.useMaxNumberOfVCTokensInPresentation = 25;
+    expect(builder.maxNumberOfVCTokensInPresentation).toEqual(25);
+    //builder.useMaxNumberOfVPTokensInSiop = 30;
+    //expect(builder.maxNumberOfVPTokensInSiop).toEqual(30);
+    builder.useMaxSizeOfIdToken = 40;
+    expect(builder.maxSizeOfIdToken).toEqual(40);
+    builder.useMaxSizeOfVCTokensInPresentation = 50;
+    expect(builder.maxSizeOfVCTokensInPresentation).toEqual(50);
+    builder.useMaxSizeOfVPTokensInSiop = 60;
+    expect(builder.maxSizeOfVPTokensInSiop).toEqual(60);
+  });
+
 });
