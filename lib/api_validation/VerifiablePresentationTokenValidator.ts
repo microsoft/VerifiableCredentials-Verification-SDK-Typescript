@@ -60,7 +60,7 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
       };
     }
 
-    // Validation gate: Test for maximum number of tokens and maximum size
+    // Validation gate: Test for maximum number of VCs and maximum size
     const vc = validationResponse.payloadObject.vp.verifiableCredential;
     validationResponse.tokensToValidate = {};
     for (let token in vc) {
