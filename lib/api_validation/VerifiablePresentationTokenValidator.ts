@@ -75,13 +75,13 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
         }
       }
 
-      let oversized = vc.filter((claimToken: ClaimToken) => typeof claimToken.rawToken === 'string' && claimToken.rawToken.length > validatorSafeguards.maxSizeOfVCTokensInPresentation);
+      let oversized = vc.filter((token: string) => token.length > validatorSafeguards.maxSizeOfVCTokensInPresentation);
       if (oversized.length !== 0) {
         return {
           result: false,
           status: 403,
           code: errorCode(3),
-          detailedError: `The presentation has an oversized VC tokens. Size ${(<string>oversized[0].rawToken).length}. Maximum size: ${validatorSafeguards.maxSizeOfVCTokensInPresentation}.`
+          detailedError: `The presentation has an oversized VC tokens. Size ${oversized[0].length}. Maximum size: ${validatorSafeguards.maxSizeOfVCTokensInPresentation}.`
         }
       }
 
@@ -92,7 +92,7 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
         queue.enqueueToken(vcType, claimToken);
       }
     }
-    
+
     return validationResponse;
   }
 

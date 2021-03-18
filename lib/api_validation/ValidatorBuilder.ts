@@ -299,6 +299,8 @@ export default class ValidatorBuilder {
    * Gets the maximum number of VP tokens in a SIOP
    */
   public get maxSizeOfVCTokensInPresentation() {
+    //const nrTokens = Object.keys(this.useTrustedIssuersForVerifiableCredentials).length;
+    //return this._validationSafeguards.maxSizeOfVCTokensInPresentation = nrTokens;
     return this._validationSafeguards.maxSizeOfVCTokensInPresentation;
   }
 
