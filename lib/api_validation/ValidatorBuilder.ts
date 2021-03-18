@@ -54,6 +54,7 @@ export default class ValidatorBuilder {
     return {
       resolver: this.resolver,
       fetchRequest: this.fetchRequest,
+      validationSafeguards: this._validationSafeguards,
       crypto: this.crypto
     };
   }
@@ -274,8 +275,9 @@ export default class ValidatorBuilder {
   /**
    * Sets the maximum number of VP tokens in a SIOP
    */
-  public set useMaxNumberOfVCTokensInPresentation(value: number) {
+  public useMaxNumberOfVCTokensInPresentation(value: number): ValidatorBuilder {
     this._validationSafeguards.maxNumberOfVCTokensInPresentation = value;
+    return this;
   }
 
   /**
@@ -288,8 +290,9 @@ export default class ValidatorBuilder {
   /**
    * Sets the maximum number of VP tokens in a SIOP
    */
-  public set useMaxSizeOfVPTokensInSiop(value: number) {
+  public useMaxSizeOfVPTokensInSiop(value: number): ValidatorBuilder {
     this._validationSafeguards.maxSizeOfVPTokensInSiop = value;
+    return this;
   }
 
   /**
@@ -302,8 +305,9 @@ export default class ValidatorBuilder {
   /**
    * Sets the maximum number of VP tokens in a SIOP
    */
-  public set useMaxSizeOfVCTokensInPresentation(value: number) {
+  public useMaxSizeOfVCTokensInPresentation(value: number): ValidatorBuilder {
     this._validationSafeguards.maxSizeOfVCTokensInPresentation = value;
+    return this;
   }
 
   /**
@@ -316,8 +320,9 @@ export default class ValidatorBuilder {
   /**
    * Sets the maximum number of VP tokens in a SIOP
    */
-  public set useMaxSizeOfIdToken(value: number) {
+  public useMaxSizeOfIdToken(value: number): ValidatorBuilder {
     this._validationSafeguards.maxSizeOfIdToken = value;
+    return this;
   }
 
   // Feature flags. Used temporary to introduce a new feature
