@@ -25,6 +25,11 @@ export enum TokenType {
   idToken = 'idToken',
 
   /**
+   * Token is id token hint
+   */
+  idTokenHint = 'idTokenHint',
+
+  /**
    * Token is SIOP token issuance request
    */
   siopIssuance = 'siopIssuance',
@@ -165,6 +170,8 @@ export default class ClaimToken {
           return new ClaimToken(TokenType.siopPresentationExchange, <string>token, id);
         } else if (payload.attestations) {
           return new ClaimToken(TokenType.siopPresentationAttestation, <string>token, id);
+        } else if (id === VerifiableCredentialConstants.TOKEN_SI_ISS) {
+          return new ClaimToken(TokenType.idTokenHint, <string>token, id);
         } else {
           return new ClaimToken(TokenType.siop, <string>token, id);
         }
@@ -202,7 +209,7 @@ export default class ClaimToken {
       }
       else {
         for (let tokenKey in token) {
-          const claimToken = ClaimToken.create(token[tokenKey]);
+          const claimToken = ClaimToken.create(token[tokenKey], tokenKey);
           decodedTokens[tokenKey] = claimToken;
         }
       }
