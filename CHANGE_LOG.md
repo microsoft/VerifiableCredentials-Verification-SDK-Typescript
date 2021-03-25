@@ -1,3 +1,10 @@
+# version 0.12.1-preview.3
+## Support IdToken Hint Tokens
+**Type of change:** feature work
+**Customer impact:** low
+- Add new TokenType for IdToken Hints.
+- Augment IdTokenAttestationModel with optional trusted issuers.
+
 # version 0.12.1-preview.2
 ## Add error codes to the validation response
 **Type of change:** engineering    
