@@ -1,3 +1,10 @@
+# version 0.12.1-preview.4
+## Support IdToken Hint Tokens
+**Type of change:** feature work
+**Customer impact:** low
+- Allow SiopValidation and SiopTokenValidator to be extended by making some of its methods protected.
+- Make TrustedIssuerModel validation stricter by enforcing valid issuer DIDs.
+
 # version 0.12.1-preview.3
 ## Support IdToken Hint Tokens
 **Type of change:** feature work
