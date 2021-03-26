@@ -22,7 +22,7 @@ export class TrustedIssuerModel {
   populateFrom (input: any): void {
     const { iss } = input;
 
-    if (!iss) {
+    if (!(iss && typeof iss === 'string')) {
       throw new RulesValidationError('Trusted issuer requires a valid DID for property \'iss\'.');
     }
 

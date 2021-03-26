@@ -36,5 +36,17 @@ describe('IdTokenAttestationModel', () => {
         expect(error instanceof RulesValidationError).toEqual(true);
       }
     });
+
+    it('should fail with non-string trusted issuer DID', () => {
+      const nonStringDidIssuers = [{ iss: 1 }];
+      const idTokenAttestationModel = new IdTokenAttestationModel();
+
+      try {
+        idTokenAttestationModel.populateFrom({ ...idTokenAttestationModelInput, issuers: nonStringDidIssuers });
+        fail('No error was thrown.');
+      } catch (error) {
+        expect(error instanceof RulesValidationError).toEqual(true);
+      }
+    });
   });
 });

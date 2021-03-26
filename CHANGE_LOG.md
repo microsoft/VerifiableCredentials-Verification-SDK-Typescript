@@ -1,3 +1,9 @@
+# version 0.12.1-preview.5
+## Support IdToken Hint Tokens
+**Type of change:** feature work
+**Customer impact:** low
+- DIDs for TrustedIssuerModel instances need to be strings.
+
 # version 0.12.1-preview.4
 ## Support IdToken Hint Tokens
 **Type of change:** feature work

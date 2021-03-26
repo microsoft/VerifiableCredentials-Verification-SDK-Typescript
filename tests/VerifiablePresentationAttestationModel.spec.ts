@@ -35,5 +35,17 @@ describe('VerifiablePresentationAttestationModel', () => {
         expect(error instanceof RulesValidationError).toEqual(true);
       }
     });
+
+    it('should fail with non-string trusted issuer DID', () => {
+      const nonStringDidIssuers = [{ iss: 1 }];
+      const vpAttestationModel = new VerifiablePresentationAttestationModel();
+
+      try {
+        vpAttestationModel.populateFrom({ ...vpAttestationModelInput, issuers: nonStringDidIssuers });
+        fail('No error was thrown.');
+      } catch (error) {
+        expect(error instanceof RulesValidationError).toEqual(true);
+      }
+    });
   });
 });
