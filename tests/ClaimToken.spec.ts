@@ -58,9 +58,11 @@ describe('ClaimToken', () => {
   describe('create()', () => {
     const iss = VerifiableCredentialConstants.TOKEN_SI_ISS;
     let getTokenPayloadSpy: jasmine.Spy<(token: string) => any>;
+    let payload: { [claim: string]: any } = {};
 
     beforeAll(() => {
       getTokenPayloadSpy = spyOn(<any>ClaimToken, 'getTokenPayload').withArgs(sampleToken);
+      payload = { iss };
     });
 
     beforeEach(() => {
@@ -69,8 +71,37 @@ describe('ClaimToken', () => {
 
     it('should create IdTokenHint type tokens', () => {
       // Mock payload creation.
-      const payload = { iss };
       getTokenPayloadSpy.and.returnValue(payload);
+
+      // IdTokenHint should be created.
+      const expectedToken = new ClaimToken(TokenType.idTokenHint, sampleToken, VerifiableCredentialConstants.TOKEN_SI_ISS);
+      expect(ClaimToken.create(sampleToken, VerifiableCredentialConstants.TOKEN_SI_ISS)).toEqual(expectedToken);
+    });
+
+    it('should create IdTokenHint type tokens with extraneous attestations claim', () => {
+      // Mock payload creation.
+      const extraneousAttestationsPayload = { ...payload, attestations: { selfIssued: { claim1: 'claimValue1' } } };
+      getTokenPayloadSpy.and.returnValue(extraneousAttestationsPayload);
+
+      // IdTokenHint should be created.
+      const expectedToken = new ClaimToken(TokenType.idTokenHint, sampleToken, VerifiableCredentialConstants.TOKEN_SI_ISS);
+      expect(ClaimToken.create(sampleToken, VerifiableCredentialConstants.TOKEN_SI_ISS)).toEqual(expectedToken);
+    });
+
+    it('should create IdTokenHint type tokens with extraneous contract claim', () => {
+      // Mock payload creation.
+      const extraneousContractPayload = { ...payload, contract: 'https://example.com/contract' };
+      getTokenPayloadSpy.and.returnValue(extraneousContractPayload);
+
+      // IdTokenHint should be created.
+      const expectedToken = new ClaimToken(TokenType.idTokenHint, sampleToken, VerifiableCredentialConstants.TOKEN_SI_ISS);
+      expect(ClaimToken.create(sampleToken, VerifiableCredentialConstants.TOKEN_SI_ISS)).toEqual(expectedToken);
+    });
+
+    it('should create IdTokenHint type tokens with extraneous presentation_submission claim', () => {
+      // Mock payload creation.
+      const extraneousPresentationSubmissionPayload = { ...payload, presentation_submission: 'presetnation submission' };
+      getTokenPayloadSpy.and.returnValue(extraneousPresentationSubmissionPayload);
 
       // IdTokenHint should be created.
       const expectedToken = new ClaimToken(TokenType.idTokenHint, sampleToken, VerifiableCredentialConstants.TOKEN_SI_ISS);

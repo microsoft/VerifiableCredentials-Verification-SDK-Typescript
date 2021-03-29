@@ -1,3 +1,9 @@
+# version 0.12.1-preview.6
+## Attack vector protection IdToken Hint
+**Type of change:** feature work
+**Customer impact:** low
+- Protection against attack vector.
+
 # version 0.12.1-preview.5
 ## Support IdToken Hint Tokens
 **Type of change:** feature work

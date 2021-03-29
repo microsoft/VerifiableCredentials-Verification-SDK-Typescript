@@ -164,14 +164,14 @@ export default class ClaimToken {
       // compact jwt      
       // Check type of token
       if (payload.iss === VerifiableCredentialConstants.TOKEN_SI_ISS) {
-        if (payload.contract) {
+        if (id === VerifiableCredentialConstants.TOKEN_SI_ISS) {
+          return new ClaimToken(TokenType.idTokenHint, <string>token, id);
+        } else if (payload.contract) {
           return new ClaimToken(TokenType.siopIssuance, <string>token, id);
         } else if (payload.presentation_submission) {
           return new ClaimToken(TokenType.siopPresentationExchange, <string>token, id);
         } else if (payload.attestations) {
           return new ClaimToken(TokenType.siopPresentationAttestation, <string>token, id);
-        } else if (id === VerifiableCredentialConstants.TOKEN_SI_ISS) {
-          return new ClaimToken(TokenType.idTokenHint, <string>token, id);
         } else {
           return new ClaimToken(TokenType.siop, <string>token, id);
         }
