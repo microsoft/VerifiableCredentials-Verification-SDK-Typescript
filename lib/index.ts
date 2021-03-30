@@ -2,14 +2,14 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
- 
+
 export { DidDocument, IDidDocument, IDidDocumentPublicKey, IDidDocumentServiceDescriptor, IDidResolver, IDidResolveResult } from '@decentralized-identity/did-common-typescript';
 
 import FetchRequest from './tracing/FetchRequest';
 import IFetchRequest from './tracing/IFetchRequest';
 export { FetchRequest, IFetchRequest };
 
-import {IExpectedStatusReceipt, IExpectedBase, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSelfIssued, IExpectedIdToken, IExpectedOpenIdToken, IExpectedAudience, IssuerMap} from './options/IExpected';
+import { IExpectedStatusReceipt, IExpectedBase, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSelfIssued, IExpectedIdToken, IExpectedOpenIdToken, IExpectedAudience, IssuerMap } from './options/IExpected';
 export { IExpectedStatusReceipt, IExpectedBase, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, IExpectedSelfIssued, IExpectedIdToken, IExpectedOpenIdToken, IExpectedAudience, IssuerMap };
 
 import { RulesValidationError } from './error_handling/RulesValidationError';
@@ -56,7 +56,7 @@ import { VerifiablePresentationValidation } from './input_validation/VerifiableP
 import { DidValidation } from './input_validation/DidValidation'
 import { SiopValidation } from './input_validation/SiopValidation'
 import { VerifiableCredentialValidation } from './input_validation/VerifiableCredentialValidation';
-import VerifiablePresentationStatusReceipt, { IVerifiablePresentationStatus }  from './api_validation/VerifiablePresentationStatusReceipt';
+import VerifiablePresentationStatusReceipt, { IVerifiablePresentationStatus } from './api_validation/VerifiablePresentationStatusReceipt';
 export { VerifiablePresentationStatusReceipt, IVerifiablePresentationStatus, IValidationResponse, IdTokenValidationResponse, ISiopValidationResponse, IdTokenValidation, VerifiablePresentationValidation, DidValidation, SiopValidation, VerifiableCredentialValidation, BaseIdTokenValidation, OpenIdTokenValidation };
 
 import IRevocedCard from './revocation/IRevokedCard';
@@ -92,12 +92,12 @@ import { TrustedIssuerModel } from './rules_model/TrustedIssuerModel';
 import { VerifiablePresentationAttestationModel } from './rules_model/VerifiablePresentationAttestationModel';
 import { RefreshConfigurationModel } from './rules_model/RefreshConfigurationModel';
 import { VerifiableCredentialModel } from './rules_model/VerifiableCredentialModel';
-import { TransformModel } from './rules_model/TransformModel'; 
-import { PresentationDefinitionModel } from './rules_model/presentation_exchange/PresentationDefinitionModel'; 
-import { PresentationExchangeInputDescriptorModel } from './rules_model/presentation_exchange/PresentationExchangeInputDescriptorModel'; 
-import { PresentationExchangeSchemaModel } from './rules_model/presentation_exchange/PresentationExchangeSchemaModel'; 
-import { PresentationExchangeIssuanceModel } from './rules_model/presentation_exchange/PresentationExchangeIssuanceModel'; 
-import { PresentationExchangeConstraintsModel } from './rules_model/presentation_exchange/PresentationExchangeConstraintsModel'; 
+import { TransformModel } from './rules_model/TransformModel';
+import { PresentationDefinitionModel } from './rules_model/presentation_exchange/PresentationDefinitionModel';
+import { PresentationExchangeInputDescriptorModel } from './rules_model/presentation_exchange/PresentationExchangeInputDescriptorModel';
+import { PresentationExchangeSchemaModel } from './rules_model/presentation_exchange/PresentationExchangeSchemaModel';
+import { PresentationExchangeIssuanceModel } from './rules_model/presentation_exchange/PresentationExchangeIssuanceModel';
+import { PresentationExchangeConstraintsModel } from './rules_model/presentation_exchange/PresentationExchangeConstraintsModel';
 export {
   AuthenticationModel,
   AuthenticationScheme,
@@ -125,4 +125,10 @@ export {
   SelfIssuedAttestationModel,
   TrustedIssuerModel,
   VerifiablePresentationAttestationModel
+};
+
+import JsonWebSignatureToken, { TokenPayload } from './verifiable_credential/JsonWebSignatureToken';
+export {
+  JsonWebSignatureToken,
+  TokenPayload,
 };
