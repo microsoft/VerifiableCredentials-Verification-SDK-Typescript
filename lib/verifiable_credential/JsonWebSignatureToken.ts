@@ -5,7 +5,7 @@
 import base64url from 'base64url';
 import ErrorHelpers from '../error_handling/ErrorHelpers';
 import ValidationError from '../error_handling/ValidationError';
-const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKJWTO', error);
+const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKJWST', error);
 
 /**
  * Type that describes an object that maps a key to a value.

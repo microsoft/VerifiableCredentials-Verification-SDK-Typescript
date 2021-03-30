@@ -3,32 +3,23 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import ClaimToken, { TokenType } from '../lib/verifiable_credential/ClaimToken';
-import base64url from 'base64url';
 import VerifiableCredentialConstants from '../lib/verifiable_credential/VerifiableCredentialConstants';
+import JsonWebSignatureToken, { TokenPayload } from '../lib/verifiable_credential/JsonWebSignatureToken';
+import { exec } from 'child_process';
 
 describe('ClaimToken', () => {
-  const sampleToken = 'thisIsAToken';
-  let decodeSpy: jasmine.Spy<() => void>;
-
-  beforeAll(() => {
-    decodeSpy = spyOn((<any>ClaimToken).prototype, 'decode');
-  });
-
-  beforeEach(() => {
-    decodeSpy.and.callThrough();
-  });
+  const HEADER = { typ: "JWT", alg: "none" };
 
   it('should create a ClaimToken', () => {
-    const header = {typ: "JWT"};
-    let payload = {name: 'test', vc: {}};
-    let token = base64url.encode(JSON.stringify(header)) + '.' + base64url.encode(JSON.stringify(payload)) + '.';
+    let payload = { name: 'test', vc: {} };
+    let { token } = JsonWebSignatureToken.encode(HEADER, payload);
     const configuration = 'https://configuration.example.com';
     let claimToken = new ClaimToken(TokenType.idToken, token, configuration);
     expect(claimToken.type).toEqual(TokenType.idToken);
     expect(claimToken.rawToken).toEqual(token);
     expect(claimToken.id).toEqual(configuration);
     expect(claimToken.decodedToken).toEqual(payload);
-    expect(claimToken.tokenHeader).toEqual(header);
+    expect(claimToken.tokenHeader).toEqual(HEADER);
     claimToken = new ClaimToken(TokenType.siopIssuance, token, configuration);
     expect(claimToken.type).toEqual(TokenType.siopIssuance);
     claimToken = new ClaimToken(TokenType.siopPresentationAttestation, token, configuration);
@@ -40,93 +31,74 @@ describe('ClaimToken', () => {
     claimToken = new ClaimToken(TokenType.verifiablePresentationJwt, token, configuration);
     expect(claimToken.type).toEqual(TokenType.verifiablePresentationJwt);
     delete (<any>payload).vc;
-    token = base64url.encode(JSON.stringify(header)) + '.' + base64url.encode(JSON.stringify(payload)) + '.';
+    token = JsonWebSignatureToken.encode(HEADER, payload).token;
     claimToken = new ClaimToken(TokenType.selfIssued, token, configuration);
     expect(claimToken.type).toEqual(TokenType.selfIssued);
-    claimToken = ClaimToken.create(claimToken.rawToken, '1');
+
+    // self issued claims are an object passed in the attestations
+    claimToken = ClaimToken.create(claimToken.decodedToken, '1');
     expect(claimToken.type).toEqual(TokenType.selfIssued);
     expect(claimToken.id).toEqual('1');
-    
+
     claimToken.rawToken = '1';
     expect(claimToken.rawToken).toEqual('1');
 
     // negative cases
     expect(() => new ClaimToken(<any>'', token, configuration)).toThrowMatching((exception) => exception.message === `Type '' is not supported` && exception.code === 'VCSDKCLTO01');
-    expect(() => new ClaimToken(TokenType.siopIssuance, 'token')).toThrowMatching((exception) => exception.message === `Cannot decode. Invalid input token` && exception.code === 'VCSDKCLTO06');
+    expect(() => new ClaimToken(TokenType.siopIssuance, 'token')).toThrowMatching((exception) => exception.message === 'Invalid json web token' && exception.code === 'VCSDKJWST01');
   });
 
   describe('create()', () => {
     const iss = VerifiableCredentialConstants.TOKEN_SI_ISS;
-    let getTokenPayloadSpy: jasmine.Spy<(token: string) => any>;
-    let payload: { [claim: string]: any } = {};
+    let payload: TokenPayload = {};
+
+    function executeCreateIdTokenHintTest(tokenPayload: TokenPayload) {
+      const jwt = JsonWebSignatureToken.encode(HEADER, tokenPayload);
+      const expectedToken = new ClaimToken(TokenType.idTokenHint, jwt, VerifiableCredentialConstants.TOKEN_SI_ISS);
+      expect(ClaimToken.create(jwt.token, VerifiableCredentialConstants.TOKEN_SI_ISS)).toEqual(expectedToken);
+    }
 
     beforeAll(() => {
-      getTokenPayloadSpy = spyOn(<any>ClaimToken, 'getTokenPayload').withArgs(sampleToken);
       payload = { iss };
     });
 
-    beforeEach(() => {
-      decodeSpy.and.stub();
-    });
-
     it('should create IdTokenHint type tokens', () => {
-      // Mock payload creation.
-      getTokenPayloadSpy.and.returnValue(payload);
-
       // IdTokenHint should be created.
-      const expectedToken = new ClaimToken(TokenType.idTokenHint, sampleToken, VerifiableCredentialConstants.TOKEN_SI_ISS);
-      expect(ClaimToken.create(sampleToken, VerifiableCredentialConstants.TOKEN_SI_ISS)).toEqual(expectedToken);
+      executeCreateIdTokenHintTest(payload);
     });
 
     it('should create IdTokenHint type tokens with extraneous attestations claim', () => {
       // Mock payload creation.
       const extraneousAttestationsPayload = { ...payload, attestations: { selfIssued: { claim1: 'claimValue1' } } };
-      getTokenPayloadSpy.and.returnValue(extraneousAttestationsPayload);
 
       // IdTokenHint should be created.
-      const expectedToken = new ClaimToken(TokenType.idTokenHint, sampleToken, VerifiableCredentialConstants.TOKEN_SI_ISS);
-      expect(ClaimToken.create(sampleToken, VerifiableCredentialConstants.TOKEN_SI_ISS)).toEqual(expectedToken);
+      executeCreateIdTokenHintTest(extraneousAttestationsPayload);
     });
 
     it('should create IdTokenHint type tokens with extraneous contract claim', () => {
       // Mock payload creation.
       const extraneousContractPayload = { ...payload, contract: 'https://example.com/contract' };
-      getTokenPayloadSpy.and.returnValue(extraneousContractPayload);
 
       // IdTokenHint should be created.
-      const expectedToken = new ClaimToken(TokenType.idTokenHint, sampleToken, VerifiableCredentialConstants.TOKEN_SI_ISS);
-      expect(ClaimToken.create(sampleToken, VerifiableCredentialConstants.TOKEN_SI_ISS)).toEqual(expectedToken);
+      executeCreateIdTokenHintTest(extraneousContractPayload);
     });
 
     it('should create IdTokenHint type tokens with extraneous presentation_submission claim', () => {
       // Mock payload creation.
-      const extraneousPresentationSubmissionPayload = { ...payload, presentation_submission: 'presetnation submission' };
-      getTokenPayloadSpy.and.returnValue(extraneousPresentationSubmissionPayload);
+      const extraneousPresentationSubmissionPayload = { ...payload, presentation_submission: 'presentation submission' };
 
       // IdTokenHint should be created.
-      const expectedToken = new ClaimToken(TokenType.idTokenHint, sampleToken, VerifiableCredentialConstants.TOKEN_SI_ISS);
-      expect(ClaimToken.create(sampleToken, VerifiableCredentialConstants.TOKEN_SI_ISS)).toEqual(expectedToken);
+      executeCreateIdTokenHintTest(extraneousPresentationSubmissionPayload);
     });
   });
 
   describe('getClaimTokensFromAttestations()', () => {
-    let createSpy: jasmine.Spy<(token: string | object, id?: string) => ClaimToken>;
-
-    beforeAll(() => {
-      createSpy = spyOn(ClaimToken, 'create');
-    });
-
-    beforeEach(() => {
-      decodeSpy.and.stub();
-      createSpy.calls.reset();
-      createSpy.and.stub();
-    });
-
     it('should pass token key to create method', () => {
-      const attestations: { [key: string]: string } = { idTokens: <any>{ [VerifiableCredentialConstants.TOKEN_SI_ISS]: sampleToken } };
-      ClaimToken.getClaimTokensFromAttestations(attestations);
-      expect(createSpy).toHaveBeenCalledTimes(1);
-      expect(createSpy).toHaveBeenCalledWith(sampleToken, VerifiableCredentialConstants.TOKEN_SI_ISS);
+      const idTokenHint = JsonWebSignatureToken.encode(HEADER, { test: true });
+      const attestations: { [key: string]: string } = { idTokens: <any>{ [VerifiableCredentialConstants.TOKEN_SI_ISS]: idTokenHint.token } };
+      const { [VerifiableCredentialConstants.TOKEN_SI_ISS]: idTokenHintClaimToken } = ClaimToken.getClaimTokensFromAttestations(attestations);
+      expect(idTokenHintClaimToken.decodedToken).toBeDefined();
+      expect(idTokenHintClaimToken.decodedToken.test).toBeTruthy();
     });
   });
 });
