@@ -77,13 +77,6 @@ export default class ClaimToken {
   private readonly _jsonWebToken?: JsonWebSignatureToken;
 
   /**
-   * JsonWebSignatureToken instance 
-   */
-  public get jsonWebToken(): JsonWebSignatureToken | undefined {
-    return this._jsonWebToken;
-  }
-
-  /**
    * Token type
    */
   public get type(): TokenType {
