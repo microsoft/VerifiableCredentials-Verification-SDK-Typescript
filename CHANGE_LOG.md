@@ -1,3 +1,9 @@
+# version 0.12.1-preview.7
+## Performance improvements for ClaimToken.Create
+**Type of change:** feature work
+**Customer impact:** low
+- Don't parse a jwt multiple times
+
 # version 0.12.1-preview.6
 ## Attack vector protection IdToken Hint
 **Type of change:** feature work
