@@ -42,7 +42,7 @@ export default class TokenGenerator {
     this.crypto = await this.crypto.generateKey(KeyUse.Signature, 'signing');
     this.crypto = await this.crypto.generateKey(KeyUse.Signature, 'recovery');
     this.crypto = await this.crypto.generateKey(KeyUse.Signature, 'update');
-    let did = signingProtocol === 'ES256K' ? 
+    let did = signingProtocol === 'ES256K' ?
       await (new LongFormDid(this.crypto)).serialize() :
       'did:test:tokenGenerator';
     this.crypto.builder.useDid(did);
@@ -115,14 +115,17 @@ export default class TokenGenerator {
    */
   public async generateVC(vcPayload: any, vcProtocol: string): Promise<ClaimToken> {
 
+    let isJsonLinkedData = vcProtocol === JoseBuilder.JSONLDProofs;
+
     // Additional props
     vcPayload.sub = `${this.responder.crypto.builder.did}`;
-    
-    if (vcProtocol === JoseBuilder.JSONLDProofs && vcPayload.vc) {
-      vcPayload.verifiableCredential = vcPayload.vc;
-      delete vcPayload.vc;
-    }
-    if (vcProtocol === JoseBuilder.JSONLDProofs) {
+
+    if (isJsonLinkedData) {
+      if (vcPayload.vc) {
+        vcPayload.verifiableCredential = vcPayload.vc;
+        delete vcPayload.vc;
+      }
+      
       vcPayload.issuer = `${this.crypto.builder.did}`;
     } else {
       vcPayload.iss = `${this.crypto.builder.did}`;
@@ -131,8 +134,15 @@ export default class TokenGenerator {
     // Sign
     const signer = this.crypto.signingProtocol(vcProtocol);
     await signer.sign(vcPayload);
-    const token = await this.crypto.signingProtocol(vcProtocol).serialize();
-    return ClaimToken.create(token);
+
+    // json ld doesn't need to be stringified to be turned into a claim token.  
+    // this just forces a string.split and expected error later on
+    if (isJsonLinkedData) {
+      return ClaimToken.create(vcPayload);
+    } else {
+      const token = await this.crypto.signingProtocol(vcProtocol).serialize();
+      return ClaimToken.create(token);
+    }
   }
 
   public async setVcsInPresentations(vcProtocol: string): Promise<void> {
