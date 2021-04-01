@@ -140,7 +140,7 @@ export default class ClaimToken {
       throw new ValidationError(`Type '${typeName}' is not supported`, errorCode(1));
     }
 
-    if(typeof token === 'string'){
+    if (typeof token === 'string') {
       token = new JsonWebSignatureToken(token);
     }
 
@@ -162,49 +162,50 @@ export default class ClaimToken {
    * @param token to check for type
    */
   public static create(token: string | TokenPayload, id?: string): ClaimToken {
+    if (typeof token === 'string') {
+
+      // compact jwt      
+      const jws = new JsonWebSignatureToken(token);
+      const { payload } = jws;
+
+      // Check type of token
+      if (payload.iss === VerifiableCredentialConstants.TOKEN_SI_ISS) {
+        if (id === VerifiableCredentialConstants.TOKEN_SI_ISS) {
+          return new ClaimToken(TokenType.idTokenHint, jws, id);
+        }
+
+        if (payload.contract) {
+          return new ClaimToken(TokenType.siopIssuance, jws, id);
+        }
+
+        if (payload.presentation_submission) {
+          return new ClaimToken(TokenType.siopPresentationExchange, jws, id);
+        }
+
+        if (payload.attestations) {
+          return new ClaimToken(TokenType.siopPresentationAttestation, jws, id);
+        }
+
+        return new ClaimToken(TokenType.siop, jws, id);
+      }
+
+      if (payload.vc) {
+        return new ClaimToken(TokenType.verifiableCredential, jws, id);
+      }
+      if (payload.vp) {
+        return new ClaimToken(TokenType.verifiablePresentationJwt, jws, id);
+      }
+
+      return new ClaimToken(TokenType.idToken, jws, id);
+    }
+
     // the only inputs that are not a string are JSON LD or self attested claims
-    if (typeof token !== 'string') {
-      // check for json LD
-      if (token['\@context'] && token.type && token.type.length >= 1 && token.type.includes('VerifiableCredential')) {
-        return new ClaimToken(TokenType.verifiableCredential, token, id);
-      }
-
-      return new ClaimToken(TokenType.selfIssued, token, id);
+    // check for json LD
+    if (token['\@context'] && token.type && token.type.length >= 1 && token.type.includes('VerifiableCredential')) {
+      return new ClaimToken(TokenType.verifiableCredential, token, id);
     }
 
-    // compact jwt      
-    const jws = new JsonWebSignatureToken(token);
-    const { payload } = jws;
-
-    // Check type of token
-    if (payload.iss === VerifiableCredentialConstants.TOKEN_SI_ISS) {
-      if (id === VerifiableCredentialConstants.TOKEN_SI_ISS) {
-        return new ClaimToken(TokenType.idTokenHint, jws, id);
-      }
-
-      if (payload.contract) {
-        return new ClaimToken(TokenType.siopIssuance, jws, id);
-      }
-
-      if (payload.presentation_submission) {
-        return new ClaimToken(TokenType.siopPresentationExchange, jws, id);
-      }
-
-      if (payload.attestations) {
-        return new ClaimToken(TokenType.siopPresentationAttestation, jws, id);
-      }
-
-      return new ClaimToken(TokenType.siop, jws, id);
-    }
-
-    if (payload.vc) {
-      return new ClaimToken(TokenType.verifiableCredential, jws, id);
-    }
-    if (payload.vp) {
-      return new ClaimToken(TokenType.verifiablePresentationJwt, jws, id);
-    }
-
-    return new ClaimToken(TokenType.idToken, jws, id);
+    return new ClaimToken(TokenType.selfIssued, token, id);
   }
 
 
