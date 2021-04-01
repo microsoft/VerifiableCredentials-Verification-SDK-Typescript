@@ -5,6 +5,7 @@
 
 import { BaseAttestationModel } from './BaseAttestationModel';
 import { InputClaimModel } from './InputClaimModel';
+import { TrustedIssuerModel } from './TrustedIssuerModel';
 
 /**
  * Model for defining Open Id Configuration for an Input contract
@@ -21,6 +22,7 @@ export class IdTokenAttestationModel extends BaseAttestationModel {
    * @param claims an array of InputClaimModel values
    * @param required a flag indicating whether the attestation is required
    * @param id the identifier of the attestation
+   * @param issuers an array of Trusted Issuers for the IdToken
    */
   constructor(
     public configuration?: string,
@@ -33,7 +35,9 @@ export class IdTokenAttestationModel extends BaseAttestationModel {
     encrypted: boolean = false,
     claims?: InputClaimModel[],
     required: boolean = false,
-    id?: string) {
+    id?: string,
+    public issuers?: TrustedIssuerModel[],
+  ) {
     super(mapping, encrypted, claims, required, id);
   }
 
@@ -48,6 +52,7 @@ export class IdTokenAttestationModel extends BaseAttestationModel {
     const result = super.toJSON();
     result.configuration = this.configuration;
     result.client_id = this.client_id;
+    result.issuers = this.issuers;
     result.redirect_uri = this.redirect_uri;
     result.scope = this.scope;
     return result;
@@ -63,6 +68,14 @@ export class IdTokenAttestationModel extends BaseAttestationModel {
     this.client_id = input.client_id;
     this.redirect_uri = input.redirect_uri;
     this.scope = input.scope;
+
+    if (input.issuers) {
+      this.issuers = Array.from(input.issuers, (issuer) => {
+        const t = new TrustedIssuerModel();
+        t.populateFrom(issuer);
+        return t;
+      });
+    }
   }
 
   /**
@@ -70,6 +83,17 @@ export class IdTokenAttestationModel extends BaseAttestationModel {
    * @param claims Input claims
    */
   protected createForInput(claims: InputClaimModel[]): BaseAttestationModel {
-    return new IdTokenAttestationModel(this.configuration, this.client_id, this.redirect_uri, this.scope, undefined, this.encrypted, claims, this.required);
+    return new IdTokenAttestationModel(
+      this.configuration,
+      this.client_id,
+      this.redirect_uri,
+      this.scope,
+      undefined,
+      this.encrypted,
+      claims,
+      this.required,
+      undefined,
+      this.issuers,
+    );
   }
 }

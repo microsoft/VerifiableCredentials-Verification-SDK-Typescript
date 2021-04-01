@@ -4,20 +4,17 @@ import TestSetup from './TestSetup';
 import ValidationQueue from '../lib/input_validation/ValidationQueue';
 import { Crypto, SelfIssuedTokenValidator } from '../lib/index';
 import VerifiableCredentialConstants from '../lib/verifiable_credential/VerifiableCredentialConstants';
-import { CryptoFactoryNode, IPayloadProtectionSigning, JoseBuilder, KeyReference, KeyStoreInMemory, KeyStoreKeyVault, KeyUse, LongFormDid, Subtle } from 'verifiablecredentials-crypto-sdk-typescript';
-import Credentials from './Credentials';
-import { ClientSecretCredential } from '@azure/identity';
+import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript';
+import ValidationQueueItem from '../lib/input_validation/ValidationQueueItem';
 const clone = require('clone');
 
 describe('Validator', () => {
   let crypto: Crypto;
-  let signingKeyReference: KeyReference;
   let setup: TestSetup;
   let originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
   beforeEach(async () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
     setup = new TestSetup();
-    signingKeyReference = setup.defaulSigKey;
     crypto = setup.crypto
     await setup.generateKeys();
   });
@@ -376,5 +373,43 @@ describe('Validator', () => {
     console.log(req);
     const response = await validator.validate(req);
     expect(response.result).toBeFalsy();
+  });
+
+  describe('setValidationResult()', () => {
+    let validator: Validator;
+    let decodeSpy: jasmine.Spy<() => void>;
+
+    beforeAll(() => {
+      validator = new Validator(new ValidatorBuilder(new Crypto(new CryptoBuilder())));
+      decodeSpy = spyOn((<any>ClaimToken).prototype, 'decode');
+    });
+
+    beforeEach(() => {
+      decodeSpy.and.stub();
+    });
+
+    it('should add IdTokens and IdTokenHints to the same object', () => {
+      // Set up queue.
+      const queue = new ValidationQueue();
+      const id = 'idToken';
+      const idTokenClaimToken = new ClaimToken(TokenType.idToken, 'someToken', id);
+      const idTokenHintClaimToken = new ClaimToken(TokenType.idTokenHint, 'someToken', VerifiableCredentialConstants.TOKEN_SI_ISS);
+      const idTokenItem = new ValidationQueueItem(id, idTokenClaimToken);
+      const idTokenHintItem = new ValidationQueueItem(VerifiableCredentialConstants.TOKEN_SI_ISS, idTokenHintClaimToken);
+      queue.enqueueItem(idTokenItem);
+      queue.enqueueItem(idTokenHintItem);
+
+      // Mark tokens as validated.
+      idTokenItem.setResult({ result: true, status: 200 }, idTokenClaimToken);
+      idTokenHintItem.setResult({ result: true, status: 200 }, idTokenHintClaimToken);
+
+      // Tokens should have been added.
+      const idTokens = validator['setValidationResult'](queue).idTokens!;
+      expect(idTokens).toBeTruthy();
+      expect(Object.keys(idTokens).length).toEqual(2);
+      const { [id]: outputIdTokenClaimToken, [VerifiableCredentialConstants.TOKEN_SI_ISS]: outputIdTokenHintClaimToken } = idTokens;
+      expect(outputIdTokenClaimToken).toEqual(idTokenClaimToken);
+      expect(outputIdTokenHintClaimToken).toEqual(idTokenHintClaimToken);
+    });
   });
 });

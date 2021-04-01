@@ -60,6 +60,21 @@ describe('RulesModel', () => {
               name: new InputClaimModel('name')
             }
           ),
+          new IdTokenAttestationModel(
+            'https://self-issued.me',
+            'clientId',
+            'redirect',
+            'scope',
+            {
+              claim1: new InputClaimModel('claim1', 'string'),
+              claim2: new InputClaimModel('claim2')
+            },
+            false,
+            undefined,
+            true,
+            undefined,
+            [new TrustedIssuerModel('did:ion:trustedIssuer1')],
+          ),
         ]),
       86400,
       [
@@ -161,11 +176,16 @@ describe('RulesModel', () => {
 
       const roundtripIdTokens = <IdTokenAttestationModel[]>roundtrip.attestations?.idTokens;
       expect(roundtripIdTokens).toBeDefined();
-      expect(roundtripIdTokens.length).toEqual(1);
+      expect(roundtripIdTokens.length).toEqual(2);
       expect(Object.keys(<any>roundtripIdTokens[0].mapping).length).toEqual(2);
+      expect(Object.keys(<any>roundtripIdTokens[1].mapping).length).toEqual(2);
 
       // when id is not specified, it's the same as the name
       expect((<BaseAttestationModel>roundtripIdTokens[0]).id).toEqual((<BaseAttestationModel>roundtripIdTokens[0]).name);
+      expect((<BaseAttestationModel>roundtripIdTokens[1]).id).toEqual((<BaseAttestationModel>roundtripIdTokens[1]).name);
+
+      // trusted issuers should exist
+      expect(roundtripIdTokens[1].issuers![0].iss).toEqual('did:ion:trustedIssuer1');
 
       // decryption keys
       const roundtripDecryptionKeys = <RemoteKeyModel[]>roundtrip.decryptionKeys;
