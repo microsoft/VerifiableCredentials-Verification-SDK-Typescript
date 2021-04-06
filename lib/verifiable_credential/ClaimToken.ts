@@ -25,6 +25,11 @@ export enum TokenType {
   idToken = 'idToken',
 
   /**
+   * Token is id token hint
+   */
+  idTokenHint = 'idTokenHint',
+
+  /**
    * Token is SIOP token issuance request
    */
   siopIssuance = 'siopIssuance',
@@ -159,15 +164,23 @@ export default class ClaimToken {
       // compact jwt      
       // Check type of token
       if (payload.iss === VerifiableCredentialConstants.TOKEN_SI_ISS) {
+        if (id === VerifiableCredentialConstants.TOKEN_SI_ISS) {
+          return new ClaimToken(TokenType.idTokenHint, <string>token, id);
+        }
+        
         if (payload.contract) {
           return new ClaimToken(TokenType.siopIssuance, <string>token, id);
-        } else if (payload.presentation_submission) {
-          return new ClaimToken(TokenType.siopPresentationExchange, <string>token, id);
-        } else if (payload.attestations) {
-          return new ClaimToken(TokenType.siopPresentationAttestation, <string>token, id);
-        } else {
-          return new ClaimToken(TokenType.siop, <string>token, id);
         }
+        
+        if (payload.presentation_submission) {
+          return new ClaimToken(TokenType.siopPresentationExchange, <string>token, id);
+        }
+        
+        if (payload.attestations) {
+          return new ClaimToken(TokenType.siopPresentationAttestation, <string>token, id);
+        }
+
+        return new ClaimToken(TokenType.siop, <string>token, id);
       }
 
       if (payload.vc) {
@@ -202,7 +215,7 @@ export default class ClaimToken {
       }
       else {
         for (let tokenKey in token) {
-          const claimToken = ClaimToken.create(token[tokenKey]);
+          const claimToken = ClaimToken.create(token[tokenKey], tokenKey);
           decodedTokens[tokenKey] = claimToken;
         }
       }

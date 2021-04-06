@@ -20,7 +20,7 @@ export class SiopValidation implements ISiopValidation {
    * @param options Options to steer the validation process
    * @param expected Expected properties of the SIOP
    */
-  constructor(private options: IValidationOptions, private expected: IExpectedSiop) {
+  constructor(protected options: IValidationOptions, protected expected: IExpectedSiop) {
   }
 
   private _didValidation: DidValidation | undefined;
