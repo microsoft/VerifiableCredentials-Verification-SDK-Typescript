@@ -2,11 +2,11 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import base64url from 'base64url';
 import VerifiableCredentialConstants from './VerifiableCredentialConstants';
 import ValidationError from '../error_handling/ValidationError';
-import { PresentationDefinitionModel  } from '../index';
+import { PresentationDefinitionModel } from '../index';
 import ErrorHelpers from '../error_handling/ErrorHelpers';
+import JsonWebSignatureToken, { TokenPayload } from './JsonWebSignatureToken';
 const jp = require('jsonpath');
 const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKCLTO', error);
 
@@ -74,6 +74,7 @@ export default class ClaimToken {
   private _type: TokenType;
   private _decodedToken: { [key: string]: any } = {};
   private _tokenHeader: { [key: string]: any } = {};
+  private readonly _jsonWebToken?: JsonWebSignatureToken;
 
   /**
    * Token type
@@ -124,7 +125,7 @@ export default class ClaimToken {
    * @param token The raw token
    * @param id The id of the token (configuration endpoint for id tokens)
    */
-  constructor(typeName: string, token: string | object, id?: string) {
+  constructor(typeName: string, token: string | JsonWebSignatureToken | TokenPayload, id?: string) {
     const tokentypeValues: string[] = Object.values(TokenType);
     if (tokentypeValues.includes(typeName)) {
       this._type = typeName as TokenType;
@@ -133,8 +134,14 @@ export default class ClaimToken {
     }
 
     if (typeof token === 'string') {
-      this._rawToken = token as string;
-      this.decode();
+      token = new JsonWebSignatureToken(token);
+    }
+
+    if (token instanceof JsonWebSignatureToken) {
+      this._rawToken = token.token;
+      this._tokenHeader = token.header;
+      this._decodedToken = token.payload;
+      this._jsonWebToken = token;
     }
     else {
       this._rawToken = this._decodedToken = token;
@@ -147,57 +154,53 @@ export default class ClaimToken {
    * Factory class to create a ClaimToken containing the token type, raw token and decoded payload
    * @param token to check for type
    */
-  public static create(token: string | object, id?: string): ClaimToken {
-
-    let payload: any;
+  public static create(token: string | TokenPayload, id?: string): ClaimToken {
     if (typeof token === 'string') {
-      // Deserialize the token
-      payload = ClaimToken.getTokenPayload(<string>token);
-    } else {
-      payload = token;
-    }
 
-    // check for json LD
-    if (payload['\@context'] && payload.type && payload.type.length >= 1 && payload.type.includes('VerifiableCredential')) {
-      return new ClaimToken(TokenType.verifiableCredential, payload, id);
-    } else {
       // compact jwt      
+      const jws = new JsonWebSignatureToken(token);
+      const { payload } = jws;
+
       // Check type of token
       if (payload.iss === VerifiableCredentialConstants.TOKEN_SI_ISS) {
         if (id === VerifiableCredentialConstants.TOKEN_SI_ISS) {
-          return new ClaimToken(TokenType.idTokenHint, <string>token, id);
-        }
-        
-        if (payload.contract) {
-          return new ClaimToken(TokenType.siopIssuance, <string>token, id);
-        }
-        
-        if (payload.presentation_submission) {
-          return new ClaimToken(TokenType.siopPresentationExchange, <string>token, id);
-        }
-        
-        if (payload.attestations) {
-          return new ClaimToken(TokenType.siopPresentationAttestation, <string>token, id);
+          return new ClaimToken(TokenType.idTokenHint, jws, id);
         }
 
-        return new ClaimToken(TokenType.siop, <string>token, id);
+        if (payload.contract) {
+          return new ClaimToken(TokenType.siopIssuance, jws, id);
+        }
+
+        if (payload.presentation_submission) {
+          return new ClaimToken(TokenType.siopPresentationExchange, jws, id);
+        }
+
+        if (payload.attestations) {
+          return new ClaimToken(TokenType.siopPresentationAttestation, jws, id);
+        }
+
+        return new ClaimToken(TokenType.siop, jws, id);
       }
 
       if (payload.vc) {
-        return new ClaimToken(TokenType.verifiableCredential, <string>token, id);
+        return new ClaimToken(TokenType.verifiableCredential, jws, id);
       }
       if (payload.vp) {
-        return new ClaimToken(TokenType.verifiablePresentationJwt, <string>token, id);
+        return new ClaimToken(TokenType.verifiablePresentationJwt, jws, id);
       }
 
-      // Check for signature
-      if (ClaimToken.tokenSignature(<string>token)) {
-        return new ClaimToken(TokenType.idToken, <string>token, id);
-      }
-
-      return new ClaimToken(TokenType.selfIssued, <string>token, id);
+      return new ClaimToken(TokenType.idToken, jws, id);
     }
+
+    // the only inputs that are not a string are JSON LD or self attested claims
+    // check for json LD
+    if (token['\@context'] && token.type && token.type.length >= 1 && token.type.includes('VerifiableCredential')) {
+      return new ClaimToken(TokenType.verifiableCredential, token, id);
+    }
+
+    return new ClaimToken(TokenType.selfIssued, token, id);
   }
+
 
   /**
   * Attestations contain the tokens and VCs in the input.
@@ -228,8 +231,8 @@ export default class ClaimToken {
   * This algorithm will convert the attestations to a ClaimToken
   * @param payload The presentaiton exchange payload 
   */
- public static getClaimTokensFromPresentationExchange(payload: PresentationDefinitionModel): { [key: string]: ClaimToken } {
-  const decodedTokens: { [key: string]: ClaimToken } = {};
+  public static getClaimTokensFromPresentationExchange(payload: PresentationDefinitionModel): { [key: string]: ClaimToken } {
+    const decodedTokens: { [key: string]: ClaimToken } = {};
     // Get descriptor map
     const descriptorMap: any[] = jp.query(payload, `$.presentation_submission.descriptor_map.*`);
 
@@ -259,48 +262,5 @@ export default class ClaimToken {
       }
     }
     return decodedTokens;
-  }
-
-
-  /**
-   * Decode the token
-   * @param type Claim type
-   * @param values Claim value
-   */
-  private decode(): void {
-    const parts = (<string>this.rawToken).split('.');
-    if (parts.length < 2) {
-      throw new ValidationError(`Cannot decode. Invalid input token`, errorCode(6));
-    }
-
-    this._tokenHeader = JSON.parse(base64url.decode(parts[0]));
-    this._decodedToken = JSON.parse(base64url.decode(parts[1]));
-  }
-
-  /**
-   * Get the token object from the self issued token
-   * @param token The token to parse
-   * @returns The payload object
-   */
-  private static getTokenPayload(token: string): any {
-    try {
-      // Deserialize the JWT token
-      const split = token.split('.');
-      return JSON.parse(base64url.decode(split[1]));
-    } catch (exception) {
-      // Check for json ld
-    }
-    return JSON.parse(token);
-  }
-
-  /**
-   * Get the token object from the self issued token
-   * @param token The token to parse
-   * @returns The payload object
-   */
-  private static tokenSignature(token: string): boolean {
-    // Split the token
-    const split = token.split('.');
-    return split[2] !== undefined && split[2].trim() !== '';
   }
 }
