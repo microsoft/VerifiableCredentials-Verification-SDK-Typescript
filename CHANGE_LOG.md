@@ -1,3 +1,29 @@
+# version 0.12.1-preview.6
+## Attack vector protection IdToken Hint
+**Type of change:** feature work
+**Customer impact:** low
+- Protection against attack vector.
+
+# version 0.12.1-preview.5
+## Support IdToken Hint Tokens
+**Type of change:** feature work
+**Customer impact:** low
+- DIDs for TrustedIssuerModel instances need to be strings.
+
+# version 0.12.1-preview.4
+## Support IdToken Hint Tokens
+**Type of change:** feature work
+**Customer impact:** low
+- Allow SiopValidation and SiopTokenValidator to be extended by making some of its methods protected.
+- Make TrustedIssuerModel validation stricter by enforcing valid issuer DIDs.
+
+# version 0.12.1-preview.3
+## Support IdToken Hint Tokens
+**Type of change:** feature work
+**Customer impact:** low
+- Add new TokenType for IdToken Hints.
+- Augment IdTokenAttestationModel with optional trusted issuers.
+
 # version 0.12.1-preview.2
 ## Add error codes to the validation response
 **Type of change:** engineering    

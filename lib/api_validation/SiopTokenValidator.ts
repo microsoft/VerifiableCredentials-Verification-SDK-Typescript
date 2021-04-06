@@ -24,7 +24,7 @@ export default class SiopTokenValidator implements ITokenValidator {
    * @param validatorOption The options used during validation
    * @param expected values to find in the token to validate
    */
-  constructor(private validatorOption: IValidatorOptions, private expected: IExpectedSiop) {
+  constructor(protected validatorOption: IValidatorOptions, protected expected: IExpectedSiop) {
   }
 
   /**
@@ -48,7 +48,7 @@ export default class SiopTokenValidator implements ITokenValidator {
    * Check state and nonce
    * @param validationResponse The response for the requestor
    */
-  private validateReplayProtection(validationResponse: IValidationResponse): IValidationResponse {
+  protected validateReplayProtection(validationResponse: IValidationResponse): IValidationResponse {
     if (this.expected.nonce) {
       if (this.expected.nonce !== validationResponse.payloadObject.nonce) {
         return {

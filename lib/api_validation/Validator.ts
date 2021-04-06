@@ -133,6 +133,7 @@ export default class Validator {
         case TokenType.siop:
         case TokenType.siopPresentationAttestation:
         case TokenType.siopPresentationExchange:
+        case TokenType.idTokenHint:
           response = await validator.validate(queue, queueItem!);
           siopDid = response.did;
           break;
@@ -369,7 +370,10 @@ export default class Validator {
     }
 
     // get id tokens
-    let tokens = queue.items.filter((item) => item.validatedToken?.type === TokenType.idToken);
+    let tokens = queue.items.filter((item) => {
+      const type = item.validatedToken?.type;
+      return type === TokenType.idToken || type === TokenType.idTokenHint;
+    });
     if (tokens && tokens.length > 0) {
       validationResult.idTokens = {};
       for (let token in tokens) {
