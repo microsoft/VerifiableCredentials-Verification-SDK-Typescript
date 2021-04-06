@@ -266,14 +266,14 @@ export default class ValidatorBuilder {
   }
 
   /**
-   * Gets the maximum number of VP tokens in a SIOP
+   * Gets the maximum number of VC tokens in a SIOP presentation
    */
   public get maxNumberOfVCTokensInPresentation() {
     return this._validationSafeguards.maxNumberOfVCTokensInPresentation;
   }
 
   /**
-   * Sets the maximum number of VP tokens in a SIOP
+   * Sets the maximum number of VC tokens in a SIOP presentation
    */
   public useMaxNumberOfVCTokensInPresentation(value: number): ValidatorBuilder {
     this._validationSafeguards.maxNumberOfVCTokensInPresentation = value;
@@ -281,14 +281,14 @@ export default class ValidatorBuilder {
   }
 
   /**
-   * Gets the maximum number of VP tokens in a SIOP
+   * Gets the maximum size of VP tokens in a SIOP
    */
   public get maxSizeOfVPTokensInSiop() {
     return this._validationSafeguards.maxSizeOfVPTokensInSiop;
   }
 
   /**
-   * Sets the maximum number of VP tokens in a SIOP
+   * Sets the maximum size of VP tokens in a SIOP
    */
   public useMaxSizeOfVPTokensInSiop(value: number): ValidatorBuilder {
     this._validationSafeguards.maxSizeOfVPTokensInSiop = value;
@@ -296,7 +296,7 @@ export default class ValidatorBuilder {
   }
 
   /**
-   * Gets the maximum number of VP tokens in a SIOP
+   * Gets the maximum size of VC tokens in a presentation
    */
   public get maxSizeOfVCTokensInPresentation() {
     //const nrTokens = Object.keys(this.useTrustedIssuersForVerifiableCredentials).length;
@@ -305,7 +305,7 @@ export default class ValidatorBuilder {
   }
 
   /**
-   * Sets the maximum number of VP tokens in a SIOP
+   * Sets the maximum size of VC tokens in a presentation
    */
   public useMaxSizeOfVCTokensInPresentation(value: number): ValidatorBuilder {
     this._validationSafeguards.maxSizeOfVCTokensInPresentation = value;
@@ -313,14 +313,14 @@ export default class ValidatorBuilder {
   }
 
   /**
-   * Gets the maximum number of VP tokens in a SIOP
+   * Gets the maximum size of ID tokens
    */
   public get maxSizeOfIdToken() {
     return this._validationSafeguards.maxSizeOfIdToken;
   }
 
   /**
-   * Sets the maximum number of VP tokens in a SIOP
+   * Sets the maximum size of ID tokens
    */
   public useMaxSizeOfIdToken(value: number): ValidatorBuilder {
     this._validationSafeguards.maxSizeOfIdToken = value;
