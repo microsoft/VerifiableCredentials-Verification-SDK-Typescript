@@ -4,11 +4,60 @@
 **Customer impact:** low
 - Don't parse a jwt multiple times
 
+## Add Validation safeguards
+**Type of change:** feature work
+**Customer impact:** low
+
 # version 0.12.1-preview.6
 ## Attack vector protection IdToken Hint
 **Type of change:** feature work
 **Customer impact:** low
 - Protection against attack vector.
+
+A new class ValidationSafeguards is added. The safeguards can be set via the ValidationBuilder.
+Several new properties are added to the builder.
+
+  /**
+   * Gets the maximum number of VC tokens in a SIOP presentation
+   */
+  public get maxNumberOfVCTokensInPresentation()
+
+  /**
+   * Sets the maximum number of VC tokens in a SIOP presentation
+   */
+  public useMaxNumberOfVCTokensInPresentation(value: number): ValidatorBuilder 
+
+  /**
+   * Gets the maximum size of VP tokens in a SIOP
+   */
+  public get maxSizeOfVPTokensInSiop()
+
+  /**
+   * Sets the maximum size of VP tokens in a SIOP
+   */
+  public useMaxSizeOfVPTokensInSiop(value: number): ValidatorBuilder 
+
+  /**
+   * Gets the maximum size of VC tokens in a presentation
+   */
+  public get maxSizeOfVCTokensInPresentation() 
+
+  /**
+   * Sets the maximum size of VC tokens in a presentation
+   */
+  public useMaxSizeOfVCTokensInPresentation(value: number): ValidatorBuilder 
+
+  /**
+   * Gets the maximum size of ID tokens
+   */
+  public get maxSizeOfIdToken() 
+
+  /**
+   * Sets the maximum size of ID tokens
+   */
+  public useMaxSizeOfIdToken(value: number): ValidatorBuilder 
+
+
 
 # version 0.12.1-preview.5
 ## Support IdToken Hint Tokens

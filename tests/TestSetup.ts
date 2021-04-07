@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IssuanceHelpers } from './IssuanceHelpers';
-import { ManagedHttpResolver, CryptoBuilder, IKeyStore, SubtleCryptoNode, KeyReference } from '../lib/index';
+import { ManagedHttpResolver, CryptoBuilder, IKeyStore, SubtleCryptoNode, KeyReference, ValidationSafeguards } from '../lib/index';
 import IValidatorOptions from '../lib/options/IValidatorOptions';
 import FetchRequest from '../lib/tracing/FetchRequest';
 
@@ -100,6 +100,7 @@ export default class TestSetup {
   */
   public validatorOptions: IValidatorOptions = {
     fetchRequest: new FetchRequest(),
+    validationSafeguards: new ValidationSafeguards(),
     resolver: this.resolver,
     crypto: this.crypto
   };

@@ -31,7 +31,8 @@ import IValidationResult from './api_validation/IValidationResult';
 import ValidatorBuilder from './api_validation/ValidatorBuilder';
 import SelfIssuedTokenValidator from './api_validation/SelfIssuedTokenValidator';
 import SiopTokenValidator from './api_validation/SiopTokenValidator';
-export { IValidationResult, SelfIssuedTokenValidator, SiopTokenValidator, VerifiablePresentationTokenValidator, VerifiableCredentialTokenValidator, IdTokenTokenValidator, Validator, ValidatorBuilder, ITokenValidator };
+import ValidationSafeguards from "./api_validation/ValidationSafeguards";
+export { ValidationSafeguards, IValidationResult, SelfIssuedTokenValidator, SiopTokenValidator, VerifiablePresentationTokenValidator, VerifiableCredentialTokenValidator, IdTokenTokenValidator, Validator, ValidatorBuilder, ITokenValidator };
 
 import { IValidationOptions } from './options/IValidationOptions';
 import IValidatorOptions from './options/IValidatorOptions';

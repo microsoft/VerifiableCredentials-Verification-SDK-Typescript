@@ -322,7 +322,7 @@ describe('Rule processor', () => {
     }
   });
 
-  it('should process RequestTwoVcResponseOk', async () => {
+  it('should process RequestTwoVcResponseOk with limiting validation safeguards', async () => {
     try {
       const model = new RequestTwoVcResponseOk();
       const requestor = new RequestorHelper(model);
@@ -337,20 +337,57 @@ describe('Rule processor', () => {
       const responderResponse = await responder.createResponse();
       console.log(`=====> Response: ${responderResponse.rawToken}`);
 
-      const validator = new ValidatorBuilder(requestor.crypto)
+      // Check max VC size
+      let validator = new ValidatorBuilder(requestor.crypto)
         .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!], Diploma: [responder.generator.crypto.builder.did!] })
+        .enableFeatureVerifiedCredentialsStatusCheck(true)
+        .useMaxSizeOfVCTokensInPresentation(10)
+        .build();
+      let response = await validator.validate(<string>responderResponse.rawToken);
+      expect(response.result).toBeFalsy();
+      expect(response.code).toEqual('VCSDKVPTV03');
+      validator.builder.useMaxSizeOfVCTokensInPresentation(16*1024*1024);
+      
+      // Check max VP size
+      validator = new ValidatorBuilder(requestor.crypto)
+        .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!], Diploma: [responder.generator.crypto.builder.did!] })
+        .enableFeatureVerifiedCredentialsStatusCheck(true)
+        .useMaxSizeOfVPTokensInSiop(10)
+        .build();
+      response = await validator.validate(<string>responderResponse.rawToken);
+      expect(response.result).toBeFalsy();
+      expect(response.code).toEqual('VCSDKSTVa07');
+      validator.builder.useMaxSizeOfVPTokensInSiop(16*1024*1024);
+    } finally {
+      TokenGenerator.fetchMock.reset();
+    }
+  });
+
+  xit('should process maximum presentations', async () => {
+    try {
+      const model = new RequestTwoVcResponseOk();
+      const requestor = new RequestorHelper(model);
+      await requestor.setup();
+      const request = await requestor.createPresentationExchangeRequest();
+
+      console.log(`Model: ${model.constructor.name}`);
+      console.log(`=====> Request: ${request.rawToken}`);
+
+      const responder = new ResponderHelper(requestor, model);
+      await responder.setup();
+      const responderResponse = await responder.createResponse();
+      console.log(`=====> Response: ${responderResponse.rawToken}`);
+
+      // Check max VC size
+      let validator = new ValidatorBuilder(requestor.crypto)
+        .useTrustedIssuersForVerifiableCredentials({ IdentityCard: [responder.generator.crypto.builder.did!] })
         .enableFeatureVerifiedCredentialsStatusCheck(true)
         .build();
       let response = await validator.validate(<string>responderResponse.rawToken);
-      expect(response.result).toBeTruthy();
-
-      expect(response.validationResult!.verifiableCredentials!['IdentityCard'].decodedToken.jti).toEqual(model.getVcFromResponse('IdentityCard').decodedToken.jti);
-      const jtiIdentity = response.validationResult!.verifiablePresentations!['IdentityCard'].decodedToken.jti;
-      const jtiDiploma = response.validationResult!.verifiablePresentations!['Diploma'].decodedToken.jti;
-      expect(jtiDiploma === jtiIdentity).toBeFalsy();
-      expect(response.validationResult!.verifiablePresentationStatus![jtiIdentity].status).toEqual('valid');
-      expect(response.validationResult!.verifiablePresentationStatus![jtiDiploma].status).toEqual('valid');
-    } finally {
+      expect(response.result).toBeFalsy();
+      expect(response.code).toEqual('VCSDKVPTV03');
+      validator.builder.useMaxSizeOfVCTokensInPresentation(16*1024*1024);
+    }finally {
       TokenGenerator.fetchMock.reset();
     }
   });
