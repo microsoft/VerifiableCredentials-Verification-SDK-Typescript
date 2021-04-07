@@ -1,4 +1,4 @@
-import { TokenType, ValidatorBuilder, IdTokenTokenValidator, VerifiableCredentialTokenValidator, VerifiablePresentationTokenValidator, IExpectedVerifiableCredential, IExpectedVerifiablePresentation, IExpectedIdToken, IExpectedSiop, IExpectedSelfIssued, Validator, CryptoBuilder, ManagedHttpResolver, ClaimToken } from '../lib/index';
+import { TokenType, ValidatorBuilder, IdTokenTokenValidator, VerifiableCredentialTokenValidator, VerifiablePresentationTokenValidator, IExpectedVerifiableCredential, IExpectedVerifiablePresentation, IExpectedIdToken, IExpectedSiop, IExpectedSelfIssued, Validator, CryptoBuilder, ManagedHttpResolver, ClaimToken, JsonWebSignatureToken } from '../lib/index';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import TestSetup from './TestSetup';
 import ValidationQueue from '../lib/input_validation/ValidationQueue';
@@ -377,23 +377,19 @@ describe('Validator', () => {
 
   describe('setValidationResult()', () => {
     let validator: Validator;
-    let decodeSpy: jasmine.Spy<() => void>;
 
     beforeAll(() => {
       validator = new Validator(new ValidatorBuilder(new Crypto(new CryptoBuilder())));
-      decodeSpy = spyOn((<any>ClaimToken).prototype, 'decode');
-    });
-
-    beforeEach(() => {
-      decodeSpy.and.stub();
     });
 
     it('should add IdTokens and IdTokenHints to the same object', () => {
+      const dummyPayload = JsonWebSignatureToken.encode({}, {});
+
       // Set up queue.
       const queue = new ValidationQueue();
       const id = 'idToken';
-      const idTokenClaimToken = new ClaimToken(TokenType.idToken, 'someToken', id);
-      const idTokenHintClaimToken = new ClaimToken(TokenType.idTokenHint, 'someToken', VerifiableCredentialConstants.TOKEN_SI_ISS);
+      const idTokenClaimToken = new ClaimToken(TokenType.idToken, dummyPayload, id);
+      const idTokenHintClaimToken = new ClaimToken(TokenType.idTokenHint, dummyPayload, VerifiableCredentialConstants.TOKEN_SI_ISS);
       const idTokenItem = new ValidationQueueItem(id, idTokenClaimToken);
       const idTokenHintItem = new ValidationQueueItem(VerifiableCredentialConstants.TOKEN_SI_ISS, idTokenHintClaimToken);
       queue.enqueueItem(idTokenItem);

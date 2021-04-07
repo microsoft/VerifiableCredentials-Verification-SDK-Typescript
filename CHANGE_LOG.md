@@ -1,12 +1,18 @@
+# version 0.12.1-preview.7
+## Performance improvements for ClaimToken.Create
+**Type of change:** feature work
+**Customer impact:** low
+- Don't parse a jwt multiple times
+
+## Add Validation safeguards
+**Type of change:** feature work
+**Customer impact:** low
+
 # version 0.12.1-preview.6
 ## Attack vector protection IdToken Hint
 **Type of change:** feature work
 **Customer impact:** low
 - Protection against attack vector.
-
-## Add Validation safeguards
-**Type of change:** feature work
-**Customer impact:** low
 
 A new class ValidationSafeguards is added. The safeguards can be set via the ValidationBuilder.
 Several new properties are added to the builder.
