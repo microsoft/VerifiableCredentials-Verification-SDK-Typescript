@@ -6,9 +6,8 @@ import { JoseBuilder, Subtle } from 'verifiablecredentials-crypto-sdk-typescript
 import TestSetup from './TestSetup';
 import { DidDocument } from '@decentralized-identity/did-common-typescript';
 import ClaimToken, { TokenType } from '../lib/verifiable_credential/ClaimToken';
-import base64url from "base64url";
 import ValidationOptions from '../lib/options/ValidationOptions';
-import { KeyReference, IExpectedBase, IExpectedSelfIssued, IExpectedIdToken, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, Validator } from '../lib/index';
+import { KeyReference, IExpectedBase, IExpectedSelfIssued, IExpectedIdToken, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, JsonWebSignatureToken, TokenPayload } from '../lib/index';
 
 export class IssuanceHelpers {
   public static readonly jti: string = 'testJti';
@@ -41,20 +40,21 @@ export class IssuanceHelpers {
    * Create a verifiable credentiaL
    * @param claims Credential claims
    */
-  public static createSelfIssuedToken(claims: { [claim: string]: string }): ClaimToken {
-    const header = base64url.encode(JSON.stringify({
+  public static createSelfIssuedToken(claims: TokenPayload): ClaimToken {
+    const header = {
       alg: "none",
       typ: 'JWT'
-    }));
-    const body = base64url.encode(JSON.stringify(claims));
-    return new ClaimToken(TokenType.selfIssued, `${header}.${body}`, '');
+    };
+
+    const jwt = JsonWebSignatureToken.encode(header, claims);
+    return new ClaimToken(TokenType.selfIssued, jwt, '');
   }
 
   /**
    * Create a verifiable credential
    * @param claims Token claims
    */
-  public static async createVc(setup: TestSetup, credentialSubject: { [claim: string]: any }, configuration: string, jwkPrivate: any, jwkPublic: any): Promise<ClaimToken> {
+  public static async createVc(setup: TestSetup, credentialSubject: TokenPayload, configuration: string, jwkPrivate: any, jwkPublic: any): Promise<ClaimToken> {
     // Set the mock because we will resolve the signing key as did
     await this.resolverMock(setup, setup.defaultIssuerDid, jwkPrivate, jwkPublic);
     const statusUrl = 'https://portableidentitycards.azure-api.net/42b39d9d-0cdd-4ae0-b251-b7b39a561f91/api/portable/v1.0/status';

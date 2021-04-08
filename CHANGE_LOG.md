@@ -1,13 +1,24 @@
-# version 0.12.1-preview.6
-## Attack vector protection IdToken Hint
+# version 0.12.1-preview.7
+## Performance improvements for ClaimToken.Create
 **Type of change:** feature work
 **Customer impact:** low
-- Protection against attack vector.
+- Don't parse a jwt multiple times
+
+## Add Validation safeguards
+**Type of change:** feature work
+**Customer impact:** low
 
 ## Do status requests on VC's in parallel
 **Type of change:** engineering
 **Customer impact:** low
 - Status checks on VCs are now happening in parallel
+
+
+# version 0.12.1-preview.6
+## Attack vector protection IdToken Hint
+**Type of change:** feature work
+**Customer impact:** low
+- Protection against attack vector.
 
 # version 0.12.1-preview.5
 ## Support IdToken Hint Tokens

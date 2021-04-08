@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IDidResolver, Crypto } from '../index';
+import { IDidResolver, Crypto, ValidationSafeguards } from '../index';
 import IFetchRequest from '../tracing/IFetchRequest';
 
  /**
  * Interface to model the validator options
  */
 export default interface IValidatorOptions {
-
+    
     /**
      * The DID resolver
      */
@@ -20,6 +20,11 @@ export default interface IValidatorOptions {
      * The fetch client
      */
     fetchRequest: IFetchRequest,
+
+    /**
+     * The validation safeguards
+     */
+    validationSafeguards: ValidationSafeguards,
 
     /**
      * Get the crypto options

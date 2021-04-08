@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ITokenValidator, Validator, IDidResolver, ManagedHttpResolver, VerifiablePresentationTokenValidator, VerifiableCredentialTokenValidator, IdTokenTokenValidator, SiopTokenValidator, SelfIssuedTokenValidator, TokenType, IValidatorOptions, IRequestor, Requestor } from '../index';
+import { ITokenValidator, Validator, IDidResolver, ManagedHttpResolver, VerifiablePresentationTokenValidator, VerifiableCredentialTokenValidator, IdTokenTokenValidator, SiopTokenValidator, SelfIssuedTokenValidator, TokenType, IValidatorOptions, IRequestor, Requestor, ValidationSafeguards } from '../index';
 import VerifiableCredentialConstants from '../verifiable_credential/VerifiableCredentialConstants';
 import { Crypto } from '../index';
 import { IExpectedIdToken, IExpectedSelfIssued, IExpectedVerifiableCredential, IExpectedVerifiablePresentation, IExpectedSiop, IssuerMap } from '../options/IExpected';
@@ -24,6 +24,7 @@ export default class ValidatorBuilder {
   private _nonce: string | undefined;
   private _fetchRequest: IFetchRequest = new FetchRequest();
   private _resolver: IDidResolver = new ManagedHttpResolver(VerifiableCredentialConstants.UNIVERSAL_RESOLVER_URL, this._fetchRequest);
+  private _validationSafeguards: ValidationSafeguards = new ValidationSafeguards();
 
   /**
    * Create a new instance of ValidatorBuilder
@@ -53,6 +54,7 @@ export default class ValidatorBuilder {
     return {
       resolver: this.resolver,
       fetchRequest: this.fetchRequest,
+      validationSafeguards: this._validationSafeguards,
       crypto: this.crypto
     };
   }
@@ -263,6 +265,68 @@ export default class ValidatorBuilder {
     return this._audienceUrl;
   }
 
+  /**
+   * Gets the maximum number of VC tokens in a SIOP presentation
+   */
+  public get maxNumberOfVCTokensInPresentation() {
+    return this._validationSafeguards.maxNumberOfVCTokensInPresentation;
+  }
+
+  /**
+   * Sets the maximum number of VC tokens in a SIOP presentation
+   */
+  public useMaxNumberOfVCTokensInPresentation(value: number): ValidatorBuilder {
+    this._validationSafeguards.maxNumberOfVCTokensInPresentation = value;
+    return this;
+  }
+
+  /**
+   * Gets the maximum size of VP tokens in a SIOP
+   */
+  public get maxSizeOfVPTokensInSiop() {
+    return this._validationSafeguards.maxSizeOfVPTokensInSiop;
+  }
+
+  /**
+   * Sets the maximum size of VP tokens in a SIOP
+   */
+  public useMaxSizeOfVPTokensInSiop(value: number): ValidatorBuilder {
+    this._validationSafeguards.maxSizeOfVPTokensInSiop = value;
+    return this;
+  }
+
+  /**
+   * Gets the maximum size of VC tokens in a presentation
+   */
+  public get maxSizeOfVCTokensInPresentation() {
+    //const nrTokens = Object.keys(this.useTrustedIssuersForVerifiableCredentials).length;
+    //return this._validationSafeguards.maxSizeOfVCTokensInPresentation = nrTokens;
+    return this._validationSafeguards.maxSizeOfVCTokensInPresentation;
+  }
+
+  /**
+   * Sets the maximum size of VC tokens in a presentation
+   */
+  public useMaxSizeOfVCTokensInPresentation(value: number): ValidatorBuilder {
+    this._validationSafeguards.maxSizeOfVCTokensInPresentation = value;
+    return this;
+  }
+
+  /**
+   * Gets the maximum size of ID tokens
+   */
+  public get maxSizeOfIdToken() {
+    return this._validationSafeguards.maxSizeOfIdToken;
+  }
+
+  /**
+   * Sets the maximum size of ID tokens
+   */
+  public useMaxSizeOfIdToken(value: number): ValidatorBuilder {
+    this._validationSafeguards.maxSizeOfIdToken = value;
+    return this;
+  }
+
   // Feature flags. Used temporary to introduce a new feature
   private _enableVerifiedCredentialsStatusCheck = true;
   public get featureVerifiedCredentialsStatusCheckEnabled(): boolean {
@@ -273,6 +337,5 @@ export default class ValidatorBuilder {
     this._enableVerifiedCredentialsStatusCheck = enable;
     return this;
   }
-
 }
 
