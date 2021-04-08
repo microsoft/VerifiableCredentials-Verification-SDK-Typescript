@@ -69,7 +69,7 @@ export class ValidationHelpers {
         return {
           result: false,
           code: errorCode(1),
-          detailedError: `The ${(self as ValidationOptions).tokenType} could not be deserialized`,
+          detailedError: `The ${this.tokenType} could not be deserialized`,
           innerError: exception,
           status: 400
         };
@@ -80,7 +80,7 @@ export class ValidationHelpers {
       return {
         result: false,
         code: errorCode(2),
-        detailedError: `The signature in the ${(self as ValidationOptions).tokenType} has an invalid format`,
+        detailedError: `The signature in the ${this.tokenType} has an invalid format`,
         status: 403
       };
     }
@@ -91,7 +91,7 @@ export class ValidationHelpers {
         return {
           result: false,
           code: errorCode(3),
-          detailedError: `The payload in the ${(self as ValidationOptions).tokenType} is undefined`,
+          detailedError: `The payload in the ${this.tokenType} is undefined`,
           status: 403
         };
       }
@@ -104,7 +104,7 @@ export class ValidationHelpers {
           result: false,
           code: errorCode(4),
           innerError: err,
-          detailedError: `The payload in the ${(self as ValidationOptions).tokenType} is no valid JSON`,
+          detailedError: `The payload in the ${this.tokenType} is no valid JSON`,
           status: 400
         };
       }
@@ -114,7 +114,7 @@ export class ValidationHelpers {
         return {
           result: false,
           code: errorCode(5),
-          detailedError: `The protected header in the ${(self as ValidationOptions).tokenType} does not contain the kid`,
+          detailedError: `The protected header in the ${this.tokenType} does not contain the kid`,
           status: 403
         };
       }

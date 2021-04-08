@@ -4,10 +4,21 @@
  *--------------------------------------------------------------------------------------------*/
 import ClaimToken, { TokenType } from '../lib/verifiable_credential/ClaimToken';
 import base64url from 'base64url';
-import { ValidationError } from '../lib';
+import VerifiableCredentialConstants from '../lib/verifiable_credential/VerifiableCredentialConstants';
 
- describe('ClaimToken', () => {
-  it ('should create a ClaimToken', () => {
+describe('ClaimToken', () => {
+  const sampleToken = 'thisIsAToken';
+  let decodeSpy: jasmine.Spy<() => void>;
+
+  beforeAll(() => {
+    decodeSpy = spyOn((<any>ClaimToken).prototype, 'decode');
+  });
+
+  beforeEach(() => {
+    decodeSpy.and.callThrough();
+  });
+
+  it('should create a ClaimToken', () => {
     const header = {typ: "JWT"};
     let payload = {name: 'test', vc: {}};
     let token = base64url.encode(JSON.stringify(header)) + '.' + base64url.encode(JSON.stringify(payload)) + '.';
@@ -43,4 +54,79 @@ import { ValidationError } from '../lib';
     expect(() => new ClaimToken(<any>'', token, configuration)).toThrowMatching((exception) => exception.message === `Type '' is not supported` && exception.code === 'VCSDKCLTO01');
     expect(() => new ClaimToken(TokenType.siopIssuance, 'token')).toThrowMatching((exception) => exception.message === `Cannot decode. Invalid input token` && exception.code === 'VCSDKCLTO06');
   });
- });
+
+  describe('create()', () => {
+    const iss = VerifiableCredentialConstants.TOKEN_SI_ISS;
+    let getTokenPayloadSpy: jasmine.Spy<(token: string) => any>;
+    let payload: { [claim: string]: any } = {};
+
+    beforeAll(() => {
+      getTokenPayloadSpy = spyOn(<any>ClaimToken, 'getTokenPayload').withArgs(sampleToken);
+      payload = { iss };
+    });
+
+    beforeEach(() => {
+      decodeSpy.and.stub();
+    });
+
+    it('should create IdTokenHint type tokens', () => {
+      // Mock payload creation.
+      getTokenPayloadSpy.and.returnValue(payload);
+
+      // IdTokenHint should be created.
+      const expectedToken = new ClaimToken(TokenType.idTokenHint, sampleToken, VerifiableCredentialConstants.TOKEN_SI_ISS);
+      expect(ClaimToken.create(sampleToken, VerifiableCredentialConstants.TOKEN_SI_ISS)).toEqual(expectedToken);
+    });
+
+    it('should create IdTokenHint type tokens with extraneous attestations claim', () => {
+      // Mock payload creation.
+      const extraneousAttestationsPayload = { ...payload, attestations: { selfIssued: { claim1: 'claimValue1' } } };
+      getTokenPayloadSpy.and.returnValue(extraneousAttestationsPayload);
+
+      // IdTokenHint should be created.
+      const expectedToken = new ClaimToken(TokenType.idTokenHint, sampleToken, VerifiableCredentialConstants.TOKEN_SI_ISS);
+      expect(ClaimToken.create(sampleToken, VerifiableCredentialConstants.TOKEN_SI_ISS)).toEqual(expectedToken);
+    });
+
+    it('should create IdTokenHint type tokens with extraneous contract claim', () => {
+      // Mock payload creation.
+      const extraneousContractPayload = { ...payload, contract: 'https://example.com/contract' };
+      getTokenPayloadSpy.and.returnValue(extraneousContractPayload);
+
+      // IdTokenHint should be created.
+      const expectedToken = new ClaimToken(TokenType.idTokenHint, sampleToken, VerifiableCredentialConstants.TOKEN_SI_ISS);
+      expect(ClaimToken.create(sampleToken, VerifiableCredentialConstants.TOKEN_SI_ISS)).toEqual(expectedToken);
+    });
+
+    it('should create IdTokenHint type tokens with extraneous presentation_submission claim', () => {
+      // Mock payload creation.
+      const extraneousPresentationSubmissionPayload = { ...payload, presentation_submission: 'presetnation submission' };
+      getTokenPayloadSpy.and.returnValue(extraneousPresentationSubmissionPayload);
+
+      // IdTokenHint should be created.
+      const expectedToken = new ClaimToken(TokenType.idTokenHint, sampleToken, VerifiableCredentialConstants.TOKEN_SI_ISS);
+      expect(ClaimToken.create(sampleToken, VerifiableCredentialConstants.TOKEN_SI_ISS)).toEqual(expectedToken);
+    });
+  });
+
+  describe('getClaimTokensFromAttestations()', () => {
+    let createSpy: jasmine.Spy<(token: string | object, id?: string) => ClaimToken>;
+
+    beforeAll(() => {
+      createSpy = spyOn(ClaimToken, 'create');
+    });
+
+    beforeEach(() => {
+      decodeSpy.and.stub();
+      createSpy.calls.reset();
+      createSpy.and.stub();
+    });
+
+    it('should pass token key to create method', () => {
+      const attestations: { [key: string]: string } = { idTokens: <any>{ [VerifiableCredentialConstants.TOKEN_SI_ISS]: sampleToken } };
+      ClaimToken.getClaimTokensFromAttestations(attestations);
+      expect(createSpy).toHaveBeenCalledTimes(1);
+      expect(createSpy).toHaveBeenCalledWith(sampleToken, VerifiableCredentialConstants.TOKEN_SI_ISS);
+    });
+  });
+});
