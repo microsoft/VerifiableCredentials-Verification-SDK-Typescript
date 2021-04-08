@@ -52,7 +52,7 @@ export class ValidationHelpers {
     if (typeof token === 'object') {
       try {
         // instantiate IPayloadProtectionSigning
-        validationResponse.didSignature = await (self as ValidationOptions).validatorOptions.crypto.signingProtocol(JoseBuilder.JSONLDProofs).deserialize(JSON.stringify(token));
+        validationResponse.didSignature = (self as ValidationOptions).validatorOptions.crypto.signingProtocol(JoseBuilder.JSONLDProofs).deserialize(JSON.stringify(token));
         validationResponse.payloadProtectionProtocol = JoseBuilder.JSONLDProofs;
       } catch (exception) {
         console.error('Failing to decode json ld proof');
@@ -63,7 +63,7 @@ export class ValidationHelpers {
       // check for compact JWT tokens
       try {
         // instantiate IPayloadProtectionSigning
-        validationResponse.didSignature = await (self as ValidationOptions).validatorOptions.crypto.signingProtocol(JoseBuilder.JWT).deserialize(<string>token);
+        validationResponse.didSignature = (self as ValidationOptions).validatorOptions.crypto.signingProtocol(JoseBuilder.JWT).deserialize(<string>token);
         validationResponse.payloadProtectionProtocol = JoseBuilder.JWT;
       } catch (exception) {
         return {

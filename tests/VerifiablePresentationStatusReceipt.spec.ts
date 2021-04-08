@@ -27,7 +27,7 @@ describe('VerifiablePresentationStatusReceipt', () =>
       expect(exception.code).toEqual('VCSDKVPSC01');
     }
     let validator = verifiablePresentationStatusReceipt.didValidation;
-    expect(validator!.constructor.name).toEqual('DidValidation');
+    expect(validator).toBeUndefined();
 
     validator = new DidValidation(validationOptions, expected);
     let validatorSpy = spyOn(validator, "validate").and.callFake(() => {
