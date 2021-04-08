@@ -4,6 +4,11 @@
 **Customer impact:** low
 - Protection against attack vector.
 
+## Do status requests on VC's in parallel
+**Type of change:** engineering
+**Customer impact:** low
+- Status checks on VCs are now happening in parallel
+
 # version 0.12.1-preview.5
 ## Support IdToken Hint Tokens
 **Type of change:** feature work
