@@ -14,9 +14,14 @@ import IFetchRequest from '../tracing/IFetchRequest';
  * Class to build a token validator
  */
 export default class ValidatorBuilder {
+  /**
+   * The default behavior when we encounter an invalid status code
+   */
+  public static readonly INVALID_TOKEN_STATUS_CODE = 401;
+
   private _tokenValidators: ({ [type: string]: ITokenValidator }) | undefined;
-  
-  private _trustedIssuersForVerifiableCredentials:  {[credentialType: string]: string[]} | undefined;
+
+  private _trustedIssuersForVerifiableCredentials: { [credentialType: string]: string[] } | undefined;
   private _trustedIssuerConfigurationsForIdTokens: IssuerMap | undefined;
   private _audienceUrl: string | undefined;
   private _requestor: Requestor | undefined;
@@ -25,13 +30,14 @@ export default class ValidatorBuilder {
   private _fetchRequest: IFetchRequest = new FetchRequest();
   private _resolver: IDidResolver = new ManagedHttpResolver(VerifiableCredentialConstants.UNIVERSAL_RESOLVER_URL, this._fetchRequest);
   private _validationSafeguards: ValidationSafeguards = new ValidationSafeguards();
-  private _invalidTokenError: number = 401;
+  private _invalidTokenError: number;
 
   /**
    * Create a new instance of ValidatorBuilder
    * @param _crypto The crypto object
    */
   constructor(private _crypto: Crypto) {
+    this._invalidTokenError = ValidatorBuilder.INVALID_TOKEN_STATUS_CODE;
   }
 
   /**
@@ -61,11 +67,11 @@ export default class ValidatorBuilder {
     };
   }
 
- /**
-   * Sets the state
-   * @param state The state for the response
-   * @returns The validator builder
-   */
+  /**
+    * Sets the state
+    * @param state The state for the response
+    * @returns The validator builder
+    */
   public useState(state: string): ValidatorBuilder {
     this._state = state;
     return this;
@@ -83,7 +89,7 @@ export default class ValidatorBuilder {
     * @param nonce The nonce for the response
     * @returns The validator builder
     */
-   public useNonce(nonce: string): ValidatorBuilder {
+  public useNonce(nonce: string): ValidatorBuilder {
     this._nonce = nonce;
     return this;
   }
@@ -111,7 +117,7 @@ export default class ValidatorBuilder {
     if (!this._nonce && requestor.builder.nonce) {
       this._nonce = requestor.builder.nonce;
     }
-    
+
     return this;
   }
 
@@ -151,14 +157,20 @@ export default class ValidatorBuilder {
       const validatorOptions: IValidatorOptions = this.validationOptions;
 
       this._tokenValidators = {
-        selfIssued: new SelfIssuedTokenValidator(validatorOptions, <IExpectedSelfIssued> {type: TokenType.selfIssued}),
-        idToken: new IdTokenTokenValidator(validatorOptions, <IExpectedIdToken> {type: TokenType.idToken, configuration: this._trustedIssuerConfigurationsForIdTokens}),
-        verifiableCredential: new VerifiableCredentialTokenValidator(validatorOptions, <IExpectedVerifiableCredential> {type: TokenType.verifiableCredential, contractIssuers: this._trustedIssuersForVerifiableCredentials}),
-        verifiablePresentationJwt: new VerifiablePresentationTokenValidator(validatorOptions, <IExpectedVerifiablePresentation> {type: TokenType.verifiablePresentationJwt, didAudience: this.crypto.builder.did}),
-        siopPresentationAttestation: new SiopTokenValidator(validatorOptions, <IExpectedSiop> {type: TokenType.siopPresentationAttestation, audience: this._audienceUrl}),
-        siop: new SiopTokenValidator(validatorOptions, <IExpectedSiop> {type: TokenType.siop, audience: this._audienceUrl}),
-        siopPresentationExchange: new SiopTokenValidator(validatorOptions, <IExpectedSiop> {type: TokenType.siopPresentationExchange, audience: this._audienceUrl}),
-        siopIssuance: new SiopTokenValidator(validatorOptions, <IExpectedSiop> {type: TokenType.siopIssuance, audience: this._audienceUrl})
+        selfIssued: new SelfIssuedTokenValidator(validatorOptions, <IExpectedSelfIssued>{ type: TokenType.selfIssued }),
+        idToken: new IdTokenTokenValidator(validatorOptions, <IExpectedIdToken>{ type: TokenType.idToken, configuration: this._trustedIssuerConfigurationsForIdTokens }),
+        verifiableCredential: new VerifiableCredentialTokenValidator(validatorOptions, <IExpectedVerifiableCredential>{ type: TokenType.verifiableCredential, contractIssuers: this._trustedIssuersForVerifiableCredentials }),
+        verifiablePresentationJwt: new VerifiablePresentationTokenValidator(validatorOptions, <IExpectedVerifiablePresentation>{ type: TokenType.verifiablePresentationJwt, didAudience: this.crypto.builder.did }),
+        siopPresentationAttestation: new SiopTokenValidator(validatorOptions, <IExpectedSiop>{ type: TokenType.siopPresentationAttestation, audience: this._audienceUrl }),
+        siop: new SiopTokenValidator(
+          validatorOptions, 
+          { 
+            type: TokenType.siop, 
+            audience: this._audienceUrl, 
+            realm: VerifiableCredentialConstants.TOKEN_SI_ISS 
+          }),
+        siopPresentationExchange: new SiopTokenValidator(validatorOptions, <IExpectedSiop>{ type: TokenType.siopPresentationExchange, audience: this._audienceUrl }),
+        siopIssuance: new SiopTokenValidator(validatorOptions, <IExpectedSiop>{ type: TokenType.siopIssuance, audience: this._audienceUrl })
       };
     }
 
@@ -172,7 +184,7 @@ export default class ValidatorBuilder {
    */
   public useFetchRequest(fetchRequest: IFetchRequest): ValidatorBuilder {
     (<any>this.resolver).fetchRequest = this._fetchRequest = fetchRequest;
-     
+
     return this;
   }
 
@@ -204,13 +216,17 @@ export default class ValidatorBuilder {
    * 
    * @param issuers array of issuers
    */
-  public useTrustedIssuersForVerifiableCredentials(issuers: {[credentialType: string]: string[]}): ValidatorBuilder {
+  public useTrustedIssuersForVerifiableCredentials(issuers: { [credentialType: string]: string[] }): ValidatorBuilder {
     this._trustedIssuersForVerifiableCredentials = issuers;
     if (this._tokenValidators) {
       // Make sure existing expected gets updated
       const vcValidator = this._tokenValidators[TokenType.verifiableCredential];
       if (vcValidator) {
-        const expected: IExpectedVerifiableCredential = {type: TokenType.verifiableCredential, contractIssuers: issuers};
+        const expected: IExpectedVerifiableCredential = {
+          type: TokenType.verifiableCredential,
+          contractIssuers: issuers
+        };
+
         this._tokenValidators[TokenType.verifiableCredential] = new VerifiableCredentialTokenValidator(this.validationOptions, expected);
       }
     }
@@ -221,7 +237,7 @@ export default class ValidatorBuilder {
    * Specify the trusted issuer for the verifiable credentials
    * @param issuers array of issuers or dictionary mapped to credential type
    */
-  public get trustedIssuersForVerifiableCredentials():  {[credentialType: string]: string[]} | undefined {
+  public get trustedIssuersForVerifiableCredentials(): { [credentialType: string]: string[] } | undefined {
     return this._trustedIssuersForVerifiableCredentials;
   }
 
@@ -235,7 +251,7 @@ export default class ValidatorBuilder {
       // Make sure existing expected gets updated
       const idtokenValidator = this._tokenValidators[TokenType.idToken];
       if (idtokenValidator) {
-        const expected: IExpectedIdToken = {type: TokenType.idToken, configuration: issuers};
+        const expected: IExpectedIdToken = { type: TokenType.idToken, configuration: issuers };
         this._tokenValidators[TokenType.idToken] = new IdTokenTokenValidator(this.validationOptions, expected);
       }
     }

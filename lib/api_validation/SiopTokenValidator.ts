@@ -137,6 +137,7 @@ export default class SiopTokenValidator implements ITokenValidator {
           detailedError: AuthenticationErrorDescription.malformedToken,
           code: errorCode(5),
           wwwAuthenticateError: AuthenticationErrorCode.invalidRequest,
+          realm: VerifiableCredentialConstants.TOKEN_SI_ISS,
         };
     }
 

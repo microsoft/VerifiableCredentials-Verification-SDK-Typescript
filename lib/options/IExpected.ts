@@ -20,7 +20,12 @@ export interface IExpectedBase {
   /**
    * The token type
    */
-  type: TokenType
+  type: TokenType,
+
+  /**
+   * invalid token realm aka what token failed
+   */
+  realm?: string,
 }
 
 

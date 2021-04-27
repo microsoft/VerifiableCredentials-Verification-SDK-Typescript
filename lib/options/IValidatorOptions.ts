@@ -29,10 +29,10 @@ export default interface IValidatorOptions {
   /**
    * Get the crypto options
    */
-  crypto: Crypto
+  crypto: Crypto,
 
   /**
    * Gets the error value of an invalid token
    */ 
-  readonly invalidTokenError: number;
+  readonly invalidTokenError: number,
 }
