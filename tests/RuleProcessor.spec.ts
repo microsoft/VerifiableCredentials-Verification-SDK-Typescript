@@ -95,7 +95,7 @@ describe('Rule processor', () => {
       let response = await validator.validate(responderResponse);
       expect(response.result).toBeFalsy(response.detailedError);
       expect(response.code).toEqual('VCSDKSTVa05');
-      expect(response.status).toEqual(400);
+      expect(response.status).toEqual(401);
     } finally {
       TokenGenerator.fetchMock.reset();
     }

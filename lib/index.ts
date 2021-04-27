@@ -133,3 +133,9 @@ export {
   JsonWebSignatureToken,
   TokenPayload,
 };
+
+import { AuthenticationErrorDescription, AuthenticationErrorCode} from './error_handling/AuthenticationErrorCode';
+export {
+  AuthenticationErrorDescription,
+  AuthenticationErrorCode,
+}

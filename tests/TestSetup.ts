@@ -102,7 +102,8 @@ export default class TestSetup {
     fetchRequest: new FetchRequest(),
     validationSafeguards: new ValidationSafeguards(),
     resolver: this.resolver,
-    crypto: this.crypto
+    crypto: this.crypto,
+    invalidTokenError: 401,
   };
 
   /**

@@ -156,3 +156,4 @@ bld/
 .user
 /services/PouchDbClient/testdb
 package-lock.json
+/.npmrc

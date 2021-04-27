@@ -25,6 +25,7 @@ export default class ValidatorBuilder {
   private _fetchRequest: IFetchRequest = new FetchRequest();
   private _resolver: IDidResolver = new ManagedHttpResolver(VerifiableCredentialConstants.UNIVERSAL_RESOLVER_URL, this._fetchRequest);
   private _validationSafeguards: ValidationSafeguards = new ValidationSafeguards();
+  private _invalidTokenError: number = 401;
 
   /**
    * Create a new instance of ValidatorBuilder
@@ -55,7 +56,8 @@ export default class ValidatorBuilder {
       resolver: this.resolver,
       fetchRequest: this.fetchRequest,
       validationSafeguards: this._validationSafeguards,
-      crypto: this.crypto
+      crypto: this.crypto,
+      invalidTokenError: this._invalidTokenError,
     };
   }
 
@@ -324,6 +326,16 @@ export default class ValidatorBuilder {
    */
   public useMaxSizeOfIdToken(value: number): ValidatorBuilder {
     this._validationSafeguards.maxSizeOfIdToken = value;
+    return this;
+  }
+
+  /**
+   * Sets the error value when a token is determined to be invalid
+   * @param value value to return when an invalid token is encountered
+   * @returns ValidatorBuilder instance
+   */
+  public invalidTokensFailWith(value: number): ValidatorBuilder {
+    this._invalidTokenError = value;
     return this;
   }
 
