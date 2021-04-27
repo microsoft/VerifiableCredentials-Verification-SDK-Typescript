@@ -52,7 +52,7 @@ export class SiopValidation implements ISiopValidation {
     }
 
     // Check token scope (aud and iss)
-    validationResponse = await this.options.checkScopeValidityOnSiopTokenDelegate(validationResponse, this.expected);
+    validationResponse = this.options.checkScopeValidityOnSiopTokenDelegate(validationResponse, this.expected);
     if (!validationResponse.result) {
       return validationResponse;
     }

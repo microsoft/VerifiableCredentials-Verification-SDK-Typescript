@@ -8,6 +8,7 @@ import { IDidValidation, IDidValidationResponse } from './DidValidationResponse'
 import { IValidationOptions } from '../options/IValidationOptions';
 import { IExpectedBase } from '../index';
 import ErrorHelpers from '../error_handling/ErrorHelpers';
+import { AuthenticationErrorCode } from '../error_handling/AuthenticationErrorCode';
 const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKDIDV', error);
 
 /**
@@ -47,7 +48,8 @@ export class DidValidation implements IDidValidation {
          result: false,
          code: errorCode(1),
          detailedError: `The kid in the protected header does not contain the DID. Required format for kid is <did>#kid`,
-         status: 403
+         status: this.options.validatorOptions.invalidTokenError,
+         wwwAuthenticateError: AuthenticationErrorCode.invalidRequest,
        };
      }
      validationResponse.did = parts[0];
@@ -57,8 +59,9 @@ export class DidValidation implements IDidValidation {
           result: false,
           code: errorCode(2),
           detailedError: 'The kid does not contain the DID',
-          status: 403
-        };
+          status: this.options.validatorOptions.invalidTokenError,
+          wwwAuthenticateError: AuthenticationErrorCode.invalidRequest,
+         };
     }
 
    // Resolve DID, get document and retrieve public key

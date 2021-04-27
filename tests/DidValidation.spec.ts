@@ -66,7 +66,7 @@ describe('DidValidation', () =>
     tokenParts =  (<string>request.rawToken).split('.');
     response = await validator.validate(`${base64url.encode(JSON.stringify(header))}.${tokenParts[1]}.${tokenParts[2]}`);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(401);
     expect(response.detailedError).toEqual('The kid in the protected header does not contain the DID. Required format for kid is <did>#kid');
     expect(response.code).toEqual('VCSDKDIDV01');
 

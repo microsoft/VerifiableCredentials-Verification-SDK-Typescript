@@ -5,12 +5,14 @@
 export enum AuthenticationErrorCode {
   /**
    * Error code for a missing or malformed token
+   * Unable to validate a token
    * https://tools.ietf.org/html/rfc6750#section-3.1
    */
   invalidRequest = 'invalid_request',
 
   /**
    * Error code for a invalid (e.g. expired, revoked) token
+   * Inflection point is that there was a valid attempt to validate a token
    * https://tools.ietf.org/html/rfc6750#section-3.1
    */
   invalidToken = 'invalid_token',

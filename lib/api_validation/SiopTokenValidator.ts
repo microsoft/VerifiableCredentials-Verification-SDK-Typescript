@@ -12,7 +12,6 @@ import ValidationQueueItem from '../input_validation/ValidationQueueItem';
 import { SiopValidation } from '../input_validation/SiopValidation';
 import VerifiableCredentialConstants from '../verifiable_credential/VerifiableCredentialConstants';
 import ErrorHelpers from '../error_handling/ErrorHelpers';
-import { AuthenticationError } from '@azure/identity';
 const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKSTVa', error);
 
 /**
@@ -137,7 +136,7 @@ export default class SiopTokenValidator implements ITokenValidator {
           status: this.validatorOption.invalidTokenError,
           detailedError: AuthenticationErrorDescription.malformedToken,
           code: errorCode(5),
-          wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
+          wwwAuthenticateError: AuthenticationErrorCode.invalidRequest,
         };
     }
 
