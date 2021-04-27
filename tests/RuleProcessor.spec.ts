@@ -168,7 +168,7 @@ describe('Rule processor', () => {
       let response = await validator.validate(responderResponse);
       expect(response.result).toBeFalsy(response.detailedError);
       expect(response.code).toEqual('VCSDKVaHe40');
-      expect(response.status).toEqual(403);
+      expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     } finally {
       TokenGenerator.fetchMock.reset();
     }
@@ -196,7 +196,7 @@ describe('Rule processor', () => {
       let response = await validator.validate(responderResponse);
       expect(response.result).toBeFalsy(response.detailedError);
       expect(response.code).toEqual('VCSDKVaHe12');
-      expect(response.status).toEqual(403);
+      expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     } finally {
       TokenGenerator.fetchMock.reset();
     }
@@ -225,7 +225,7 @@ describe('Rule processor', () => {
       let response = await validator.validate(responderResponse);
       expect(response.result).toBeFalsy(response.detailedError);
       expect(response.code).toEqual('VCSDKVaHe28');
-      expect(response.status).toEqual(403);
+      expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     } finally {
       TokenGenerator.fetchMock.reset();
     }
@@ -254,7 +254,7 @@ describe('Rule processor', () => {
       let response = await validator.validate(responderResponse);
       expect(response.result).toBeFalsy(response.detailedError);
       expect(response.code).toEqual('VCSDKVaHe28');
-      expect(response.status).toEqual(403);
+      expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     } finally {
       TokenGenerator.fetchMock.reset();
     }

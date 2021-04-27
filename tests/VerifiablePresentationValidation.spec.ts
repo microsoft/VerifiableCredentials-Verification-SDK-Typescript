@@ -6,7 +6,7 @@ import TestSetup from './TestSetup';
 import { VerifiablePresentationValidation } from '../lib/input_validation/VerifiablePresentationValidation';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import { TokenType } from '../lib/verifiable_credential/ClaimToken';
-import { Crypto, IExpectedVerifiablePresentation } from '../lib';
+import { Crypto, IExpectedVerifiablePresentation, ValidatorBuilder } from '../lib';
 import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript';
 
 describe('VerifiablePresentationValidation', () => {
@@ -38,14 +38,14 @@ describe('VerifiablePresentationValidation', () => {
     validator = new VerifiablePresentationValidation(options, expected, 'abcdef', 'id');
     response = await validator.validate(siop.vp.rawToken);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual(`Wrong iss property in verifiablePresentation. Expected 'abcdef'`);
     expect(response.code).toEqual('VCSDKVaHe18');
 
     // Bad VP signature
     response = await validator.validate(siop.vp.rawToken + 'a');
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual('The signature on the payload in the verifiablePresentationJwt is invalid');
     expect(response.code).toEqual('VCSDKVaHe27');
 
@@ -56,7 +56,7 @@ describe('VerifiablePresentationValidation', () => {
     validator = new VerifiablePresentationValidation(options, expected, setup.defaultUserDid, 'id');
     response = await validator.validate(<string>siopRequest.rawToken);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual(`Missing iss property in verifiablePresentation. Expected 'did:test:user'`);
     expect(response.code).toEqual('VCSDKVaHe17');
 
@@ -68,7 +68,7 @@ describe('VerifiablePresentationValidation', () => {
     siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
     response = await validator.validate(<string>siopRequest.rawToken);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual(`Wrong iss property in verifiablePresentation. Expected 'did:test:user'`);
     expect(response.code).toEqual('VCSDKVaHe18');
 
@@ -84,7 +84,7 @@ describe('VerifiablePresentationValidation', () => {
     siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
     response = await validator.validate(<string>siopRequest.rawToken);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual(`Missing aud property in verifiablePresentation. Expected 'did:test:issuer'`);
     expect(response.code).toEqual('VCSDKVaHe19');
 
@@ -100,7 +100,7 @@ describe('VerifiablePresentationValidation', () => {
     siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
     response = await validator.validate(<string>siopRequest.rawToken);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual(`Wrong aud property in verifiablePresentation. Expected 'did:test:issuer'. Found 'test'`);
     expect(response.code).toEqual('VCSDKVaHe20');
 

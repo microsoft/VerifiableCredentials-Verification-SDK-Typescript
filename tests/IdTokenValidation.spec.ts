@@ -6,7 +6,7 @@ import TestSetup from './TestSetup';
 import { IdTokenValidation } from '../lib/input_validation/IdTokenValidation';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import { TokenType } from '../lib/verifiable_credential/ClaimToken';
-import { IExpectedIdToken, Validator } from '../lib';
+import { IExpectedIdToken, Validator, ValidatorBuilder } from '../lib';
 
  describe('idTokenValidation', () => {
   let setup: TestSetup;
@@ -41,7 +41,7 @@ import { IExpectedIdToken, Validator } from '../lib';
     validator = new IdTokenValidation(options, expected, Validator.readContractId(siop.contract));
     response = await validator.validate( '.' + siop.idToken.rawToken);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(400);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual('The idToken could not be deserialized');
     expect(response.code).toEqual('VCSDKVaHe01');
 
@@ -49,7 +49,7 @@ import { IExpectedIdToken, Validator } from '../lib';
     validator = new IdTokenValidation(options, expected, Validator.readContractId(siop.contract));
     response = await validator.validate(siop.idToken.rawToken + 'a');
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual('The presented idToken is has an invalid signature');
     expect(response.code).toEqual('VCSDKVaHe37');
 

@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import TestSetup from './TestSetup';
-import { TokenType, IExpectedSiop } from '../lib/index';
+import { TokenType, IExpectedSiop, ValidatorBuilder } from '../lib/index';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import { DidValidation } from '../lib/input_validation/DidValidation';
 import base64url from 'base64url';
@@ -33,7 +33,7 @@ describe('DidValidation', () =>
     // Bad VC signature
     response = await validator.validate(request.rawToken + 'a');
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual('The signature on the payload in the siopIssuance is invalid');
     expect(response.code).toEqual('VCSDKVaHe27');
 
@@ -41,7 +41,7 @@ describe('DidValidation', () =>
     let tokenParts =  (<string>request.rawToken).split('.');
     response = await validator.validate(`.${tokenParts[1]}.${tokenParts[2]}`);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(400);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual('The siopIssuance could not be deserialized');
     expect(response.code).toEqual('VCSDKVaHe01');
 
@@ -53,7 +53,7 @@ describe('DidValidation', () =>
     tokenParts =  (<string>request.rawToken).split('.');
     response = await validator.validate(`${base64url.encode(JSON.stringify(header))}.${tokenParts[1]}.${tokenParts[2]}`);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual('The protected header in the siopIssuance does not contain the kid');
     expect(response.code).toEqual('VCSDKVaHe05');
 
