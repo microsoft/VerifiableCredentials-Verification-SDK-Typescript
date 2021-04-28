@@ -239,9 +239,18 @@ export default class Validator {
       };
     }
 
+    const promises: Promise<VerifiablePresentationValidationResponse>[] = [];
     const receipts: { [key: string]: IVerifiablePresentationStatus } = {};
     for (let vp in validationResult.verifiablePresentations) {
-      const response = await this.checkVpStatus(validationResult.verifiablePresentations[vp]);
+      promises.push(this.checkVpStatus(validationResult.verifiablePresentations[vp]));
+    }
+
+    // Execute the promises
+    const responses: VerifiablePresentationValidationResponse[] = await Promise.all(promises);
+
+    // process responses
+    for (let inx in responses) {
+      const response = responses[inx];
       if (!response.result) {
         return response;
       }
@@ -314,10 +323,13 @@ export default class Validator {
 
           // Validate receipt
           const receipt = await response.json();
-          const validatorOption: IValidatorOptions = this.builder.validationOptions;
-          const options = new ValidationOptions(validatorOption, TokenType.siopPresentationExchange);
-          const receiptValidator = new VerifiablePresentationStatusReceipt(receipt, this.builder, options, <IExpectedStatusReceipt>{ didIssuer: vcIssuerDid, didAudience: this.builder.crypto.builder.did });
-          const receipts = await receiptValidator.validate();
+          const options = new ValidationOptions(this.builder.validationOptions, TokenType.siopPresentationExchange);
+          const receiptValidator = new VerifiablePresentationStatusReceipt(
+            this.builder, 
+            options, 
+            <IExpectedStatusReceipt>{ didIssuer: vcIssuerDid, didAudience: this.builder.crypto.builder.did });
+          console.log(`Validate receipt on ${statusUrl}`);
+          const receipts = await receiptValidator.validate(receipt);
           if (!receipts.result) {
             validationResponse = {
               result: false,

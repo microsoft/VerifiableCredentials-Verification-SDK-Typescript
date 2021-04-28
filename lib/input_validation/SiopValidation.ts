@@ -21,16 +21,15 @@ export class SiopValidation implements ISiopValidation {
    * @param expected Expected properties of the SIOP
    */
   constructor(protected options: IValidationOptions, protected expected: IExpectedSiop) {
-    this._didValidation = new DidValidation(this.options, this.expected);
   }
 
-  private _didValidation: DidValidation;
+  private _didValidation: DidValidation | undefined;
 
-  public get didValidation():DidValidation {
+  public get didValidation():DidValidation | undefined {
     return this._didValidation;
   }
 
-  public set didValidation(validator: DidValidation) {
+  public set didValidation(validator: DidValidation | undefined) {
     this._didValidation = validator;
   }
 
@@ -46,7 +45,8 @@ export class SiopValidation implements ISiopValidation {
     };
 
     // Check the DID parts of the siop
-    validationResponse = await this.didValidation.validate(siop);
+    let didValidation = this.didValidation || new DidValidation(this.options, this.expected);
+    validationResponse = await didValidation.validate(siop);
     if (!validationResponse.result) {
       return validationResponse;
     }
