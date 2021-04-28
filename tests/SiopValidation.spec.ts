@@ -44,7 +44,6 @@ describe('SiopValidation', () =>
     expect(response.detailedError).toEqual(`Missing iss property in siop. Expected 'https://self-issued.me'`);
     expect(response.code).toEqual('VCSDKVaHe23');
     expect(response.wwwAuthenticateError).toEqual(AuthenticationErrorCode.invalidRequest);
-    expect(response.realm).toEqual(VerifiableCredentialConstants.TOKEN_SI_ISS);
 
     // Bad iss
     payload = {
@@ -57,7 +56,6 @@ describe('SiopValidation', () =>
     expect(response.detailedError).toEqual(`Wrong iss property in siop. Expected 'https://self-issued.me'`);
     expect(response.code).toEqual('VCSDKVaHe24');
     expect(response.wwwAuthenticateError).toEqual(AuthenticationErrorCode.invalidToken);
-    expect(response.realm).toEqual(VerifiableCredentialConstants.TOKEN_SI_ISS);
 
     // Missing aud
     payload = {
@@ -70,7 +68,6 @@ describe('SiopValidation', () =>
     expect(response.detailedError).toEqual(`Missing aud property in siop`);
     expect(response.code).toEqual('VCSDKVaHe25');
     expect(response.wwwAuthenticateError).toEqual(AuthenticationErrorCode.invalidRequest);
-    expect(response.realm).toEqual(VerifiableCredentialConstants.TOKEN_SI_ISS);
 
     // Wrong aud
     payload = {
@@ -84,7 +81,6 @@ describe('SiopValidation', () =>
     expect(response.detailedError).toEqual(`Wrong aud property in siop. Expected 'https://portableidentitycards.azure-api.net/42b39d9d-0cdd-4ae0-b251-b7b39a561f91/api/portable/v1.0/card/issue'`);
     expect(response.code).toEqual('VCSDKVaHe26');
     expect(response.wwwAuthenticateError).toEqual(AuthenticationErrorCode.invalidToken);
-    expect(response.realm).toEqual(VerifiableCredentialConstants.TOKEN_SI_ISS);
 
     // Bad validation
     const testValidator = new DidValidation(validationOptions, expected);

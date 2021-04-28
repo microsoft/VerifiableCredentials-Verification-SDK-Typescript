@@ -73,7 +73,6 @@ export class ValidationHelpers {
           detailedError: `The ${(self as ValidationOptions).tokenType} could not be deserialized`,
           innerError: exception,
           status: this.validatorOptions.invalidTokenError,
-          realm: validationResponse.realm,
           wwwAuthenticateError: AuthenticationErrorCode.invalidRequest,
         };
       }
@@ -85,7 +84,6 @@ export class ValidationHelpers {
         code: errorCode(2),
         detailedError: `The signature in the ${(self as ValidationOptions).tokenType} has an invalid format`,
         status: this.validatorOptions.invalidTokenError,
-        realm: validationResponse.realm,
         wwwAuthenticateError: AuthenticationErrorCode.invalidRequest,
       };
     }
@@ -98,7 +96,6 @@ export class ValidationHelpers {
           code: errorCode(3),
           detailedError: `The payload in the ${(self as ValidationOptions).tokenType} is undefined`,
           status: this.validatorOptions.invalidTokenError,
-          realm: validationResponse.realm,
           wwwAuthenticateError: AuthenticationErrorCode.invalidRequest,
         };
       }
@@ -113,7 +110,6 @@ export class ValidationHelpers {
           innerError: err,
           detailedError: `The payload in the ${(self as ValidationOptions).tokenType} is no valid JSON`,
           status: this.validatorOptions.invalidTokenError,
-          realm: validationResponse.realm,
           wwwAuthenticateError: AuthenticationErrorCode.invalidRequest,
         };
       }
@@ -125,7 +121,6 @@ export class ValidationHelpers {
           code: errorCode(5),
           detailedError: `The protected header in the ${(self as ValidationOptions).tokenType} does not contain the kid`,
           status: this.validatorOptions.invalidTokenError,
-          realm: validationResponse.realm,
           wwwAuthenticateError: AuthenticationErrorCode.invalidRequest,
         };
       }
@@ -148,7 +143,6 @@ export class ValidationHelpers {
           code: errorCode(6),
           detailedError: `The proof is not available in the json ld payload`,
           status: this.validatorOptions.invalidTokenError,
-          realm: validationResponse.realm,
           wwwAuthenticateError: AuthenticationErrorCode.invalidRequest,
         };
       }
@@ -158,7 +152,6 @@ export class ValidationHelpers {
           code: errorCode(7),
           detailedError: `The proof does not contain the verificationMethod in the json ld payload`,
           status: this.validatorOptions.invalidTokenError,
-          realm: validationResponse.realm,
           wwwAuthenticateError: AuthenticationErrorCode.invalidRequest,
         };
       }
@@ -188,7 +181,6 @@ export class ValidationHelpers {
           code: errorCode(8),
           detailedError: `Could not retrieve DID document '${validationResponse.did}'`,
           status: this.validatorOptions.invalidTokenError,
-          realm: validationResponse.realm,
           wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
         }
       }
@@ -202,7 +194,6 @@ export class ValidationHelpers {
         innerError: err,
         detailedError: `Could not resolve DID '${validationResponse.did}'`,
         status: this.validatorOptions.invalidTokenError,
-        realm: validationResponse.realm,
         wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
       };
     }
@@ -214,7 +205,6 @@ export class ValidationHelpers {
         code: errorCode(10),
         detailedError: `The kid is not referenced in the request`,
         status: this.validatorOptions.invalidTokenError,
-        realm: validationResponse.realm,
         wwwAuthenticateError: AuthenticationErrorCode.invalidRequest,
       };
     }
@@ -229,7 +219,6 @@ export class ValidationHelpers {
         detailedError: exception.message,
         innerError: exception,
         status: this.validatorOptions.invalidTokenError,
-        realm: validationResponse.realm,
         wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
       };
     }
@@ -291,7 +280,6 @@ export class ValidationHelpers {
           code: errorCode(12),
           detailedError: `The presented ${(self as ValidationOptions).tokenType} is expired ${exp}, now ${current as number}`,
           status: this.validatorOptions.invalidTokenError,
-          realm: validationResponse.realm,
           wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
         };
       }
@@ -309,7 +297,6 @@ export class ValidationHelpers {
           code: errorCode(40),
           detailedError: `The presented ${(self as ValidationOptions).tokenType} is not yet valid ${nbf}`,
           status: this.validatorOptions.invalidTokenError,
-          realm: validationResponse.realm,
           wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
         };
       }
@@ -334,7 +321,6 @@ export class ValidationHelpers {
         code: errorCode(13),
         detailedError: `The issuer in configuration was not found`,
         status: this.validatorOptions.invalidTokenError,
-        realm: validationResponse.realm,
         wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
       };
     }
@@ -345,7 +331,6 @@ export class ValidationHelpers {
         code: errorCode(14),
         detailedError: `Missing iss property in idToken. Expected '${JSON.stringify(issuer)}'`,
         status: this.validatorOptions.invalidTokenError,
-        realm: validationResponse.realm,
         wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
       };
     }
@@ -356,7 +341,6 @@ export class ValidationHelpers {
         code: errorCode(15),
         detailedError: `The issuer in configuration '${issuer}' does not correspond with the issuer in the payload ${validationResponse.issuer}`,
         status: this.validatorOptions.invalidTokenError,
-        realm: validationResponse.realm,
         wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
       };
     }
@@ -368,7 +352,6 @@ export class ValidationHelpers {
         code: errorCode(16),
         detailedError: `The audience ${validationResponse.payloadObject.aud} is invalid`,
         status: this.validatorOptions.invalidTokenError,
-        realm: validationResponse.realm,
         wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
       };
     }
@@ -393,7 +376,6 @@ export class ValidationHelpers {
         code: errorCode(17),
         detailedError: `Missing iss property in verifiablePresentation. Expected '${siopDid}'`,
         status: this.validatorOptions.invalidTokenError,
-        realm: validationResponse.realm,
         wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
       };
     }
@@ -404,7 +386,6 @@ export class ValidationHelpers {
         code: errorCode(18),
         detailedError: `Wrong iss property in verifiablePresentation. Expected '${siopDid}'`,
         status: this.validatorOptions.invalidTokenError,
-        realm: validationResponse.realm,
         wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
       };
     }
@@ -417,7 +398,6 @@ export class ValidationHelpers {
           code: errorCode(19),
           detailedError: `Missing aud property in verifiablePresentation. Expected '${expected.didAudience}'`,
           status: this.validatorOptions.invalidTokenError,
-          realm: validationResponse.realm,
           wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
         };
       }
@@ -428,7 +408,6 @@ export class ValidationHelpers {
           code: errorCode(20),
           detailedError: `Wrong aud property in verifiablePresentation. Expected '${expected.didAudience}'. Found '${validationResponse.payloadObject.aud}'`,
           status: this.validatorOptions.invalidTokenError,
-          realm: validationResponse.realm,
           wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
         };
       }
@@ -454,7 +433,6 @@ export class ValidationHelpers {
         code: errorCode(21),
         detailedError: `Missing sub property in verifiableCredential. Expected '${siopDid}'`,
         status: this.validatorOptions.invalidTokenError,
-        realm: validationResponse.realm,
         wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
       };
     }
@@ -466,7 +444,6 @@ export class ValidationHelpers {
         code: errorCode(22),
         detailedError: `Wrong sub property in verifiableCredential. Expected '${siopDid}'`,
         status: this.validatorOptions.invalidTokenError,
-        realm: validationResponse.realm,
         wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
       };
     }
@@ -490,7 +467,6 @@ export class ValidationHelpers {
         code: errorCode(23),
         detailedError: `Missing iss property in siop. Expected '${VerifiableCredentialConstants.TOKEN_SI_ISS}'`,
         status: this.validatorOptions.invalidTokenError,
-        realm: validationResponse.realm,
         wwwAuthenticateError: AuthenticationErrorCode.invalidRequest,
       };
     }
@@ -501,7 +477,6 @@ export class ValidationHelpers {
         code: errorCode(24),
         detailedError: `Wrong iss property in siop. Expected '${VerifiableCredentialConstants.TOKEN_SI_ISS}'`,
         status: this.validatorOptions.invalidTokenError,
-        realm: validationResponse.realm,
         wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
       };
     }
@@ -513,7 +488,6 @@ export class ValidationHelpers {
         code: errorCode(25),
         detailedError: `Missing aud property in siop`,
         status: this.validatorOptions.invalidTokenError,
-        realm: validationResponse.realm,
         wwwAuthenticateError: AuthenticationErrorCode.invalidRequest,
       };
     }
@@ -525,7 +499,6 @@ export class ValidationHelpers {
           code: errorCode(26),
           detailedError: `Wrong aud property in siop. Expected '${expected.audience}'`,
           status: this.validatorOptions.invalidTokenError,
-          realm: validationResponse.realm,
           wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
         };
       }
@@ -551,7 +524,6 @@ export class ValidationHelpers {
           code: errorCode(27),
           detailedError: `The signature on the payload in the ${(self as ValidationOptions).tokenType} is invalid`,
           status: this.validatorOptions.invalidTokenError,
-          realm: validationResponse.realm,
           wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
         };
       }
@@ -563,7 +535,6 @@ export class ValidationHelpers {
         detailedError: `Failed to validate signature`,
         innerError: err,
         status: this.validatorOptions.invalidTokenError,
-        realm: validationResponse.realm,
         wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
       };
     }
@@ -596,7 +567,6 @@ export class ValidationHelpers {
             code: errorCode(29),
             detailedError: `Could not fetch token configuration needed to validate token`,
             status: this.validatorOptions.invalidTokenError,
-            realm: validationResponse.realm,
             wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
           };
         }
@@ -610,7 +580,6 @@ export class ValidationHelpers {
             code: errorCode(30),
             detailedError: `No reference to jwks found in token configuration`,
             status: this.validatorOptions.invalidTokenError,
-            realm: validationResponse.realm,
             wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
           };
         }
@@ -628,7 +597,6 @@ export class ValidationHelpers {
             code: errorCode(31),
             detailedError: `Could not fetch keys needed to validate token on '${keysUrl}'`,
             status: this.validatorOptions.invalidTokenError,
-            realm: validationResponse.realm,
             wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
           };
         }
@@ -641,7 +609,6 @@ export class ValidationHelpers {
             code: errorCode(32),
             detailedError: `No or bad jwks keys found in token configuration`,
             status: this.validatorOptions.invalidTokenError,
-            realm: validationResponse.realm,
             wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
           };
         }
@@ -654,7 +621,6 @@ export class ValidationHelpers {
             code: errorCode(33),
             detailedError: `No issuer found in token configuration`,
             status: this.validatorOptions.invalidTokenError,
-            realm: validationResponse.realm,
             wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
           };
         }
@@ -667,7 +633,6 @@ export class ValidationHelpers {
         code: errorCode(34),
         detailedError: `Could not fetch token configuration`,
         status: this.validatorOptions.invalidTokenError,
-        realm: validationResponse.realm,
         wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
       };
     }
@@ -727,7 +692,6 @@ export class ValidationHelpers {
             code: errorCode(35),
             detailedError: `Could not validate token signature`,
             status: this.validatorOptions.invalidTokenError,
-            realm: validationResponse.realm,
             wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
           };
         }
@@ -746,7 +710,6 @@ export class ValidationHelpers {
         innerError: err,
         detailedError: `Could not validate signature on id token`,
         status: this.validatorOptions.invalidTokenError,
-        realm: validationResponse.realm,
         wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
       };
     }
@@ -771,7 +734,6 @@ export class ValidationHelpers {
           code: errorCode(37),
           detailedError: `The presented ${(self as ValidationOptions).tokenType} is has an invalid signature`,
           status: this.validatorOptions.invalidTokenError,
-          realm: validationResponse.realm,
           wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
         };
       }
@@ -787,7 +749,6 @@ export class ValidationHelpers {
         detailedError: `Failed to verify token signature`,
         innerError: err,
         status: this.validatorOptions.invalidTokenError,
-        realm: validationResponse.realm,
         wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
       };
     }

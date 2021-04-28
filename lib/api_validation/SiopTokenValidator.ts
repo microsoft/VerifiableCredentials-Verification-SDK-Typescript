@@ -55,7 +55,6 @@ export default class SiopTokenValidator implements ITokenValidator {
           status: this.validatorOption.invalidTokenError,
           code: errorCode(1),
           detailedError: `Expected nonce '${this.expected.nonce}' does not match '${validationResponse.payloadObject.nonce}'.`,
-          realm: VerifiableCredentialConstants.TOKEN_SI_ISS,
           wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
         }
       }
@@ -67,7 +66,6 @@ export default class SiopTokenValidator implements ITokenValidator {
           status: this.validatorOption.invalidTokenError,
           code: errorCode(2),
           detailedError: `Expected state '${this.expected.state}' does not match '${validationResponse.payloadObject.state}'.`,
-          realm: VerifiableCredentialConstants.TOKEN_SI_ISS,
           wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
         }
       }
@@ -137,7 +135,6 @@ export default class SiopTokenValidator implements ITokenValidator {
           detailedError: AuthenticationErrorDescription.malformedToken,
           code: errorCode(5),
           wwwAuthenticateError: AuthenticationErrorCode.invalidRequest,
-          realm: VerifiableCredentialConstants.TOKEN_SI_ISS,
         };
     }
 

@@ -98,11 +98,6 @@ export interface IValidationResponse extends IResponse {
   expiration?: number;
 
   /**
-   * the realm value when a token fails to validate
-   */
-  realm?: string;
-
-  /**
    * Error for the WWW-Authenticate header error field
    */
   wwwAuthenticateError?: string;

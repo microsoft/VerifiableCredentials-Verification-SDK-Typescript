@@ -33,7 +33,6 @@ export class DidValidation implements IDidValidation {
     let validationResponse: IDidValidationResponse = {
       result: true,
       status: 200,
-      realm: this.expected.realm,
     };
 
     // Deserialize the token
@@ -51,7 +50,6 @@ export class DidValidation implements IDidValidation {
          detailedError: `The kid in the protected header does not contain the DID. Required format for kid is <did>#kid`,
          status: this.options.validatorOptions.invalidTokenError,
          wwwAuthenticateError: AuthenticationErrorCode.invalidRequest,
-         realm: this.expected.realm,
        };
      }
      validationResponse.did = parts[0];
@@ -63,7 +61,6 @@ export class DidValidation implements IDidValidation {
           detailedError: 'The kid does not contain the DID',
           status: this.options.validatorOptions.invalidTokenError,
           wwwAuthenticateError: AuthenticationErrorCode.invalidRequest,
-          realm: this.expected.realm,
          };
     }
 

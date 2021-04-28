@@ -166,28 +166,24 @@ export default class ValidatorBuilder {
           {
             type: TokenType.siopPresentationAttestation,
             audience: this._audienceUrl,
-            realm: VerifiableCredentialConstants.TOKEN_SI_ISS
           }),
         siop: new SiopTokenValidator(
           validatorOptions,
           {
             type: TokenType.siop,
             audience: this._audienceUrl,
-            realm: VerifiableCredentialConstants.TOKEN_SI_ISS
           }),
         siopPresentationExchange: new SiopTokenValidator(
           validatorOptions,
           {
             type: TokenType.siopPresentationExchange,
             audience: this._audienceUrl,
-            realm: VerifiableCredentialConstants.TOKEN_SI_ISS
           }),
         siopIssuance: new SiopTokenValidator(
           validatorOptions,
           {
             type: TokenType.siopIssuance,
             audience: this._audienceUrl,
-            realm: VerifiableCredentialConstants.TOKEN_SI_ISS
           })
       };
     }
