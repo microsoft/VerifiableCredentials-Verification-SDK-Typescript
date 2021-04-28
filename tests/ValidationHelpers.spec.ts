@@ -9,7 +9,7 @@ import { IPayloadProtectionSigning, JoseBuilder } from 'verifiablecredentials-cr
 import ValidationOptions from '../lib/options/ValidationOptions';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import ClaimToken, { TokenType } from '../lib/verifiable_credential/ClaimToken';
-import { IExpectedAudience, IdTokenValidationResponse } from '../lib';
+import { IExpectedAudience, IdTokenValidationResponse, ValidatorBuilder } from '../lib';
 
 describe('ValidationHelpers', () => {
   let setup: TestSetup;
@@ -36,7 +36,7 @@ describe('ValidationHelpers', () => {
     let splitToken = (<string>request.rawToken).split('.');
     response = await options.getTokenObjectDelegate(validationResponse, splitToken[0]);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(400);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual('The verifiableCredential could not be deserialized');
     expect(response.code).toEqual('VCSDKVaHe01');
 
@@ -45,7 +45,7 @@ describe('ValidationHelpers', () => {
     header.kid = '';
     response = await options.getTokenObjectDelegate(validationResponse, `${base64url.encode(JSON.stringify(header))}.${splitToken[1]}.${splitToken[2]}`);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual('The protected header in the verifiableCredential does not contain the kid');
     expect(response.code).toEqual('VCSDKVaHe05');
 
@@ -98,7 +98,7 @@ describe('ValidationHelpers', () => {
     validationResponse.didKid = undefined;
     response = await options.resolveDidAndGetKeysDelegate(validationResponse);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual('The kid is not referenced in the request');
     expect(response.code).toEqual('VCSDKVaHe10');
     validationResponse.didKid = setup.defaulUserDidKid;
@@ -107,7 +107,7 @@ describe('ValidationHelpers', () => {
     validationResponse.didKid = 'abcd';
     response = await options.resolveDidAndGetKeysDelegate(validationResponse);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual(`The did 'did:test:user' does not have a public key with kid 'abcd'. Public key : 'undefined'`);
     expect(response.code).toEqual('VCSDKVaHe11');
     validationResponse.didKid = setup.defaulUserDidKid;
@@ -116,14 +116,14 @@ describe('ValidationHelpers', () => {
     setup.fetchMock.get(`${setup.resolverUrl}/${setup.defaultUserDid}`, {}, { overwriteRoutes: true });
     response = await options.resolveDidAndGetKeysDelegate(validationResponse);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
 
     const resolveSpy = spyOn(options.validatorOptions.resolver, "resolve").and.callFake(() => { return <any>undefined });
     response = await options.resolveDidAndGetKeysDelegate(validationResponse);
     expect(response.result).toBeFalsy();
     expect(response.detailedError).toEqual(`Could not retrieve DID document 'did:test:user'`);
     expect(response.code).toEqual('VCSDKVaHe08');
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
 
   });
 
@@ -137,7 +137,7 @@ describe('ValidationHelpers', () => {
     setup.fetchMock.get(`${setup.resolverUrl}/${validationResponse.did}`, { status: 404 }, { overwriteRoutes: true });
     const response = await options.resolveDidAndGetKeysDelegate(validationResponse);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual(`Could not resolve DID 'didJules'`);
     expect(response.code).toEqual('VCSDKVaHe09');
 
@@ -162,7 +162,7 @@ describe('ValidationHelpers', () => {
     validationResponse = await options.getTokenObjectDelegate(validationResponse, <string>request.rawToken + 1);
     response = await options.validateDidSignatureDelegate(validationResponse, validationResponse.didSignature as IPayloadProtectionSigning);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredential is invalid');
     expect(response.code).toEqual('VCSDKVaHe27');
 
@@ -171,7 +171,7 @@ describe('ValidationHelpers', () => {
     validationResponse = await options.getTokenObjectDelegate(validationResponse, `${splitToken[0]}.${splitToken[1]}`);
     response = await options.validateDidSignatureDelegate(validationResponse, validationResponse.didSignature as IPayloadProtectionSigning);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredential is invalid');
     expect(response.code).toEqual('VCSDKVaHe27');
 
@@ -179,7 +179,7 @@ describe('ValidationHelpers', () => {
     validationResponse = await options.getTokenObjectDelegate(validationResponse, `.${splitToken[1]}.${splitToken[2]}`);
     response = await options.validateDidSignatureDelegate(validationResponse, validationResponse.didSignature as IPayloadProtectionSigning);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual('Failed to validate signature');
     expect(response.code).toEqual('VCSDKVaHe28');
 
@@ -187,7 +187,7 @@ describe('ValidationHelpers', () => {
     validationResponse = await options.getTokenObjectDelegate(validationResponse, `${splitToken[0]}..${splitToken[2]}`);
     response = await options.validateDidSignatureDelegate(validationResponse, validationResponse.didSignature as IPayloadProtectionSigning);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual('Failed to validate signature');
     expect(response.code).toEqual('VCSDKVaHe28');
   });
@@ -215,14 +215,14 @@ describe('ValidationHelpers', () => {
     validationResponse.expiration = exp - 1000;
     response = options.checkTimeValidityOnTokenDelegate(validationResponse, 5);
     expect(response.result).toBeFalsy(response.result);
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError?.startsWith('The presented verifiableCredential is expired')).toBeTruthy();
     expect(response.code).toEqual('VCSDKVaHe12');
 
     validationResponse.expiration = 0;
     response = options.checkTimeValidityOnTokenDelegate(validationResponse, 5);
     expect(response.result).toBeFalsy(response.result);
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError?.startsWith('The presented verifiableCredential is expired')).toBeTruthy();
     expect(response.code).toEqual('VCSDKVaHe12');
 
@@ -236,7 +236,7 @@ describe('ValidationHelpers', () => {
     validationResponse.payloadObject = JSON.parse(`{"jti": "abcdefg", "nbf": ${nbf}}`);
     response = options.checkTimeValidityOnTokenDelegate(validationResponse, 5);
     expect(response.result).toBeFalsy(response.result);
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError?.startsWith('The presented verifiableCredential is not yet valid')).toBeTruthy();
     expect(response.code).toEqual('VCSDKVaHe40');
   });
@@ -299,7 +299,7 @@ describe('ValidationHelpers', () => {
     validationResponse.expectedIssuer = undefined;
     response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, expected);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual(`The issuer in configuration was not found`);
     expect(response.code).toEqual('VCSDKVaHe13');
     validationResponse.expectedIssuer = issuer;
@@ -307,7 +307,7 @@ describe('ValidationHelpers', () => {
     validationResponse.payloadObject.aud = undefined;
     response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, expected);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(401);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual(`The audience undefined is invalid`);
     expect(response.code).toEqual('VCSDKVaHe16');
     validationResponse.payloadObject.aud = audience;
@@ -315,7 +315,7 @@ describe('ValidationHelpers', () => {
     validationResponse.payloadObject.aud = 'xxx';
     response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, expected);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(401);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual(`The audience xxx is invalid`);
     expect(response.code).toEqual('VCSDKVaHe16');
     validationResponse.payloadObject.aud = audience;
@@ -323,7 +323,7 @@ describe('ValidationHelpers', () => {
     validationResponse.issuer = 'xxx';
     response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, expected);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual(`The issuer in configuration 'iss' does not correspond with the issuer in the payload xxx`);
     expect(response.code).toEqual('VCSDKVaHe15');
     validationResponse.issuer = issuer;
@@ -331,7 +331,7 @@ describe('ValidationHelpers', () => {
     validationResponse.issuer = undefined;
     response = options.checkScopeValidityOnIdTokenDelegate(validationResponse, expected);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual(`Missing iss property in idToken. Expected '"iss"'`);
     expect(response.code).toEqual('VCSDKVaHe14');
     validationResponse.issuer = issuer;
@@ -377,7 +377,7 @@ describe('ValidationHelpers', () => {
     const tokenWithBadConfiguration = new ClaimToken(idToken.type, idToken.rawToken, 'abcd');
     response = await options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, tokenWithBadConfiguration);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual('Could not fetch token configuration');
     expect(response.code).toEqual('VCSDKVaHe34');
 
@@ -386,7 +386,7 @@ describe('ValidationHelpers', () => {
     setup.fetchMock.get(setup.defaultIdTokenConfiguration, { "issuer": `${setup.tokenIssuer}` }, { overwriteRoutes: true });
     response = await options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, idToken);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual('No reference to jwks found in token configuration');
     expect(response.code).toEqual('VCSDKVaHe30');
 
@@ -394,7 +394,7 @@ describe('ValidationHelpers', () => {
     setup.fetchMock.get(setup.defaultIdTokenConfiguration, { "jwks_uri": `${setup.defaultIdTokenJwksConfiguration}` }, { overwriteRoutes: true });
     response = await options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, idToken);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual('No issuer found in token configuration');
     expect(response.code).toEqual('VCSDKVaHe33');
 
@@ -403,7 +403,7 @@ describe('ValidationHelpers', () => {
     setup.fetchMock.get(setup.defaultIdTokenJwksConfiguration, 404, { overwriteRoutes: true });
     response = await options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, idToken);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual(`Could not fetch keys needed to validate token on '${setup.defaultIdTokenJwksConfiguration}'`);
     expect(response.code).toEqual('VCSDKVaHe31');
 
@@ -412,7 +412,7 @@ describe('ValidationHelpers', () => {
     setup.fetchMock.get(setup.defaultIdTokenJwksConfiguration, { "issuer": `${setup.tokenIssuer}` }, { overwriteRoutes: true });
     response = await options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, idToken);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual(`No or bad jwks keys found in token configuration`);
     expect(response.code).toEqual('VCSDKVaHe32');
     [tokenJwkPrivate, tokenJwkPublic, tokenConfiguration] = await IssuanceHelpers.generateSigningKeyAndSetConfigurationMock(setup, setup.defaulIssuerDidKid);
@@ -420,7 +420,7 @@ describe('ValidationHelpers', () => {
     setup.fetchMock.get(setup.defaultIdTokenJwksConfiguration, `test`, { overwriteRoutes: true });
     response = await options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, idToken);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual(`Could not fetch token configuration`);
     expect(response.code).toEqual('VCSDKVaHe34');
 
@@ -430,26 +430,26 @@ describe('ValidationHelpers', () => {
       return new Promise((resolve) => {
         resolve({
           result: false,
-          status: 403
+          status: ValidatorBuilder.INVALID_TOKEN_STATUS_CODE
         });
       });
     }
     response = await options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, idToken);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     [tokenJwkPrivate, tokenJwkPublic, tokenConfiguration] = await IssuanceHelpers.generateSigningKeyAndSetConfigurationMock(setup, setup.defaulIssuerDidKid);
     options.validateSignatureOnTokenDelegate = () => {
       return new Promise((_, reject) => {
         reject({
           result: false,
-          status: 403
+          status: ValidatorBuilder.INVALID_TOKEN_STATUS_CODE
         });
       });
     }
     
     response = await options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, idToken);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual(`Could not validate signature on id token`);
     expect(response.code).toEqual('VCSDKVaHe36');
 
@@ -469,7 +469,7 @@ describe('ValidationHelpers', () => {
 
     response = await options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, idToken);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual('Could not validate token signature');
     expect(response.code).toEqual('VCSDKVaHe35');
   });
@@ -516,6 +516,6 @@ describe('ValidationHelpers', () => {
     response = <IValidationResponse>await options.fetchOpenIdTokenPublicKeysDelegate(validationResponse, idToken);
     expect(response.detailedError).toEqual(`Could not fetch token configuration needed to validate token`);
     expect(response.code).toEqual('VCSDKVaHe29');
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
   });
 });

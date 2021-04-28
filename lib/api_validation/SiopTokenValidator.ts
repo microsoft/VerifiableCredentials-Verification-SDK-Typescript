@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TokenType, IExpectedSiop, ITokenValidator, ClaimToken } from '../index';
+import { TokenType, IExpectedSiop, ITokenValidator, ClaimToken, AuthenticationErrorCode, AuthenticationErrorDescription } from '../index';
 import { IValidationResponse } from '../input_validation/IValidationResponse';
 import ValidationOptions from '../options/ValidationOptions';
 import IValidatorOptions from '../options/IValidatorOptions';
@@ -18,7 +18,6 @@ const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKSTVa', error);
  * Class to validate a token
  */
 export default class SiopTokenValidator implements ITokenValidator {
-
   /**
    * Create new instance of <see @class SiopTokenValidator>
    * @param validatorOption The options used during validation
@@ -53,9 +52,10 @@ export default class SiopTokenValidator implements ITokenValidator {
       if (this.expected.nonce !== validationResponse.payloadObject.nonce) {
         return {
           result: false,
-          status: 403,
+          status: this.validatorOption.invalidTokenError,
           code: errorCode(1),
-          detailedError: `Expected nonce '${this.expected.nonce}' does not match '${validationResponse.payloadObject.nonce}'.`
+          detailedError: `Expected nonce '${this.expected.nonce}' does not match '${validationResponse.payloadObject.nonce}'.`,
+          wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
         }
       }
     }
@@ -63,9 +63,10 @@ export default class SiopTokenValidator implements ITokenValidator {
       if (this.expected.state !== validationResponse.payloadObject.state) {
         return {
           result: false,
-          status: 403,
+          status: this.validatorOption.invalidTokenError,
           code: errorCode(2),
-          detailedError: `Expected state '${this.expected.state}' does not match '${validationResponse.payloadObject.state}'.`
+          detailedError: `Expected state '${this.expected.state}' does not match '${validationResponse.payloadObject.state}'.`,
+          wwwAuthenticateError: AuthenticationErrorCode.invalidToken,
         }
       }
     }
@@ -130,9 +131,10 @@ export default class SiopTokenValidator implements ITokenValidator {
       default:
         return {
           result: false,
-          status: 400,
-          detailedError: 'Not a valid SIOP',
-          code: errorCode(5)
+          status: this.validatorOption.invalidTokenError,
+          detailedError: AuthenticationErrorDescription.malformedToken,
+          code: errorCode(5),
+          wwwAuthenticateError: AuthenticationErrorCode.invalidRequest,
         };
     }
 

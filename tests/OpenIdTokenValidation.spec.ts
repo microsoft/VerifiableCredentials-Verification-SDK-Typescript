@@ -5,7 +5,7 @@
 import TestSetup from './TestSetup';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import { TokenType } from '../lib/verifiable_credential/ClaimToken';
-import { OpenIdTokenValidation, IExpectedOpenIdToken } from '../lib';
+import { OpenIdTokenValidation, IExpectedOpenIdToken, ValidatorBuilder } from '../lib';
 
 describe('OpenIdTokenValidation', () => {
   let setup: TestSetup;
@@ -40,7 +40,7 @@ describe('OpenIdTokenValidation', () => {
     // Bad id token signature
     response = await validator.validate(siop.idToken.rawToken + 'a');
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual('The presented idToken is has an invalid signature');
     expect(response.code).toEqual('VCSDKVaHe37');
   });

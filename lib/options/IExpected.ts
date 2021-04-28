@@ -20,7 +20,7 @@ export interface IExpectedBase {
   /**
    * The token type
    */
-  type: TokenType
+  type: TokenType,
 }
 
 

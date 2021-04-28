@@ -5,7 +5,7 @@
 
 import RequestorHelper from './RequestorHelper';
 import ResponderHelper from './ResponderHelper';
-import { ValidatorBuilder, PresentationDefinitionModel, IRequestorPresentationExchange, JoseBuilder, Validator } from '../lib';
+import { ValidatorBuilder, PresentationDefinitionModel, IRequestorPresentationExchange, JoseBuilder, Validator, AuthenticationErrorDescription } from '../lib';
 import TokenGenerator from './TokenGenerator';
 import PresentationDefinition from './models/PresentationDefinitionSample1'
 import RequestOneVcResponseOk from './models/RequestOneVcResponseOk'
@@ -75,7 +75,7 @@ describe('PresentationExchange', () => {
     siop = await (await responderHelper.crypto.signingProtocol(JoseBuilder.JWT).sign(responsePayload)).serialize();
     response = await validator!.validate(siop);
     expect(response.result).toBeFalsy(response.detailedError);
-    expect(response.detailedError).toEqual(`Not a valid SIOP`);
+    expect(response.detailedError).toEqual(AuthenticationErrorDescription.malformedToken);
     expect(response.code).toEqual('VCSDKSTVa05');
     
     //Remove tokens

@@ -96,4 +96,9 @@ export interface IValidationResponse extends IResponse {
    * The epoch expiration time
    */
   expiration?: number;
+
+  /**
+   * Error for the WWW-Authenticate header error field
+   */
+  wwwAuthenticateError?: string;
 }

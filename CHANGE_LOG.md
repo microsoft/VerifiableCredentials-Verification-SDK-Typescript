@@ -1,3 +1,10 @@
+# version 0.12.1-preview.8
+## Performance improvements for ClaimToken.Create
+**Type of change:** feature work
+**Customer impact:** medium
+- Allow customizable status code for token validation errors
+- Default behavior is that invalid tokens result in 401
+
 # version 0.12.1-preview.7
 ## Performance improvements for ClaimToken.Create
 **Type of change:** feature work

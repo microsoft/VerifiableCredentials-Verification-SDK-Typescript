@@ -8,6 +8,7 @@ import { DidDocument } from '@decentralized-identity/did-common-typescript';
 import ClaimToken, { TokenType } from '../lib/verifiable_credential/ClaimToken';
 import ValidationOptions from '../lib/options/ValidationOptions';
 import { KeyReference, IExpectedBase, IExpectedSelfIssued, IExpectedIdToken, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, JsonWebSignatureToken, TokenPayload } from '../lib/index';
+import VerifiableCredentialConstants from '../lib/verifiable_credential/VerifiableCredentialConstants';
 
 export class IssuanceHelpers {
   public static readonly jti: string = 'testJti';

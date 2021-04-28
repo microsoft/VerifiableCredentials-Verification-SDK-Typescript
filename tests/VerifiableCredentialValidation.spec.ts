@@ -5,7 +5,7 @@
 import TestSetup from './TestSetup';
 import { IssuanceHelpers } from './IssuanceHelpers';
 import { VerifiableCredentialValidation } from '../lib/input_validation/VerifiableCredentialValidation';
-import { TokenType, IExpectedVerifiableCredential } from '../lib';
+import { TokenType, IExpectedVerifiableCredential, ValidatorBuilder } from '../lib';
 import { VerifiableCredentialValidationResponse } from '../lib/input_validation/VerifiableCredentialValidationResponse';
 const clone = require('clone');
 
@@ -62,7 +62,7 @@ describe('VerifiableCredentialValidation', () => {
     // Bad VC signature
     response = await validator.validate(siop.vc.rawToken + 'a', setup.defaultUserDid);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual('The signature on the payload in the verifiableCredential is invalid');
     expect(response.code).toEqual('VCSDKVaHe27');
 

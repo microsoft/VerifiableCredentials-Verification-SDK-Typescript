@@ -97,7 +97,7 @@ describe('Validator', () => {
     const splitted = siop.vc.rawToken.split('.');
     response = await validator.validate(`${splitted[0]}.${splitted[1]}.1234${splitted[2]}`);
     expect(response.result).toBeFalsy(response.detailedError);
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.code).toEqual('VCSDKVaHe27');
 });
 
