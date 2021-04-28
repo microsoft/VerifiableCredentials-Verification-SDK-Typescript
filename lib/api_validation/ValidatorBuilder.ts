@@ -161,16 +161,34 @@ export default class ValidatorBuilder {
         idToken: new IdTokenTokenValidator(validatorOptions, <IExpectedIdToken>{ type: TokenType.idToken, configuration: this._trustedIssuerConfigurationsForIdTokens }),
         verifiableCredential: new VerifiableCredentialTokenValidator(validatorOptions, <IExpectedVerifiableCredential>{ type: TokenType.verifiableCredential, contractIssuers: this._trustedIssuersForVerifiableCredentials }),
         verifiablePresentationJwt: new VerifiablePresentationTokenValidator(validatorOptions, <IExpectedVerifiablePresentation>{ type: TokenType.verifiablePresentationJwt, didAudience: this.crypto.builder.did }),
-        siopPresentationAttestation: new SiopTokenValidator(validatorOptions, <IExpectedSiop>{ type: TokenType.siopPresentationAttestation, audience: this._audienceUrl }),
-        siop: new SiopTokenValidator(
-          validatorOptions, 
-          { 
-            type: TokenType.siop, 
-            audience: this._audienceUrl, 
-            realm: VerifiableCredentialConstants.TOKEN_SI_ISS 
+        siopPresentationAttestation: new SiopTokenValidator(
+          validatorOptions,
+          {
+            type: TokenType.siopPresentationAttestation,
+            audience: this._audienceUrl,
+            realm: VerifiableCredentialConstants.TOKEN_SI_ISS
           }),
-        siopPresentationExchange: new SiopTokenValidator(validatorOptions, <IExpectedSiop>{ type: TokenType.siopPresentationExchange, audience: this._audienceUrl }),
-        siopIssuance: new SiopTokenValidator(validatorOptions, <IExpectedSiop>{ type: TokenType.siopIssuance, audience: this._audienceUrl })
+        siop: new SiopTokenValidator(
+          validatorOptions,
+          {
+            type: TokenType.siop,
+            audience: this._audienceUrl,
+            realm: VerifiableCredentialConstants.TOKEN_SI_ISS
+          }),
+        siopPresentationExchange: new SiopTokenValidator(
+          validatorOptions,
+          {
+            type: TokenType.siopPresentationExchange,
+            audience: this._audienceUrl,
+            realm: VerifiableCredentialConstants.TOKEN_SI_ISS
+          }),
+        siopIssuance: new SiopTokenValidator(
+          validatorOptions,
+          {
+            type: TokenType.siopIssuance,
+            audience: this._audienceUrl,
+            realm: VerifiableCredentialConstants.TOKEN_SI_ISS
+          })
       };
     }
 
