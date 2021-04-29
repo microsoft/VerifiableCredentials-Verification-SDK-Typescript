@@ -55,7 +55,7 @@ export default class VerifiablePresentationStatusReceipt {
     if (!this.receipts?.receipt) {
       return {
         result: false,
-        status: 403,
+        status: this.options.validatorOptions.invalidTokenError,
         code: errorCode(1),
         detailedError: 'The status receipt is missing receipt'
       }
@@ -74,7 +74,7 @@ export default class VerifiablePresentationStatusReceipt {
       if (receiptResponse.payloadObject.aud !== this.expected.didAudience) {
         return {
           result: false,
-          status: 403,
+          status: this.options.validatorOptions.invalidTokenError,
           detailedError: `The status receipt aud '${receiptResponse.payloadObject.aud}' is wrong. Expected '${this.expected.didAudience}'`
         }
       }
@@ -83,7 +83,7 @@ export default class VerifiablePresentationStatusReceipt {
       if (receiptResponse.issuer !== this.expected.didIssuer) {
         return {
           result: false,
-          status: 403,
+          status: this.options.validatorOptions.invalidTokenError,
           code: errorCode(2),
           detailedError: `The status receipt iss '${receiptResponse.issuer}' is wrong. Expected '${this.expected.didIssuer}'`
         }
@@ -100,7 +100,7 @@ export default class VerifiablePresentationStatusReceipt {
       if (!this.verifiablePresentationStatus![jti].passed) {
         return {
           result: false,
-          status: 403,
+          status: this.options.validatorOptions.invalidTokenError,
           code: errorCode(3),
           detailedError: `The status receipt for jti '${jti}' failed with status ${this.verifiablePresentationStatus![jti].status}.`
         }
