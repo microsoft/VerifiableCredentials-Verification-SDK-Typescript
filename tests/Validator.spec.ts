@@ -99,7 +99,7 @@ describe('Validator', () => {
     expect(response.result).toBeFalsy(response.detailedError);
     expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.code).toEqual('VCSDKVaHe27');
-});
+  });
 
   it('should validate verifiable presentations', async () => {
     const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiablePresentationJwt, true);
@@ -131,12 +131,23 @@ describe('Validator', () => {
     expect(response.result).toBeTruthy('vpValidator succeeded');
     expect(response.tokensToValidate![`DrivingLicense`].rawToken).toEqual(siop.vc.rawToken);
 
+    // error conditiion where $.vp is undefined
     let clonedResult = clone(response);
     delete clonedResult.payloadObject.vp;
-    response = vpValidator.getTokens(clonedResult, queue);
-    expect(response.result).toBeFalsy(response.detailedError);
-    expect(response.detailedError).toEqual('No verifiable credential');
-    expect(response.code).toEqual('VCSDKVPTV01');
+    let getTokensResponse = vpValidator.getTokens(clonedResult, queue);
+    expect(getTokensResponse.result).toBeFalsy(getTokensResponse.detailedError);
+    expect(getTokensResponse.detailedError).toEqual('No verifiable credential');
+    expect(getTokensResponse.code).toEqual('VCSDKVPTV01');
+    expect(getTokensResponse.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
+
+    // error conditiion where $.vp.verifiableCredential is undefined
+    clonedResult = clone(response);
+    delete clonedResult.payloadObject.vp.verifiableCredential;
+    getTokensResponse = vpValidator.getTokens(clonedResult, queue);
+    expect(getTokensResponse.result).toBeFalsy(getTokensResponse.detailedError);
+    expect(getTokensResponse.detailedError).toEqual('No verifiable credential');
+    expect(getTokensResponse.code).toEqual('VCSDKVPTV01');
+    expect(getTokensResponse.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
 
     // Check VC validator
     queue = new ValidationQueue();
