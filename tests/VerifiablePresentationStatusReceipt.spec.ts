@@ -5,12 +5,11 @@
 
 import { CryptoBuilder, DidValidation, IExpectedStatusReceipt, TokenType, ValidationOptions, ValidatorBuilder, VerifiablePresentationStatusReceipt } from '../lib/index';
 
-describe('VerifiablePresentationStatusReceipt', () =>
-{
+describe('VerifiablePresentationStatusReceipt', () => {
   it('should test validate', async () => {
     let receipts = {};
     let validatorBuilder = new ValidatorBuilder(new CryptoBuilder().build());
-    let validationOptions = new ValidationOptions(<any>{}, TokenType.verifiablePresentationStatus);
+    let validationOptions = new ValidationOptions(<any>{ invalidTokenError: ValidatorBuilder.INVALID_TOKEN_STATUS_CODE }, TokenType.verifiablePresentationStatus);
     let expected: IExpectedStatusReceipt = {
       didAudience: 'didAudience',
       didIssuer: 'issuer',
@@ -31,24 +30,27 @@ describe('VerifiablePresentationStatusReceipt', () =>
 
     validator = new DidValidation(validationOptions, expected);
     let validatorSpy = spyOn(validator, "validate").and.callFake(() => {
-      return <any> {result: false};
+      return <any>{ result: false, status: ValidatorBuilder.INVALID_TOKEN_STATUS_CODE };
     });
 
-    verifiablePresentationStatusReceipt = new VerifiablePresentationStatusReceipt({receipt: [{}]}, validatorBuilder, validationOptions, expected);
+    verifiablePresentationStatusReceipt = new VerifiablePresentationStatusReceipt({ receipt: [{}] }, validatorBuilder, validationOptions, expected);
     verifiablePresentationStatusReceipt.didValidation = validator;
     let response = await verifiablePresentationStatusReceipt.validate();
-    expect(response.result).toBeFalsy(response.detailedError);    
+    expect(response.result).toBeFalsy(response.detailedError);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
 
     validatorSpy.and.callFake(() => {
-      return <any> {result: true, payloadObject: {aud: ''}};
+      return <any>{ result: true, payloadObject: { aud: '' } };
     });
     response = await verifiablePresentationStatusReceipt.validate();
-    expect(response.result).toBeFalsy(response.detailedError);    
+    expect(response.result).toBeFalsy(response.detailedError);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
 
     validatorSpy.and.callFake(() => {
-      return <any> {result: true, payloadObject: {aud: 'didAudience', issuer: ''}};
+      return <any>{ result: true, payloadObject: { aud: 'didAudience', issuer: '' } };
     });
     response = await verifiablePresentationStatusReceipt.validate();
-    expect(response.result).toBeFalsy(response.detailedError);    
+    expect(response.result).toBeFalsy(response.detailedError);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
   });
 });
