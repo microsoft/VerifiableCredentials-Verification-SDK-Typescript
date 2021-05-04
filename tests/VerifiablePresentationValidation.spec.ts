@@ -115,7 +115,7 @@ describe('VerifiablePresentationValidation', () => {
     siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
     response = await validator.validate(<string>siopRequest.rawToken);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual(`Missing or wrong default type in vp of presentation. Should be VerifiablePresentation`);
     expect(response.code).toEqual('VCSDKVPVa03');
 
@@ -123,7 +123,7 @@ describe('VerifiablePresentationValidation', () => {
     siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
     response = await validator.validate(<string>siopRequest.rawToken);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual(`Missing or wrong default type in vp of presentation. Should be VerifiablePresentation`);
     expect(response.code).toEqual('VCSDKVPVa03');
 
@@ -139,7 +139,7 @@ describe('VerifiablePresentationValidation', () => {
     siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
     response = await validator.validate(<string>siopRequest.rawToken);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual(`Missing verifiableCredential in presentation`);
     expect(response.code).toEqual('VCSDKVPVa04');
 
@@ -151,7 +151,7 @@ describe('VerifiablePresentationValidation', () => {
     siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
     response = await validator.validate(<string>siopRequest.rawToken);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual(`Missing vp in presentation`);
     expect(response.code).toEqual('VCSDKVPVa02');
 
@@ -164,7 +164,7 @@ describe('VerifiablePresentationValidation', () => {
     siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
     response = await validator.validate(<string>siopRequest.rawToken);
     expect(response.result).toBeFalsy();
-    expect(response.status).toEqual(403);
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual(`Missing @context in presentation`);
     expect(response.code).toEqual('VCSDKVPVa03');
 
