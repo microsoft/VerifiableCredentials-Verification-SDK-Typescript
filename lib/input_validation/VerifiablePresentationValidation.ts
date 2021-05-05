@@ -59,14 +59,14 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
         result: false,
         code: errorCode(1),
         detailedError: `The DID used for the SIOP ${this.siopDid} is not equal to the DID used for the verifiable presentation ${validationResponse.did}`,
-        status: 403
+        status: this.options.validatorOptions.invalidTokenError
       };
     }
 
     if (!validationResponse.payloadObject.vp) {
       return {
         result: false,
-        status: 403,
+        status: this.options.validatorOptions.invalidTokenError,
         code: errorCode(2),
         detailedError: `Missing vp in presentation`
       };
@@ -75,7 +75,7 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
     if (!validationResponse.payloadObject.vp['@context']) {
       return {
         result: false,
-        status: 403,
+        status: this.options.validatorOptions.invalidTokenError,
         code: errorCode(3),
         detailedError: `Missing @context in presentation`
       };
@@ -84,7 +84,7 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
     if (!validationResponse.payloadObject.vp.type || validationResponse.payloadObject.vp.type[0] !== VerifiableCredentialConstants.DEFAULT_VERIFIABLEPRESENTATION_TYPE) {
       return {
         result: false,
-        status: 403,
+        status: this.options.validatorOptions.invalidTokenError,
         code: errorCode(3),
         detailedError: `Missing or wrong default type in vp of presentation. Should be ${VerifiableCredentialConstants.DEFAULT_VERIFIABLEPRESENTATION_TYPE}`
       };
@@ -92,7 +92,7 @@ export class VerifiablePresentationValidation implements IVerifiablePresentation
     if (!validationResponse.payloadObject.vp['verifiableCredential']) {
       return {
         result: false,
-        status: 403,
+        status: this.options.validatorOptions.invalidTokenError,
         code: errorCode(4),
         detailedError: `Missing verifiableCredential in presentation`
       };

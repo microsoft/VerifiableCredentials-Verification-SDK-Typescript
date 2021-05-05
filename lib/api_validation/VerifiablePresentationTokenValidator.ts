@@ -3,15 +3,14 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TokenType, IExpectedVerifiablePresentation, ITokenValidator, ClaimToken, VerifiableCredentialValidation } from '../index';
+import ErrorHelpers from '../error_handling/ErrorHelpers';
+import { ClaimToken, IExpectedVerifiablePresentation, ITokenValidator, TokenType, VerifiableCredentialValidation } from '../index';
 import { IValidationResponse } from '../input_validation/IValidationResponse';
-import ValidationOptions from '../options/ValidationOptions';
-import { VerifiablePresentationValidation } from '../input_validation/VerifiablePresentationValidation';
-import IValidatorOptions from '../options/IValidatorOptions';
 import ValidationQueue from '../input_validation/ValidationQueue';
 import ValidationQueueItem from '../input_validation/ValidationQueueItem';
-import { Crypto } from '../index';
-import ErrorHelpers from '../error_handling/ErrorHelpers';
+import { VerifiablePresentationValidation } from '../input_validation/VerifiablePresentationValidation';
+import IValidatorOptions from '../options/IValidatorOptions';
+import ValidationOptions from '../options/ValidationOptions';
 const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKVPTV', error);
 
 /**
@@ -54,7 +53,7 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
     if (!validationResponse.payloadObject.vp || !validationResponse.payloadObject.vp.verifiableCredential) {
       return {
         result: false,
-        status: 403,
+        status: this.validatorOption.invalidTokenError,
         code: errorCode(1),
         detailedError: 'No verifiable credential'
       };
@@ -69,7 +68,7 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
       if (vc.length > validatorSafeguards.maxNumberOfVCTokensInPresentation) {
         return {
           result: false,
-          status: 403,
+          status: this.validatorOption.invalidTokenError,
           code: errorCode(2),
           detailedError: `The number of VCs ${vc.length} in presentation exceeds the maximum ${validatorSafeguards.maxNumberOfVCTokensInPresentation}.`
         }
@@ -79,7 +78,7 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
       if (oversized.length !== 0) {
         return {
           result: false,
-          status: 403,
+          status: this.validatorOption.invalidTokenError,
           code: errorCode(3),
           detailedError: `The presentation has an oversized VC tokens. Size ${oversized[0].length}. Maximum size: ${validatorSafeguards.maxSizeOfVCTokensInPresentation}.`
         }
@@ -103,4 +102,3 @@ export default class VerifiablePresentationTokenValidator implements ITokenValid
     return TokenType.verifiablePresentationJwt;
   }
 }
-

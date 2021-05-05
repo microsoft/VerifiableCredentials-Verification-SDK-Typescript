@@ -1,3 +1,9 @@
+# version 0.12.1-preview.12
+## When a Verifiable Presentation is invalid, return IValidatorOptions.invalidTokenError
+**Type of change:** feature work
+**Customer impact:** low
+- Use IValidatorOptions.invalidTokenError for the response to a invalid VP
+
 # version 0.12.1-preview.9
 ## When a VP/VC has been revoked, return IValidatorOptions.invalidTokenError
 **Type of change:** feature work
