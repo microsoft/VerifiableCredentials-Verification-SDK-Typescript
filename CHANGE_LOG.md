@@ -1,4 +1,4 @@
-# version 0.12.1-preview.11
+# version 0.12.1-preview.12
 ## When a Verifiable Presentation is invalid, return IValidatorOptions.invalidTokenError
 **Type of change:** feature work
 **Customer impact:** low
