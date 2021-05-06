@@ -2,8 +2,9 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { IExpectedIdToken, IExpectedAudience } from '../options/IExpected';
+import { IExpectedAudience } from '../options/IExpected';
 import { IValidationOptions } from '../options/IValidationOptions';
+import ClaimToken from '../verifiable_credential/ClaimToken';
 import { IdTokenValidationResponse, IIdTokenValidation } from './IdTokenValidationResponse';
 
 /**
@@ -23,7 +24,7 @@ export abstract class BaseIdTokenValidation implements IIdTokenValidation {
    * @param idToken The presentation to validate as a signed token
    * @param siopDid needs to be equal to audience of VC
    */
-  public async validate(idToken: string): Promise<IdTokenValidationResponse> {
+  public async validate(idToken: ClaimToken): Promise<IdTokenValidationResponse> {
     let validationResponse: IdTokenValidationResponse = {
       result: true,
       detailedError: '',
@@ -31,7 +32,7 @@ export abstract class BaseIdTokenValidation implements IIdTokenValidation {
     };
 
     // Deserialize id token token
-    validationResponse = await this.options.getTokenObjectDelegate(validationResponse, idToken);
+    validationResponse = await this.options.getTokenObjectDelegate(validationResponse, idToken.rawToken);
     if (!validationResponse.result) {
       return validationResponse;
     }
@@ -59,6 +60,5 @@ export abstract class BaseIdTokenValidation implements IIdTokenValidation {
     return validationResponse;
   }
 
-  protected abstract downloadConfigurationAndValidate(validationResponse: IdTokenValidationResponse, idToken: string): Promise<IdTokenValidationResponse>;
-
+  protected abstract downloadConfigurationAndValidate(validationResponse: IdTokenValidationResponse, idToken: ClaimToken): Promise<IdTokenValidationResponse>;
 }

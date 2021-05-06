@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import ClaimToken from '../verifiable_credential/ClaimToken';
 import { IValidationResponse } from './IValidationResponse';
 
 export interface IdTokenValidationResponse extends IValidationResponse {
@@ -25,5 +26,5 @@ export interface IIdTokenValidation {
    * @param audience The expected audience for the token
    * @returns true if validation passes
    */
-  validate(idToken: string): Promise<IValidationResponse>;
+  validate(idToken: ClaimToken): Promise<IValidationResponse>;
 }

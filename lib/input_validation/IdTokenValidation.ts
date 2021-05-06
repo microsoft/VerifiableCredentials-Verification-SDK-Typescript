@@ -76,24 +76,24 @@ export class IdTokenValidation extends BaseIdTokenValidation {
     return issuers;
   }
 
-  protected async downloadConfigurationAndValidate(validationResponse: IdTokenValidationResponse, idToken: string): Promise<IdTokenValidationResponse> {
+  protected async downloadConfigurationAndValidate(validationResponse: IdTokenValidationResponse, idToken: ClaimToken): Promise<IdTokenValidationResponse> {
     // Validate token signature    
     const issuers = this.getIssuersFromExpected();
     if (!(issuers instanceof Array)) {
       return <IdTokenValidationResponse>issuers;
     }
 
-    const arr = <string[]>issuers;
-    let idTokenValidated = false;
-    for (let inx = 0; inx < arr.length; inx++) {
-      validationResponse = await this.options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, new ClaimToken(TokenType.idToken, idToken, arr[inx]));
-      
-      if (validationResponse.result) {
-        return validationResponse;
-      }
+    // Make sure that the IdToken endpoint matches a trusted issuer.
+    const { id } = idToken;
+    if (issuers.indexOf(idToken.id) < 0) {
+      return {
+        code: errorCode(5),
+        detailedError: `Issuer '${id}' is not a trusted IdToken issuer.`,
+        result: false,
+        status: 400,
+      };
     }
 
-    // this is broken, if all failed only the last one gets returned
-    return validationResponse;
+    return this.options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, idToken);
   }
 }

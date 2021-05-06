@@ -22,7 +22,10 @@ export class OpenIdTokenValidation extends BaseIdTokenValidation {
     super(options, expected);
   }
 
-  protected async downloadConfigurationAndValidate(validationResponse: IdTokenValidationResponse, idToken: string): Promise<IdTokenValidationResponse> {
-    return await this.options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, new ClaimToken(TokenType.idToken, idToken, this.expected.configuration));
+  protected downloadConfigurationAndValidate(validationResponse: IdTokenValidationResponse, idToken: ClaimToken): Promise<IdTokenValidationResponse> {
+    return this.options.fetchKeyAndValidateSignatureOnIdTokenDelegate(
+      validationResponse,
+      new ClaimToken(TokenType.idToken, idToken.rawToken, this.expected.configuration),
+    );
   }
 }
