@@ -85,12 +85,12 @@ export class IdTokenValidation extends BaseIdTokenValidation {
 
     // Make sure that the IdToken endpoint matches a trusted issuer.
     const { id } = idToken;
-    if (issuers.indexOf(idToken.id) < 0) {
+    if (issuers.indexOf(id) < 0) {
       return {
         code: errorCode(5),
         detailedError: `Issuer '${id}' is not a trusted IdToken issuer.`,
         result: false,
-        status: 400,
+        status: 403,
       };
     }
 
