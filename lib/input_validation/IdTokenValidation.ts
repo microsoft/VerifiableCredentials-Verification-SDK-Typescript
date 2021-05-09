@@ -88,7 +88,7 @@ export class IdTokenValidation extends BaseIdTokenValidation {
     if (issuers.indexOf(id) < 0) {
       return {
         code: errorCode(5),
-        detailedError: `Issuer '${id}' is not a trusted IdToken issuer.`,
+        detailedError: `'${id}' is not configured as a trusted OpenID Provider.`,
         result: false,
         status: 403,
       };
