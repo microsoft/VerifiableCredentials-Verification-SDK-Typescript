@@ -76,22 +76,22 @@ export class IdTokenValidation extends BaseIdTokenValidation {
     return issuers;
   }
 
-  protected async downloadConfigurationAndValidate(validationResponse: IdTokenValidationResponse, idToken: ClaimToken): Promise<IdTokenValidationResponse> {
+  protected downloadConfigurationAndValidate(validationResponse: IdTokenValidationResponse, idToken: ClaimToken): Promise<IdTokenValidationResponse> {
     // Validate token signature    
     const issuers = this.getIssuersFromExpected();
     if (!(issuers instanceof Array)) {
-      return <IdTokenValidationResponse>issuers;
+      return Promise.resolve(<IdTokenValidationResponse>issuers);
     }
 
     // Make sure that the IdToken endpoint matches a trusted issuer.
     const { id } = idToken;
     if (issuers.indexOf(id) < 0) {
-      return {
+      return Promise.resolve({
         code: errorCode(5),
         detailedError: `'${id}' is not configured as a trusted OpenID Provider.`,
         result: false,
         status: 403,
-      };
+      });
     }
 
     return this.options.fetchKeyAndValidateSignatureOnIdTokenDelegate(validationResponse, idToken);
