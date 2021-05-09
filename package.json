@@ -46,7 +46,7 @@
     "deep-property-access": "1.0.1",
     "es6-promise": "^4.2.8",
     "isomorphic-fetch": "3.0.0",
-    "jsonpath": "1.0.2",
+    "jsonpath": "1.1.1",
     "multihashes": "0.4.14",
     "uuid": "7.0.1",
     "verifiablecredentials-crypto-sdk-typescript": "1.1.12-preview.2"
