@@ -5,7 +5,7 @@
 
 import RequestorHelper from './RequestorHelper';
 import ResponderHelper from './ResponderHelper';
-import { JoseBuilder, TokenType, Validator, ValidatorBuilder, VerifiablePresentationValidation } from '../lib';
+import { JoseBuilder, Validator, ValidatorBuilder } from '../lib';
 import TokenGenerator from './TokenGenerator';
 import RequestOneVcResponseOk from './models/RequestOneVcResponseOk'
 import RequestTwoVcResponseOk from './models/RequestTwoVcResponseOk'
@@ -511,7 +511,7 @@ describe('Rule processor', () => {
       validator = new ValidatorBuilder(requestor.crypto)
         .useTrustedIssuerConfigurationsForIdTokens(['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'])
         .build();
-      response = await validator.validate(<string>response.validationResult!.idTokens!['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'].rawToken);
+      response = await validator.validate(response.validationResult!.idTokens!['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration']);
       expect(response.result).toBeTruthy();
       expect(response.validationResult!.idTokens!['https://pics-linux.azurewebsites.net/test/oidc/openid-configuration'].decodedToken.firstName).toEqual('Jules');
 

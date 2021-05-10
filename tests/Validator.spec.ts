@@ -4,7 +4,6 @@ import TestSetup from './TestSetup';
 import ValidationQueue from '../lib/input_validation/ValidationQueue';
 import { Crypto, SelfIssuedTokenValidator } from '../lib/index';
 import VerifiableCredentialConstants from '../lib/verifiable_credential/VerifiableCredentialConstants';
-import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript';
 import ValidationQueueItem from '../lib/input_validation/ValidationQueueItem';
 const clone = require('clone');
 
@@ -24,8 +23,9 @@ describe('Validator', () => {
   });
 
   it('should validate id token', async () => {
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.idToken, true);
+    const siop = (await IssuanceHelpers.createRequest(setup, TokenType.idToken, true))[2];
     const expected: IExpectedIdToken = siop.expected.filter((token: IExpectedIdToken) => token.type === TokenType.idToken)[0];
+    const { idToken } = siop;
 
     // because we only pass in the id token we need to pass configuration as an array
     //expected.configuration = (<{ [contract: string]: string[]}>expected.configuration)[Validator.getContractIdFromSiop(siop.contract)];
@@ -42,21 +42,21 @@ describe('Validator', () => {
       .useTrustedIssuerConfigurationsForIdTokens([setup.defaultIdTokenConfiguration])
       .build();
 
-    let response = await validator.validate(siop.idToken.rawToken);
+    let response = await validator.validate(idToken);
     expect(response.result).toBeTruthy();
     expect(response.validationResult?.idTokens).toBeDefined();
 
     validator = new ValidatorBuilder(crypto)
       .useTrustedIssuerConfigurationsForIdTokens([setup.defaultIdTokenConfiguration])
       .build();
-    response = await validator.validate(siop.idToken.rawToken);
+    response = await validator.validate(idToken);
     expect(response.result).toBeTruthy();
     expect(response.validationResult?.idTokens).toBeDefined();
 
     //Redefine the urls
     validator = validator.builder.useTrustedIssuerConfigurationsForIdTokens([setup.defaultIdTokenConfiguration])
       .build();
-    response = await validator.validate(siop.idToken.rawToken);
+    response = await validator.validate(idToken);
     expect(response.result).toBeTruthy();
     expect(validator.builder.trustedIssuerConfigurationsForIdTokens).toEqual([setup.defaultIdTokenConfiguration]);
     expect(response.validationResult?.verifiablePresentations).toBeUndefined();
@@ -64,6 +64,17 @@ describe('Validator', () => {
     tokenValidator = new IdTokenTokenValidator(setup.validatorOptions, expected);
 
     // Negative cases
+    // Unmatched configuration endpoint.
+    validator = new ValidatorBuilder(crypto)
+      .useValidators(tokenValidator)
+      .useTrustedIssuerConfigurationsForIdTokens([setup.defaultIdTokenConfiguration])
+      .build();
+    response = await validator.validate(new ClaimToken(TokenType.idToken, idToken.rawToken, 'https://example.com/wrong-config'));
+    expect(response.result).toBeFalse();
+    expect(response.detailedError).toBeTruthy();
+    expect(response.code).toEqual('VCSDKIDVa05');
+    expect(response.status).toEqual(403);
+
     // Bad configuration endpoint
     const clonedExpected = clone(expected);
     clonedExpected.configuration = ['xxx'];
@@ -72,7 +83,7 @@ describe('Validator', () => {
       .useValidators(tokenValidator)
       .build();
 
-    response = await validator.validate(siop.idToken.rawToken);
+    response = await validator.validate(new ClaimToken(TokenType.idToken, idToken.rawToken, 'xxx'));
     expect(response.result).toBeFalsy();
     expect(response.detailedError).toEqual(`Could not fetch token configuration`);
     expect(response.code).toEqual('VCSDKVaHe34');

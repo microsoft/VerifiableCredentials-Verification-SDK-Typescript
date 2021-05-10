@@ -52,13 +52,12 @@ import { IValidationResponse } from './input_validation/IValidationResponse';
 import { ISiopValidationResponse } from './input_validation/SiopValidationResponse';
 import { IdTokenValidation } from './input_validation/IdTokenValidation';
 import { BaseIdTokenValidation } from './input_validation/BaseIdTokenValidation';
-import { OpenIdTokenValidation } from './input_validation/OpenIdTokenValidation';
 import { VerifiablePresentationValidation } from './input_validation/VerifiablePresentationValidation';
 import { DidValidation } from './input_validation/DidValidation'
 import { SiopValidation } from './input_validation/SiopValidation'
 import { VerifiableCredentialValidation } from './input_validation/VerifiableCredentialValidation';
 import VerifiablePresentationStatusReceipt, { IVerifiablePresentationStatus } from './api_validation/VerifiablePresentationStatusReceipt';
-export { VerifiablePresentationStatusReceipt, IVerifiablePresentationStatus, IValidationResponse, IdTokenValidationResponse, ISiopValidationResponse, IdTokenValidation, VerifiablePresentationValidation, DidValidation, SiopValidation, VerifiableCredentialValidation, BaseIdTokenValidation, OpenIdTokenValidation };
+export { VerifiablePresentationStatusReceipt, IVerifiablePresentationStatus, IValidationResponse, IdTokenValidationResponse, ISiopValidationResponse, IdTokenValidation, VerifiablePresentationValidation, DidValidation, SiopValidation, VerifiableCredentialValidation, BaseIdTokenValidation };
 
 import IRevocedCard from './revocation/IRevokedCard';
 export { IRevocedCard };

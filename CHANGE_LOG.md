@@ -1,3 +1,11 @@
+# version 0.12.1-preview.14
+## IdToken Validation improvements
+**Type of change:** bug fix
+**Customer impact:** medium
+- Enforce configuration endpoint in input IdToken attestations to match an expected IdToken configuration endpoint i.e., don't rely solely on signature to match an IdToken.
+- No longer iterate over all IdToken to find a match by signature. Only validate the signature of
+the IdToken with the matching configuration endpoint. 
+
 # version 0.12.1-preview.12
 ## When a Verifiable Presentation is invalid, return IValidatorOptions.invalidTokenError
 **Type of change:** feature work
