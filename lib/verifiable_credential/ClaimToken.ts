@@ -66,6 +66,26 @@ export enum TokenType {
 }
 
 /**
+ * Support input attestations.
+ */
+export enum InputAttestationType {
+  /**
+   * IdToken input attestation.
+   */
+  idTokens = 'idTokens',
+
+  /**
+   * Self-attested input attestation.
+   */
+  selfIssued = 'selfIssued',
+
+  /**
+   * Verifiable presentation input attestation.
+   */
+  verifiablePresentations = 'verifiablePresentations',
+}
+
+/**
  * Model for the claim token in compact format
  */
 export default class ClaimToken {
@@ -207,23 +227,51 @@ export default class ClaimToken {
   * This algorithm will convert the attestations to a ClaimToken
   * @param attestations All presented claims
   */
-  public static getClaimTokensFromAttestations(attestations: { [key: string]: string }): { [key: string]: ClaimToken } {
+  public static getClaimTokensFromAttestations(attestations: { [key: string]: { [tokenKey: string]: string } }): { [key: string]: ClaimToken } {
+    const inputAttestations = Object.entries(attestations);
+
+    if (inputAttestations.length === 0) {
+      throw new Error('Input attestations are invalid.');
+    }
+
     const decodedTokens: { [key: string]: ClaimToken } = {};
 
-    for (let key in attestations) {
-      const token: any = attestations[key];
+    for (const [key, token] of inputAttestations) {
+      switch (key) {
+        // Self-issued attestations are different from all other input attestation types, so we follow a special path to parse them.
+        case InputAttestationType.selfIssued:
+          decodedTokens[VerifiableCredentialConstants.CLAIMS_SELFISSUED] = new ClaimToken(TokenType.selfIssued, token);
+          break;
 
-      if (key === VerifiableCredentialConstants.CLAIMS_SELFISSUED) {
-        decodedTokens[VerifiableCredentialConstants.CLAIMS_SELFISSUED] = new ClaimToken(TokenType.selfIssued, token);
+        // All other supported input attestations (i.e., verifiable presentations, IdTokens, and IdToken hints) are maps of JWTs.
+        case InputAttestationType.idTokens:
+        case InputAttestationType.verifiablePresentations:
+          ClaimToken.processInputAttestationTokens(key, token, decodedTokens);
+          break;
+
+        default:
+          throw new Error(`'${key}' is not a valid input attestation.`);
       }
-      else {
-        for (let tokenKey in token) {
-          const claimToken = ClaimToken.create(token[tokenKey], tokenKey);
-          decodedTokens[tokenKey] = claimToken;
-        }
-      }
-    };
+    }
+
     return decodedTokens;
+  }
+
+  private static processInputAttestationTokens (key: string, tokens: { [key: string]: string }, decodedTokens: { [key: string]: ClaimToken }) {
+    // This notation guarantees it's an object, unlike the `in` syntax which enumerates keys regardless of type.
+    const jwts = Object.entries(tokens);
+
+    if (jwts.length === 0) {
+      throw new Error(`'${key}' input attestations are invalid.`);
+    }
+
+    for (const [jwtKey, jwt] of jwts) {
+      if (typeof jwt !== 'string' || !jwt) {
+        throw new Error(`Token for '${jwtKey}' in '${key}' is invalid.`);
+      }
+
+      decodedTokens[jwtKey] = ClaimToken.create(jwt, jwtKey);
+    }
   }
 
   /**
