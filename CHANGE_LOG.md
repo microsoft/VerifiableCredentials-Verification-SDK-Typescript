@@ -1,3 +1,9 @@
+# version 0.12.1-preview.15
+## JSONPath vulnerability fix
+**Type of change:** bug fix
+**Customer impact:** low
+- Fix high severity code injection vulnerability via JSONPath.
+
 # version 0.12.1-preview.14
 ## IdToken Validation improvements
 **Type of change:** bug fix
