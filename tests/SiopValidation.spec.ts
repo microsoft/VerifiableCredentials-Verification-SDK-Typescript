@@ -47,6 +47,10 @@ describe('SiopValidation', () =>
     expect(response.wwwAuthenticateError).toEqual(AuthenticationErrorCode.invalidRequest);
     expect(siopRequest.validationResponse).toBeDefined();
 
+    // a 2nd call must yield the cached result
+    response = await validator.validate(siopRequest);
+    expect(response === siopRequest.validationResponse).toBeTrue();
+
     // Bad iss
     payload = {
       iss: 'test'
