@@ -8,6 +8,8 @@ import { DidValidation } from './DidValidation';
 import { IValidationOptions } from '../options/IValidationOptions';
 import { IExpectedSiop } from '../index';
 import ErrorHelpers from '../error_handling/ErrorHelpers';
+import { createHash } from 'crypto';
+import base64url from 'base64url';
 const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKSIVa', error);
 
 /**
@@ -26,7 +28,7 @@ export class SiopValidation implements ISiopValidation {
 
   private _didValidation: DidValidation;
 
-  public get didValidation():DidValidation {
+  public get didValidation(): DidValidation {
     return this._didValidation;
   }
 
@@ -56,16 +58,98 @@ export class SiopValidation implements ISiopValidation {
     if (!validationResponse.result) {
       return validationResponse;
     }
-    
+
+    // the did claim in the token must match the did in the header
+    if (!validationResponse.payloadObject.did ||
+      validationResponse.payloadObject.did !== validationResponse.did) {
+      return {
+        result: false,
+        code: errorCode(2),
+        detailedError: 'The did claim is invalid',
+        status: this.options.validatorOptions.invalidTokenError,
+      };
+    }
+
     if (!validationResponse.tokenId) {
       return {
         result: false,
         code: errorCode(1),
         detailedError: `The SIOP token identifier (jti/id) is missing`,
         status: 400
-      };    
+      };
+    }
+
+    return this.validateSubClaim(validationResponse);
+  }
+
+  /**
+   * Validate the sub and sub_jwk claims in the siop token
+   * @param validationResponse ISiopValidationResponse instance
+   * @returns ISiopValidationResponse instance
+   */
+  private validateSubClaim(validationResponse: ISiopValidationResponse): ISiopValidationResponse {
+    // json web key from the did document
+    const jwk = validationResponse.didSigningPublicKey;
+
+    // sub_jwk claim from the token, must match jwk
+    const sub_jwk = validationResponse.payloadObject.sub_jwk;
+
+    if (!sub_jwk) {
+      return {
+        result: false,
+        code: errorCode(3),
+        detailedError: 'The sub_jwk claim is missing',
+        status: this.options.validatorOptions.invalidTokenError,
+      };
+    }
+
+    // we must have a sub claim to validate
+    const sub = validationResponse.payloadObject.sub;
+
+    if (!sub) {
+      return {
+        result: false,
+        code: errorCode(4),
+        detailedError: 'The sub claim is missing',
+        status: this.options.validatorOptions.invalidTokenError,
+      };
+    }
+
+    // the thumbprint of the did document key must match the thumbprint of the sub_jwk claim 
+    // the sub_jwk claim thumbprint must match the sub claim
+    const didJwkThumbprint = SiopValidation.createJwkThumbprint(jwk);
+    const subJwkThumbprint = SiopValidation.createJwkThumbprint(sub_jwk);
+
+    if (didJwkThumbprint !== subJwkThumbprint ||
+      subJwkThumbprint !== sub) {
+      return {
+        result: false,
+        code: errorCode(5),
+        detailedError: 'The sub claim is invalid',
+        status: this.options.validatorOptions.invalidTokenError,
+      };
     }
 
     return validationResponse;
+  }
+
+  /**
+   * for a given json web key calculate the thumbprint as defined by RFC 7638
+   * @param jwk json web key instance
+   * @returns thumbprint
+   */
+  private static createJwkThumbprint(jwk: any): string {
+    const preImage = {
+      crv: jwk.crv,
+      e: jwk.e,
+      kty: jwk.kty,
+      n: jwk.n,
+      x: jwk.x,
+      y: jwk.y,
+    };
+
+    const json = JSON.stringify(preImage);
+    const digest = createHash('sha256').update(json, 'utf8').digest();
+    return base64url(digest);
   }
 }
