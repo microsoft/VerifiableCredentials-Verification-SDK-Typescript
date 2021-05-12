@@ -40,30 +40,25 @@ export class SiopValidation implements ISiopValidation {
    * @returns true if validation passes together with parsed objects
    */
   public async validate(siop: ClaimToken): Promise<ISiopValidationResponse> {
-    let validationResponse: ISiopValidationResponse = {
-      result: true,
-      status: 200
-    };
-
     // if the token was already validated, we're done
     if (siop.validationResponse) {
       return siop.validationResponse;
     }
 
     // Check the DID parts of the siop
-    validationResponse = await this.didValidation.validate(siop.rawToken);
+    let validationResponse = await this.didValidation.validate(siop.rawToken);
     if (!validationResponse.result) {
-      return validationResponse;
+      return siop.validationResponse = validationResponse;
     }
 
     // Check token scope (aud and iss)
     validationResponse = this.options.checkScopeValidityOnSiopTokenDelegate(validationResponse, this.expected);
     if (!validationResponse.result) {
-      return validationResponse;
+      return siop.validationResponse = validationResponse;
     }
 
     if (!validationResponse.tokenId) {
-      return {
+      return siop.validationResponse = {
         result: false,
         code: errorCode(1),
         detailedError: `The SIOP token identifier (jti/id) is missing`,
@@ -71,7 +66,6 @@ export class SiopValidation implements ISiopValidation {
       };
     }
 
-    siop.validationResponse = validationResponse;
-    return validationResponse;
+    return siop.validationResponse = validationResponse;
   }
 }

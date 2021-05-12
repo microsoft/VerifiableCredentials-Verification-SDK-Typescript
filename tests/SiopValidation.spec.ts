@@ -88,6 +88,7 @@ describe('SiopValidation', () =>
     expect(siopRequest.validationResponse).toBeDefined();
 
     // Bad validation
+    siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
     const testValidator = new DidValidation(validationOptions, expected);
     validator.didValidation = testValidator;
     const validateSpy = spyOn(testValidator, 'validate').and.callFake(() => <any>{result: false, detailedError: 'did validation error'});
