@@ -6,7 +6,7 @@
 import { IPayloadProtectionSigning } from 'verifiablecredentials-crypto-sdk-typescript';
 import { IDidValidation, IDidValidationResponse } from './DidValidationResponse';
 import { IValidationOptions } from '../options/IValidationOptions';
-import { IExpectedBase } from '../index';
+import { ClaimToken, IExpectedBase } from '../index';
 import ErrorHelpers from '../error_handling/ErrorHelpers';
 import { AuthenticationErrorCode } from '../error_handling/AuthenticationErrorCode';
 const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKDIDV', error);
@@ -29,7 +29,7 @@ export class DidValidation implements IDidValidation {
    * @param token Token to validate
    * @returns true if validation passes together with parsed objects
    */
-  public async validate (token: string | object): Promise<IDidValidationResponse> {
+  public async validate (token: string | object | ClaimToken): Promise<IDidValidationResponse> {
     let validationResponse: IDidValidationResponse = {
       result: true,
       status: 200,

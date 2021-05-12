@@ -28,7 +28,7 @@ describe('SiopValidation', () =>
     const validationOptions = new ValidationOptions(setup.validatorOptions, TokenType.siopIssuance); 
 
     const validator = new SiopValidation(validationOptions, expected);
-    let response = await validator.validate(<string>request.rawToken);
+    let response = await validator.validate(request);
     expect(response.result).toBeTruthy();
     expect(response.tokenId).toBeDefined();
     expect(response.tokenId).toEqual(request.decodedToken.jti);
@@ -38,7 +38,7 @@ describe('SiopValidation', () =>
     let payload: any = {
     };
     let siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
-    response = await validator.validate(<string>siopRequest.rawToken);
+    response = await validator.validate(siopRequest);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual(`Missing iss property in siop. Expected 'https://self-issued.me'`);
@@ -50,7 +50,7 @@ describe('SiopValidation', () =>
       iss: 'test'
     };
     siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
-    response = await validator.validate(<string>siopRequest.rawToken);
+    response = await validator.validate(siopRequest);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual(`Wrong iss property in siop. Expected 'https://self-issued.me'`);
@@ -62,7 +62,7 @@ describe('SiopValidation', () =>
       iss: 'https://self-issued.me'
     };
     siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
-    response = await validator.validate(<string>siopRequest.rawToken);
+    response = await validator.validate(siopRequest);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual(`Missing aud property in siop`);
@@ -75,7 +75,7 @@ describe('SiopValidation', () =>
       aud: 'test'
     };
     siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
-    response = await validator.validate(<string>siopRequest.rawToken);
+    response = await validator.validate(siopRequest);
     expect(response.result).toBeFalsy();
     expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
     expect(response.detailedError).toEqual(`Wrong aud property in siop. Expected 'https://portableidentitycards.azure-api.net/42b39d9d-0cdd-4ae0-b251-b7b39a561f91/api/portable/v1.0/card/issue'`);
@@ -86,7 +86,7 @@ describe('SiopValidation', () =>
     const testValidator = new DidValidation(validationOptions, expected);
     validator.didValidation = testValidator;
     const validateSpy = spyOn(testValidator, 'validate').and.callFake(() => <any>{result: false, detailedError: 'did validation error'});
-    response = await validator.validate(<string>siopRequest.rawToken);
+    response = await validator.validate(siopRequest);
     expect(response.detailedError).toEqual('did validation error');
   });
   

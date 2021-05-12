@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import VerifiableCredentialConstants from './VerifiableCredentialConstants';
 import ValidationError from '../error_handling/ValidationError';
-import { PresentationDefinitionModel } from '../index';
+import { IValidationResponse, PresentationDefinitionModel } from '../index';
 import ErrorHelpers from '../error_handling/ErrorHelpers';
 import JsonWebSignatureToken, { TokenPayload } from './JsonWebSignatureToken';
 const jp = require('jsonpath');
@@ -74,6 +74,7 @@ export default class ClaimToken {
   private _type: TokenType;
   private _decodedToken: { [key: string]: any } = {};
   private _tokenHeader: { [key: string]: any } = {};
+  private _validationResponse?: IValidationResponse;
   private readonly _jsonWebToken?: JsonWebSignatureToken;
 
   /**
@@ -117,6 +118,20 @@ export default class ClaimToken {
    */
   public get decodedToken(): { [key: string]: any } {
     return this._decodedToken;
+  }
+
+  /**
+   * Gets a IValidationResponse for the token
+   */
+  public get validationResponse(): IValidationResponse | undefined {
+    return this._validationResponse;
+  }
+
+  /**
+   * Sets a IValidationResponse for the token
+   */
+  public set validationResponse(value: IValidationResponse | undefined) {
+    this._validationResponse = value;
   }
 
   /**
