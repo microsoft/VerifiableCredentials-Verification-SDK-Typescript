@@ -32,6 +32,7 @@ describe('SiopValidation', () =>
     expect(response.result).toBeTruthy();
     expect(response.tokenId).toBeDefined();
     expect(response.tokenId).toEqual(request.decodedToken.jti);
+    expect(request.validationResponse).toBeDefined();
     
     // Negative cases
     // Missing iss
@@ -44,6 +45,7 @@ describe('SiopValidation', () =>
     expect(response.detailedError).toEqual(`Missing iss property in siop. Expected 'https://self-issued.me'`);
     expect(response.code).toEqual('VCSDKVaHe23');
     expect(response.wwwAuthenticateError).toEqual(AuthenticationErrorCode.invalidRequest);
+    expect(siopRequest.validationResponse).toBeDefined();
 
     // Bad iss
     payload = {
@@ -56,6 +58,7 @@ describe('SiopValidation', () =>
     expect(response.detailedError).toEqual(`Wrong iss property in siop. Expected 'https://self-issued.me'`);
     expect(response.code).toEqual('VCSDKVaHe24');
     expect(response.wwwAuthenticateError).toEqual(AuthenticationErrorCode.invalidToken);
+    expect(siopRequest.validationResponse).toBeDefined();
 
     // Missing aud
     payload = {
@@ -68,6 +71,7 @@ describe('SiopValidation', () =>
     expect(response.detailedError).toEqual(`Missing aud property in siop`);
     expect(response.code).toEqual('VCSDKVaHe25');
     expect(response.wwwAuthenticateError).toEqual(AuthenticationErrorCode.invalidRequest);
+    expect(siopRequest.validationResponse).toBeDefined();
 
     // Wrong aud
     payload = {
@@ -81,6 +85,7 @@ describe('SiopValidation', () =>
     expect(response.detailedError).toEqual(`Wrong aud property in siop. Expected 'https://portableidentitycards.azure-api.net/42b39d9d-0cdd-4ae0-b251-b7b39a561f91/api/portable/v1.0/card/issue'`);
     expect(response.code).toEqual('VCSDKVaHe26');
     expect(response.wwwAuthenticateError).toEqual(AuthenticationErrorCode.invalidToken);
+    expect(siopRequest.validationResponse).toBeDefined();
 
     // Bad validation
     const testValidator = new DidValidation(validationOptions, expected);
@@ -88,6 +93,7 @@ describe('SiopValidation', () =>
     const validateSpy = spyOn(testValidator, 'validate').and.callFake(() => <any>{result: false, detailedError: 'did validation error'});
     response = await validator.validate(siopRequest);
     expect(response.detailedError).toEqual('did validation error');
+    expect(siopRequest.validationResponse).toBeDefined();
   });
   
   it('should return status 200', async () => {

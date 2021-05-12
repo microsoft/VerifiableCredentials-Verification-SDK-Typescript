@@ -1,3 +1,9 @@
+# version 0.12.1-preview.16
+## JSONPath vulnerability fix
+**Type of change:** bug fix
+**Customer impact:** low
+- Allow for a siop token to be validated before calling Validator.validate
+
 # version 0.12.1-preview.15
 ## JSONPath vulnerability fix
 **Type of change:** bug fix
