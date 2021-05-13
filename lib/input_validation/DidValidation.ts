@@ -4,11 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IPayloadProtectionSigning } from 'verifiablecredentials-crypto-sdk-typescript';
-import { IDidValidation, IDidValidationResponse } from './DidValidationResponse';
-import { IValidationOptions } from '../options/IValidationOptions';
-import { ClaimToken, IExpectedBase } from '../index';
-import ErrorHelpers from '../error_handling/ErrorHelpers';
 import { AuthenticationErrorCode } from '../error_handling/AuthenticationErrorCode';
+import ErrorHelpers from '../error_handling/ErrorHelpers';
+import { IExpectedBase } from '../index';
+import { IValidationOptions } from '../options/IValidationOptions';
+import { IDidValidation, IDidValidationResponse } from './DidValidationResponse';
 const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKDIDV', error);
 
 /**
