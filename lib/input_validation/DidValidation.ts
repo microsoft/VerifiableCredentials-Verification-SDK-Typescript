@@ -29,7 +29,7 @@ export class DidValidation implements IDidValidation {
    * @param token Token to validate
    * @returns true if validation passes together with parsed objects
    */
-  public async validate (token: string | object | ClaimToken): Promise<IDidValidationResponse> {
+  public async validate (token: string | object): Promise<IDidValidationResponse> {
     let validationResponse: IDidValidationResponse = {
       result: true,
       status: 200,
