@@ -3,13 +3,11 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ISiopValidation, ISiopValidationResponse } from './SiopValidationResponse';
-import { DidValidation } from './DidValidation';
-import { IValidationOptions } from '../options/IValidationOptions';
-import { ClaimToken, IExpectedSiop } from '../index';
 import ErrorHelpers from '../error_handling/ErrorHelpers';
-import { createHash } from 'crypto';
-import base64url from 'base64url';
+import { ClaimToken, createJwkThumbprint, IExpectedSiop } from '../index';
+import { IValidationOptions } from '../options/IValidationOptions';
+import { DidValidation } from './DidValidation';
+import { ISiopValidation, ISiopValidationResponse } from './SiopValidationResponse';
 const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKSIVa', error);
 
 /**
@@ -62,7 +60,7 @@ export class SiopValidation implements ISiopValidation {
     // the did claim in the token must match the did in the header
     if (!validationResponse.payloadObject.did ||
       validationResponse.payloadObject.did !== validationResponse.did) {
-      return {
+      return siop.validationResponse = {
         result: false,
         code: errorCode(2),
         detailedError: 'The did claim is invalid',
@@ -79,7 +77,7 @@ export class SiopValidation implements ISiopValidation {
       };
     }
 
-    return this.validateSubClaim(validationResponse);
+    return siop.validationResponse = this.validateSubClaim(validationResponse);
   }
 
   /**
@@ -115,11 +113,10 @@ export class SiopValidation implements ISiopValidation {
       };
     }
 
-    return siop.validationResponse = validationResponse;
     // the thumbprint of the did document key must match the thumbprint of the sub_jwk claim 
     // the sub_jwk claim thumbprint must match the sub claim
-    const didJwkThumbprint = SiopValidation.createJwkThumbprint(jwk);
-    const subJwkThumbprint = SiopValidation.createJwkThumbprint(sub_jwk);
+    const didJwkThumbprint = createJwkThumbprint(jwk);
+    const subJwkThumbprint = createJwkThumbprint(sub_jwk);
 
     if (didJwkThumbprint !== subJwkThumbprint ||
       subJwkThumbprint !== sub) {
@@ -132,25 +129,5 @@ export class SiopValidation implements ISiopValidation {
     }
 
     return validationResponse;
-  }
-
-  /**
-   * for a given json web key calculate the thumbprint as defined by RFC 7638
-   * @param jwk json web key instance
-   * @returns thumbprint
-   */
-  private static createJwkThumbprint(jwk: any): string {
-    const preImage = {
-      crv: jwk.crv,
-      e: jwk.e,
-      kty: jwk.kty,
-      n: jwk.n,
-      x: jwk.x,
-      y: jwk.y,
-    };
-
-    const json = JSON.stringify(preImage);
-    const digest = createHash('sha256').update(json, 'utf8').digest();
-    return base64url(digest);
   }
 }

@@ -1,3 +1,9 @@
+# version 0.12.1-preview.17
+## JSONPath vulnerability fix
+**Type of change:** bug fix
+**Customer impact:** high
+- Full Siop Id Token Validation
+
 # version 0.12.1-preview.16
 ## JSONPath vulnerability fix
 **Type of change:** bug fix
