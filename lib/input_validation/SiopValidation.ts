@@ -6,7 +6,7 @@
 import { ISiopValidation, ISiopValidationResponse } from './SiopValidationResponse';
 import { DidValidation } from './DidValidation';
 import { IValidationOptions } from '../options/IValidationOptions';
-import { IExpectedSiop } from '../index';
+import { ClaimToken, IExpectedSiop } from '../index';
 import ErrorHelpers from '../error_handling/ErrorHelpers';
 import { createHash } from 'crypto';
 import base64url from 'base64url';
@@ -41,22 +41,22 @@ export class SiopValidation implements ISiopValidation {
    * @param siop The SIOP token
    * @returns true if validation passes together with parsed objects
    */
-  public async validate(siop: string): Promise<ISiopValidationResponse> {
-    let validationResponse: ISiopValidationResponse = {
-      result: true,
-      status: 200
-    };
+  public async validate(siop: ClaimToken): Promise<ISiopValidationResponse> {
+    // if the token was already validated, we're done
+    if (siop.validationResponse) {
+      return siop.validationResponse;
+    }
 
     // Check the DID parts of the siop
-    validationResponse = await this.didValidation.validate(siop);
+    let validationResponse = await this.didValidation.validate(siop.rawToken);
     if (!validationResponse.result) {
-      return validationResponse;
+      return siop.validationResponse = validationResponse;
     }
 
     // Check token scope (aud and iss)
     validationResponse = this.options.checkScopeValidityOnSiopTokenDelegate(validationResponse, this.expected);
     if (!validationResponse.result) {
-      return validationResponse;
+      return siop.validationResponse = validationResponse;
     }
 
     // the did claim in the token must match the did in the header
@@ -71,7 +71,7 @@ export class SiopValidation implements ISiopValidation {
     }
 
     if (!validationResponse.tokenId) {
-      return {
+      return siop.validationResponse = {
         result: false,
         code: errorCode(1),
         detailedError: `The SIOP token identifier (jti/id) is missing`,
@@ -115,6 +115,7 @@ export class SiopValidation implements ISiopValidation {
       };
     }
 
+    return siop.validationResponse = validationResponse;
     // the thumbprint of the did document key must match the thumbprint of the sub_jwk claim 
     // the sub_jwk claim thumbprint must match the sub claim
     const didJwkThumbprint = SiopValidation.createJwkThumbprint(jwk);

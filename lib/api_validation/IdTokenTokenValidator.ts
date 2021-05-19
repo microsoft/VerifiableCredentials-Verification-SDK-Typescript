@@ -37,7 +37,7 @@ export default class IdTokenTokenValidator implements ITokenValidator {
   public async validate(_queue: ValidationQueue, queueItem:ValidationQueueItem, _siopDid: string, siopContract: string): Promise<IValidationResponse> { 
     const options = new ValidationOptions(this.validatorOption, TokenType.idToken);
     const validator = new IdTokenValidation(options, this.expected, siopContract);
-    const validationResult = await validator.validate(<string>queueItem.tokenToValidate.rawToken);
+    const validationResult = await validator.validate(queueItem.tokenToValidate);
     return validationResult as IValidationResponse;    
   }
 
