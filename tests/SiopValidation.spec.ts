@@ -8,7 +8,7 @@ import { SiopValidation } from "../lib/input_validation/SiopValidation";
 import TestSetup from './TestSetup';
 import ValidationOptions from '../lib/options/ValidationOptions';
 import { IssuanceHelpers } from "./IssuanceHelpers";
-import { AuthenticationErrorCode, DidValidation, IExpectedSiop, TokenType, ValidatorBuilder } from "../lib/index";
+import { AuthenticationErrorCode, DidValidation, IExpectedSiop, TokenPayload, TokenType, ValidatorBuilder } from "../lib/index";
 import VerifiableCredentialConstants from "../lib/verifiable_credential/VerifiableCredentialConstants";
 
 describe('SiopValidation', () => {
@@ -19,6 +19,64 @@ describe('SiopValidation', () => {
 
   afterEach(() => {
     setup.fetchMock.reset();
+  });
+
+  async function executeInvalidSiopTokenTest(callback: { (payload: TokenPayload): TokenPayload }, errorCode: number): Promise<void> {
+    setup.siopMutator = callback;
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.siopIssuance, true);
+    const expected: IExpectedSiop = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siopIssuance)[0];
+    const validationOptions = new ValidationOptions(setup.validatorOptions, TokenType.siopIssuance);
+
+    const validator = new SiopValidation(validationOptions, expected);
+    let response = await validator.validate(request);
+    expect(response.result).toBeFalse();
+    expect(response.code).toEqual(`VCSDKSIVa0${errorCode}`);
+  }
+
+  it('must fail when payload did does not equal the header did', async () => {
+    await executeInvalidSiopTokenTest(payload => { return { ...payload, did: 'not a match' } }, 2);
+  });
+
+  it('must fail when payload did is missing', async () => {
+    await executeInvalidSiopTokenTest(
+      payload => {
+        const result = { ...payload };
+        delete result.did;
+        return result;
+      },
+      2);
+  });
+
+  it('must fail when payload sub is missing', async () => {
+    await executeInvalidSiopTokenTest(
+      payload => {
+        const result = { ...payload };
+        delete result.sub;
+        return result;
+      },
+      4);
+  });
+
+  it('must fail when payload sub_jwk is missing', async () => {
+    await executeInvalidSiopTokenTest(
+      payload => {
+        const result = { ...payload };
+        delete result.sub_jwk;
+        return result;
+      },
+      3);
+  });
+
+  it('must fail payload on a sub mismatch', async () => {
+    await executeInvalidSiopTokenTest(payload => { return { ...payload, sub: 'not a match' } }, 5);
+  });
+
+  it('must fail payload on a sub_jwk mismatch', async () => {
+    await executeInvalidSiopTokenTest(
+      payload => {
+        return { ...payload, sub_jwk: { ...payload.sub_jwk, n: 'not a match' } };
+      },
+      5);
   });
 
   it('should test validate', async () => {
