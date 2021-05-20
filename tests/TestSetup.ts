@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IssuanceHelpers } from './IssuanceHelpers';
-import { ManagedHttpResolver, CryptoBuilder, IKeyStore, SubtleCryptoNode, KeyReference, ValidationSafeguards } from '../lib/index';
+import { Crypto, CryptoBuilder, IDidResolver, IKeyStore, KeyReference, ManagedHttpResolver, SubtleCryptoNode, ValidationSafeguards } from '../lib/index';
 import IValidatorOptions from '../lib/options/IValidatorOptions';
 import FetchRequest from '../lib/tracing/FetchRequest';
+import { IssuanceHelpers } from './IssuanceHelpers';
 
 /**
  * Class that creates resources needed for unit tests
@@ -30,7 +30,7 @@ export default class TestSetup {
   /**
    * TestSetup environment
    */
-  public resolver = new ManagedHttpResolver(this.resolverUrl);
+  public resolver: IDidResolver;
 
   /**
    * Constant for default id token configuration
@@ -85,27 +85,17 @@ export default class TestSetup {
   /**
    * CryptoFactory instance
    */
-  public crypto = new CryptoBuilder()
-    .useDid(this.defaultIssuerDid)
-    .useSigningKeyReference(this.defaulSigKey)
-    .build();
+  public crypto: Crypto;
 
   /**
    * TestSetup crypto properties
    */
-  public keyStore: IKeyStore = this.crypto.builder.keyStore;
+  public keyStore: IKeyStore;
 
   /**
   * Validator options
   */
-  public validatorOptions: IValidatorOptions = {
-    fetchRequest: new FetchRequest(),
-    validationSafeguards: new ValidationSafeguards(),
-    resolver: this.resolver,
-    crypto: this.crypto,
-    invalidTokenError: 401,
-    performFullSiopValidation: false,
-  };
+  public validatorOptions: IValidatorOptions;
 
   /**
    * Set the keys
@@ -153,6 +143,25 @@ export default class TestSetup {
     iat: 1582583444,
     exp: 4582583444
   };
+
+  constructor(performFullSiopValidation: boolean = false) {
+    this.crypto = new CryptoBuilder()
+      .useDid(this.defaultIssuerDid)
+      .useSigningKeyReference(this.defaulSigKey)
+      .build();
+
+    this.keyStore = this.crypto.builder.keyStore;
+    this.resolver = new ManagedHttpResolver(this.resolverUrl);
+
+    this.validatorOptions = {
+      fetchRequest: new FetchRequest(),
+      validationSafeguards: new ValidationSafeguards(),
+      resolver: this.resolver,
+      crypto: this.crypto,
+      invalidTokenError: 401,
+      performFullSiopValidation,
+    };
+  }
 
   /**
    * Create keys for tests

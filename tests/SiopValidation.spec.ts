@@ -11,21 +11,20 @@ import { IssuanceHelpers } from "./IssuanceHelpers";
 import { AuthenticationErrorCode, DidValidation, IExpectedSiop, TokenType, ValidatorBuilder } from "../lib/index";
 import VerifiableCredentialConstants from "../lib/verifiable_credential/VerifiableCredentialConstants";
 
-describe('SiopValidation', () =>
-{
+describe('SiopValidation', () => {
   let setup: TestSetup;
   beforeEach(async () => {
-    setup = new TestSetup();
+    setup = new TestSetup(true);
   });
-  
+
   afterEach(() => {
     setup.fetchMock.reset();
   });
-  
+
   it('should test validate', async () => {
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.siopIssuance, true);   
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.siopIssuance, true);
     const expected: IExpectedSiop = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siopIssuance)[0];
-    const validationOptions = new ValidationOptions(setup.validatorOptions, TokenType.siopIssuance); 
+    const validationOptions = new ValidationOptions(setup.validatorOptions, TokenType.siopIssuance);
 
     const validator = new SiopValidation(validationOptions, expected);
     let response = await validator.validate(request);
@@ -33,11 +32,11 @@ describe('SiopValidation', () =>
     expect(response.tokenId).toBeDefined();
     expect(response.tokenId).toEqual(request.decodedToken.jti);
     expect(request.validationResponse).toBeDefined();
-    
+
     // Negative cases
     // Missing iss
-    let payload: any = {
-    };
+    let payload: any = {};
+
     let siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
     response = await validator.validate(siopRequest);
     expect(response.result).toBeFalsy();
@@ -95,14 +94,14 @@ describe('SiopValidation', () =>
     siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
     const testValidator = new DidValidation(validationOptions, expected);
     validator.didValidation = testValidator;
-    const validateSpy = spyOn(testValidator, 'validate').and.callFake(() => <any>{result: false, detailedError: 'did validation error'});
+    const validateSpy = spyOn(testValidator, 'validate').and.callFake(() => <any>{ result: false, detailedError: 'did validation error' });
     response = await validator.validate(siopRequest);
     expect(response.detailedError).toEqual('did validation error');
     expect(siopRequest.validationResponse).toBeDefined();
   });
-  
+
   it('should return status 200', async () => {
-    const validator: any =  {};
+    const validator: any = {};
     validator.validate = async () => {
       return {
         result: true,
