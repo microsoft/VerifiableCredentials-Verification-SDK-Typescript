@@ -104,6 +104,7 @@ export default class TestSetup {
     resolver: this.resolver,
     crypto: this.crypto,
     invalidTokenError: 401,
+    performFullSiopValidation: false,
   };
 
   /**

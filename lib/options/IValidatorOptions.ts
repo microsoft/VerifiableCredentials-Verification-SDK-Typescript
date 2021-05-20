@@ -35,4 +35,9 @@ export default interface IValidatorOptions {
    * Gets the error value of an invalid token
    */ 
   readonly invalidTokenError: number,
+
+  /**
+   * Flag indicating whether or not full siop validation must be performed
+   */
+  readonly performFullSiopValidation: boolean,
 }

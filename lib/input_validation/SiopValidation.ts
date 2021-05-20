@@ -57,17 +57,6 @@ export class SiopValidation implements ISiopValidation {
       return siop.validationResponse = validationResponse;
     }
 
-    // the did claim in the token must match the did in the header
-    if (!validationResponse.payloadObject.did ||
-      validationResponse.payloadObject.did !== validationResponse.did) {
-      return siop.validationResponse = {
-        result: false,
-        code: errorCode(2),
-        detailedError: 'The did claim is invalid',
-        status: this.options.validatorOptions.invalidTokenError,
-      };
-    }
-
     if (!validationResponse.tokenId) {
       return siop.validationResponse = {
         result: false,
@@ -77,15 +66,29 @@ export class SiopValidation implements ISiopValidation {
       };
     }
 
-    return siop.validationResponse = this.validateSubClaim(validationResponse);
+    // siop validation is being overloaded for both siop and non-siop tokens.  to preserve existing functionality
+    // make full siop validation an opt-in operation
+    validationResponse = this.options.validatorOptions.performFullSiopValidation ? this.validateSelfIssuedClaims(validationResponse) : validationResponse;
+    return siop.validationResponse = validationResponse;
   }
 
   /**
-   * Validate the sub and sub_jwk claims in the siop token
+   * Validate the did, sub and sub_jwk claims in the siop token
    * @param validationResponse ISiopValidationResponse instance
    * @returns ISiopValidationResponse instance
    */
-  private validateSubClaim(validationResponse: ISiopValidationResponse): ISiopValidationResponse {
+  private validateSelfIssuedClaims(validationResponse: ISiopValidationResponse): ISiopValidationResponse {
+    // the did claim in the token must match the did in the header
+    if (!validationResponse.payloadObject.did ||
+      validationResponse.payloadObject.did !== validationResponse.did) {
+      return {
+        result: false,
+        code: errorCode(2),
+        detailedError: 'The did claim is invalid',
+        status: this.options.validatorOptions.invalidTokenError,
+      };
+    }
+
     // json web key from the did document
     const jwk = validationResponse.didSigningPublicKey;
 

@@ -31,6 +31,7 @@ export default class ValidatorBuilder {
   private _resolver: IDidResolver = new ManagedHttpResolver(VerifiableCredentialConstants.UNIVERSAL_RESOLVER_URL, this._fetchRequest);
   private _validationSafeguards: ValidationSafeguards = new ValidationSafeguards();
   private _invalidTokenError: number;
+  private _useFullSiopValidation: boolean;
 
   /**
    * Create a new instance of ValidatorBuilder
@@ -38,6 +39,7 @@ export default class ValidatorBuilder {
    */
   constructor(private _crypto: Crypto) {
     this._invalidTokenError = ValidatorBuilder.INVALID_TOKEN_STATUS_CODE;
+    this._useFullSiopValidation = false;
   }
 
   /**
@@ -64,6 +66,7 @@ export default class ValidatorBuilder {
       validationSafeguards: this._validationSafeguards,
       crypto: this.crypto,
       invalidTokenError: this._invalidTokenError,
+      performFullSiopValidation: this._useFullSiopValidation,
     };
   }
 
@@ -223,6 +226,23 @@ export default class ValidatorBuilder {
    */
   public get resolver(): IDidResolver {
     return this._resolver;
+  }
+
+  /**
+   * Toggle full siop validation on
+   * @returns ValidatorBuilder instance
+   */
+  public performFullSiopValidation(): ValidatorBuilder{
+    this._useFullSiopValidation = true;
+    return this;
+  }
+
+  /**
+   * Gets a flag indicating whether or not to perform full siop token validation
+   * some scenarios in the sdk use SiopValidation for non-siop tokens
+   */
+  public get useFullSiopValidation(): boolean {
+    return this._useFullSiopValidation;
   }
 
   /**
