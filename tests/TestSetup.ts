@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Crypto, CryptoBuilder, IDidResolver, IKeyStore, KeyReference, ManagedHttpResolver, SubtleCryptoNode, ValidationSafeguards } from '../lib/index';
+import { Crypto, CryptoBuilder, IDidResolver, IKeyStore, KeyReference, ManagedHttpResolver, SubtleCryptoNode, TokenPayload, ValidationSafeguards } from '../lib/index';
 import IValidatorOptions from '../lib/options/IValidatorOptions';
 import FetchRequest from '../lib/tracing/FetchRequest';
 import { IssuanceHelpers } from './IssuanceHelpers';
@@ -144,7 +144,12 @@ export default class TestSetup {
     exp: 4582583444
   };
 
-  constructor(performFullSiopValidation: boolean = false) {
+  /**
+   * Mutator of a siop token for testing
+   */
+  public siopMutator?: (payload: TokenPayload) => TokenPayload;
+
+  constructor(public performFullSiopValidation: boolean = false) {
     this.crypto = new CryptoBuilder()
       .useDid(this.defaultIssuerDid)
       .useSigningKeyReference(this.defaulSigKey)

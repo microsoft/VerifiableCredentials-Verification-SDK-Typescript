@@ -3,12 +3,11 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ITokenValidator, Validator, IDidResolver, ManagedHttpResolver, VerifiablePresentationTokenValidator, VerifiableCredentialTokenValidator, IdTokenTokenValidator, SiopTokenValidator, SelfIssuedTokenValidator, TokenType, IValidatorOptions, IRequestor, Requestor, ValidationSafeguards } from '../index';
-import VerifiableCredentialConstants from '../verifiable_credential/VerifiableCredentialConstants';
-import { Crypto } from '../index';
-import { IExpectedIdToken, IExpectedSelfIssued, IExpectedVerifiableCredential, IExpectedVerifiablePresentation, IExpectedSiop, IssuerMap } from '../options/IExpected';
+import { Crypto, IDidResolver, IdTokenTokenValidator, ITokenValidator, IValidatorOptions, ManagedHttpResolver, Requestor, SelfIssuedTokenValidator, SiopTokenValidator, TokenType, ValidationSafeguards, Validator, VerifiableCredentialTokenValidator, VerifiablePresentationTokenValidator } from '../index';
+import { IExpectedIdToken, IExpectedSelfIssued, IExpectedVerifiableCredential, IExpectedVerifiablePresentation, IssuerMap } from '../options/IExpected';
 import FetchRequest from '../tracing/FetchRequest';
 import IFetchRequest from '../tracing/IFetchRequest';
+import VerifiableCredentialConstants from '../verifiable_credential/VerifiableCredentialConstants';
 
 /**
  * Class to build a token validator
