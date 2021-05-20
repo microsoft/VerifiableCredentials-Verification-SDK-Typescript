@@ -3,13 +3,12 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ISiopValidationResponse } from "../lib/input_validation/SiopValidationResponse";
+import { AuthenticationErrorCode, DidValidation, IExpectedSiop, TokenPayload, TokenType, ValidatorBuilder } from "../lib/index";
 import { SiopValidation } from "../lib/input_validation/SiopValidation";
-import TestSetup from './TestSetup';
+import { ISiopValidationResponse } from "../lib/input_validation/SiopValidationResponse";
 import ValidationOptions from '../lib/options/ValidationOptions';
 import { IssuanceHelpers } from "./IssuanceHelpers";
-import { AuthenticationErrorCode, DidValidation, IExpectedSiop, TokenPayload, TokenType, ValidatorBuilder } from "../lib/index";
-import VerifiableCredentialConstants from "../lib/verifiable_credential/VerifiableCredentialConstants";
+import TestSetup from './TestSetup';
 
 describe('SiopValidation', () => {
   let setup: TestSetup;
