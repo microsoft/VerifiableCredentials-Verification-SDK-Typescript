@@ -12,16 +12,25 @@ import { RulesValidationError } from '../error_handling/RulesValidationError';
  * Model for attestations for input contract
  */
 export class IssuanceAttestationsModel {
+  private _hasAttestations: boolean = false;
+
   /**
    *
    * @param selfIssued SelfIssuedAttestationModel instance
    * @param presentations an array of VerifiablePresentationModel instances
    * @param idTokens an array of IdTokenAttestationModel instances
    */
-  constructor (
+  constructor(
     public selfIssued?: SelfIssuedAttestationModel,
     public presentations?: VerifiablePresentationAttestationModel[],
     public idTokens?: IdTokenAttestationModel[]) {
+  }
+
+  /**
+   * flag indicating whether or not there are attestations defined
+   */
+  public get hasAttestations(): boolean {
+    return this._hasAttestations;
   }
 
   /**
@@ -48,7 +57,7 @@ export class IssuanceAttestationsModel {
   /**
    * Derives an IssuanceAttestationModel for input from a Rules attestation model
    */
-  forInput (): IssuanceAttestationsModel {
+  forInput(): IssuanceAttestationsModel {
     return new IssuanceAttestationsModel(
       this.selfIssued === undefined ? undefined : <SelfIssuedAttestationModel>this.selfIssued.forInput(),
       this.presentations === undefined ? undefined : this.presentations.map(presentation => <VerifiablePresentationAttestationModel>presentation.forInput()),
@@ -59,7 +68,7 @@ export class IssuanceAttestationsModel {
    * Populate an instance of IssuanceAttestationsModel from any instance
    * @param input object instance to populate from
    */
-  populateFrom (input: any): void {
+  populateFrom(input: any): void {
     const outputAttestations = new Set<string>();
     let totalOutputAttestations = 0;
 
@@ -110,5 +119,7 @@ export class IssuanceAttestationsModel {
     if (totalOutputAttestations !== outputAttestations.size) {
       throw new RulesValidationError('Attestation mapping names must be unique.');
     }
+
+    this._hasAttestations = totalOutputAttestations > 0;
   }
 }

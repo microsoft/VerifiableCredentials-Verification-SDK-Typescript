@@ -1,3 +1,9 @@
+# version 0.12.1-preview.18
+## JSONPath vulnerability fix
+**Type of change:** Feature
+**Customer impact:** medium
+- Add a flag to RulesContent signaling whether or not it contains input attestations
+
 # version 0.12.1-preview.17
 ## JSONPath vulnerability fix
 **Type of change:** bug fix
