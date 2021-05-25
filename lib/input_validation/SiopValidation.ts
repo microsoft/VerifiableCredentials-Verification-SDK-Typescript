@@ -68,7 +68,10 @@ export class SiopValidation implements ISiopValidation {
 
     // siop validation is being overloaded for both siop and non-siop tokens.  to preserve existing functionality
     // make full siop validation an opt-in operation
-    validationResponse = this.options.validatorOptions.performFullSiopValidation ? this.validateSelfIssuedClaims(validationResponse) : validationResponse;
+    if(this.options.validatorOptions.performFullSiopValidation){
+      validationResponse = this.validateSelfIssuedClaims(validationResponse) ;
+    }
+    
     return siop.validationResponse = validationResponse;
   }
 
