@@ -3,29 +3,85 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ISiopValidationResponse } from "../lib/input_validation/SiopValidationResponse";
+import { AuthenticationErrorCode, DidValidation, IExpectedSiop, TokenPayload, TokenType, ValidatorBuilder } from "../lib/index";
 import { SiopValidation } from "../lib/input_validation/SiopValidation";
-import TestSetup from './TestSetup';
+import { ISiopValidationResponse } from "../lib/input_validation/SiopValidationResponse";
 import ValidationOptions from '../lib/options/ValidationOptions';
 import { IssuanceHelpers } from "./IssuanceHelpers";
-import { AuthenticationErrorCode, DidValidation, IExpectedSiop, TokenType, ValidatorBuilder } from "../lib/index";
-import VerifiableCredentialConstants from "../lib/verifiable_credential/VerifiableCredentialConstants";
+import TestSetup from './TestSetup';
 
-describe('SiopValidation', () =>
-{
+describe('SiopValidation', () => {
   let setup: TestSetup;
   beforeEach(async () => {
-    setup = new TestSetup();
+    setup = new TestSetup(true);
   });
-  
+
   afterEach(() => {
     setup.fetchMock.reset();
   });
-  
-  it('should test validate', async () => {
-    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.siopIssuance, true);   
+
+  async function executeInvalidSiopTokenTest(callback: { (payload: TokenPayload): TokenPayload }, errorCode: number): Promise<void> {
+    setup.siopMutator = callback;
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.siopIssuance, true);
     const expected: IExpectedSiop = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siopIssuance)[0];
-    const validationOptions = new ValidationOptions(setup.validatorOptions, TokenType.siopIssuance); 
+    const validationOptions = new ValidationOptions(setup.validatorOptions, TokenType.siopIssuance);
+
+    const validator = new SiopValidation(validationOptions, expected);
+    let response = await validator.validate(request);
+    expect(response.result).toBeFalse();
+    expect(response.code).toEqual(`VCSDKSIVa0${errorCode}`);
+  }
+
+  it('must fail when payload did does not equal the header did', async () => {
+    await executeInvalidSiopTokenTest(payload => { return { ...payload, did: 'not a match' } }, 2);
+  });
+
+  it('must fail when payload did is missing', async () => {
+    await executeInvalidSiopTokenTest(
+      payload => {
+        const result = { ...payload };
+        delete result.did;
+        return result;
+      },
+      2);
+  });
+
+  it('must fail when payload sub is missing', async () => {
+    await executeInvalidSiopTokenTest(
+      payload => {
+        const result = { ...payload };
+        delete result.sub;
+        return result;
+      },
+      4);
+  });
+
+  it('must fail when payload sub_jwk is missing', async () => {
+    await executeInvalidSiopTokenTest(
+      payload => {
+        const result = { ...payload };
+        delete result.sub_jwk;
+        return result;
+      },
+      3);
+  });
+
+  it('must fail payload on a sub mismatch', async () => {
+    await executeInvalidSiopTokenTest(payload => { return { ...payload, sub: 'not a match' } }, 5);
+  });
+
+  it('must fail payload on a sub_jwk mismatch', async () => {
+    await executeInvalidSiopTokenTest(
+      payload => {
+        return { ...payload, sub_jwk: { ...payload.sub_jwk, n: 'not a match' } };
+      },
+      5);
+  });
+
+  it('should test validate', async () => {
+    const [request, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.siopIssuance, true);
+    const expected: IExpectedSiop = siop.expected.filter((token: IExpectedSiop) => token.type === TokenType.siopIssuance)[0];
+    const validationOptions = new ValidationOptions(setup.validatorOptions, TokenType.siopIssuance);
 
     const validator = new SiopValidation(validationOptions, expected);
     let response = await validator.validate(request);
@@ -33,11 +89,11 @@ describe('SiopValidation', () =>
     expect(response.tokenId).toBeDefined();
     expect(response.tokenId).toEqual(request.decodedToken.jti);
     expect(request.validationResponse).toBeDefined();
-    
+
     // Negative cases
     // Missing iss
-    let payload: any = {
-    };
+    let payload: any = {};
+
     let siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
     response = await validator.validate(siopRequest);
     expect(response.result).toBeFalsy();
@@ -95,14 +151,14 @@ describe('SiopValidation', () =>
     siopRequest = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.didJwkPrivate);
     const testValidator = new DidValidation(validationOptions, expected);
     validator.didValidation = testValidator;
-    const validateSpy = spyOn(testValidator, 'validate').and.callFake(() => <any>{result: false, detailedError: 'did validation error'});
+    const validateSpy = spyOn(testValidator, 'validate').and.callFake(() => <any>{ result: false, detailedError: 'did validation error' });
     response = await validator.validate(siopRequest);
     expect(response.detailedError).toEqual('did validation error');
     expect(siopRequest.validationResponse).toBeDefined();
   });
-  
+
   it('should return status 200', async () => {
-    const validator: any =  {};
+    const validator: any = {};
     validator.validate = async () => {
       return {
         result: true,

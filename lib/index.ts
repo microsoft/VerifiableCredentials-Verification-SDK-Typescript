@@ -138,3 +138,8 @@ export {
   AuthenticationErrorDescription,
   AuthenticationErrorCode,
 }
+
+import { createJwkThumbprint } from './input_validation/CreateJwkThumbprint';
+export {
+  createJwkThumbprint,
+};

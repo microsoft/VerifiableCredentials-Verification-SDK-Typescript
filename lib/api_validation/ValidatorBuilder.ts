@@ -3,12 +3,11 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ITokenValidator, Validator, IDidResolver, ManagedHttpResolver, VerifiablePresentationTokenValidator, VerifiableCredentialTokenValidator, IdTokenTokenValidator, SiopTokenValidator, SelfIssuedTokenValidator, TokenType, IValidatorOptions, IRequestor, Requestor, ValidationSafeguards } from '../index';
-import VerifiableCredentialConstants from '../verifiable_credential/VerifiableCredentialConstants';
-import { Crypto } from '../index';
-import { IExpectedIdToken, IExpectedSelfIssued, IExpectedVerifiableCredential, IExpectedVerifiablePresentation, IExpectedSiop, IssuerMap } from '../options/IExpected';
+import { Crypto, IDidResolver, IdTokenTokenValidator, ITokenValidator, IValidatorOptions, ManagedHttpResolver, Requestor, SelfIssuedTokenValidator, SiopTokenValidator, TokenType, ValidationSafeguards, Validator, VerifiableCredentialTokenValidator, VerifiablePresentationTokenValidator } from '../index';
+import { IExpectedIdToken, IExpectedSelfIssued, IExpectedVerifiableCredential, IExpectedVerifiablePresentation, IssuerMap } from '../options/IExpected';
 import FetchRequest from '../tracing/FetchRequest';
 import IFetchRequest from '../tracing/IFetchRequest';
+import VerifiableCredentialConstants from '../verifiable_credential/VerifiableCredentialConstants';
 
 /**
  * Class to build a token validator
@@ -31,6 +30,7 @@ export default class ValidatorBuilder {
   private _resolver: IDidResolver = new ManagedHttpResolver(VerifiableCredentialConstants.UNIVERSAL_RESOLVER_URL, this._fetchRequest);
   private _validationSafeguards: ValidationSafeguards = new ValidationSafeguards();
   private _invalidTokenError: number;
+  private _useFullSiopValidation: boolean;
 
   /**
    * Create a new instance of ValidatorBuilder
@@ -38,6 +38,7 @@ export default class ValidatorBuilder {
    */
   constructor(private _crypto: Crypto) {
     this._invalidTokenError = ValidatorBuilder.INVALID_TOKEN_STATUS_CODE;
+    this._useFullSiopValidation = false;
   }
 
   /**
@@ -64,6 +65,7 @@ export default class ValidatorBuilder {
       validationSafeguards: this._validationSafeguards,
       crypto: this.crypto,
       invalidTokenError: this._invalidTokenError,
+      performFullSiopValidation: this._useFullSiopValidation,
     };
   }
 
@@ -223,6 +225,23 @@ export default class ValidatorBuilder {
    */
   public get resolver(): IDidResolver {
     return this._resolver;
+  }
+
+  /**
+   * Toggle full siop validation on
+   * @returns ValidatorBuilder instance
+   */
+  public performFullSiopValidation(): ValidatorBuilder{
+    this._useFullSiopValidation = true;
+    return this;
+  }
+
+  /**
+   * Gets a flag indicating whether or not to perform full siop token validation
+   * some scenarios in the sdk use SiopValidation for non-siop tokens
+   */
+  public get useFullSiopValidation(): boolean {
+    return this._useFullSiopValidation;
   }
 
   /**

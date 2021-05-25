@@ -7,7 +7,7 @@ import TestSetup from './TestSetup';
 import { DidDocument } from '@decentralized-identity/did-common-typescript';
 import ClaimToken, { TokenType } from '../lib/verifiable_credential/ClaimToken';
 import ValidationOptions from '../lib/options/ValidationOptions';
-import { KeyReference, IExpectedBase, IExpectedSelfIssued, IExpectedIdToken, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, JsonWebSignatureToken, TokenPayload } from '../lib/index';
+import { KeyReference, IExpectedBase, IExpectedSelfIssued, IExpectedIdToken, IExpectedSiop, IExpectedVerifiablePresentation, IExpectedVerifiableCredential, JsonWebSignatureToken, TokenPayload, createJwkThumbprint } from '../lib/index';
 import VerifiableCredentialConstants from '../lib/verifiable_credential/VerifiableCredentialConstants';
 
 export class IssuanceHelpers {
@@ -25,13 +25,20 @@ export class IssuanceHelpers {
    * Create siop request
    */
   public static async createSiopRequest(setup: TestSetup, key: any, contract: string | undefined, nonce: string, attestations: any): Promise<ClaimToken> {
-    const siop = {
+    let siop: TokenPayload = {
       nonce,
       contract,
       attestations,
       iss: 'https://self-issued.me',
       aud: setup.AUDIENCE,
-      jti: IssuanceHelpers.jti
+      jti: IssuanceHelpers.jti,
+      sub_jwk: key,
+      sub: createJwkThumbprint(key),
+      did: setup.defaultUserDid
+    }
+
+    if(setup.siopMutator){
+      siop = setup.siopMutator(siop);      
     }
 
     return IssuanceHelpers.createSiopRequestWithPayload(setup, siop, key);
