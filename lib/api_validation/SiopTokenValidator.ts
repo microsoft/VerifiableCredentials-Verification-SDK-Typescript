@@ -92,22 +92,7 @@ export default class SiopTokenValidator implements ITokenValidator {
     }
     switch (type) {
       case TokenType.siopPresentationAttestation:
-        const attestations = validationResponse.payloadObject[VerifiableCredentialConstants.ATTESTATIONS];
-        if (attestations) {
-          // Decode tokens
-          try {
-            validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromAttestations(attestations);
-          } catch (err) {
-            console.error(err);
-            return {
-              result: false,
-              status: 400,
-              detailedError: err.message,
-              code: errorCode(3),
-              innerError: err
-            };
-          }
-        }
+        // performed by caller
         break;
 
       case TokenType.siopPresentationExchange:
