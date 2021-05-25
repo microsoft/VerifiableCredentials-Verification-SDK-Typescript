@@ -1,11 +1,11 @@
 # version 0.12.1-preview.17
-## JSONPath vulnerability fix
+## Complete Siop Validation
 **Type of change:** bug fix
 **Customer impact:** high
 - Full Siop Id Token Validation
 
 # version 0.12.1-preview.16
-## JSONPath vulnerability fix
+## Allow pre-validation of a siop token for issuance
 **Type of change:** bug fix
 **Customer impact:** low
 - Allow for a siop token to be validated before calling Validator.validate
