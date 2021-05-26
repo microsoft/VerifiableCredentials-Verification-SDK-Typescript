@@ -1,8 +1,9 @@
-# version 0.12.1-preview.18
-## JSONPath vulnerability fix
+# version 0.12.1-preview.19
+## Siop Validation refinements
 **Type of change:** Feature
 **Customer impact:** medium
 - Add a flag to RulesContent signaling whether or not it contains input attestations
+- Allow callers to specify tokensToValidate
 
 # version 0.12.1-preview.17
 ## Complete Siop Validation

@@ -92,7 +92,22 @@ export default class SiopTokenValidator implements ITokenValidator {
     }
     switch (type) {
       case TokenType.siopPresentationAttestation:
-        // performed by caller
+        const attestations = validationResponse.payloadObject[VerifiableCredentialConstants.ATTESTATIONS];
+        if (attestations) {
+          // Decode tokens
+          try {
+            validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromAttestations(attestations);
+          } catch (err) {
+            console.error(err);
+            return {
+              result: false,
+              status: 400,
+              detailedError: err.message,
+              code: errorCode(3),
+              innerError: err
+            };
+          }
+        }
         break;
 
       case TokenType.siopPresentationExchange:
@@ -100,7 +115,10 @@ export default class SiopTokenValidator implements ITokenValidator {
 
         // Decode tokens
         try {
-          validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromPresentationExchange(validationResponse.payloadObject);
+          // validated tokens may have already been populated by the callers
+          if (!validationResponse.tokensToValidate) {
+            validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromPresentationExchange(validationResponse.payloadObject);
+          }
         } catch (err) {
           console.error(err);
           return {
