@@ -1,4 +1,4 @@
-# version 0.12.1-preview.19
+# version 0.12.1-preview.20
 ## Siop Validation refinements
 **Type of change:** Feature
 **Customer impact:** medium
