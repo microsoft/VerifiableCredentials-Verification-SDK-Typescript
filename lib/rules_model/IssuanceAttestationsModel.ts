@@ -27,13 +27,6 @@ export class IssuanceAttestationsModel {
   }
 
   /**
-   * flag indicating whether or not there are attestations defined
-   */
-  public get hasAttestations(): boolean {
-    return this._hasAttestations;
-  }
-
-  /**
    * Mapping keys for all selfIssued, presentation, and Id Token index claims. 
    */
   public get indexClaims(): string[] {
@@ -52,6 +45,14 @@ export class IssuanceAttestationsModel {
     }
 
     return allIndexClaims;
+  }
+
+  /**
+   * must be a function so that json does not trickle down
+   * indicates whether or not there are attestations defined
+   */
+  public hasAttestations(): boolean {
+    return this._hasAttestations;
   }
 
   /**

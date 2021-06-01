@@ -153,7 +153,7 @@ describe('RulesModel', () => {
       expect(Object.keys(roundtripSelfIssuedMapping).length).toEqual(Object.keys(<any>RULES.attestations?.selfIssued?.mapping).length);
       // when id is not specified, it's the same as the name
       expect((<BaseAttestationModel>roundtripSelfIssued).id).toEqual((<BaseAttestationModel>roundtripSelfIssued).name);
-      expect(roundtrip.attestations?.hasAttestations).toEqual(true);
+      expect(roundtrip.attestations?.hasAttestations()).toEqual(true);
 
       // analyze the contents of input claim
       const roundtripAlias = <InputClaimModel>roundtrip.attestations?.selfIssued?.mapping?.alias;
