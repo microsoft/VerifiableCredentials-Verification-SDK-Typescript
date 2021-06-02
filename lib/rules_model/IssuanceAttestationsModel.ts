@@ -48,10 +48,9 @@ export class IssuanceAttestationsModel {
   }
 
   /**
-   * must be a function so that json does not trickle down
    * indicates whether or not there are attestations defined
    */
-  public hasAttestations(): boolean {
+  public get hasAttestations(): boolean {
     return this._hasAttestations;
   }
 
