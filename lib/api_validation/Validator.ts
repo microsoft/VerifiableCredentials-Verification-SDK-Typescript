@@ -339,7 +339,7 @@ export default class Validator {
   }
 
   private isSiop(type: TokenType | undefined) {
-    return type === TokenType.siopIssuance || type === TokenType.siopPresentationAttestation
+    return type === TokenType.siopIssuance || type === TokenType.siopPresentationAttestation;
   }
 
   private setValidationResult(queue: ValidationQueue): IValidationResult {

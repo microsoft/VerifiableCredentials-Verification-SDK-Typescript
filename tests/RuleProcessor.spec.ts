@@ -81,25 +81,6 @@ describe('Rule processor', () => {
       TokenGenerator.fetchMock.reset();
     }
   });
-  it('should process RequestAttestationsOneVcSaIdtokenResponseOk with missing attestations in SIOP', async () => {
-    try {
-      const model: any = new RequestAttestationsOneVcSaIdtokenResponseOk();
-      model.preSiopResponseOperations = [
-        {
-          path: '$.attestations',
-          operation: () => undefined
-        }
-      ];
-      let [validator, _, responderResponse, responder] = await doRequest(model);
-  
-      let response = await validator.validate(responderResponse);
-      expect(response.result).toBeFalsy(response.detailedError);
-      expect(response.code).toEqual('VCSDKSTVa05');
-      expect(response.status).toEqual(401);
-    } finally {
-      TokenGenerator.fetchMock.reset();
-    }
-  });
 
   it('should process RequestAttestationsOneVcSaIdtokenResponseOk:  The jti claim is missing', async () => {
     try {
