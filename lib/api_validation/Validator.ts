@@ -53,6 +53,8 @@ export default class Validator {
       result: true,
       status: 200,
     };
+
+    let requiredTokensChecked: boolean = false;
     let claimToken: ClaimToken;
     let siopDid: string | undefined;
     let siopContractId: string | undefined;
@@ -136,6 +138,9 @@ export default class Validator {
         case TokenType.idTokenHint:
           response = await validator.validate(queue, queueItem!);
           siopDid = response.did;
+
+          // set to true if the caller checked that tokens are populated
+          requiredTokensChecked = response.tokensArePopulated ?? false;
           break;
         case TokenType.selfIssued:
           response = await validator.validate(queue, queueItem!);
@@ -163,9 +168,11 @@ export default class Validator {
     const validationResult = this.setValidationResult(queue);
 
     // Check if inputs are available
-    response = this.validateAllRequiredInputs(validationResult);
-    if (!response.result) {
-      return response;
+    if (!requiredTokensChecked) {
+      response = this.validateAllRequiredInputs(validationResult);
+      if (!response.result) {
+        return response;
+      }
     }
 
     // Check status of VCs

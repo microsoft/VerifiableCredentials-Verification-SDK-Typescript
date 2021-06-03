@@ -1,6 +1,6 @@
 {
   "name": "verifiablecredentials-verification-sdk-typescript",
-  "version": "0.12.1-preview.25",
+  "version": "0.12.1-preview.26",
   "description": "Typescript SDK for verifiable credentials",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
