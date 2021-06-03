@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TokenType, IExpectedSiop, ITokenValidator, ClaimToken, AuthenticationErrorCode, AuthenticationErrorDescription } from '../index';
+import ErrorHelpers from '../error_handling/ErrorHelpers';
+import { AuthenticationErrorCode, AuthenticationErrorDescription, ClaimToken, IExpectedSiop, ITokenValidator, TokenType } from '../index';
 import { IValidationResponse } from '../input_validation/IValidationResponse';
-import ValidationOptions from '../options/ValidationOptions';
-import IValidatorOptions from '../options/IValidatorOptions';
+import { SiopValidation } from '../input_validation/SiopValidation';
 import ValidationQueue from '../input_validation/ValidationQueue';
 import ValidationQueueItem from '../input_validation/ValidationQueueItem';
-import { SiopValidation } from '../input_validation/SiopValidation';
+import IValidatorOptions from '../options/IValidatorOptions';
+import ValidationOptions from '../options/ValidationOptions';
 import VerifiableCredentialConstants from '../verifiable_credential/VerifiableCredentialConstants';
-import ErrorHelpers from '../error_handling/ErrorHelpers';
 const errorCode = (error: number) => ErrorHelpers.errorCode('VCSDKSTVa', error);
 
 /**
@@ -35,8 +35,10 @@ export default class SiopTokenValidator implements ITokenValidator {
     const options = new ValidationOptions(this.validatorOption, this.expected.type);
     const validator = new SiopValidation(options, this.expected);
     let validationResult = await validator.validate(queueItem.tokenToValidate);
+
     if (validationResult.result) {
-      validationResult = this.getTokens(validationResult, queue);
+      // we might already know what token we have 
+      validationResult = this.getTokens(validationResult, queue, queueItem.tokenToValidate.type);
     }
 
     validationResult = this.validateReplayProtection(validationResult);
@@ -78,25 +80,31 @@ export default class SiopTokenValidator implements ITokenValidator {
    * Get tokens from current item and add them to the queue.
    * @param validationResponse The response for the requestor
    * @param queue with tokens to validate
+   * @param knownTokenType a token type declared by the caller
    */
-  public getTokens(validationResponse: IValidationResponse, queue: ValidationQueue): IValidationResponse {
+  public getTokens(validationResponse: IValidationResponse, queue: ValidationQueue, knownTokenType?: TokenType): IValidationResponse {
 
     // Check type of SIOP
     let type: TokenType;
-    if (validationResponse.payloadObject[VerifiableCredentialConstants.ATTESTATIONS]) {
-      type = TokenType.siopPresentationAttestation;
-    } else if (validationResponse.payloadObject[VerifiableCredentialConstants.PRESENTATION_SUBMISSION]) {
+    if (validationResponse.payloadObject[VerifiableCredentialConstants.PRESENTATION_SUBMISSION]) {
       type = TokenType.siopPresentationExchange;
+    } else if (knownTokenType === TokenType.siopIssuance || knownTokenType === TokenType.siopPresentationAttestation || validationResponse.payloadObject[VerifiableCredentialConstants.ATTESTATIONS]) {
+      type = TokenType.siopPresentationAttestation;
     } else {
       type = TokenType.siop;
     }
+
     switch (type) {
       case TokenType.siopPresentationAttestation:
+
         const attestations = validationResponse.payloadObject[VerifiableCredentialConstants.ATTESTATIONS];
         if (attestations) {
           // Decode tokens
           try {
-            validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromAttestations(attestations);
+            // caller may have alredy filled tokensToValidator, if so return that
+            if (!validationResponse.tokensArePopulated) {
+              validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromAttestations(attestations);
+            }
           } catch (err) {
             console.error(err);
             return {

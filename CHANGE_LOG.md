@@ -1,3 +1,10 @@
+# version 0.12.1-preview.25
+## Siop Validation refinements
+**Type of change:** Feature
+**Customer impact:** medium
+- Add a flag to RulesContent signaling whether or not it contains input attestations
+- Allow callers to specify tokensToValidate
+
 # version 0.12.1-preview.17
 ## Complete Siop Validation
 **Type of change:** bug fix

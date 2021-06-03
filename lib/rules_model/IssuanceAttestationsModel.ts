@@ -3,22 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { RulesValidationError } from '../error_handling/RulesValidationError';
+import { IdTokenAttestationModel } from './IdTokenAttestationModel';
 import { SelfIssuedAttestationModel } from './SelfIssuedAttestationModel';
 import { VerifiablePresentationAttestationModel } from './VerifiablePresentationAttestationModel';
-import { IdTokenAttestationModel } from './IdTokenAttestationModel';
-import { RulesValidationError } from '../error_handling/RulesValidationError';
 
 /**
  * Model for attestations for input contract
  */
 export class IssuanceAttestationsModel {
+  private _hasAttestations: boolean = false;
+
   /**
    *
    * @param selfIssued SelfIssuedAttestationModel instance
    * @param presentations an array of VerifiablePresentationModel instances
    * @param idTokens an array of IdTokenAttestationModel instances
    */
-  constructor (
+  constructor(
     public selfIssued?: SelfIssuedAttestationModel,
     public presentations?: VerifiablePresentationAttestationModel[],
     public idTokens?: IdTokenAttestationModel[]) {
@@ -46,9 +48,16 @@ export class IssuanceAttestationsModel {
   }
 
   /**
+   * indicates whether or not there are attestations defined
+   */
+  public get hasAttestations(): boolean {
+    return this._hasAttestations;
+  }
+
+  /**
    * Derives an IssuanceAttestationModel for input from a Rules attestation model
    */
-  forInput (): IssuanceAttestationsModel {
+  forInput(): IssuanceAttestationsModel {
     return new IssuanceAttestationsModel(
       this.selfIssued === undefined ? undefined : <SelfIssuedAttestationModel>this.selfIssued.forInput(),
       this.presentations === undefined ? undefined : this.presentations.map(presentation => <VerifiablePresentationAttestationModel>presentation.forInput()),
@@ -59,18 +68,19 @@ export class IssuanceAttestationsModel {
    * Populate an instance of IssuanceAttestationsModel from any instance
    * @param input object instance to populate from
    */
-  populateFrom (input: any): void {
-    const outputAttestations = new Set<string>();
-    let totalOutputAttestations = 0;
+  populateFrom(input: any): void {
+    const outputClaims = new Set<string>();
+    let totalOutputClaims = 0;
 
     if (input.selfIssued !== undefined) {
+      this._hasAttestations = true;
       this.selfIssued = new SelfIssuedAttestationModel();
       this.selfIssued.populateFrom(input.selfIssued);
 
       if (this.selfIssued.mapping) {
         const outputAttestationKeys = Object.keys(this.selfIssued.mapping);
-        totalOutputAttestations += outputAttestationKeys.length;
-        outputAttestationKeys.forEach(outputAttestation => outputAttestations.add(outputAttestation));
+        totalOutputClaims += outputAttestationKeys.length;
+        outputAttestationKeys.forEach(outputAttestation => outputClaims.add(outputAttestation));
       }
     }
 
@@ -82,12 +92,14 @@ export class IssuanceAttestationsModel {
 
         if (p.mapping) {
           const outputAttestationKeys = Object.keys(p.mapping);
-          totalOutputAttestations += outputAttestationKeys.length;
-          outputAttestationKeys.forEach(outputAttestation => outputAttestations.add(outputAttestation));
+          totalOutputClaims += outputAttestationKeys.length;
+          outputAttestationKeys.forEach(outputAttestation => outputClaims.add(outputAttestation));
         }
 
         return p;
       });
+
+      this._hasAttestations = this._hasAttestations || this.presentations.length > 0;
     }
 
     if (input.idTokens !== undefined) {
@@ -98,16 +110,18 @@ export class IssuanceAttestationsModel {
 
         if (t.mapping) {
           const outputAttestationKeys = Object.keys(t.mapping);
-          totalOutputAttestations += outputAttestationKeys.length;
-          outputAttestationKeys.forEach(outputAttestation => outputAttestations.add(outputAttestation));
+          totalOutputClaims += outputAttestationKeys.length;
+          outputAttestationKeys.forEach(outputAttestation => outputClaims.add(outputAttestation));
         }
 
         return t;
       });
+
+      this._hasAttestations = this._hasAttestations || this.idTokens.length > 0;
     }
 
     // Ensure uniqueness of attestation mapping keys. Non-uniqueness leads to data loss.
-    if (totalOutputAttestations !== outputAttestations.size) {
+    if (totalOutputClaims !== outputClaims.size) {
       throw new RulesValidationError('Attestation mapping names must be unique.');
     }
   }
