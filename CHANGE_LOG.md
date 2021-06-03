@@ -1,4 +1,4 @@
-# version 0.12.1-preview.26
+# version 0.12.1-preview.27
 ## Allow caller to skip checking required input attestations
 **Type of change:** Feature
 **Customer impact:** low
