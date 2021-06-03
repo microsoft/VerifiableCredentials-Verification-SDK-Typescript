@@ -96,11 +96,15 @@ export default class SiopTokenValidator implements ITokenValidator {
 
     switch (type) {
       case TokenType.siopPresentationAttestation:
+
         const attestations = validationResponse.payloadObject[VerifiableCredentialConstants.ATTESTATIONS];
         if (attestations) {
           // Decode tokens
           try {
-            validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromAttestations(attestations);
+            // caller may have alredy filled tokensToValidator, if so return that
+            if (!validationResponse.tokensArePopulated) {
+              validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromAttestations(attestations);
+            }
           } catch (err) {
             console.error(err);
             return {
@@ -119,10 +123,7 @@ export default class SiopTokenValidator implements ITokenValidator {
 
         // Decode tokens
         try {
-          // validated tokens may have already been populated by the callers
-          if (!validationResponse.tokensToValidate) {
-            validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromPresentationExchange(validationResponse.payloadObject);
-          }
+          validationResponse.tokensToValidate = ClaimToken.getClaimTokensFromPresentationExchange(validationResponse.payloadObject);
         } catch (err) {
           console.error(err);
           return {

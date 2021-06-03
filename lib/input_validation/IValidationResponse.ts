@@ -73,6 +73,11 @@ export interface IValidationResponse extends IResponse {
   tokensToValidate?: { [key: string]: ClaimToken };
 
   /**
+   * flag indicating whether or not tokens have been populated
+   */
+  tokensArePopulated?: boolean;
+
+  /**
    * All claims found in input tokens
    */
   validationResult?: IValidationResult;
