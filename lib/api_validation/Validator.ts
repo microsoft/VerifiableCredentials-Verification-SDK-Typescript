@@ -131,6 +131,8 @@ export default class Validator {
             siopContractId = Validator.readContractId(response.payloadObject.contract);
           }
 
+          // set to true if the caller checked that tokens are populated
+          requiredTokensChecked = response.tokensArePopulated ?? false;
           break;
         case TokenType.siop:
         case TokenType.siopPresentationAttestation:
@@ -138,9 +140,6 @@ export default class Validator {
         case TokenType.idTokenHint:
           response = await validator.validate(queue, queueItem!);
           siopDid = response.did;
-
-          // set to true if the caller checked that tokens are populated
-          requiredTokensChecked = response.tokensArePopulated ?? false;
           break;
         case TokenType.selfIssued:
           response = await validator.validate(queue, queueItem!);
