@@ -53,6 +53,7 @@ export default class Validator {
       result: true,
       status: 200,
     };
+
     let claimToken: ClaimToken;
     let siopDid: string | undefined;
     let siopContractId: string | undefined;
@@ -128,7 +129,6 @@ export default class Validator {
           if (response.result) {
             siopContractId = Validator.readContractId(response.payloadObject.contract);
           }
-
           break;
         case TokenType.siop:
         case TokenType.siopPresentationAttestation:
@@ -184,7 +184,7 @@ export default class Validator {
     }
   }
 
-  private validateAllRequiredInputs(validationResult: IValidationResult): IValidationResponse {
+  protected validateAllRequiredInputs(validationResult: IValidationResult): IValidationResponse {
     // Check required VC's
     const requiredVCs = this.builder.trustedIssuersForVerifiableCredentials;
     if (requiredVCs) {

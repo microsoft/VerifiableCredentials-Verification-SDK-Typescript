@@ -1,3 +1,9 @@
+# version 0.12.1-preview.29
+## Allow caller to skip checking required input attestations
+**Type of change:** Feature
+**Customer impact:** low
+- When attestations are checked by the caller, skip the call to validateAllRequiredInputs
+
 # version 0.12.1-preview.25
 ## Siop Validation refinements
 **Type of change:** Feature
