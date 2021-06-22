@@ -1,8 +1,9 @@
-# version 0.12.1-preview.29
-## Crypto SDK upgrade
+# version 0.12.1-preview.31
+## Vulnerability fixes
 **Type of change:** Bug fix
 **Customer impact:** low
-- Upgrade Crypto SDK to 1.1.12-preview.5.
+- Upgrade Crypto SDK to 1.1.12-preview.6.
+- Upgrade other vulnerable dependencies.
 
 # version 0.12.1-preview.29
 ## Allow caller to skip checking required input attestations
