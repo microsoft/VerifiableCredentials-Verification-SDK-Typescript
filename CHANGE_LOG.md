@@ -1,4 +1,4 @@
-# version 0.12.1-preview.30
+# version 0.12.1-preview.50
 ## Prevent forgery of Verifiable Credentials
 **Type of change:** Feature
 **Customer impact:** high
