@@ -14,20 +14,20 @@ describe('VerifiableCredentialValidation', () => {
   beforeEach(async () => {
     setup = new TestSetup();
   });
-  
+
   afterEach(() => {
     setup.fetchMock.reset();
   });
 
   it('should test validate', async () => {
-    const [_, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential, true);   
+    const [_, options, siop] = await IssuanceHelpers.createRequest(setup, TokenType.verifiableCredential, true);
     const expected = siop.expected.filter((token: IExpectedVerifiableCredential) => token.type === TokenType.verifiableCredential)[0];
 
     let validator = new VerifiableCredentialValidation(options, expected);
     let response = await validator.validate(siop.vc.rawToken, setup.defaultUserDid);
     expect(response.result).toBeTruthy();
     expect(response.subject).toEqual(setup.defaultUserDid);
-    
+
     // use array of issuers
     let clonedExpected = clone(expected);
     clonedExpected.contractIssuers = [];
@@ -68,6 +68,7 @@ describe('VerifiableCredentialValidation', () => {
 
     // Missing vc
     let payload: any = {
+      iss: setup.defaultIssuerDid,
     };
     let token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
     validator = new VerifiableCredentialValidation(options, expected);
@@ -77,9 +78,31 @@ describe('VerifiableCredentialValidation', () => {
     expect(response.detailedError).toEqual(`The verifiable credential vc property does not exist`);
     expect(response.code).toEqual('VCSDKVCVA04');
 
+    // Missing issuer
+    payload = {};
+    token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
+    validator = new VerifiableCredentialValidation(options, expected);
+    response = await validator.validate(<string>token.rawToken, setup.defaultUserDid);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
+    expect(response.detailedError).toEqual('The verifiable credential has not defined an issuer');
+    expect(response.code).toEqual('VCSDKVCVA17');
+
+    // Issuer does not match did kid in header
+    payload = {
+      iss: setup.defaultIssuerDid + "mismatch",
+    };
+    token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
+    validator = new VerifiableCredentialValidation(options, expected);
+    response = await validator.validate(<string>token.rawToken, setup.defaultUserDid);
+    expect(response.result).toBeFalsy();
+    expect(response.status).toEqual(ValidatorBuilder.INVALID_TOKEN_STATUS_CODE);
+    expect(response.detailedError).toEqual('The issuer of the Verifiable Credential is invalid');
+    expect(response.code).toEqual('VCSDKVCVA18');
+
     // Missing context
     payload = {
-      iss: 'did:test:issuer',
+      iss: setup.defaultIssuerDid,
       sub: 'test',
       vc: {}
     };
@@ -93,7 +116,7 @@ describe('VerifiableCredentialValidation', () => {
 
     // The verifiable credential vc property does not contain https://www.w3.org/2018/credentials/v1
     payload = {
-      iss: 'did:test:issuer',
+      iss: setup.defaultIssuerDid,
       sub: 'test',
       vc: {
         '\@context': 'xxx'
@@ -107,10 +130,10 @@ describe('VerifiableCredentialValidation', () => {
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`The verifiable credential context first element should be https://www.w3.org/2018/credentials/v1`);
     expect(response.code).toEqual('VCSDKVCVA06');
-    
+
     // Missing type
     payload = {
-      iss: 'did:test:issuer',
+      iss: setup.defaultIssuerDid,
       sub: 'test',
       vc: {
         '\@context': ['https://www.w3.org/2018/credentials/v1']
@@ -126,7 +149,7 @@ describe('VerifiableCredentialValidation', () => {
 
     // The verifiable credential vc property does not contain https://www.w3.org/2018/credentials/v1
     payload = {
-      iss: 'did:test:issuer',
+      iss: setup.defaultIssuerDid,
       sub: 'test',
       vc: {
         '\@context': ['https://www.w3.org/2018/credentials/v1'],
@@ -143,13 +166,13 @@ describe('VerifiableCredentialValidation', () => {
     expect(response.code).toEqual('VCSDKVCVA07');
 
     payload = {
-      iss: 'did:test:issuer',
+      iss: setup.defaultIssuerDid,
       sub: 'test',
       vc: {
         type: ['xxx', 'yyy'],
       }
     };
-    payload.vc['@context'] = ['https://www.w3.org/2018/credentials/v1']; 
+    payload.vc['@context'] = ['https://www.w3.org/2018/credentials/v1'];
     token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
     validator = new VerifiableCredentialValidation(options, expected);
     response = await validator.validate(<string>token.rawToken, setup.defaultUserDid);
@@ -159,13 +182,13 @@ describe('VerifiableCredentialValidation', () => {
     expect(response.code).toEqual('VCSDKVCVA07');
 
     payload = {
-      iss: 'did:test:issuer',
+      iss: setup.defaultIssuerDid,
       sub: 'test',
       vc: {
         type: ['VerifiableCredential', 'yyy'],
       }
     };
-    payload.vc['@context'] = ['https://www.w3.org/2018/credentials/v1']; 
+    payload.vc['@context'] = ['https://www.w3.org/2018/credentials/v1'];
     token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
     validator = new VerifiableCredentialValidation(options, expected);
     response = await validator.validate(<string>token.rawToken, setup.defaultUserDid);
@@ -173,15 +196,16 @@ describe('VerifiableCredentialValidation', () => {
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`The verifiable credential with type 'yyy' does not has a credentialSubject property`);
     expect(response.code).toEqual('VCSDKVCVA08');
-    
+
     // Missing sub
     payload = {
       vc: {
         type: ['VerifiableCredential', 'xxx'],
         credentialSubject: {}
-      }
+      },
+      iss: setup.defaultIssuerDid,
     };
-    payload.vc['@context'] =  ['https://www.w3.org/2018/credentials/v1'];
+    payload.vc['@context'] = ['https://www.w3.org/2018/credentials/v1'];
     payload.vc['@context'].push('test');
     token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
     validator = new VerifiableCredentialValidation(options, expected);
@@ -197,11 +221,11 @@ describe('VerifiableCredentialValidation', () => {
         type: ['VerifiableCredential', 'xxx'],
         credentialSubject: {}
       },
-      iss: 'did:test:issuer',
+      iss: setup.defaultIssuerDid,
       sub: 'test'
     };
 
-    payload.vc['@context'] =  ['https://www.w3.org/2018/credentials/v1'];
+    payload.vc['@context'] = ['https://www.w3.org/2018/credentials/v1'];
     payload.vc['@context'].push('test');
     token = await IssuanceHelpers.createSiopRequestWithPayload(setup, payload, siop.tokenJwkPrivate);
     response = await validator.validate(<string>token.rawToken, setup.defaultUserDid);
@@ -209,5 +233,5 @@ describe('VerifiableCredentialValidation', () => {
     expect(response.status).toEqual(403);
     expect(response.detailedError).toEqual(`Wrong sub property in verifiableCredential. Expected 'did:test:user'`);
     expect(response.code).toEqual('VCSDKVCVA10');
- });
+  });
 });
