@@ -42,6 +42,26 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       return validationResponse;
     }
 
+    // the issuer of the VC must match the DID that provided the keys
+    // otherwise you can claim a VC came from another issuer
+    if (!validationResponse.issuer) {
+      return {
+        result: false,
+        code: errorCode(17),
+        detailedError: 'The verifiable credential has not defined an issuer',
+        status: this.options.validatorOptions.invalidTokenError,
+      };
+    }
+
+    if (validationResponse.did !== validationResponse.issuer) {
+      return {
+        result: false,
+        code: errorCode(18),
+        detailedError: 'The issuer of the Verifiable Credential is invalid',
+        status: this.options.validatorOptions.invalidTokenError,
+      };
+    }
+
     const isJwt = typeof verifiableCredential === 'string';
     if (isJwt) {
       validationResponse.subject = validationResponse.payloadObject.sub;
@@ -147,7 +167,7 @@ export class VerifiableCredentialValidation implements IVerifiableCredentialVali
       }
 
       // Check if the we found a matching contract.
-      if (!vcIssuers.includes(validationResponse.issuer!)) {
+      if (!vcIssuers.includes(validationResponse.issuer)) {
         return {
           result: false,
           code: errorCode(12),

@@ -1,3 +1,9 @@
+# version 0.12.1-preview.30
+## Prevent forgery of Verifiable Credentials
+**Type of change:** Feature
+**Customer impact:** high
+- Enforce that the iss claim of a Verifiable Credential matches the did in the kid property of the header
+
 # version 0.12.1-preview.29
 ## Allow caller to skip checking required input attestations
 **Type of change:** Feature
