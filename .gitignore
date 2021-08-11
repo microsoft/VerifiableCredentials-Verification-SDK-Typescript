@@ -155,4 +155,3 @@ bld/
 .vs
 .user
 /services/PouchDbClient/testdb
-/.npmrc
