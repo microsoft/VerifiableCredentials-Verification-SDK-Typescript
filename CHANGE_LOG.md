@@ -1,3 +1,9 @@
+# version 0.12.1-preview.60
+## Update crypto sdk dependency
+**Type of change:** Engineering
+**Customer impact:** low
+- Updates crypto sdk dependency to use latest version.
+
 # version 0.12.1-preview.51
 ## Update crypto sdk dependency
 **Type of change:** Engineering
